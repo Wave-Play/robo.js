@@ -1,0 +1,18 @@
+---
+title: "DiscordConfig"
+---
+
+# Interface: DiscordConfig
+
+Discord plugin configuration.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="autoregistercommands"></a> `autoRegisterCommands?` | `boolean` \| `string`[] | Whether to automatically register commands with Discord API during builds. - `true` (default): Always register commands - `false`: Never register commands - `string[]`: Only register in specified modes (e.g., ['production'], ['development', 'production']) |
+| <a id="clientoptions"></a> `clientOptions?` | `ClientOptions` | Discord.js Client options |
+| <a id="defaults"></a> `defaults?` | [`CommandDefaults`](command-defaults) | Default configuration for commands and context menus |
+| <a id="sage"></a> `sage?` | `false` \| [`SageOptions`](sage-options) | Sage (auto-defer/reply) configuration. Set to false to disable. |
+| <a id="testservers"></a> `testServers?` | `string`[] | Server IDs to use as test servers for command registration |
+| <a id="timeouts"></a> `timeouts?` | [`TimeoutConfig`](timeout-config) | Timeout configuration for various operations |

@@ -1,76 +1,45 @@
 ---
-title: "useSyncState"
-description: "React hook for synchronized state in Robo.js"
+title: "useSyncState()"
 ---
 
 # Function: useSyncState()
 
 ```ts
-function useSyncState<T>(initialState, key): readonly [T, (newState) => void]
+function useSyncState<T, ClientData>(initialState, key): readonly [T, (newState) => void, SyncContext<ClientData>]
 ```
 
-A React hook that provides synchronized state across components and instances, similar to React's `useState` but with synchronization capabilities.
+Hook for synchronized state across clients.
+
+Works like React's useState, but the state is shared across all clients
+subscribed to the same key. Updates from any client are broadcast to all others.
 
 ## Type Parameters
 
-| Type Parameter | Description |
-| -------------- | ----------- |
-| `T` | The type of the state value |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | - |
+| `ClientData` | `unknown` |
 
 ## Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `initialState` | `T` | The initial state value |
-| `key` | `(null \| string)[]` | Array of keys that uniquely identify this state |
+| Parameter | Type |
+| ------ | ------ |
+| `initialState` | `T` |
+| `key` | (`null` \| `string`)[] |
 
 ## Returns
 
-`readonly [T, (newState) => void]` - A tuple containing the current state value and a function to update it
+readonly \[`T`, (`newState`) =\> `void`, [`SyncContext`](../interfaces/sync-context)\<`ClientData`\>\]
 
-## Example
+## Examples
 
-```tsx
-import { useSyncState } from '@robojs/sync'
-
-function Counter() {
-  // Create a synchronized counter state
-  const [count, setCount] = useSyncState(0, ['counter'])
-  
-  return (
-    <div>
-      <p>Count: {count}</p>
-      <button onClick={() => setCount(count + 1)}>
-        Increment
-      </button>
-    </div>
-  )
-}
-
-// In another component or instance
-function CounterDisplay() {
-  // This will sync with the same counter state
-  const [count] = useSyncState(0, ['counter'])
-  
-  return (
-    <div>
-      <p>Counter value: {count}</p>
-      <p>This display will update when any component changes the counter!</p>
-    </div>
-  )
-}
+```ts
+// Basic usage (backward compatible)
+const [position, setPosition] = useSyncState({ x: 0, y: 0 }, ['player-position'])
 ```
 
-## Notes
-
-- The state is synchronized across all components that use the same key
-- Changes to the state in one component will reflect in all others
-- The key array must be consistent across all instances to ensure proper synchronization
-- Using `null` in key positions allows for dynamic key hierarchies
-- The API mimics React's `useState` for familiarity, but with added synchronization
-- This hook requires the parent component tree to include the `SyncContextProvider`
-
-## Related
-
-- [SyncContextProvider](/ref/packages/sync/functions/sync-context-provider) - Provider component for sync context
-- [MessagePayload](/ref/packages/sync/interfaces/message-payload) - Interface for sync messages
+```ts
+// With context (new in v2)
+const [gameState, setGameState, context] = useSyncState(initialGameState, ['game-room'])
+console.log(context.clients, context.isHost)
+```

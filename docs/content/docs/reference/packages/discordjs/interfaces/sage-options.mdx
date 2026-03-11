@@ -1,0 +1,18 @@
+---
+title: "SageOptions"
+---
+
+# Interface: SageOptions
+
+Sage (auto-defer/reply) options for commands and context menus.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="defer"></a> `defer?` | `boolean` | Whether to automatically defer the interaction |
+| <a id="deferbuffer"></a> `deferBuffer?` | `number` | Time in ms to wait before deferring (allows fast replies without defer) |
+| <a id="ephemeral"></a> `ephemeral?` | `boolean` | Whether deferred/replied messages should be ephemeral |
+| <a id="errorchannelid"></a> `errorChannelId?` | `string` | Channel ID to send error messages to |
+| <a id="errormessage"></a> `errorMessage?` | `string` | Custom error message to show users |
+| <a id="errorreplies"></a> `errorReplies?` | `boolean` | Whether to show error replies to users |

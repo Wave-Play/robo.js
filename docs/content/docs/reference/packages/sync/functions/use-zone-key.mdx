@@ -1,0 +1,33 @@
+---
+title: "useZoneKey()"
+---
+
+# Function: useZoneKey()
+
+```ts
+function useZoneKey(localId): (string | null)[]
+```
+
+Hook to compute the full key by combining zone prefix with a local id.
+If not in a zone, returns the local id as-is.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `localId` | (`null` \| `string`)[] |
+
+## Returns
+
+(`string` \| `null`)[]
+
+## Example
+
+```ts
+function PlayerMarker({ playerId }) {
+  const fullKey = useZoneKey(['player', playerId])
+  // In <SyncZone id={['game']}>, fullKey = ['game', 'player', playerId]
+  const [position, setPosition] = useSyncState({ x: 0, y: 0 }, fullKey)
+  ...
+}
+```

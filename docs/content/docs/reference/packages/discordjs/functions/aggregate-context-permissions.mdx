@@ -1,0 +1,23 @@
+---
+title: "aggregateContextPermissions()"
+---
+
+# Function: aggregateContextPermissions()
+
+```ts
+function aggregateContextPermissions(contextMenus): Map<string, AggregatedPermissions>
+```
+
+Aggregate permissions from context menu entries.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `contextMenus` | `Record`\<`string`, [`ContextConfig`](../interfaces/context-config)\> | Map of context menu names to entries |
+
+## Returns
+
+`Map`\<`string`, [`AggregatedPermissions`](../interfaces/aggregated-permissions)\>
+
+Map of context menu keys to aggregated permissions

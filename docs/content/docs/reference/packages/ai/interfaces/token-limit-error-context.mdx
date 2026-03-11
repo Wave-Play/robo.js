@@ -1,0 +1,21 @@
+---
+title: "TokenLimitErrorContext"
+---
+
+# Interface: TokenLimitErrorContext
+
+Context supplied when constructing a [TokenLimitError](../classes/token-limit-error).
+
+## See
+
+TokenLimitError
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="model"></a> `model` | `string` | Model that triggered the limit breach. |
+| <a id="rule"></a> `rule` | [`TokenLimitRule`](token-limit-rule) | Limit rule that was violated. |
+| <a id="usagekind"></a> `usageKind?` | `string` | Optional usage classification. |
+| <a id="window"></a> `window` | [`TokenSummaryWindow`](../type-aliases/token-summary-window) | Window where the limit was exceeded. |
+| <a id="windowkey"></a> `windowKey` | `string` | Active window key for the breach. |

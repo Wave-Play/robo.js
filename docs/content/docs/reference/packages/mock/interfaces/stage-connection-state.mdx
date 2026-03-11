@@ -1,0 +1,18 @@
+---
+title: "StageConnectionState"
+---
+
+# Interface: StageConnectionState
+
+State for a connected stage client
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="authenticated"></a> `authenticated` | `boolean` | Whether connection has been authenticated |
+| <a id="connectedat"></a> `connectedAt` | `number` | When this connection was established |
+| <a id="id"></a> `id` | `string` | Unique connection ID |
+| <a id="lastseq"></a> `lastSeq` | `number` | Last sequence number sent to this client |
+| <a id="sessionid"></a> `sessionId` | `string` | Session this connection belongs to |
+| <a id="subscribedchannels"></a> `subscribedChannels` | `Set`\<`string`\> | Channels this client is subscribed to (for filtering) |

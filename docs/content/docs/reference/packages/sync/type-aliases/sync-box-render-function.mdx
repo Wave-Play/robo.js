@@ -1,0 +1,33 @@
+---
+title: "SyncBoxRenderFunction()<T, ClientData>"
+---
+
+# Type Alias: SyncBoxRenderFunction()\<T, ClientData\>
+
+```ts
+type SyncBoxRenderFunction<T, ClientData> = (state, setState, status, context, lock?) => React.ReactNode;
+```
+
+Render function signature for SyncBox children.
+Receives state, setState, status, context, and optionally lock context.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | - |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `state` | `T` \| `undefined` |
+| `setState` | [`SyncBoxSetState`](sync-box-set-state)\<`T`\> |
+| `status` | [`SyncStatus`](../interfaces/sync-status) |
+| `context` | [`SyncContext`](../interfaces/sync-context)\<`ClientData`\> |
+| `lock`? | [`LockContext`](../interfaces/lock-context) |
+
+## Returns
+
+`React.ReactNode`

@@ -1,0 +1,31 @@
+---
+title: "switchSession()"
+---
+
+# Function: switchSession()
+
+```ts
+function switchSession(userId, options?): Promise<SwitchSessionResult>
+```
+
+Switches the active session to the given user.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to switch to (must exist in the device session stack). |
+| `options`? | `ClientOptions` | Overrides for base path, headers, or a custom fetch implementation. |
+
+## Returns
+
+`Promise`\<[`SwitchSessionResult`](../interfaces/switch-session-result)\>
+
+A result indicating success or the reason for failure.
+
+## Example
+
+```ts
+const result = await switchSession('user-id-123')
+if (result.ok) window.location.reload()
+```

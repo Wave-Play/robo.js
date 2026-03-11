@@ -1,73 +1,20 @@
 ---
-title: "createLogtailDrain"
-description: "Create a log drain for Better Stack Logtail"
+title: "createLogtailDrain()"
 ---
 
 # Function: createLogtailDrain()
 
 ```ts
-function createLogtailDrain(sourceToken): LogDrain
+function createLogtailDrain(sourceToken, options?): LogDrain
 ```
-
-Creates a log drain that sends logs to Better Stack's Logtail service.
 
 ## Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `sourceToken` | `string` | Your Logtail source token |
+| Parameter | Type |
+| ------ | ------ |
+| `sourceToken` | `string` |
+| `options`? | `Partial`\<`ILogtailNodeOptions`\> |
 
 ## Returns
 
-`LogDrain` - A log drain function that can be used with the Robo.js logger
-
-## Example
-
-```ts
-import { logger } from 'robo.js'
-import { createLogtailDrain } from '@robojs/better-stack'
-
-// Create a Logtail drain with your source token
-const logtailDrain = createLogtailDrain('your-source-token-here')
-
-// Configure the logger to use the Logtail drain
-logger.setup({
-  level: 'info',
-  drain: logtailDrain
-})
-
-// Now all logs will be sent to Better Stack Logtail
-logger.info('Application started')
-logger.error('Something went wrong', new Error('Failed to connect'))
-```
-
-## Notes
-
-- The source token is provided by Better Stack when you create a new source
-- The drain automatically formats log entries for the Logtail service
-- Log levels are properly mapped between Robo.js and Logtail
-- Errors and error stacks are properly formatted and sent to Logtail
-- This function works well with the Robo.js logger system
-
-## Integration with State Management
-
-You can store your source token in environment variables for better security:
-
-```ts
-import { Env } from 'robo.js'
-import { logger } from 'robo.js'
-import { createLogtailDrain } from '@robojs/better-stack'
-
-// Load environment variables
-Env.loadSync()
-
-// Get the source token from environment variables
-const sourceToken = Env.data().LOGTAIL_SOURCE_TOKEN
-
-// Create and configure the drain
-if (sourceToken) {
-  const logtailDrain = createLogtailDrain(sourceToken)
-  logger.setup({ drain: logtailDrain })
-  logger.info('Logtail logging enabled')
-}
-```
+`LogDrain`

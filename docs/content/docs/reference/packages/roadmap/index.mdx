@@ -1,71 +1,89 @@
 ---
-title: "@robojs/roadmap"
-description: API reference for the roadmap sync plugin.
+title: "DIRECTORY"
+description: "API reference for @robojs/roadmap"
 ---
 
 # @robojs/roadmap
 
-Sync project roadmaps from Jira (or custom providers) to Discord forum channels.
+API reference documentation for `@robojs/roadmap`.
 
-<Cards>
-  <Card href="/docs/plugins/roadmap" title="Plugin Guide" description="Full documentation and usage examples." />
-</Cards>
+## Classes
 
-## Main Exports
+- [`JiraProvider`](classes/jira-provider) - Jira provider that connects to Jira Cloud instances via REST API v3.
+- [`RoadmapProvider`](classes/roadmap-provider) - Base class for roadmap data providers (Jira, GitHub Projects, Linear).
+- [`SyncCanceledError`](classes/sync-canceled-error) - Error thrown when a sync is canceled via AbortSignal.
 
-### Provider Access
+## Interfaces
 
-```typescript
-import { getProvider, isProviderReady } from '@robojs/roadmap'
+- [`CreateRoadmapForumsOptions`](interfaces/create-roadmap-forums-options) - Options for creating roadmap category and forum channels.
+- [`JiraProviderConfig`](interfaces/jira-provider-config) - Configuration shape for the [JiraProvider](../classes/jira-provider).
+- [`RoadmapPluginOptions`](interfaces/roadmap-plugin-options) - Plugin options interface.
+- [`RoadmapSettings`](interfaces/roadmap-settings) - Guild-specific roadmap configuration settings.
+- [`SyncOptions`](interfaces/sync-options) - Options for synchronizing roadmap data to Discord.
+- [`SyncProgressUpdate`](interfaces/sync-progress-update) - Progress update data sent during sync operations.
 
-// Check if provider is configured
-if (isProviderReady()) {
-  const provider = getProvider()
-  const cards = await provider.fetchCards()
-}
-```
+## Type Aliases
 
-### Sync Operations
+- [`CreateCardInput`](type-aliases/create-card-input) - Input required to create a new roadmap card in the external provider.
+- [`CreateCardResult`](type-aliases/create-card-result) - Result of a card creation operation.
+- [`DateRangeFilter`](type-aliases/date-range-filter) - Specifies filtering criteria for fetching roadmap cards by date range.
+- [`ForumPermissionMode`](type-aliases/forum-permission-mode) - Forum permission modes.
+- [`ProviderConfig`](type-aliases/provider-config) - Identifies the provider implementation and its raw configuration.
+- [`ProviderInfo`](type-aliases/provider-info) - Metadata describing a roadmap provider implementation.
+- [`RoadmapCard`](type-aliases/roadmap-card) - Represents a unit of work surfaced by the roadmap.
+- [`RoadmapColumn`](type-aliases/roadmap-column) - Describes a column or lane used to organize roadmap cards.
+- [`SyncResult`](type-aliases/sync-result) - Captures the result of a synchronization run between a provider and the roadmap surface.
+- [`ThreadOperation`](type-aliases/thread-operation) - Type of operation to perform on a thread.
+- [`UpdateCardInput`](type-aliases/update-card-input) - Input required to update an existing roadmap card in the external provider.
+- [`UpdateCardResult`](type-aliases/update-card-result) - Result of a card update operation.
 
-```typescript
-import { syncRoadmap } from '@robojs/roadmap'
+## Functions
 
-// Sync cards to Discord
-const result = await syncRoadmap({
-  guild,
-  provider,
-  dryRun: false
-})
+- [`AddThreadToHistory`](functions/add-thread-to-history) - Appends a new thread entry to a card's history.
+- [`CanUserCreateCards`](functions/can-user-create-cards) - Checks if a user is authorized to create roadmap cards.
+- [`CreateOrGetRoadmapCategory`](functions/create-or-get-roadmap-category) - Creates or retrieves the roadmap category with forum channels for each column (idempotent).
+- [`FormatCardContentV2`](functions/format-card-content-v2) - Formats a roadmap card into Discord Components v2 structure with rich presentation.
+- [`FormatCardContent`](functions/format-card-content) - Formats a roadmap card into Discord message content with automatic truncation.
+- [`FormatThreadName`](functions/format-thread-name) - Formats a roadmap card title for use as a Discord thread name.
+- [`GetAllForumChannels`](functions/get-all-forum-channels) - Retrieves all forum channels for a guild, mapped by column name.
+- [`GetAssigneeMapping`](functions/get-assignee-mapping) - Retrieves the assignee mapping for a guild.
+- [`GetAuthorizedCreatorRoles`](functions/get-authorized-creator-roles) - Retrieves the list of role IDs authorized to create roadmap cards.
+- [`GetCardsFromDateRange`](functions/get-cards-from-date-range) - Fetches cards within a custom date range.
+- [`GetCardsFromLastDays`](functions/get-cards-from-last-days) - Fetches cards from the last N days (inclusive of today).
+- [`GetCardsFromLastMonth`](functions/get-cards-from-last-month) - Fetches cards from the previous calendar month.
+- [`GetCardsFromLastWeek`](functions/get-cards-from-last-week) - Fetches cards from the last 7 days (inclusive of today).
+- [`GetCategoryId`](functions/get-category-id) - Gets the roadmap category ID for a guild.
+- [`GetColumnMapping`](functions/get-column-mapping) - Retrieves the column mapping for a guild.
+- [`GetCurrentThreadInfo`](functions/get-current-thread-info) - Retrieves the current thread ID and its column information for a card.
+- [`GetCustomColumns`](functions/get-custom-columns) - Retrieves custom columns for a guild.
+- [`GetDiscordUserIdForJiraName`](functions/get-discord-user-id-for-jira-name) - Looks up the Discord user ID for a Jira assignee name.
+- [`GetForumChannelForColumn`](functions/get-forum-channel-for-column) - Retrieves a specific forum channel for a column.
+- [`GetForumChannelIdForColumn`](functions/get-forum-channel-id-for-column) - Gets the forum channel ID for a specific column.
+- [`GetProvider`](functions/get-provider) - Get the initialized provider instance.
+- [`GetRoadmapCategory`](functions/get-roadmap-category) - Retrieves the roadmap category for a guild.
+- [`GetSettings`](functions/get-settings) - Retrieves roadmap settings for a guild.
+- [`GetSyncedPostId`](functions/get-synced-post-id) - Retrieves the Discord thread ID for a synced provider card.
+- [`GetThreadForColumn`](functions/get-thread-for-column) - Retrieves the most recent thread entry for a specific column.
+- [`GetThreadHistory`](functions/get-thread-history) - Retrieves the thread history array for a specific card.
+- [`IsForumPublic`](functions/is-forum-public) - Checks if the forum is configured as public.
+- [`IsProviderReady`](functions/is-provider-ready) - Check if the provider is initialized and ready to use.
+- [`MoveThreadToNewForum`](functions/move-thread-to-new-forum) - Moves a roadmap card's discussion thread to a new forum when the column changes.
+- [`RemoveAssigneeMapping`](functions/remove-assignee-mapping) - Removes a mapping for a Jira assignee name.
+- [`RemoveColumnMapping`](functions/remove-column-mapping) - Removes a mapping for a provider status name.
+- [`SetAssigneeMapping`](functions/set-assignee-mapping) - Sets a mapping between a Jira assignee name and a Discord user ID.
+- [`SetAuthorizedCreatorRoles`](functions/set-authorized-creator-roles) - Sets the list of role IDs authorized to create roadmap cards.
+- [`SetColumnMapping`](functions/set-column-mapping) - Sets a mapping between a provider status name and a column name (or null for no forum).
+- [`SetCustomColumns`](functions/set-custom-columns) - Sets custom columns for a guild.
+- [`SetSyncedPost`](functions/set-synced-post) - Records a synced post mapping between a provider card and Discord thread.
+- [`SyncRoadmap`](functions/sync-roadmap) - Synchronizes roadmap data from a provider to Discord forum posts.
+- [`SyncSingleCard`](functions/sync-single-card) - Synchronizes a single roadmap card to Discord and returns thread metadata.
+- [`ToggleForumAccess`](functions/toggle-forum-access) - Toggles roadmap category between private (admin/mod only) and public (everyone can view/comment).
+- [`UpdateForumTagsForColumn`](functions/update-forum-tags-for-column) - Updates forum tags for a column by merging new tags with existing ones (max 20 tags).
+- [`UpdateSettings`](functions/update-settings) - Updates roadmap settings for a guild (merges with existing).
 
-console.log(`Synced ${result.stats.total} cards`)
-```
+## Variables
 
-### JiraProvider
-
-Built-in provider for Jira Cloud.
-
-```typescript
-import { JiraProvider } from '@robojs/roadmap'
-
-const provider = new JiraProvider({
-  url: process.env.JIRA_URL,
-  email: process.env.JIRA_EMAIL,
-  apiToken: process.env.JIRA_API_TOKEN,
-  projectKey: process.env.JIRA_PROJECT_KEY
-})
-```
-
-### Types
-
-```typescript
-import type {
-  RoadmapCard,
-  RoadmapColumn,
-  CreateCardInput,
-  UpdateCardInput
-} from '@robojs/roadmap'
-```
-
-<Cards>
-  <Card href="/docs/plugins/roadmap" title="Plugin Guide" description="See full configuration options." />
-</Cards>
+- [`Buttons`](variables/buttons) - Button component IDs used in interactive messages.
+- [`Id_namespace`](variables/id_namespace) - Namespace prefix for all component IDs and settings storage.
+- [`Options`](variables/options) - Resolved plugin options from config or defaults.
+- [`Selects`](variables/selects) - Select menu component IDs used in interactive messages.

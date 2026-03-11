@@ -1,0 +1,141 @@
+---
+title: "InMemoryStorage"
+---
+
+# Class: InMemoryStorage
+
+In-memory session storage implementation
+Can be swapped for FlashcoreStorage in future
+
+## Implements
+
+- [`SessionStorage`](../interfaces/session-storage)
+
+## Constructors
+
+### new InMemoryStorage()
+
+```ts
+new InMemoryStorage(): InMemoryStorage
+```
+
+#### Returns
+
+[`InMemoryStorage`](in-memory-storage)
+
+## Accessors
+
+### size
+
+#### Get Signature
+
+```ts
+get size(): number
+```
+
+##### Returns
+
+`number`
+
+#### Implementation of
+
+[`SessionStorage`](../interfaces/session-storage).[`size`](../interfaces/session-storage#size)
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionStorage`](../interfaces/session-storage).[`clear`](../interfaces/session-storage#clear)
+
+***
+
+### delete()
+
+```ts
+delete(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionStorage`](../interfaces/session-storage).[`delete`](../interfaces/session-storage#delete)
+
+***
+
+### get()
+
+```ts
+get(id): undefined | ISession
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`ISession`](../interfaces/i-session)
+
+#### Implementation of
+
+[`SessionStorage`](../interfaces/session-storage).[`get`](../interfaces/session-storage#get)
+
+***
+
+### set()
+
+```ts
+set(id, session): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `session` | [`ISession`](../interfaces/i-session) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionStorage`](../interfaces/session-storage).[`set`](../interfaces/session-storage#set)
+
+***
+
+### values()
+
+```ts
+values(): IterableIterator<ISession, any, any>
+```
+
+#### Returns
+
+`IterableIterator`\<[`ISession`](../interfaces/i-session), `any`, `any`\>
+
+#### Implementation of
+
+[`SessionStorage`](../interfaces/session-storage).[`values`](../interfaces/session-storage#values)

@@ -1,0 +1,40 @@
+---
+title: "XPChangeEvent"
+---
+
+# Interface: XPChangeEvent
+
+Event emitted when a user's XP changes (without level change)
+
+ All fields are read-only event data
+
+## Remarks
+
+The storeId field identifies which data store triggered this event. Leaderboard
+cache invalidation uses this field to invalidate only the affected store.
+
+## Example
+
+```ts
+{
+ *   guildId: '123456789012345678',
+ *   userId: '234567890123456789',
+ *   storeId: 'default',
+ *   oldXp: 1500,
+ *   newXp: 1550,
+ *   delta: 50,
+ *   reason: 'message'
+ * }
+```
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="delta"></a> `delta` | `readonly` | `number` | Change in XP (newXp - oldXp, can be negative) |
+| <a id="guildid"></a> `guildId` | `readonly` | `string` | Guild where XP change occurred |
+| <a id="newxp"></a> `newXp` | `readonly` | `number` | New XP amount |
+| <a id="oldxp"></a> `oldXp` | `readonly` | `number` | Previous XP amount |
+| <a id="reason"></a> `reason?` | `readonly` | `string` | Optional reason for XP change (e.g., 'manual_adjustment', 'message') |
+| <a id="storeid"></a> `storeId` | `readonly` | `string` | Store identifier that triggered this event |
+| <a id="userid"></a> `userId` | `readonly` | `string` | User whose XP changed |

@@ -1,0 +1,22 @@
+---
+title: "SyncHandlerRecord"
+---
+
+# Interface: SyncHandlerRecord
+
+Resolved handler record from manifest.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="exports"></a> `exports` | \{ `named`: `string`[]; `onUpdate`: `boolean`; `schema`: `boolean`; `transform`: `boolean`; `validate`: `boolean`; \} | Named exports available |
+| `exports.named` | `string`[] | - |
+| `exports.onUpdate?` | `boolean` | - |
+| `exports.schema?` | `boolean` | - |
+| `exports.transform?` | `boolean` | - |
+| `exports.validate?` | `boolean` | - |
+| <a id="handler"></a> `handler?` | [`SyncHandlerModule`](sync-handler-module)\<`unknown`, `unknown`\> | Loaded handler module (lazy loaded) |
+| <a id="key"></a> `key` | `string` | The key pattern (e.g., 'game/[roomId]/position') |
+| <a id="params"></a> `params?` | `string`[] | Dynamic parameters (e.g., ['roomId']) |
+| <a id="path"></a> `path` | `string` | Path to the handler module |

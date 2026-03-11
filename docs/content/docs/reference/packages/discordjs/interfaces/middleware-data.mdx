@@ -1,0 +1,17 @@
+---
+title: "MiddlewareData"
+---
+
+# Interface: MiddlewareData
+
+Middleware data passed to handler.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="payload"></a> `payload` | `unknown`[] | Original payload/arguments (first element is usually the interaction) |
+| <a id="record"></a> `record` | \{ `key`: `string`; `metadata`: `Record`\<`string`, `unknown`\>; `type`: `string`; \} | The handler record being invoked |
+| `record.key` | `string` | - |
+| `record.metadata` | `Record`\<`string`, `unknown`\> | - |
+| `record.type` | `string` | - |

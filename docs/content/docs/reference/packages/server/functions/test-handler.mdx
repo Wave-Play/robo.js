@@ -1,0 +1,43 @@
+---
+title: "testHandler()"
+---
+
+# Function: testHandler()
+
+```ts
+function testHandler<T>(handler, options): Promise<T>
+```
+
+Tests a specific handler function directly without method dispatch.
+Use this when you want to test a single handler in isolation.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `handler` | (`request`) =\> `T` \| `Promise`\<`T`\> |
+| `options` | [`TestRequestOptions`](../interfaces/test-request-options) |
+
+## Returns
+
+`Promise`\<`T`\>
+
+## Example
+
+```typescript
+import { testHandler } from '@robojs/server/testing'
+import { GET } from '../src/api/users/[id]'
+
+const result = await testHandler(GET, {
+  params: { id: '123' }
+})
+
+// Result is the raw return value from the handler
+expect(result).toEqual({ id: '123', name: 'John' })
+```

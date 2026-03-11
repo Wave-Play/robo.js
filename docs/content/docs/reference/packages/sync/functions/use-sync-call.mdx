@@ -1,0 +1,50 @@
+---
+title: "useSyncCall()"
+---
+
+# Function: useSyncCall()
+
+```ts
+function useSyncCall(key): SyncCallFunction
+```
+
+Hook for making RPC calls to server-side sync handlers.
+
+Use this for server-authoritative operations where the server
+should validate and process the action, rather than direct state updates.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | (`null` \| `string`)[] |
+
+## Returns
+
+[`SyncCallFunction`](../type-aliases/sync-call-function)
+
+## Examples
+
+```ts
+// Basic usage
+const call = useSyncCall(['game', roomId])
+
+const handleMove = async (x: number, y: number) => {
+  const result = await call('move', { x, y })
+  if (!result.success) {
+    console.log('Move rejected:', result.error)
+  }
+}
+```
+
+```ts
+// With typed result
+interface CollectResult {
+  points: number
+}
+
+const result = await call<{ coinId: string }, CollectResult>('collectCoin', { coinId })
+if (result.success) {
+  console.log('Collected', result.result?.points, 'points!')
+}
+```

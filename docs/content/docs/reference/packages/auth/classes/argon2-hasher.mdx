@@ -1,0 +1,103 @@
+---
+title: "Argon2Hasher"
+---
+
+# Class: Argon2Hasher
+
+Default implementation of [PasswordHasher](../interfaces/password-hasher) using Argon2id.
+Lazily loads the WebAssembly backend only when needed.
+
+## Implements
+
+- [`PasswordHasher`](../interfaces/password-hasher)
+
+## Constructors
+
+### new Argon2Hasher()
+
+```ts
+new Argon2Hasher(options): Argon2Hasher
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`HashPasswordOptions`](../interfaces/hash-password-options) |
+
+#### Returns
+
+[`Argon2Hasher`](argon2-hasher)
+
+## Methods
+
+### hash()
+
+```ts
+hash(password): Promise<string>
+```
+
+Hashes a plaintext password.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `password` | `string` | The plaintext password to hash. |
+
+#### Returns
+
+`Promise`\<`string`\>
+
+#### Implementation of
+
+[`PasswordHasher`](../interfaces/password-hasher).[`hash`](../interfaces/password-hasher#hash)
+
+***
+
+### needsRehash()
+
+```ts
+needsRehash(storedHash): boolean
+```
+
+Checks if a stored hash needs to be rehashed (e.g. due to parameter upgrades).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `storedHash` | `string` | The stored hash to check. |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`PasswordHasher`](../interfaces/password-hasher).[`needsRehash`](../interfaces/password-hasher#needsrehash)
+
+***
+
+### verify()
+
+```ts
+verify(password, storedHash): Promise<boolean>
+```
+
+Verifies a plaintext password against a stored hash.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `password` | `string` | The plaintext password to verify. |
+| `storedHash` | `string` | The stored hash to compare against. |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`PasswordHasher`](../interfaces/password-hasher).[`verify`](../interfaces/password-hasher#verify)

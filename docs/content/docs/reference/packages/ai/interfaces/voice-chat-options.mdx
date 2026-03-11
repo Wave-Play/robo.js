@@ -1,0 +1,18 @@
+---
+title: "VoiceChatOptions"
+---
+
+# Interface: VoiceChatOptions
+
+Additional configuration applied when orchestrating a voice-enabled chat.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channels"></a> `channels?` | `number` | Number of audio channels supplied by the caller. |
+| <a id="conversationid"></a> `conversationId?` | `null` \| `string` | Conversation identifier for persisted voice transcripts. |
+| <a id="samplerate"></a> `sampleRate?` | `number` | Sample rate of inbound audio frames. |
+| <a id="sessionid"></a> `sessionId?` | `null` \| `string` | Identifier of the active voice session. |
+| <a id="strategy"></a> `strategy?` | [`VoiceEndpointingStrategy`](../type-aliases/voice-endpointing-strategy) | Endpointing strategy controlling speech detection. |
+| <a id="transcript"></a> `transcript?` | [`VoiceTranscriptSegment`](voice-transcript-segment)[] | Existing transcript segments to seed the session. |

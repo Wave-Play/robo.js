@@ -1,0 +1,27 @@
+---
+title: "expectAction()"
+---
+
+# Function: expectAction()
+
+```ts
+function expectAction(sessionId, options): Promise<RecordedAction>
+```
+
+Wait for an action and assert it matches expected data
+
+This helper:
+1. Waits for an action of the specified type
+2. Records the assertion for UI persistence
+3. Returns the matching action
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `options` | [`ExpectActionOptions`](../interfaces/expect-action-options) |
+
+## Returns
+
+`Promise`\<[`RecordedAction`](../interfaces/recorded-action)\>

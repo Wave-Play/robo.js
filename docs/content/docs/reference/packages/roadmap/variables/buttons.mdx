@@ -1,0 +1,88 @@
+---
+title: "Buttons"
+---
+
+# Variable: Buttons
+
+```ts
+const Buttons: {
+  AddAssigneeMapping: {
+     id: string;
+    };
+  AddColumnMapping: {
+     id: string;
+    };
+  CancelSync: {
+     id: string;
+    };
+  ManageAuthorizedRoles: {
+     id: string;
+    };
+  RemoveAssigneeMapping: {
+     id: string;
+    };
+  RemoveColumnMapping: {
+     id: string;
+    };
+  SetupBackOverview: {
+     id: string;
+    };
+  SetupProviderSettings: {
+     id: string;
+    };
+  TogglePublic: {
+     id: string;
+    };
+  ViewAllMappings: {
+     id: string;
+    };
+  ViewSyncErrors: {
+     id: string;
+    };
+};
+```
+
+Button component IDs used in interactive messages.
+
+Each button ID is prefixed with the namespace to ensure uniqueness
+across all plugins and prevent conflicts with other components.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="addassigneemapping"></a> `AddAssigneeMapping` | \{ `id`: `string`; \} | Button to open an ephemeral message with selects for adding a new assignee mapping. When clicked, this button shows an ephemeral message with both a Jira assignee select and Discord user select. The mapping is created automatically when both are selected. |
+| `AddAssigneeMapping.id` | `string` | - |
+| <a id="addcolumnmapping"></a> `AddColumnMapping` | \{ `id`: `string`; \} | Button to open an ephemeral message with selects for adding a new column mapping. When clicked, this button shows an ephemeral message with both a provider status select and column select. The mapping is created automatically when both are selected. |
+| `AddColumnMapping.id` | `string` | - |
+| <a id="cancelsync"></a> `CancelSync` | \{ `id`: `string`; \} | Base ID for the cancel sync button. The full custom ID is constructed as `${id}-${syncId}` so each active sync can be uniquely identified. Clicking this button aborts the sync loop and shows partial results. Only administrators or the user who started the sync may cancel. |
+| `CancelSync.id` | `string` | - |
+| <a id="manageauthorizedroles"></a> `ManageAuthorizedRoles` | \{ `id`: `string`; \} | Button to open an ephemeral message with role select for managing authorized creator roles. When clicked, this button shows an ephemeral message with a role select menu. Selecting roles updates the authorized creator roles and refreshes the setup message. |
+| `ManageAuthorizedRoles.id` | `string` | - |
+| <a id="removeassigneemapping"></a> `RemoveAssigneeMapping` | \{ `id`: `string`; \} | Base ID for the remove assignee mapping button. The full custom ID is constructed as `${id}:${jiraName}` so each mapping can be uniquely identified. Clicking this button removes the mapping between a Jira assignee and Discord user. Only administrators can remove mappings. |
+| `RemoveAssigneeMapping.id` | `string` | - |
+| <a id="removecolumnmapping"></a> `RemoveColumnMapping` | \{ `id`: `string`; \} | Base ID for the remove column mapping button. The full custom ID is constructed as `${id}:${status}` so each mapping can be uniquely identified. Clicking this button removes the mapping between a provider status and a column. Only administrators can remove mappings. |
+| `RemoveColumnMapping.id` | `string` | - |
+| <a id="setupbackoverview"></a> `SetupBackOverview` | \{ `id`: `string`; \} | Button to navigate back to the overview page from provider settings. When clicked, this button morphs the setup message back to the overview view. |
+| `SetupBackOverview.id` | `string` | - |
+| <a id="setupprovidersettings"></a> `SetupProviderSettings` | \{ `id`: `string`; \} | Button to navigate to the provider settings page from the overview. When clicked, this button morphs the setup message to show provider-specific settings (assignee and column mappings). |
+| `SetupProviderSettings.id` | `string` | - |
+| <a id="togglepublic"></a> `TogglePublic` | \{ `id`: `string`; \} | Button to toggle between public (read-only) and private (admin/mod only) forum access. When clicked, this button triggers permission updates on the forum channel: - Private mode: Only administrators and moderators can view the forum - Public mode: Everyone can view and read, but only admins/mods can post |
+| `TogglePublic.id` | `string` | - |
+| <a id="viewallmappings"></a> `ViewAllMappings` | \{ `id`: `string`; \} | Base ID for the view all mappings button. The full custom ID is constructed as `${id}:${type}` where type is either 'assignee' or 'column'. Clicking this button shows an ephemeral message with the complete list of mappings. |
+| `ViewAllMappings.id` | `string` | - |
+| <a id="viewsyncerrors"></a> `ViewSyncErrors` | \{ `id`: `string`; \} | Base ID for the view sync errors button. The full custom ID is constructed as `${id}-${syncId}` so each sync's errors can be uniquely identified. Clicking this button shows an ephemeral message with a browsable list of errors that occurred during synchronization. |
+| `ViewSyncErrors.id` | `string` | - |
+
+## Example
+
+```ts
+import { ButtonBuilder, ButtonStyle } from 'discord.js';
+import { Buttons } from './constants.js';
+
+// Create a toggle public button
+const button = new ButtonBuilder()
+  .setCustomId(Buttons.TogglePublic.id)
+  .setLabel('Toggle Public Access')
+  .setStyle(ButtonStyle.Primary);
+```

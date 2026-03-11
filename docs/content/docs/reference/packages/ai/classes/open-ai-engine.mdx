@@ -1,0 +1,411 @@
+---
+title: "OpenAiEngine"
+---
+
+# Class: OpenAiEngine
+
+Coordinates OpenAI powered chat, tool calling, voice, and media capabilities for Robo.js.
+
+The engine keeps Flashcore-backed conversation state in sync, mirrors knowledge documents
+into the OpenAI vector store, brokers Responses API calls for text, images, and tools, and
+orchestrates realtime voice sessions with usage metering across chat and audio workloads.
+
+## Extends
+
+- [`BaseEngine`](../../../@robojs/ai/classes/base-engine)
+
+## Constructors
+
+### new OpenAiEngine()
+
+```ts
+new OpenAiEngine(options): OpenAiEngine
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`OpenAiEngineOptions`](../interfaces/open-ai-engine-options) |
+
+#### Returns
+
+[`OpenAiEngine`](open-ai-engine)
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`constructor`](../../../@robojs/ai/classes/base-engine#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="_hooks"></a> `_hooks` | `protected` | `Map`\<[`HookEvent`](../../../@robojs/ai/type-aliases/hook-event), [`Hook`](../../../@robojs/ai/type-aliases/hook)[]\> | Registered hooks keyed by event type. | [`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`_hooks`](../../../@robojs/ai/classes/base-engine#_hooks) |
+
+## Methods
+
+### callHooks()
+
+#### Call Signature
+
+```ts
+callHooks(event, context): Promise<void>
+```
+
+Sequentially executes registered hooks for the given event while allowing each hook to mutate
+the message array.
+
+##### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `"chat"` | Hook event name. |
+| `context` | [`ChatHookContext`](../../../@robojs/ai/interfaces/chat-hook-context) | Mutable hook context. |
+
+##### Returns
+
+`Promise`\<`void`\>
+
+Latest message array after all hooks have run.
+
+##### Inherited from
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`callHooks`](../../../@robojs/ai/classes/base-engine#callhooks)
+
+#### Call Signature
+
+```ts
+callHooks(event, context): Promise<void | ChatReply>
+```
+
+Sequentially executes registered hooks for the given event while allowing each hook to mutate
+the message array.
+
+##### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `"reply"` | Hook event name. |
+| `context` | [`ReplyHookContext`](../../../@robojs/ai/interfaces/reply-hook-context) | Mutable hook context. |
+
+##### Returns
+
+`Promise`\<`void` \| [`ChatReply`](../../../@robojs/ai/interfaces/chat-reply)\>
+
+Latest message array after all hooks have run.
+
+##### Inherited from
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`callHooks`](../../../@robojs/ai/classes/base-engine#callhooks)
+
+***
+
+### chat()
+
+```ts
+chat(messages, options): Promise<ChatResult>
+```
+
+Executes a chat turn against OpenAI's Responses API while maintaining Flashcore
+conversation state, rotating response ids around tool calls, and logging usage.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `messages` | [`ChatMessage`](../../../@robojs/ai/interfaces/chat-message)[] | Ordered dialogue history culminating in the latest user prompt. |
+| `options` | [`ChatOptions`](../../../@robojs/ai/interfaces/chat-options) | Per-request overrides such as model, temperature, or conversation key. |
+
+#### Returns
+
+`Promise`\<[`ChatResult`](../../../@robojs/ai/interfaces/chat-result)\>
+
+Parsed chat result containing assistant text, tool calls, and metadata.
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`chat`](../../../@robojs/ai/classes/base-engine#chat)
+
+***
+
+### generateImage()
+
+```ts
+generateImage(options): Promise<{
+  images: {
+     base64: string;
+    }[];
+}>
+```
+
+Generates an image using the backing provider.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | \{ `model`: `string`; `prompt`: `string`; \} | Prompt and configuration for the image request. |
+| `options.model`? | `string` | - |
+| `options.prompt` | `string` | - |
+
+#### Returns
+
+`Promise`\<\{
+  `images`: \{
+     `base64`: `string`;
+    \}[];
+ \}\>
+
+Generated images represented as base64 payloads or URLs.
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`generateImage`](../../../@robojs/ai/classes/base-engine#generateimage)
+
+***
+
+### getFunctionHandlers()
+
+```ts
+getFunctionHandlers(): Record<string, Command>
+```
+
+Returns a mapping of function names to Robo command handlers invoked during tool execution.
+
+#### Returns
+
+`Record`\<`string`, `Command`\>
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`getFunctionHandlers`](../../../@robojs/ai/classes/base-engine#getfunctionhandlers)
+
+***
+
+### getInfo()
+
+```ts
+getInfo(): {
+  name: string;
+  version: any;
+}
+```
+
+Provides descriptive information about the engine for diagnostics or inspection tooling.
+
+#### Returns
+
+```ts
+{
+  name: string;
+  version: any;
+}
+```
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| <a id="name"></a> `name` | `string` | 'OpenAI' |
+| <a id="version"></a> `version` | `any` | packageJson.version |
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`getInfo`](../../../@robojs/ai/classes/base-engine#getinfo)
+
+***
+
+### getMCPTools()
+
+```ts
+getMCPTools(): MCPTool[]
+```
+
+Optionally returns MCP (Model Context Protocol) tool configurations for this engine.
+Engines that support MCP should override this method to return their configured MCP servers.
+
+#### Returns
+
+[`MCPTool`](../../../@robojs/ai/interfaces/mcp-tool)[]
+
+Array of MCP tool configurations, or empty array if MCP is not supported.
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`getMCPTools`](../../../@robojs/ai/classes/base-engine#getmcptools)
+
+***
+
+### init()
+
+```ts
+init(): Promise<void>
+```
+
+Loads plugin command functions and primes the knowledge vector store so chat
+sessions have tool metadata and embeddings ready before handling traffic.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`init`](../../../@robojs/ai/classes/base-engine#init)
+
+***
+
+### off()
+
+```ts
+off(event, hook): void
+```
+
+Removes a previously registered hook from the engine.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | [`HookEvent`](../../../@robojs/ai/type-aliases/hook-event) | Hook event name. |
+| `hook` | [`Hook`](../../../@robojs/ai/type-aliases/hook) | Hook callback to remove. |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`off`](../../../@robojs/ai/classes/base-engine#off)
+
+***
+
+### on()
+
+```ts
+on(event, hook): void
+```
+
+Registers a hook to run during specific engine orchestration events.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | [`HookEvent`](../../../@robojs/ai/type-aliases/hook-event) | Hook event name. |
+| `hook` | [`Hook`](../../../@robojs/ai/type-aliases/hook) | Hook callback to register. |
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`on`](../../../@robojs/ai/classes/base-engine#on)
+
+***
+
+### startVoiceSession()
+
+```ts
+startVoiceSession(options): Promise<VoiceSessionHandle>
+```
+
+Establishes a realtime voice session, wiring audio transport, transcript capture,
+Flashcore state, and tool-call forwarding between Discord voice channels and OpenAI.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`VoiceSessionStartOptions`](../../../@robojs/ai/interfaces/voice-session-start-options) | Voice session configuration including guild context and endpoints. |
+
+#### Returns
+
+`Promise`\<[`VoiceSessionHandle`](../../../@robojs/ai/interfaces/voice-session-handle)\>
+
+Handle used by the runtime to stream audio frames and tear down the session.
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`startVoiceSession`](../../../@robojs/ai/classes/base-engine#startvoicesession)
+
+***
+
+### stopVoiceSession()
+
+```ts
+stopVoiceSession(handle): Promise<void>
+```
+
+Stops a realtime voice session previously started by [BaseEngine.startVoiceSession](../../../@robojs/ai/classes/base-engine#startvoicesession).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `handle` | [`VoiceSessionHandle`](../../../@robojs/ai/interfaces/voice-session-handle) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
+
+Always throws when voice is unsupported.
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`stopVoiceSession`](../../../@robojs/ai/classes/base-engine#stopvoicesession)
+
+***
+
+### summarizeToolResult()
+
+```ts
+summarizeToolResult(params): Promise<{
+  responseId: null | string;
+  summary: string;
+}>
+```
+
+Optionally summarize tool execution results for provider-specific follow-up prompts.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `params` | \{ `call`: [`ChatFunctionCall`](../../../@robojs/ai/interfaces/chat-function-call); `model`: `string`; `resultText`: `string`; `success`: `boolean`; \} |
+| `params.call` | [`ChatFunctionCall`](../../../@robojs/ai/interfaces/chat-function-call) |
+| `params.model`? | `string` |
+| `params.resultText` | `string` |
+| `params.success` | `boolean` |
+
+#### Returns
+
+`Promise`\<\{
+  `responseId`: `null` \| `string`;
+  `summary`: `string`;
+ \}\>
+
+Summary text and an optional response identifier for traceability.
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`summarizeToolResult`](../../../@robojs/ai/classes/base-engine#summarizetoolresult)
+
+***
+
+### supportedFeatures()
+
+```ts
+supportedFeatures(): EngineSupportedFeatures
+```
+
+Returns the supported feature flags for the engine. Override to enable capabilities.
+
+#### Returns
+
+[`EngineSupportedFeatures`](../../../@robojs/ai/interfaces/engine-supported-features)
+
+#### Overrides
+
+[`BaseEngine`](../../../@robojs/ai/classes/base-engine).[`supportedFeatures`](../../../@robojs/ai/classes/base-engine#supportedfeatures)

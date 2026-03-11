@@ -1,0 +1,18 @@
+---
+title: "CommandOption"
+---
+
+# Type Alias: CommandOption
+
+```ts
+type CommandOption = 
+  | CommandOptionCommon & {
+  channelTypes: RestOrArray<ApplicationCommandOptionAllowedChannelTypes>;
+  type: "channel";
+ }
+  | CommandOptionCommon & {
+  type: Exclude<keyof CommandOptionTypes, "channel">;
+};
+```
+
+Command option with discriminated union for channel type.

@@ -3,5 +3,8 @@
   "description": "Learn about the technical specifics of Robo.js.",
   "icon": "BookText",
   "root": true,
-  "pages": ["!index", "..."]
+  "pages": [
+    "!index",
+    "..."
+  ]
 }

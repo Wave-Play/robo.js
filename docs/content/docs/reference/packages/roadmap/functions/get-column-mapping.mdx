@@ -1,0 +1,33 @@
+---
+title: "getColumnMapping()"
+---
+
+# Function: getColumnMapping()
+
+```ts
+function getColumnMapping(guildId): Record<string, string | null>
+```
+
+Retrieves the column mapping for a guild.
+
+This helper returns the map of provider status names to column names (or null for no forum).
+Returns an empty object if no mappings exist.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+
+## Returns
+
+`Record`\<`string`, `string` \| `null`\>
+
+Record mapping provider status names to column names (or null)
+
+## Example
+
+```ts
+const mapping = getColumnMapping(guildId);
+// { "QA": "Development", "Blocked": null }
+```

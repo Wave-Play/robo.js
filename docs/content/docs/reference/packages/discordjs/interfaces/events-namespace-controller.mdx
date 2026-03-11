@@ -1,0 +1,75 @@
+---
+title: "EventsNamespaceController"
+---
+
+# Interface: EventsNamespaceController
+
+Namespace controller for portal.discord.events
+Provides access to all events and emit utilities.
+
+## Methods
+
+### emit()
+
+```ts
+emit<K>(name, ...args): Promise<void>
+```
+
+Emit an event programmatically (execute all handlers for the event)
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `K` *extends* keyof `ClientEvents` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `K` |
+| ...`args` | `ClientEvents`\[`K`\] |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### get()
+
+```ts
+get<K>(name): Promise<EventHandler<K>[]>
+```
+
+Get handlers for a specific event by name
+
+#### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* keyof `ClientEvents` | keyof `ClientEvents` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `K` |
+
+#### Returns
+
+`Promise`\<[`EventHandler`](../type-aliases/event-handler)\<`K`\>[]\>
+
+***
+
+### list()
+
+```ts
+list(): string[]
+```
+
+Get all event names that have handlers
+
+#### Returns
+
+`string`[]

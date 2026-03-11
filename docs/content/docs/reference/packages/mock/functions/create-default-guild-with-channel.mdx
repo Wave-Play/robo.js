@@ -1,0 +1,25 @@
+---
+title: "createDefaultGuildWithChannel()"
+---
+
+# Function: createDefaultGuildWithChannel()
+
+```ts
+function createDefaultGuildWithChannel(state, config?): MockGuild
+```
+
+Create a default guild with a general channel and add it to the session state
+Returns the created guild for reference
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `state` | [`SessionState`](../interfaces/session-state) |
+| `config`? | \{ `channelName`: `string`; `guildName`: `string`; \} |
+| `config.channelName`? | `string` |
+| `config.guildName`? | `string` |
+
+## Returns
+
+[`MockGuild`](../interfaces/mock-guild)

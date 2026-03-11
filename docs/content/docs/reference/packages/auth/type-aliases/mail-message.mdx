@@ -1,0 +1,62 @@
+---
+title: "MailMessage"
+---
+
+# Type Alias: MailMessage
+
+```ts
+type MailMessage = {
+  attachments: MailAttachment[];
+  from: MailParty;
+  headers: Record<string, string>;
+  html: string;
+  subject: string;
+  tags: string[];
+  templateId: string;
+  text: string;
+  to: MailParty;
+  variables: Record<string, unknown>;
+};
+```
+
+Message contract understood by mail adapters and builders. Includes support
+for inline HTML/text or provider-managed templates via `templateId`.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="attachments"></a> `attachments`? | [`MailAttachment`](mail-attachment)[] | Attachments appended to the message. |
+| <a id="from"></a> `from`? | [`MailParty`](mail-party) | Optional sender override (falls back to `emails.from`). |
+| <a id="headers"></a> `headers`? | `Record`\<`string`, `string`\> | Custom headers such as `X-Priority`. |
+| <a id="html"></a> `html`? | `string` | Rich HTML body; ignored when `templateId` is provided. |
+| <a id="subject"></a> `subject` | `string` | Subject line, required for inline templates. |
+| <a id="tags"></a> `tags`? | `string`[] | Tracking tags supported by providers like Resend or Postmark. |
+| <a id="templateid"></a> `templateId`? | `string` | Provider template identifier (SendGrid dynamic templates, Postmark, etc.). |
+| <a id="text"></a> `text`? | `string` | Plain-text fallback body. |
+| <a id="to"></a> `to` | [`MailParty`](mail-party) | Recipient address. |
+| <a id="variables"></a> `variables`? | `Record`\<`string`, `unknown`\> | Variables consumed by provider templates. |
+
+## Examples
+
+```ts
+{ to: user.email!, subject: 'Welcome', html: '<p>Hello!</p>', text: 'Hello!' }
+```
+
+```ts
+{
+  to: user.email!,
+  subject: '',
+  templateId: 'd-reset',
+  variables: { userName: user.name, link: ctx.links?.resetPassword }
+}
+```
+
+```ts
+{
+  to: user.email!,
+  subject: 'Invoice',
+  html: '<p>Attached invoice</p>',
+  attachments: [{ filename: 'invoice.pdf', content: pdfBuffer }]
+}
+```

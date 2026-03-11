@@ -1,0 +1,20 @@
+---
+title: "TunnelConfig"
+---
+
+# Interface: TunnelConfig
+
+Plugin tunnel configuration.
+Used in @robojs/server plugin options.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="cloudflare"></a> `cloudflare?` | \{ `accountId`: `string`; `apiKey`: `string`; `domain`: `string`; `zoneId`: `string`; \} | Cloudflare-specific configuration |
+| `cloudflare.accountId?` | `string` | Account ID (falls back to CLOUDFLARE_ACCOUNT_ID env) |
+| `cloudflare.apiKey?` | `string` | API key (falls back to CLOUDFLARE_API_KEY env) |
+| `cloudflare.domain?` | `string` | Domain to use for static tunnel (falls back to CLOUDFLARE_DOMAIN env) |
+| `cloudflare.zoneId?` | `string` | Zone ID (falls back to CLOUDFLARE_ZONE_ID env) |
+| <a id="enabled"></a> `enabled?` | `boolean` | Enable tunnel in dev mode (default: false, -t flag overrides) |
+| <a id="provider"></a> `provider?` | [`TunnelProvider`](tunnel-provider) \| `"cloudflare"` | Tunnel provider (default: 'cloudflare') |

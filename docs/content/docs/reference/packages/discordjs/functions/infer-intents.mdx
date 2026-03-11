@@ -1,0 +1,24 @@
+---
+title: "inferIntents()"
+---
+
+# Function: inferIntents()
+
+```ts
+function inferIntents(eventNames): Set<GatewayIntentBits>
+```
+
+Infer required intents from a list of event names.
+Useful at build time for generating suggestions.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `eventNames` | `string`[] | Array of event names |
+
+## Returns
+
+`Set`\<`GatewayIntentBits`\>
+
+Set of required GatewayIntentBits

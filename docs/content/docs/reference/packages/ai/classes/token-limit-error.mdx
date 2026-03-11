@@ -1,0 +1,83 @@
+---
+title: "TokenLimitError"
+---
+
+# Class: TokenLimitError
+
+Error thrown when a `block` mode limit has been exceeded.
+
+## Examples
+
+```ts
+try {
+  await AI.chat(options)
+} catch (error) {
+  if (error instanceof TokenLimitError) {
+    console.warn(error.displayMessage)
+  }
+}
+```
+
+```ts
+tokenLedger.configure({
+  limits: { perModel: { 'gpt-4o': { window: 'day', maxTokens: 10_000, mode: 'block' } } }
+})
+```
+
+## See
+
+tokenLedger.configure
+
+## Extends
+
+- `Error`
+
+## Constructors
+
+### new TokenLimitError()
+
+```ts
+new TokenLimitError(context): TokenLimitError
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `context` | [`TokenLimitErrorContext`](../interfaces/token-limit-error-context) | Details describing the breached rule and usage metadata. |
+
+#### Returns
+
+[`TokenLimitError`](token-limit-error)
+
+#### Overrides
+
+```ts
+Error.constructor
+```
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="model"></a> `model` | `readonly` | `string` | Model that exceeded the limit. |
+| <a id="rule"></a> `rule` | `readonly` | [`TokenLimitRule`](../interfaces/token-limit-rule) | Rule that caused the error to be thrown. |
+| <a id="usagekind"></a> `usageKind?` | `readonly` | `string` | Optional usage classification for context. |
+| <a id="window"></a> `window` | `readonly` | [`TokenSummaryWindow`](../type-aliases/token-summary-window) | Window in which the error was triggered. |
+| <a id="windowkey"></a> `windowKey` | `readonly` | `string` | Window key describing the offending period. |
+
+## Accessors
+
+### displayMessage
+
+#### Get Signature
+
+```ts
+get displayMessage(): string
+```
+
+Message suitable for end-user display.
+
+##### Returns
+
+`string`

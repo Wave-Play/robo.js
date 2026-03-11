@@ -1,0 +1,31 @@
+---
+title: "CallHandler()<Payload, Result, State, ClientData>"
+---
+
+# Type Alias: CallHandler()\<Payload, Result, State, ClientData\>
+
+```ts
+type CallHandler<Payload, Result, State, ClientData> = (payload, context) => Result | Promise<Result>;
+```
+
+RPC call handler function.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `Payload` | `unknown` |
+| `Result` | `unknown` |
+| `State` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `payload` | `Payload` |
+| `context` | [`SyncCallContext`](../interfaces/sync-call-context)\<`State`, `ClientData`\> |
+
+## Returns
+
+`Result` \| `Promise`\<`Result`\>

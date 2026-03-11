@@ -1,0 +1,26 @@
+---
+title: "EnforcementContext"
+---
+
+# Interface: EnforcementContext
+
+Extended context for enforcement checks
+
+## Extends
+
+- [`PermissionContext`](permission-context)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="botuserid"></a> `botUserId` | `string` | - | [`PermissionContext`](permission-context).[`botUserId`](permission-context#botuserid) |
+| <a id="channel"></a> `channel?` | [`MockChannel`](mock-channel) | - | [`PermissionContext`](permission-context).[`channel`](permission-context#channel) |
+| <a id="channelid"></a> `channelId?` | `string` | - | [`PermissionContext`](permission-context).[`channelId`](permission-context#channelid) |
+| <a id="getmember"></a> `getMember?` | (`userId`: `string`) =\> `undefined` \| [`MockGuildMember`](mock-guild-member) | Get a member by user ID from state | - |
+| <a id="getmessage"></a> `getMessage?` | (`id`: `string`) =\> \| `undefined` \| \{ `authorId`: `string`; \} | Get a message by ID from state | - |
+| <a id="getrole"></a> `getRole?` | (`roleId`: `string`) =\> `undefined` \| [`MockRole`](mock-role) | Get a role by ID from state | - |
+| <a id="guild"></a> `guild` | [`MockGuild`](mock-guild) | - | [`PermissionContext`](permission-context).[`guild`](permission-context#guild) |
+| <a id="guildid"></a> `guildId` | `string` | - | [`PermissionContext`](permission-context).[`guildId`](permission-context#guildid) |
+| <a id="member"></a> `member` | [`MockGuildMember`](mock-guild-member) | - | [`PermissionContext`](permission-context).[`member`](permission-context#member) |
+| <a id="roles"></a> `roles` | [`MockRole`](mock-role)[] | - | [`PermissionContext`](permission-context).[`roles`](permission-context#roles) |

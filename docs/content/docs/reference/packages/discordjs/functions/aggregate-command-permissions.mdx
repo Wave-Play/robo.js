@@ -1,0 +1,23 @@
+---
+title: "aggregateCommandPermissions()"
+---
+
+# Function: aggregateCommandPermissions()
+
+```ts
+function aggregateCommandPermissions(commands): Map<string, AggregatedPermissions>
+```
+
+Aggregate permissions from command entries.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `commands` | `Record`\<`string`, [`CommandEntry`](../interfaces/command-entry)\> | Map of command names to entries |
+
+## Returns
+
+`Map`\<`string`, [`AggregatedPermissions`](../interfaces/aggregated-permissions)\>
+
+Map of command keys to aggregated permissions

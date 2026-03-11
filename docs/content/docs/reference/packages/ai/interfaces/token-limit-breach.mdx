@@ -1,0 +1,22 @@
+---
+title: "TokenLimitBreach"
+---
+
+# Interface: TokenLimitBreach
+
+Snapshot describing how a limit was breached.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="exceededby"></a> `exceededBy` | `number` | Tokens beyond the configured limit. |
+| <a id="maxtokens"></a> `maxTokens` | `number` | Configured maximum tokens for the window. |
+| <a id="message"></a> `message?` | `string` | Message defined by the rule, if any. |
+| <a id="mode"></a> `mode` | [`TokenLimitMode`](../type-aliases/token-limit-mode) | Enforcement mode active for the breach. |
+| <a id="model"></a> `model` | `string` | Model that triggered the breach. |
+| <a id="previoustotal"></a> `previousTotal` | `number` | Total prior to the latest usage being recorded. |
+| <a id="remainingbefore"></a> `remainingBefore` | `number` | Tokens remaining before the latest update. |
+| <a id="total"></a> `total` | `number` | New total after recording the usage. |
+| <a id="window"></a> `window` | [`TokenSummaryWindow`](../type-aliases/token-summary-window) | Window in which the limit was exceeded. |
+| <a id="windowkey"></a> `windowKey` | `string` | Window key (e.g., ISO day or ISO week) identifying the period. |

@@ -1,0 +1,153 @@
+---
+title: "AttachmentStorage"
+---
+
+# Interface: AttachmentStorage
+
+Abstract interface for attachment storage backends.
+
+All storage implementations must implement this interface to ensure
+compatibility with the mock server's attachment handling.
+
+## Methods
+
+### clear()
+
+```ts
+clear(): Promise<number>
+```
+
+Clear all stored attachments.
+Use with caution - this deletes all data.
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Number of attachments deleted
+
+***
+
+### delete()
+
+```ts
+delete(id): Promise<boolean>
+```
+
+Delete an attachment by ID.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The attachment's snowflake ID |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+true if deleted, false if not found
+
+***
+
+### deleteForMessage()
+
+```ts
+deleteForMessage(messageId): Promise<number>
+```
+
+Delete all attachments for a specific message.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `messageId` | `string` | The message's snowflake ID |
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Number of attachments deleted
+
+***
+
+### get()
+
+```ts
+get(id): Promise<undefined | StoredAttachment>
+```
+
+Retrieve an attachment by ID.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The attachment's snowflake ID |
+
+#### Returns
+
+`Promise`\<`undefined` \| [`StoredAttachment`](stored-attachment)\>
+
+The stored attachment or undefined if not found
+
+***
+
+### getForMessage()
+
+```ts
+getForMessage(messageId): Promise<StoredAttachment[]>
+```
+
+Get all attachments for a specific message.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `messageId` | `string` | The message's snowflake ID |
+
+#### Returns
+
+`Promise`\<[`StoredAttachment`](stored-attachment)[]\>
+
+Array of stored attachments belonging to the message
+
+***
+
+### getStats()
+
+```ts
+getStats(): Promise<StorageStats>
+```
+
+Get storage statistics.
+
+#### Returns
+
+`Promise`\<[`StorageStats`](storage-stats)\>
+
+Current storage metrics
+
+***
+
+### store()
+
+```ts
+store(attachment): Promise<void>
+```
+
+Store an attachment.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `attachment` | [`StoredAttachment`](stored-attachment) | The attachment data to store |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Promise that resolves when storage is complete

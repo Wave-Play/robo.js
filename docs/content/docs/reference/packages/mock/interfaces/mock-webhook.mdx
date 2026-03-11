@@ -1,0 +1,33 @@
+---
+title: "MockWebhook"
+---
+
+# Interface: MockWebhook
+
+Full webhook object
+
+## See
+
+https://discord.com/developers/docs/resources/webhook#webhook-object
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="application_id"></a> `application_id` | `null` \| `string` |
+| <a id="avatar"></a> `avatar` | `null` \| `string` |
+| <a id="channel_id"></a> `channel_id` | `string` |
+| <a id="guild_id"></a> `guild_id?` | `string` |
+| <a id="id"></a> `id` | `string` |
+| <a id="name"></a> `name` | `null` \| `string` |
+| <a id="source_channel"></a> `source_channel?` | \{ `id`: `string`; `name`: `string`; \} |
+| `source_channel.id` | `string` |
+| `source_channel.name` | `string` |
+| <a id="source_guild"></a> `source_guild?` | \{ `icon`: `null` \| `string`; `id`: `string`; `name`: `string`; \} |
+| `source_guild.icon` | `null` \| `string` |
+| `source_guild.id` | `string` |
+| `source_guild.name` | `string` |
+| <a id="token"></a> `token?` | `string` |
+| <a id="type"></a> `type` | [`WebhookType`](../enumerations/webhook-type) |
+| <a id="url"></a> `url?` | `string` |
+| <a id="user"></a> `user?` | [`MockUser`](mock-user) |

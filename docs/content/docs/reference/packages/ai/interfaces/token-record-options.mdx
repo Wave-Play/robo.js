@@ -1,0 +1,18 @@
+---
+title: "TokenRecordOptions"
+---
+
+# Interface: TokenRecordOptions
+
+Options accepted by [recordUsage](../variables/token-ledger) when logging token consumption.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="kind"></a> `kind?` | `string` | Optional usage classification. |
+| <a id="metadata"></a> `metadata?` | `Record`\<`string`, `unknown`\> | Additional metadata, such as guild or user identifiers. |
+| <a id="model"></a> `model` | `string` | Model identifier being charged. |
+| <a id="timestamp"></a> `timestamp?` | `number` | Override timestamp for backfilled events. |
+| <a id="tokensin"></a> `tokensIn?` | `number` | Prompt tokens to record. |
+| <a id="tokensout"></a> `tokensOut?` | `number` | Completion tokens to record. |

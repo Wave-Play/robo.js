@@ -1,0 +1,26 @@
+---
+title: "ServerZone<T>"
+---
+
+# Interface: ServerZone\<T\>
+
+Server-side zone handle for direct state manipulation.
+Use SyncServer.getZone(key) to obtain an instance.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="broadcast"></a> `broadcast` | (`payload`: `unknown`) =\> `void` | Broadcast ephemeral message to all clients |
+| <a id="getclients"></a> `getClients` | () =\> [`Client`](client)\<`unknown`\>[] | Get all clients subscribed to this zone |
+| <a id="gethost"></a> `getHost` | () =\> `undefined` \| `string` | Get current host ID |
+| <a id="getstate"></a> `getState` | () =\> `undefined` \| `T` | Get current state for this zone key |
+| <a id="send"></a> `send` | (`clientId`: `string`, `payload`: `unknown`) =\> `void` | Send ephemeral message to specific client |
+| <a id="sethost"></a> `setHost` | (`clientId`: `null` \| `string`) =\> `void` | Override the host for this zone |
+| <a id="setstate"></a> `setState` | (`data`: `T`) =\> `void` | Set state (broadcasts to all subscribers) |

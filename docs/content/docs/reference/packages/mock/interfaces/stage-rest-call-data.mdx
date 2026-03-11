@@ -1,0 +1,21 @@
+---
+title: "StageRESTCallData"
+---
+
+# Interface: StageRESTCallData
+
+Data payload for rest_call events
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="duration"></a> `duration` | `number` | Request duration in milliseconds |
+| <a id="endpoint"></a> `endpoint?` | `string` | Friendly endpoint name (e.g., "POST /channels/:id/messages") |
+| <a id="error"></a> `error?` | `string` | Error message if request failed |
+| <a id="method"></a> `method` | `string` | HTTP method |
+| <a id="path"></a> `path` | `string` | Request path (e.g., /api/v10/channels/123/messages) |
+| <a id="requestbody"></a> `requestBody?` | `unknown` | Request body (for POST/PATCH/PUT) |
+| <a id="responsebody"></a> `responseBody?` | `unknown` | Response body |
+| <a id="statuscode"></a> `statusCode` | `number` | HTTP status code |
+| <a id="timestamp"></a> `timestamp` | `number` | Timestamp when request started |

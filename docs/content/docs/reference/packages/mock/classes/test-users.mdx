@@ -1,0 +1,214 @@
+---
+title: "TestUsers"
+---
+
+# Class: TestUsers
+
+Test helper for managing multiple users in a session
+
+## Constructors
+
+### new TestUsers()
+
+```ts
+new TestUsers(session): TestUsers
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `session` | [`Session`](../../index/classes/session) |
+
+#### Returns
+
+[`TestUsers`](test-users)
+
+## Methods
+
+### allBots()
+
+```ts
+allBots(): MockUser[]
+```
+
+Get all bot users
+
+#### Returns
+
+[`MockUser`](../../index/interfaces/mock-user)[]
+
+Array of bot users
+
+***
+
+### allHumans()
+
+```ts
+allHumans(): MockUser[]
+```
+
+Get all non-bot users
+
+#### Returns
+
+[`MockUser`](../../index/interfaces/mock-user)[]
+
+Array of human users
+
+***
+
+### as()
+
+```ts
+as<T>(user, action): Promise<T>
+```
+
+Act as a specific user for a block of code
+Restores the original current user after the action completes
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `user` | `string` \| [`MockUser`](../../index/interfaces/mock-user) | User object or username string |
+| `action` | () =\> `T` \| `Promise`\<`T`\> | The action to perform as this user |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+The result of the action
+
+***
+
+### byId()
+
+```ts
+byId(userId): undefined | MockUser
+```
+
+Get user by ID
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../../index/interfaces/mock-user)
+
+The user if found, undefined otherwise
+
+***
+
+### byName()
+
+```ts
+byName(username): undefined | MockUser
+```
+
+Get user by username (convenience method)
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `username` | `string` | The username to search for |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../../index/interfaces/mock-user)
+
+The user if found, undefined otherwise
+
+***
+
+### create()
+
+```ts
+create(name, options?): MockUser
+```
+
+Create a test user with sensible defaults
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `name` | `string` | Username for the new user |
+| `options`? | `Partial`\<\{ `avatar`: `null` \| `string`; `bot`: `boolean`; `status`: `"online"` \| `"offline"` \| `"idle"` \| `"dnd"`; \}\> | Additional user options |
+
+#### Returns
+
+[`MockUser`](../../index/interfaces/mock-user)
+
+The created user
+
+***
+
+### createMany()
+
+```ts
+createMany(names): MockUser[]
+```
+
+Create multiple test users at once
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `names` | `string`[] | Array of usernames |
+
+#### Returns
+
+[`MockUser`](../../index/interfaces/mock-user)[]
+
+Array of created users
+
+***
+
+### current()
+
+```ts
+current(): MockUser
+```
+
+Get the current acting user
+
+#### Returns
+
+[`MockUser`](../../index/interfaces/mock-user)
+
+The current user
+
+***
+
+### switchTo()
+
+```ts
+switchTo(user): MockUser
+```
+
+Switch to a different user as the current acting user
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `user` | `string` \| [`MockUser`](../../index/interfaces/mock-user) | User object or username string |
+
+#### Returns
+
+[`MockUser`](../../index/interfaces/mock-user)
+
+The switched user

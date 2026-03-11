@@ -1,0 +1,30 @@
+---
+title: "signUp()"
+---
+
+# Function: signUp()
+
+```ts
+function signUp(body, options?): Promise<Response>
+```
+
+Initiates the sign-up flow for the Email/Password provider.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `body` | `Record`\<`string`, `unknown`\> | The sign-up payload (email, password, etc.). |
+| `options`? | `ClientOptions` | Overrides for base path, headers, or a custom fetch implementation. |
+
+## Returns
+
+`Promise`\<`Response`\>
+
+A `Response` from the `/signup` endpoint.
+
+## Example
+
+```ts
+await signUp({ email: 'user@example.com', password: 'password' })
+```

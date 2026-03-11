@@ -1,0 +1,23 @@
+---
+title: "IdentifyPayloadData"
+---
+
+# Interface: IdentifyPayloadData
+
+IDENTIFY payload data (op 2)
+Sent by client to authenticate with the Gateway
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="compress"></a> `compress?` | `boolean` |
+| <a id="intents"></a> `intents` | `number` |
+| <a id="large_threshold"></a> `large_threshold?` | `number` |
+| <a id="presence"></a> `presence?` | `unknown` |
+| <a id="properties"></a> `properties` | \{ `browser`: `string`; `device`: `string`; `os`: `string`; \} |
+| `properties.browser` | `string` |
+| `properties.device` | `string` |
+| `properties.os` | `string` |
+| <a id="shard"></a> `shard?` | \[`number`, `number`\] |
+| <a id="token"></a> `token` | `string` |

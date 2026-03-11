@@ -1,0 +1,40 @@
+---
+title: "formatCardContent()"
+---
+
+# Function: formatCardContent()
+
+```ts
+function formatCardContent(
+   card, 
+   guildId, 
+   guild?, 
+maxLength?): Promise<string>
+```
+
+Formats a roadmap card into Discord message content with automatic truncation.
+
+Includes description and metadata (assignees, labels, last updated). Content is
+truncated to respect Discord limits (2000 for forum thread starter messages and message edits).
+Assignees are redacted - only mapped Discord users are mentioned, and Jira names are never shown.
+
+## Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `card` | [`RoadmapCard`](../type-aliases/roadmap-card) | `undefined` | The roadmap card to format. |
+| `guildId` | `string` | `undefined` | The Discord guild ID for looking up assignee mappings. |
+| `guild`? | `Guild` | `undefined` | Optional guild object for validating Discord user existence. |
+| `maxLength`? | `number` | `2000` | Maximum character limit (default: 2000). |
+
+## Returns
+
+`Promise`\<`string`\>
+
+Formatted message content.
+
+## Example
+
+```ts
+const content = formatCardContent(card, guildId, guild, 2000);
+```

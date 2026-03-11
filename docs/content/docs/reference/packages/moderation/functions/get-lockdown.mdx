@@ -1,6 +1,5 @@
 ---
-title: "getLockdown"
-description: "Get lockdown status for a Discord guild"
+title: "getLockdown()"
 ---
 
 # Function: getLockdown()
@@ -9,50 +8,12 @@ description: "Get lockdown status for a Discord guild"
 function getLockdown(guildId): LockdownData
 ```
 
-Retrieves the current lockdown status and configuration for a Discord guild.
-
 ## Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `guildId` | `string` | The ID of the Discord guild to check |
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
 
 ## Returns
 
-`LockdownData` - Object containing the current lockdown status and configuration
-
-## LockdownData Type
-
-| Property | Type | Description |
-| -------- | ---- | ----------- |
-| `active` | `boolean` | Whether lockdown is currently active |
-| `channels` | `string[]` | Array of channel IDs affected by the lockdown |
-| `expiration` | `Date \| null` | When the lockdown expires, or null if no expiration |
-| `reason` | `string \| null` | The reason for the lockdown, if provided |
-| `initiatedBy` | `string \| null` | ID of the user who initiated the lockdown |
-| `timestamp` | `Date` | When the lockdown was initiated |
-
-## Example
-
-```ts
-import { getLockdown } from '@robojs/moderation'
-
-// Check if a guild is in lockdown
-const guildId = '1234567890123456789'
-const lockdown = getLockdown(guildId)
-
-if (lockdown.active) {
-  console.log(`Guild is in lockdown until ${lockdown.expiration}`)
-  console.log(`Reason: ${lockdown.reason}`)
-  console.log(`Affected channels: ${lockdown.channels.length}`)
-} else {
-  console.log('Guild is not in lockdown')
-}
-```
-
-## Notes
-
-- This function only retrieves lockdown information and doesn't modify the lockdown state
-- To modify lockdown status, use the `setLockdown()` function
-- Lockdown data is stored persistently and survives bot restarts
-- Returns default data (lockdown inactive) if no lockdown information is found
+`LockdownData`

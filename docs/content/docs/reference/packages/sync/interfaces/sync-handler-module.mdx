@@ -1,0 +1,29 @@
+---
+title: "SyncHandlerModule<T, ClientData>"
+---
+
+# Interface: SyncHandlerModule\<T, ClientData\>
+
+A sync handler module can export any combination of these.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Indexable
+
+```ts
+[key: string]: unknown
+```
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="onupdate"></a> `onUpdate?` | [`OnUpdateHandler`](../type-aliases/on-update-handler)\<`T`, `ClientData`\> | Called after successful update |
+| <a id="schema"></a> `schema?` | `unknown` | Schema for validation (Zod or built-in format) |
+| <a id="transform"></a> `transform?` | [`TransformHandler`](../type-aliases/transform-handler)\<`T`, `ClientData`\> | Transform state before broadcasting |
+| <a id="validate"></a> `validate?` | [`ValidateHandler`](../type-aliases/validate-handler)\<`T`, `ClientData`\> | Validate incoming updates |

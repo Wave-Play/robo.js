@@ -1,0 +1,24 @@
+---
+title: "hasAnyPermission()"
+---
+
+# Function: hasAnyPermission()
+
+```ts
+function hasAnyPermission(permissions, ...flags): boolean
+```
+
+Check if a permission bitfield has any of the specified permissions
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `permissions` | `bigint` | The permission bitfield |
+| ...`flags` | `bigint`[] | The permission flags to check |
+
+## Returns
+
+`boolean`
+
+true if any permission is set

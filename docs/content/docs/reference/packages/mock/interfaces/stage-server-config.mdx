@@ -1,0 +1,15 @@
+---
+title: "StageServerConfig"
+---
+
+# Interface: StageServerConfig
+
+Configuration for the Stage WebSocket server
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="heartbeatinterval"></a> `heartbeatInterval?` | `number` | Heartbeat interval in milliseconds (default: 30000) |
+| <a id="maxbuffersize"></a> `maxBufferSize?` | `number` | Maximum events to buffer per session for reconnection (default: 1000) |
+| <a id="maxmessagesperchannel"></a> `maxMessagesPerChannel?` | `number` | Maximum messages to include in state sync per channel (default: 50) |

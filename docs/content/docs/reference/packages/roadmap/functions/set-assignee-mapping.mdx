@@ -1,0 +1,35 @@
+---
+title: "setAssigneeMapping()"
+---
+
+# Function: setAssigneeMapping()
+
+```ts
+function setAssigneeMapping(
+   guildId, 
+   jiraName, 
+   discordUserId): void
+```
+
+Sets a mapping between a Jira assignee name and a Discord user ID.
+
+This helper updates the assignee mapping for a specific Jira assignee.
+The mapping is case-sensitive and matches Jira display names exactly.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+| `jiraName` | `string` | The Jira assignee display name (exact match, case-sensitive) |
+| `discordUserId` | `string` | The Discord user ID to map to |
+
+## Returns
+
+`void`
+
+## Example
+
+```ts
+setAssigneeMapping(guildId, 'Alice Jira', '1234567890123456789');
+```

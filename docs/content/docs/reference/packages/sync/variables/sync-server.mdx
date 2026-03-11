@@ -1,0 +1,21 @@
+---
+title: "SyncServer"
+---
+
+# Variable: SyncServer
+
+```ts
+const SyncServer: {
+  getSocketServer: () => undefined | WebSocketServer;
+  getZone: <T>(key) => ServerZone<T>;
+  start: () => void;
+};
+```
+
+## Type declaration
+
+| Name | Type |
+| ------ | ------ |
+| <a id="getsocketserver"></a> `getSocketServer` | () =\> `undefined` \| `WebSocketServer` |
+| <a id="getzone"></a> `getZone` | \<`T`\>(`key`) =\> [`ServerZone`](../../index/interfaces/server-zone)\<`T`\> |
+| <a id="start"></a> `start` | () =\> `void` |

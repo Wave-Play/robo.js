@@ -1,0 +1,21 @@
+---
+title: "SyncMiddlewareModule<T, ClientData>"
+---
+
+# Interface: SyncMiddlewareModule\<T, ClientData\>
+
+A middleware module exports before and/or after hooks.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="after"></a> `after?` | [`MiddlewareAfterHandler`](../type-aliases/middleware-after-handler)\<`T`, `ClientData`\> |
+| <a id="before"></a> `before?` | [`MiddlewareBeforeHandler`](../type-aliases/middleware-before-handler)\<`T`, `ClientData`\> |

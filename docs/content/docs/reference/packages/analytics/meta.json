@@ -1,0 +1,12 @@
+{
+  "title": "@robojs/analytics",
+  "pages": [
+    "index",
+    "---Classes---",
+    "classes/google-analytics",
+    "classes/many-engines",
+    "classes/plausible-analytics",
+    "---Variables---",
+    "variables/analytics"
+  ]
+}

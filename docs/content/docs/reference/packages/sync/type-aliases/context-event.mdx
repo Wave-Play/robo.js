@@ -1,0 +1,30 @@
+---
+title: "ContextEvent<ClientData>"
+---
+
+# Type Alias: ContextEvent\<ClientData\>
+
+```ts
+type ContextEvent<ClientData> = 
+  | {
+  clients: Client<ClientData>[];
+  hostId: string;
+  type: "clients";
+ }
+  | {
+  client: Client<ClientData>;
+  type: "join";
+ }
+  | {
+  client: Client<ClientData>;
+  type: "leave";
+};
+```
+
+Internal callback types for context management.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |

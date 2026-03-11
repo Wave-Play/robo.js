@@ -1,0 +1,24 @@
+---
+title: "TestRouteOptions"
+---
+
+# Interface: TestRouteOptions
+
+Options for testing a route module
+
+## Extends
+
+- [`TestRequestOptions`](test-request-options)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="baseurl"></a> `baseUrl?` | `string` | Base URL for constructing absolute URLs (defaults to 'http://localhost:3000') | [`TestRequestOptions`](test-request-options).[`baseUrl`](test-request-options#baseurl) |
+| <a id="body"></a> `body?` | `unknown` | Request body (will be JSON stringified if object) | [`TestRequestOptions`](test-request-options).[`body`](test-request-options#body) |
+| <a id="forcehandler"></a> `forceHandler?` | \| `"GET"` \| `"POST"` \| `"PUT"` \| `"PATCH"` \| `"DELETE"` \| `"OPTIONS"` \| `"HEAD"` \| `"default"` | Override method detection and call a specific handler | - |
+| <a id="headers"></a> `headers?` | `Record`\<`string`, `string`\> | Request headers | [`TestRequestOptions`](test-request-options).[`headers`](test-request-options#headers) |
+| <a id="method"></a> `method?` | `"GET"` \| `"POST"` \| `"PUT"` \| `"PATCH"` \| `"DELETE"` \| `"OPTIONS"` \| `"HEAD"` | HTTP method (defaults to 'GET') | [`TestRequestOptions`](test-request-options).[`method`](test-request-options#method) |
+| <a id="params"></a> `params?` | `Record`\<`string`, `string`\> | URL parameters extracted from dynamic segments like [id] | [`TestRequestOptions`](test-request-options).[`params`](test-request-options#params) |
+| <a id="path"></a> `path?` | `string` | URL path (defaults to '/test') | [`TestRequestOptions`](test-request-options).[`path`](test-request-options#path) |
+| <a id="query"></a> `query?` | `Record`\<`string`, `string` \| `string`[]\> | Query string parameters | [`TestRequestOptions`](test-request-options).[`query`](test-request-options#query) |

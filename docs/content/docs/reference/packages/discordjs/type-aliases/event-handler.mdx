@@ -1,0 +1,28 @@
+---
+title: "EventHandler()<K>"
+---
+
+# Type Alias: EventHandler()\<K\>
+
+```ts
+type EventHandler<K> = (...args) => unknown | Promise<unknown>;
+```
+
+Event handler function type.
+Accepts any Discord.js event arguments.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* keyof `ClientEvents` | keyof `ClientEvents` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| ...`args` | `ClientEvents`\[`K`\] |
+
+## Returns
+
+`unknown` \| `Promise`\<`unknown`\>

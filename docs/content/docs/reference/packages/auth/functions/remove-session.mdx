@@ -1,0 +1,30 @@
+---
+title: "removeSession()"
+---
+
+# Function: removeSession()
+
+```ts
+function removeSession(userId, options?): Promise<Response>
+```
+
+Removes a session from the device stack and deletes the server-side session.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to remove. |
+| `options`? | `ClientOptions` | Overrides for base path, headers, or a custom fetch implementation. |
+
+## Returns
+
+`Promise`\<`Response`\>
+
+The raw `Response` from the server.
+
+## Example
+
+```ts
+await removeSession('user-id-456')
+```

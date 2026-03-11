@@ -1,0 +1,18 @@
+---
+title: "DispatchContextMenuOptions"
+---
+
+# Interface: DispatchContextMenuOptions
+
+Options for dispatching a context menu interaction
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channelid"></a> `channelId?` | `string` | Channel ID (required for MESSAGE commands, optional for USER in guild) |
+| <a id="commandname"></a> `commandName` | `string` | Command name (e.g., "Get Info", "Report Message") |
+| <a id="contextmenutype"></a> `contextMenuType` | `2` \| `3` | Context menu type: 2=USER, 3=MESSAGE |
+| <a id="guildid"></a> `guildId?` | `string` | Guild ID (optional, derived from channel/target) |
+| <a id="targetid"></a> `targetId` | `string` | Target user ID (for USER commands) or message ID (for MESSAGE commands) |
+| <a id="user"></a> `user?` | [`MockUserConfig`](mock-user-config) | User who invoked the command |

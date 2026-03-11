@@ -1,0 +1,35 @@
+---
+title: "createTestRequest()"
+---
+
+# Function: createTestRequest()
+
+```ts
+function createTestRequest(options): RoboRequest
+```
+
+Creates a RoboRequest suitable for testing API handlers.
+This is a convenience wrapper around RoboRequest.forTesting().
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`TestRequestOptions`](../interfaces/test-request-options) |
+
+## Returns
+
+[`RoboRequest`](../../../../index/classes/robo-request)
+
+## Example
+
+```typescript
+import { createTestRequest } from '@robojs/server/testing'
+import { GET } from '../src/api/users/[id]'
+
+const request = createTestRequest({
+  params: { id: '123' },
+  query: { include: 'profile' }
+})
+const response = await GET(request)
+```

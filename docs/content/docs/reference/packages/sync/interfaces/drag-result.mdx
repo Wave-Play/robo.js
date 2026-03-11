@@ -1,0 +1,29 @@
+---
+title: "DragResult<T, ClientData>"
+---
+
+# Interface: DragResult\<T, ClientData\>
+
+Result returned by useSyncDrag hook.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`DragState`](drag-state) | - |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="caninteract"></a> `canInteract` | `boolean` | Whether current client can interact (not locked by others) |
+| <a id="context"></a> `context` | [`SyncContext`](sync-context)\<`ClientData`\> | Sync context for client awareness |
+| <a id="draghandlers"></a> `dragHandlers` | \{ `onMouseDown`: (`e`) =\> `void`; `onTouchStart`: (`e`) =\> `void`; \} | Handlers to spread onto draggable element |
+| `dragHandlers.onMouseDown` | (`e`: `MouseEvent`\<`Element`, `MouseEvent`\>) =\> `void` | - |
+| `dragHandlers.onTouchStart` | (`e`: `TouchEvent`\<`Element`\>) =\> `void` | - |
+| <a id="isbeingdragged"></a> `isBeingDragged` | `boolean` | Whether anyone is dragging (locked) |
+| <a id="isdragging"></a> `isDragging` | `boolean` | Whether current client is dragging |
+| <a id="lock"></a> `lock` | `undefined` \| [`LockContext`](lock-context) | Lock context for advanced usage |
+| <a id="setstate"></a> `setState` | (`update`: `Partial`\<`T`\> \| (`prev`) =\> `T`) =\> `void` | Update state (partial or updater function) |
+| <a id="state"></a> `state` | `T` | Current state (may be interpolated for remote updates) |

@@ -1,0 +1,12 @@
+{
+  "title": "@robojs/giveaways",
+  "pages": [
+    "index",
+    "---Interfaces---",
+    "interfaces/giveaway",
+    "interfaces/guild-settings",
+    "---Functions---",
+    "functions/get-guild-settings",
+    "functions/set-guild-settings"
+  ]
+}

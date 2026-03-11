@@ -1,0 +1,20 @@
+---
+title: "VoiceInputFrame"
+---
+
+# Interface: VoiceInputFrame
+
+Audio frame delivered to the engine when streaming microphone input.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channels"></a> `channels` | `number` | Number of audio channels encoded within the frame. |
+| <a id="data"></a> `data` | `Buffer` | Raw PCM data for the frame. |
+| <a id="encoding"></a> `encoding` | `"pcm16"` | Encoding used for `data`. |
+| <a id="isspeechend"></a> `isSpeechEnd?` | `boolean` | Signals when the caller believes speech content has ended. |
+| <a id="length"></a> `length` | `number` | Frame length in PCM samples. |
+| <a id="samplerate"></a> `sampleRate` | `number` | Sample rate applied to the frame. |
+| <a id="speakerid"></a> `speakerId?` | `null` \| `string` | Optional speaker identifier for diarization-aware engines. |
+| <a id="timestamp"></a> `timestamp` | `number` | Timestamp in milliseconds when the frame was captured. |

@@ -1,99 +1,12 @@
 ---
 title: "Context"
-description: "tRPC context for Robo.js API endpoints"
 ---
 
 # Interface: Context
 
-Defines the tRPC context structure available to your tRPC procedures in Robo.js.
-The context is automatically created for each request and contains references to the underlying request and reply objects.
-
 ## Properties
 
-### req
-
-```ts
-req: RoboRequest;
-```
-
-The Robo.js request object for the current API call.
-
-### res
-
-```ts
-res: RoboReply;
-```
-
-The Robo.js reply object for the current API call.
-
-## Example
-
-```ts
-import { initTRPC } from '@trpc/server'
-import type { Context } from '@robojs/trpc'
-
-// Initialize tRPC with the Robo.js context
-const t = initTRPC.context<Context>().create()
-
-// Create a procedure that uses the context
-const getUser = t.procedure
-  .input(z.string())
-  .query(async ({ input, ctx }) => {
-    // Access request information from the context
-    const ip = ctx.req.headers.get('x-forwarded-for') || 'unknown'
-    
-    // You could use the request context for authorization
-    const authHeader = ctx.req.headers.get('authorization')
-    
-    // Or for reading cookies
-    const cookies = ctx.req.headers.get('cookie')
-    
-    // Fetch user data
-    const user = await fetchUserById(input)
-    
-    // Log IP address for analytics
-    console.log(`User ${input} requested from ${ip}`)
-    
-    return user
-  })
-```
-
-## Usage in createContext
-
-When setting up your tRPC router, you'll typically create a context creator function:
-
-```ts
-import { RoboRequest, RoboReply } from '@robojs/server'
-
-// Define the context creator function
-export function createContext({
-  req,
-  res,
-}: {
-  req: RoboRequest;
-  res: RoboReply;
-}) {
-  return {
-    req,
-    res,
-    // You can add additional context items here
-    session: getSessionFromRequest(req),
-    db: getDbConnection(),
-  }
-}
-
-// This context will be available in all your procedures
-const t = initTRPC.context<ReturnType<typeof createContext>>().create()
-```
-
-## Notes
-
-- The context is created fresh for each request
-- Extend this interface with your own properties when needed
-- Common additions include database connections, authentication info, etc.
-- The context is perfect for dependencies that should be scoped to a single request
-
-## Related
-
-- [RoboRequest](/ref/packages/server/classes/robo-request) - The Robo.js request class
-- [RoboReply](/ref/packages/server/interfaces/robo-reply) - The Robo.js reply interface
+| Property | Type |
+| ------ | ------ |
+| <a id="req"></a> `req` | `RoboRequest` |
+| <a id="res"></a> `res` | `RoboReply` |

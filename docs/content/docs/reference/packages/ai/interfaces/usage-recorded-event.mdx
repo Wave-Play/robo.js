@@ -1,0 +1,19 @@
+---
+title: "UsageRecordedEvent"
+---
+
+# Interface: UsageRecordedEvent
+
+Event payload describing recorded usage and updated totals.
+
+## Extended by
+
+- [`UsageLimitEvent`](usage-limit-event)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="entry"></a> `entry` | [`TokenUsageEntry`](token-usage-entry) | Usage entry that was persisted. |
+| <a id="model"></a> `model` | `string` | Model associated with the recorded usage. |
+| <a id="totals"></a> `totals` | `UsageTotalsSnapshot` | Updated totals including lifetime and window snapshots. |

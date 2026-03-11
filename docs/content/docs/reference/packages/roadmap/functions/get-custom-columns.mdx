@@ -1,0 +1,48 @@
+---
+title: "getCustomColumns()"
+---
+
+# Function: getCustomColumns()
+
+```ts
+function getCustomColumns(guildId): 
+  | {
+  archived: boolean;
+  createForum: boolean;
+  id: string;
+  name: string;
+  order: number;
+ }[]
+  | undefined
+```
+
+Retrieves custom columns for a guild.
+
+This helper returns the custom column definitions if configured.
+Returns undefined if no custom columns are set (uses provider defaults).
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+
+## Returns
+
+  \| \{
+  `archived`: `boolean`;
+  `createForum`: `boolean`;
+  `id`: `string`;
+  `name`: `string`;
+  `order`: `number`;
+ \}[]
+  \| `undefined`
+
+Array of custom column definitions or undefined
+
+## Example
+
+```ts
+const columns = getCustomColumns(guildId);
+// [{ id: 'planning', name: 'Planning', order: 0 }, ...]
+```

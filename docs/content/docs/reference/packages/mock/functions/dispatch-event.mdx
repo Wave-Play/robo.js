@@ -1,0 +1,32 @@
+---
+title: "dispatchEvent()"
+---
+
+# Function: dispatchEvent()
+
+```ts
+function dispatchEvent(
+   sessionId, 
+   event, 
+   data): Promise<{
+  dispatched: number;
+  success: boolean;
+}>
+```
+
+Dispatch a Discord event to a session
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `event` | `string` |
+| `data` | `Record`\<`string`, `unknown`\> |
+
+## Returns
+
+`Promise`\<\{
+  `dispatched`: `number`;
+  `success`: `boolean`;
+ \}\>

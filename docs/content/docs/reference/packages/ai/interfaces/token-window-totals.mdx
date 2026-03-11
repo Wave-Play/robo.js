@@ -1,0 +1,16 @@
+---
+title: "TokenWindowTotals"
+---
+
+# Interface: TokenWindowTotals
+
+Aggregate token counts for a given window.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="tokensin"></a> `tokensIn` | `number` | Prompt tokens consumed during the window. |
+| <a id="tokensout"></a> `tokensOut` | `number` | Completion tokens produced during the window. |
+| <a id="total"></a> `total` | `number` | Combined prompt and completion tokens. |
+| <a id="updatedat"></a> `updatedAt` | `number` | Last time the totals were updated, represented as a UNIX timestamp. |

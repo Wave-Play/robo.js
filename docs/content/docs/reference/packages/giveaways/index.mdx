@@ -1,66 +1,18 @@
 ---
-title: "@robojs/giveaways"
-description: API reference for the giveaways plugin.
+title: "DIRECTORY"
+description: "API reference for @robojs/giveaways"
 ---
 
 # @robojs/giveaways
 
-Create and manage Discord giveaways with automated winner selection.
+API reference documentation for `@robojs/giveaways`.
 
-<Cards>
-  <Card href="/docs/plugins/giveaways" title="Plugin Guide" description="Full documentation and usage examples." />
-</Cards>
+## Interfaces
 
-## Main Exports
+- [`Giveaway`](interfaces/giveaway) - Flashcore-backed data model representing a single giveaway lifecycle.
+- [`GuildSettings`](interfaces/guild-settings) - Per-guild configuration envelope that customizes giveaway behaviour.
 
-### Giveaway
+## Functions
 
-Main giveaway management class.
-
-```typescript
-import { Giveaway } from '@robojs/giveaways'
-
-// Create a giveaway
-const giveaway = await Giveaway.create({
-  channel: channelId,
-  prize: 'Discord Nitro',
-  duration: 86400000, // 24 hours
-  winners: 1
-})
-
-// End a giveaway
-const winners = await Giveaway.end(giveawayId)
-
-// Reroll winners
-const newWinners = await Giveaway.reroll(giveawayId)
-```
-
-### GiveawayManager
-
-Manage all active giveaways.
-
-```typescript
-import { GiveawayManager } from '@robojs/giveaways'
-
-// Get active giveaways
-const active = await GiveawayManager.getActive(guildId)
-
-// Cancel a giveaway
-await GiveawayManager.cancel(giveawayId)
-```
-
-## Configuration
-
-Configure in `config/plugins/robojs/giveaways.mjs`:
-
-```javascript
-export default {
-  embedColor: '#5865F2',
-  buttonLabel: 'Enter Giveaway',
-  winnerMessage: 'Congratulations {winners}! You won **{prize}**!'
-}
-```
-
-<Cards>
-  <Card href="/docs/plugins/giveaways" title="Plugin Guide" description="See full configuration options." />
-</Cards>
+- [`GetGuildSettings`](functions/get-guild-settings) - Resolve the persisted giveaway settings for a Discord guild.
+- [`SetGuildSettings`](functions/set-guild-settings) - Persist custom giveaway settings for a Discord guild.

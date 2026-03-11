@@ -1,0 +1,2766 @@
+---
+title: "SessionState"
+---
+
+# Interface: SessionState
+
+Isolated state for a session
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="applicationemojis"></a> `applicationEmojis` | `Map`\<`string`, `MockEmoji`\> | - |
+| <a id="applicationid"></a> `applicationId` | `string` | - |
+| <a id="attachmentstorage"></a> `attachmentStorage` | [`MemoryAttachmentStorage`](../classes/memory-attachment-storage) | - |
+| <a id="auditlogs"></a> `auditLogs` | `Map`\<`string`, `MockAuditLogEntry`[]\> | - |
+| <a id="automodrules"></a> `autoModRules` | `Map`\<`string`, `MockAutoModRule`\> | - |
+| <a id="bans"></a> `bans` | `Map`\<`string`, `MockBan`\> | - |
+| <a id="botuser"></a> `botUser` | [`MockUser`](mock-user) | - |
+| <a id="channels"></a> `channels` | `Map`\<`string`, [`MockChannel`](mock-channel)\> | - |
+| <a id="commandpermissions"></a> `commandPermissions` | `Map`\<`string`, `MockCommandPermission`[]\> | - |
+| <a id="commands"></a> `commands` | `Map`\<`string`, `MockApplicationCommand`\> | - |
+| <a id="currentuser"></a> `currentUser` | [`MockUser`](mock-user) | Current "acting" user for Stage UI interactions (separate from botUser) |
+| <a id="dmchannels"></a> `dmChannels` | `Map`\<`string`, [`MockChannel`](mock-channel)\> | - |
+| <a id="emojis"></a> `emojis` | `Map`\<`string`, `MockEmoji`\> | - |
+| <a id="guildmembers"></a> `guildMembers` | `Map`\<`string`, [`MockGuildMember`](mock-guild-member)\> | - |
+| <a id="guilds"></a> `guilds` | `Map`\<`string`, [`MockGuild`](mock-guild)\> | - |
+| <a id="interactions"></a> `interactions` | `Map`\<`string`, [`MockInteraction`](mock-interaction)\> | - |
+| <a id="invites"></a> `invites` | `Map`\<`string`, `MockInvite`\> | - |
+| <a id="messages"></a> `messages` | `Map`\<`string`, [`MockMessage`](mock-message)\> | - |
+| <a id="pollvotes"></a> `pollVotes` | `Map`\<`string`, `Map`\<`string`, `number`[]\>\> | - |
+| <a id="roles"></a> `roles` | `Map`\<`string`, [`MockRole`](mock-role)\> | - |
+| <a id="scheduledevents"></a> `scheduledEvents` | `Map`\<`string`, `MockScheduledEvent`\> | - |
+| <a id="sequence"></a> `sequence` | `number` | - |
+| <a id="stageinstances"></a> `stageInstances` | `Map`\<`string`, `MockStageInstance`\> | - |
+| <a id="stickers"></a> `stickers` | `Map`\<`string`, `MockSticker`\> | - |
+| <a id="threadmembers"></a> `threadMembers` | `Map`\<`string`, `Map`\<`string`, [`MockThreadMember`](mock-thread-member)\>\> | - |
+| <a id="users"></a> `users` | `Map`\<`string`, [`MockUser`](mock-user)\> | - |
+| <a id="voicestates"></a> `voiceStates` | `Map`\<`string`, `MockVoiceState`\> | - |
+| <a id="webhooks"></a> `webhooks` | `Map`\<`string`, [`MockWebhook`](mock-webhook)\> | - |
+
+## Methods
+
+### addChannel()
+
+```ts
+addChannel(channel): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channel` | [`MockChannel`](mock-channel) |
+
+#### Returns
+
+`void`
+
+***
+
+### addChannelToGuild()
+
+```ts
+addChannelToGuild(guildId, channel): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `channel` | [`MockChannel`](mock-channel) |
+
+#### Returns
+
+`void`
+
+***
+
+### addForumTag()
+
+```ts
+addForumTag(channelId, tag): undefined | MockForumTag
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `tag` | `Omit`\<[`MockForumTag`](mock-forum-tag), `"id"`\> |
+
+#### Returns
+
+`undefined` \| [`MockForumTag`](mock-forum-tag)
+
+***
+
+### addGuild()
+
+```ts
+addGuild(guild): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guild` | [`MockGuild`](mock-guild) |
+
+#### Returns
+
+`void`
+
+***
+
+### addInteraction()
+
+```ts
+addInteraction(interaction): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interaction` | [`MockInteraction`](mock-interaction) |
+
+#### Returns
+
+`void`
+
+***
+
+### addMemberRole()
+
+```ts
+addMemberRole(
+   guildId, 
+   userId, 
+   roleId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `roleId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### addPollVote()
+
+```ts
+addPollVote(
+   messageId, 
+   userId, 
+   answerId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `answerId` | `number` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### addReaction()
+
+```ts
+addReaction(
+   messageId, 
+   userId, 
+   emoji): undefined | MockReaction[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `emoji` | \{ `id`: `null` \| `string`; `name`: `string`; \} |
+| `emoji.id` | `null` \| `string` |
+| `emoji.name` | `string` |
+
+#### Returns
+
+`undefined` \| `MockReaction`[]
+
+***
+
+### addScheduledEventSubscriber()
+
+```ts
+addScheduledEventSubscriber(
+   guildId, 
+   eventId, 
+   userId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### addSticker()
+
+```ts
+addSticker(sticker): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sticker` | `MockSticker` |
+
+#### Returns
+
+`void`
+
+***
+
+### addThreadMember()
+
+```ts
+addThreadMember(threadId, userId): undefined | MockThreadMember
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockThreadMember`](mock-thread-member)
+
+***
+
+### addUser()
+
+```ts
+addUser(user): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `user` | [`MockUser`](mock-user) |
+
+#### Returns
+
+`void`
+
+***
+
+### bulkOverwriteCommands()
+
+```ts
+bulkOverwriteCommands(configs, guildId?): null | MockApplicationCommand[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `configs` | `MockApplicationCommandConfig`[] |
+| `guildId`? | `string` |
+
+#### Returns
+
+`null` \| `MockApplicationCommand`[]
+
+***
+
+### checkAutoArchiveThreads()
+
+```ts
+checkAutoArchiveThreads(): string[]
+```
+
+#### Returns
+
+`string`[]
+
+***
+
+### checkPollExpiry()
+
+```ts
+checkPollExpiry(messageId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### cleanupExpiredInteractions()
+
+```ts
+cleanupExpiredInteractions(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### createAuditLogEntry()
+
+```ts
+createAuditLogEntry(guildId, config): MockAuditLogEntry
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockAuditLogEntryConfig` |
+
+#### Returns
+
+`MockAuditLogEntry`
+
+***
+
+### createAutoModRule()
+
+```ts
+createAutoModRule(
+   guildId, 
+   config, 
+   creatorId): null | MockAutoModRule
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockAutoModRuleConfig` |
+| `creatorId` | `string` |
+
+#### Returns
+
+`null` \| `MockAutoModRule`
+
+***
+
+### createBan()
+
+```ts
+createBan(
+   guildId, 
+   userId, 
+   config?): null | MockBan
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `config`? | `MockBanConfig` |
+
+#### Returns
+
+`null` \| `MockBan`
+
+***
+
+### createCommand()
+
+```ts
+createCommand(config, guildId?): null | MockApplicationCommand
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | `MockApplicationCommandConfig` |
+| `guildId`? | `string` |
+
+#### Returns
+
+`null` \| `MockApplicationCommand`
+
+***
+
+### createEveryoneRole()
+
+```ts
+createEveryoneRole(guildId): MockRole
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockRole`](mock-role)
+
+***
+
+### createForumChannel()
+
+```ts
+createForumChannel(config): MockForumChannel
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockForumChannelConfig`](mock-forum-channel-config) |
+
+#### Returns
+
+[`MockForumChannel`](mock-forum-channel)
+
+***
+
+### createForumPost()
+
+```ts
+createForumPost(config): {
+  message: MockMessage;
+  thread: MockForumThread;
+}
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockForumPostConfig`](mock-forum-post-config) |
+
+#### Returns
+
+```ts
+{
+  message: MockMessage;
+  thread: MockForumThread;
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="message"></a> `message` | [`MockMessage`](mock-message) |
+| <a id="thread"></a> `thread` | [`MockForumThread`](mock-forum-thread) |
+
+***
+
+### createGuildEmoji()
+
+```ts
+createGuildEmoji(
+   guildId, 
+   config, 
+   uploaderId): null | MockEmoji
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockEmojiConfig` |
+| `uploaderId` | `string` |
+
+#### Returns
+
+`null` \| `MockEmoji`
+
+***
+
+### createGuildMember()
+
+```ts
+createGuildMember(
+   guildId, 
+   userId, 
+   config?): null | MockGuildMember
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `config`? | [`MockGuildMemberConfig`](mock-guild-member-config) |
+
+#### Returns
+
+`null` \| [`MockGuildMember`](mock-guild-member)
+
+***
+
+### createGuildRole()
+
+```ts
+createGuildRole(guildId, config?): null | MockRole
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config`? | [`MockRoleConfig`](mock-role-config) |
+
+#### Returns
+
+`null` \| [`MockRole`](mock-role)
+
+***
+
+### createGuildSticker()
+
+```ts
+createGuildSticker(
+   guildId, 
+   config, 
+   uploaderId): null | MockSticker
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockStickerConfig` |
+| `uploaderId` | `string` |
+
+#### Returns
+
+`null` \| `MockSticker`
+
+***
+
+### createInvite()
+
+```ts
+createInvite(
+   guildId, 
+   channelId, 
+   config, 
+   inviterId): null | MockInvite
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `channelId` | `string` |
+| `config` | `MockInviteConfig` |
+| `inviterId` | `string` |
+
+#### Returns
+
+`null` \| `MockInvite`
+
+***
+
+### createMessage()
+
+```ts
+createMessage(config): MockMessage
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockMessageConfig`](mock-message-config) |
+
+#### Returns
+
+[`MockMessage`](mock-message)
+
+***
+
+### createScheduledEvent()
+
+```ts
+createScheduledEvent(
+   guildId, 
+   config, 
+   creatorId): null | MockScheduledEvent
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockScheduledEventConfig` |
+| `creatorId` | `string` |
+
+#### Returns
+
+`null` \| `MockScheduledEvent`
+
+***
+
+### createStageInstance()
+
+```ts
+createStageInstance(guildId, config): null | MockStageInstance
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockStageInstanceConfig` |
+
+#### Returns
+
+`null` \| `MockStageInstance`
+
+***
+
+### createThread()
+
+```ts
+createThread(config): MockThread
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockThreadConfig`](mock-thread-config) |
+
+#### Returns
+
+[`MockThread`](mock-thread)
+
+***
+
+### createWebhook()
+
+```ts
+createWebhook(
+   channelId, 
+   config, 
+   creatorId): null | MockWebhook
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `config` | [`MockWebhookConfig`](mock-webhook-config) |
+| `creatorId` | `string` |
+
+#### Returns
+
+`null` \| [`MockWebhook`](mock-webhook)
+
+***
+
+### deleteAttachment()
+
+```ts
+deleteAttachment(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteAutoModRule()
+
+```ts
+deleteAutoModRule(guildId, ruleId): null | MockAutoModRule
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `ruleId` | `string` |
+
+#### Returns
+
+`null` \| `MockAutoModRule`
+
+***
+
+### deleteChannelOverwrite()
+
+```ts
+deleteChannelOverwrite(channelId, overwriteId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `overwriteId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteCommand()
+
+```ts
+deleteCommand(commandId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteGuildEmoji()
+
+```ts
+deleteGuildEmoji(emojiId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `emojiId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteGuildRole()
+
+```ts
+deleteGuildRole(
+   guildId, 
+   roleId, 
+   reason?): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `roleId` | `string` |
+| `reason`? | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteGuildSticker()
+
+```ts
+deleteGuildSticker(stickerId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stickerId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteInvite()
+
+```ts
+deleteInvite(code): null | MockInvite
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `code` | `string` |
+
+#### Returns
+
+`null` \| `MockInvite`
+
+***
+
+### deleteMessage()
+
+```ts
+deleteMessage(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteScheduledEvent()
+
+```ts
+deleteScheduledEvent(guildId, eventId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteStageInstance()
+
+```ts
+deleteStageInstance(channelId): null | MockStageInstance
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`null` \| `MockStageInstance`
+
+***
+
+### deleteThread()
+
+```ts
+deleteThread(threadId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### deleteWebhook()
+
+```ts
+deleteWebhook(webhookId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `webhookId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### expirePoll()
+
+```ts
+expirePoll(messageId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### findCommandByName()
+
+```ts
+findCommandByName(name, guildId?): undefined | MockApplicationCommand
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `guildId`? | `string` |
+
+#### Returns
+
+`undefined` \| `MockApplicationCommand`
+
+***
+
+### getActiveThreadsForGuild()
+
+```ts
+getActiveThreadsForGuild(guildId): MockThread[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockThread`](mock-thread)[]
+
+***
+
+### getAttachment()
+
+```ts
+getAttachment(id): undefined | StoredAttachment
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`StoredAttachment`](stored-attachment)
+
+***
+
+### getAttachmentsForMessage()
+
+```ts
+getAttachmentsForMessage(messageId): StoredAttachment[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+[`StoredAttachment`](stored-attachment)[]
+
+***
+
+### getAuditLogEntries()
+
+```ts
+getAuditLogEntries(guildId, options?): MockAuditLogEntry[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `options`? | \{ `action_type`: `number`; `after`: `string`; `before`: `string`; `limit`: `number`; `user_id`: `string`; \} |
+| `options.action_type`? | `number` |
+| `options.after`? | `string` |
+| `options.before`? | `string` |
+| `options.limit`? | `number` |
+| `options.user_id`? | `string` |
+
+#### Returns
+
+`MockAuditLogEntry`[]
+
+***
+
+### getAutoModRule()
+
+```ts
+getAutoModRule(guildId, ruleId): undefined | MockAutoModRule
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `ruleId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockAutoModRule`
+
+***
+
+### getBan()
+
+```ts
+getBan(guildId, userId): undefined | MockBan
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockBan`
+
+***
+
+### getChannel()
+
+```ts
+getChannel(id): undefined | MockChannel
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockChannel`](mock-channel)
+
+***
+
+### getChannelInvites()
+
+```ts
+getChannelInvites(channelId): MockInvite[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`MockInvite`[]
+
+***
+
+### getChannelOverwrites()
+
+```ts
+getChannelOverwrites(channelId): MockChannelOverwrite[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+[`MockChannelOverwrite`](mock-channel-overwrite)[]
+
+***
+
+### getChannelsForGuild()
+
+```ts
+getChannelsForGuild(guildId): MockChannel[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockChannel`](mock-channel)[]
+
+***
+
+### getCommand()
+
+```ts
+getCommand(commandId): undefined | MockApplicationCommand
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockApplicationCommand`
+
+***
+
+### getDMChannel()
+
+```ts
+getDMChannel(recipientId): undefined | MockChannel
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `recipientId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockChannel`](mock-channel)
+
+***
+
+### getEmoji()
+
+```ts
+getEmoji(emojiId): undefined | MockEmoji
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `emojiId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockEmoji`
+
+***
+
+### getForumChannel()
+
+```ts
+getForumChannel(id): undefined | MockForumChannel
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockForumChannel`](mock-forum-channel)
+
+***
+
+### getForumChannelsForGuild()
+
+```ts
+getForumChannelsForGuild(guildId): MockForumChannel[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockForumChannel`](mock-forum-channel)[]
+
+***
+
+### getForumPosts()
+
+```ts
+getForumPosts(forumChannelId, options?): MockForumThread[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `forumChannelId` | `string` |
+| `options`? | \{ `archived`: `boolean`; \} |
+| `options.archived`? | `boolean` |
+
+#### Returns
+
+[`MockForumThread`](mock-forum-thread)[]
+
+***
+
+### getForumThread()
+
+```ts
+getForumThread(id): undefined | MockForumThread
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockForumThread`](mock-forum-thread)
+
+***
+
+### getGlobalCommands()
+
+```ts
+getGlobalCommands(): MockApplicationCommand[]
+```
+
+#### Returns
+
+`MockApplicationCommand`[]
+
+***
+
+### getGuild()
+
+```ts
+getGuild(id): undefined | MockGuild
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockGuild`](mock-guild)
+
+***
+
+### getGuildAutoModRules()
+
+```ts
+getGuildAutoModRules(guildId): MockAutoModRule[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockAutoModRule`[]
+
+***
+
+### getGuildBans()
+
+```ts
+getGuildBans(guildId): MockBan[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockBan`[]
+
+***
+
+### getGuildCommands()
+
+```ts
+getGuildCommands(guildId): MockApplicationCommand[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockApplicationCommand`[]
+
+***
+
+### getGuildEmojis()
+
+```ts
+getGuildEmojis(guildId): MockEmoji[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockEmoji`[]
+
+***
+
+### getGuildInvites()
+
+```ts
+getGuildInvites(guildId): MockInvite[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockInvite`[]
+
+***
+
+### getGuildMember()
+
+```ts
+getGuildMember(guildId, userId): undefined | MockGuildMember
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockGuildMember`](mock-guild-member)
+
+***
+
+### getGuildMembers()
+
+```ts
+getGuildMembers(guildId): MockGuildMember[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockGuildMember`](mock-guild-member)[]
+
+***
+
+### getGuildRole()
+
+```ts
+getGuildRole(guildId, roleId): undefined | MockRole
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `roleId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockRole`](mock-role)
+
+***
+
+### getGuildRoles()
+
+```ts
+getGuildRoles(guildId): MockRole[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockRole`](mock-role)[]
+
+***
+
+### getGuildScheduledEvents()
+
+```ts
+getGuildScheduledEvents(guildId): MockScheduledEvent[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockScheduledEvent`[]
+
+***
+
+### getGuildStageInstances()
+
+```ts
+getGuildStageInstances(guildId): MockStageInstance[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockStageInstance`[]
+
+***
+
+### getGuildStickers()
+
+```ts
+getGuildStickers(guildId): MockSticker[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockSticker`[]
+
+***
+
+### getInteraction()
+
+```ts
+getInteraction(id): undefined | MockInteraction
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockInteraction`](mock-interaction)
+
+***
+
+### getInteractionByToken()
+
+```ts
+getInteractionByToken(token): undefined | MockInteraction
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockInteraction`](mock-interaction)
+
+***
+
+### getInvite()
+
+```ts
+getInvite(code): undefined | MockInvite
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `code` | `string` |
+
+#### Returns
+
+`undefined` \| `MockInvite`
+
+***
+
+### getMessage()
+
+```ts
+getMessage(id): undefined | MockMessage
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockMessage`](mock-message)
+
+***
+
+### getMessagesForChannel()
+
+```ts
+getMessagesForChannel(channelId, limit?): MockMessage[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `limit`? | `number` |
+
+#### Returns
+
+[`MockMessage`](mock-message)[]
+
+***
+
+### getOrCreateDMChannel()
+
+```ts
+getOrCreateDMChannel(recipientId): MockChannel
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `recipientId` | `string` |
+
+#### Returns
+
+[`MockChannel`](mock-channel)
+
+***
+
+### getOrCreateTestUser()
+
+```ts
+getOrCreateTestUser(userId?): MockUser
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `userId`? | `string` |
+
+#### Returns
+
+[`MockUser`](mock-user)
+
+***
+
+### getPollVoters()
+
+```ts
+getPollVoters(messageId, answerId): string[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `answerId` | `number` |
+
+#### Returns
+
+`string`[]
+
+***
+
+### getRole()
+
+```ts
+getRole(roleId): undefined | MockRole
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `roleId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockRole`](mock-role)
+
+***
+
+### getScheduledEvent()
+
+```ts
+getScheduledEvent(guildId, eventId): undefined | MockScheduledEvent
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockScheduledEvent`
+
+***
+
+### getScheduledEventSubscribers()
+
+```ts
+getScheduledEventSubscribers(
+   guildId, 
+   eventId, 
+   options?): {
+  member: MockGuildMember;
+  user: MockUser;
+ }[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `options`? | \{ `after`: `string`; `before`: `string`; `limit`: `number`; `withMember`: `boolean`; \} |
+| `options.after`? | `string` |
+| `options.before`? | `string` |
+| `options.limit`? | `number` |
+| `options.withMember`? | `boolean` |
+
+#### Returns
+
+\{
+  `member`: [`MockGuildMember`](mock-guild-member);
+  `user`: [`MockUser`](mock-user);
+ \}[]
+
+***
+
+### getStageInstance()
+
+```ts
+getStageInstance(channelId): undefined | MockStageInstance
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockStageInstance`
+
+***
+
+### getSticker()
+
+```ts
+getSticker(stickerId): undefined | MockSticker
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stickerId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockSticker`
+
+***
+
+### getThread()
+
+```ts
+getThread(id): undefined | MockThread
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockThread`](mock-thread)
+
+***
+
+### getThreadMember()
+
+```ts
+getThreadMember(threadId, userId): undefined | MockThreadMember
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockThreadMember`](mock-thread-member)
+
+***
+
+### getThreadMembers()
+
+```ts
+getThreadMembers(threadId): MockThreadMember[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+[`MockThreadMember`](mock-thread-member)[]
+
+***
+
+### getThreadsForChannel()
+
+```ts
+getThreadsForChannel(channelId, options?): MockThread[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `options`? | \{ `archived`: `boolean`; \} |
+| `options.archived`? | `boolean` |
+
+#### Returns
+
+[`MockThread`](mock-thread)[]
+
+***
+
+### getUser()
+
+```ts
+getUser(id): undefined | MockUser
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockUser`](mock-user)
+
+***
+
+### getUserPollVotes()
+
+```ts
+getUserPollVotes(messageId, userId): number[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`number`[]
+
+***
+
+### getWebhook()
+
+```ts
+getWebhook(webhookId): undefined | MockWebhook
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `webhookId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockWebhook`](mock-webhook)
+
+***
+
+### getWebhookByToken()
+
+```ts
+getWebhookByToken(token): undefined | MockWebhook
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockWebhook`](mock-webhook)
+
+***
+
+### getWebhooksForChannel()
+
+```ts
+getWebhooksForChannel(channelId): MockWebhook[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+[`MockWebhook`](mock-webhook)[]
+
+***
+
+### getWebhooksForGuild()
+
+```ts
+getWebhooksForGuild(guildId): MockWebhook[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockWebhook`](mock-webhook)[]
+
+***
+
+### incrementThreadMessageCount()
+
+```ts
+incrementThreadMessageCount(threadId): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### isBanned()
+
+```ts
+isBanned(guildId, userId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### isForumChannel()
+
+```ts
+isForumChannel(channelId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### isForumThread()
+
+```ts
+isForumThread(threadId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### isThread()
+
+```ts
+isThread(channelId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### nextSequence()
+
+```ts
+nextSequence(): number
+```
+
+#### Returns
+
+`number`
+
+***
+
+### removeBan()
+
+```ts
+removeBan(guildId, userId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeChannel()
+
+```ts
+removeChannel(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeForumTag()
+
+```ts
+removeForumTag(channelId, tagId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `tagId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeGuild()
+
+```ts
+removeGuild(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeGuildMember()
+
+```ts
+removeGuildMember(guildId, userId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeInteraction()
+
+```ts
+removeInteraction(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeMemberRole()
+
+```ts
+removeMemberRole(
+   guildId, 
+   userId, 
+   roleId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `roleId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removePollVote()
+
+```ts
+removePollVote(
+   messageId, 
+   userId, 
+   answerId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `answerId` | `number` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeReaction()
+
+```ts
+removeReaction(
+   messageId, 
+   userId, 
+   emoji): undefined | MockReaction[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `emoji` | \{ `id`: `null` \| `string`; `name`: `string`; \} |
+| `emoji.id` | `null` \| `string` |
+| `emoji.name` | `string` |
+
+#### Returns
+
+`undefined` \| `MockReaction`[]
+
+***
+
+### removeScheduledEventSubscriber()
+
+```ts
+removeScheduledEventSubscriber(
+   guildId, 
+   eventId, 
+   userId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeThreadMember()
+
+```ts
+removeThreadMember(threadId, userId): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### removeUser()
+
+```ts
+removeUser(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### reset()
+
+```ts
+reset(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### serialize()
+
+```ts
+serialize(): SerializedSessionState
+```
+
+#### Returns
+
+[`SerializedSessionState`](serialized-session-state)
+
+***
+
+### setChannelOverwrite()
+
+```ts
+setChannelOverwrite(channelId, overwrite): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `overwrite` | [`MockChannelOverwrite`](mock-channel-overwrite) |
+
+#### Returns
+
+`boolean`
+
+***
+
+### storeAttachment()
+
+```ts
+storeAttachment(attachment): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `attachment` | [`StoredAttachment`](stored-attachment) |
+
+#### Returns
+
+`void`
+
+***
+
+### switchCurrentUser()
+
+```ts
+switchCurrentUser(userId): undefined | MockUser
+```
+
+Switch to a different user as the current user
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockUser`](mock-user)
+
+***
+
+### updateAutoModRule()
+
+```ts
+updateAutoModRule(
+   guildId, 
+   ruleId, 
+   updates): null | MockAutoModRule
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `ruleId` | `string` |
+| `updates` | `MockAutoModRuleUpdateConfig` |
+
+#### Returns
+
+`null` \| `MockAutoModRule`
+
+***
+
+### updateCommand()
+
+```ts
+updateCommand(commandId, updates): null | MockApplicationCommand
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandId` | `string` |
+| `updates` | `Partial`\<`MockApplicationCommandConfig`\> |
+
+#### Returns
+
+`null` \| `MockApplicationCommand`
+
+***
+
+### updateCurrentUser()
+
+```ts
+updateCurrentUser(updates): MockUser
+```
+
+Update the current user's properties without changing their ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `updates` | `Partial`\<`Omit`\<[`MockUser`](mock-user), `"id"`\>\> |
+
+#### Returns
+
+[`MockUser`](mock-user)
+
+***
+
+### updateForumTag()
+
+```ts
+updateForumTag(
+   channelId, 
+   tagId, 
+   updates): undefined | MockForumTag
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `tagId` | `string` |
+| `updates` | `Partial`\<`Omit`\<[`MockForumTag`](mock-forum-tag), `"id"`\>\> |
+
+#### Returns
+
+`undefined` \| [`MockForumTag`](mock-forum-tag)
+
+***
+
+### updateForumThreadTags()
+
+```ts
+updateForumThreadTags(threadId, appliedTags): undefined | MockForumThread
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `appliedTags` | `string`[] |
+
+#### Returns
+
+`undefined` \| [`MockForumThread`](mock-forum-thread)
+
+***
+
+### updateGuildEmoji()
+
+```ts
+updateGuildEmoji(emojiId, updates): null | MockEmoji
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `emojiId` | `string` |
+| `updates` | \{ `name`: `string`; `roles`: `string`[]; \} |
+| `updates.name`? | `string` |
+| `updates.roles`? | `string`[] |
+
+#### Returns
+
+`null` \| `MockEmoji`
+
+***
+
+### updateGuildMember()
+
+```ts
+updateGuildMember(
+   guildId, 
+   userId, 
+   updates): null | MockGuildMember
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `updates` | `Partial`\<[`MockGuildMemberConfig`](mock-guild-member-config)\> |
+
+#### Returns
+
+`null` \| [`MockGuildMember`](mock-guild-member)
+
+***
+
+### updateGuildRole()
+
+```ts
+updateGuildRole(
+   guildId, 
+   roleId, 
+   updates, 
+   reason?): null | MockRole
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `roleId` | `string` |
+| `updates` | `Partial`\<[`MockRoleConfig`](mock-role-config)\> |
+| `reason`? | `string` |
+
+#### Returns
+
+`null` \| [`MockRole`](mock-role)
+
+***
+
+### updateGuildRolePositions()
+
+```ts
+updateGuildRolePositions(guildId, positions): MockRole[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `positions` | \{ `id`: `string`; `position`: `number`; \}[] |
+
+#### Returns
+
+[`MockRole`](mock-role)[]
+
+***
+
+### updateGuildSticker()
+
+```ts
+updateGuildSticker(stickerId, updates): null | MockSticker
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stickerId` | `string` |
+| `updates` | \{ `description`: `string`; `name`: `string`; `tags`: `string`; \} |
+| `updates.description`? | `string` |
+| `updates.name`? | `string` |
+| `updates.tags`? | `string` |
+
+#### Returns
+
+`null` \| `MockSticker`
+
+***
+
+### updateMessage()
+
+```ts
+updateMessage(id, updates): undefined | MockMessage
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `updates` | `Partial`\<[`MockMessage`](mock-message)\> |
+
+#### Returns
+
+`undefined` \| [`MockMessage`](mock-message)
+
+***
+
+### updatePollResults()
+
+```ts
+updatePollResults(messageId): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### updateScheduledEvent()
+
+```ts
+updateScheduledEvent(
+   guildId, 
+   eventId, 
+   updates): null | MockScheduledEvent
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `updates` | `MockScheduledEventUpdateConfig` |
+
+#### Returns
+
+`null` \| `MockScheduledEvent`
+
+***
+
+### updateStageInstance()
+
+```ts
+updateStageInstance(channelId, updates): null | MockStageInstance
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `updates` | \{ `privacy_level`: `StageInstancePrivacyLevel`; `topic`: `string`; \} |
+| `updates.privacy_level`? | `StageInstancePrivacyLevel` |
+| `updates.topic`? | `string` |
+
+#### Returns
+
+`null` \| `MockStageInstance`
+
+***
+
+### updateThread()
+
+```ts
+updateThread(threadId, updates): undefined | MockThread
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `updates` | `Partial`\<\{ `archived`: `boolean`; `auto_archive_duration`: `60` \| `1440` \| `4320` \| `10080`; `invitable`: `boolean`; `locked`: `boolean`; `name`: `string`; `rateLimitPerUser`: `number`; \}\> |
+
+#### Returns
+
+`undefined` \| [`MockThread`](mock-thread)
+
+***
+
+### updateWebhook()
+
+```ts
+updateWebhook(webhookId, updates): null | MockWebhook
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `webhookId` | `string` |
+| `updates` | \{ `avatar`: `null` \| `string`; `channel_id`: `string`; `name`: `string`; \} |
+| `updates.avatar`? | `null` \| `string` |
+| `updates.channel_id`? | `string` |
+| `updates.name`? | `string` |
+
+#### Returns
+
+`null` \| [`MockWebhook`](mock-webhook)
+
+***
+
+### useInvite()
+
+```ts
+useInvite(code): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `code` | `string` |
+
+#### Returns
+
+`boolean`

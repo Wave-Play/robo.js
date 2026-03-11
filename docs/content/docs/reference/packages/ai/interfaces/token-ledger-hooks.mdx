@@ -1,0 +1,14 @@
+---
+title: "TokenLedgerHooks"
+---
+
+# Interface: TokenLedgerHooks
+
+Optional hook callbacks invoked during ledger operations.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="onlimitreached"></a> `onLimitReached?` | (`payload`: [`UsageLimitEvent`](usage-limit-event)) =\> `void` \| `Promise`\<`void`\> | Called when usage breaches a configured limit. |
+| <a id="onrecorded"></a> `onRecorded?` | (`payload`: [`UsageRecordedEvent`](usage-recorded-event)) =\> `void` \| `Promise`\<`void`\> | Called after usage is recorded and aggregates are updated. |

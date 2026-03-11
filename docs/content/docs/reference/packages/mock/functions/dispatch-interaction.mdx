@@ -1,0 +1,28 @@
+---
+title: "dispatchInteraction()"
+---
+
+# Function: dispatchInteraction()
+
+```ts
+function dispatchInteraction(sessionId, interaction): Promise<{
+  interaction_id: string;
+  success: boolean;
+}>
+```
+
+Dispatch an interaction to a session
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `interaction` | [`InteractionData`](../interfaces/interaction-data) |
+
+## Returns
+
+`Promise`\<\{
+  `interaction_id`: `string`;
+  `success`: `boolean`;
+ \}\>

@@ -1,0 +1,287 @@
+---
+title: "MemoryAttachmentStorage"
+---
+
+# Class: MemoryAttachmentStorage
+
+In-memory attachment storage implementation.
+
+This is the default storage backend. It stores all attachments
+in a Map with O(1) access by ID. Suitable for development,
+testing, and small-scale deployments.
+
+Limitations:
+- Data is lost when the process restarts
+- Memory usage scales linearly with stored data
+- Not suitable for horizontal scaling (no shared state)
+
+## Implements
+
+- [`AttachmentStorage`](../interfaces/attachment-storage)
+
+## Constructors
+
+### new MemoryAttachmentStorage()
+
+```ts
+new MemoryAttachmentStorage(): MemoryAttachmentStorage
+```
+
+#### Returns
+
+[`MemoryAttachmentStorage`](memory-attachment-storage)
+
+## Methods
+
+### clear()
+
+```ts
+clear(): Promise<number>
+```
+
+Clear all stored attachments.
+Use with caution - this deletes all data.
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Number of attachments deleted
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`clear`](../interfaces/attachment-storage#clear)
+
+***
+
+### delete()
+
+```ts
+delete(id): Promise<boolean>
+```
+
+Delete an attachment by ID.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The attachment's snowflake ID |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`delete`](../interfaces/attachment-storage#delete)
+
+***
+
+### deleteForMessage()
+
+```ts
+deleteForMessage(messageId): Promise<number>
+```
+
+Delete all attachments for a specific message.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `messageId` | `string` | The message's snowflake ID |
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Number of attachments deleted
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`deleteForMessage`](../interfaces/attachment-storage#deleteformessage)
+
+***
+
+### deleteSync()
+
+```ts
+deleteSync(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### get()
+
+```ts
+get(id): Promise<undefined | StoredAttachment>
+```
+
+Retrieve an attachment by ID.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The attachment's snowflake ID |
+
+#### Returns
+
+`Promise`\<`undefined` \| [`StoredAttachment`](../interfaces/stored-attachment)\>
+
+The stored attachment or undefined if not found
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`get`](../interfaces/attachment-storage#get)
+
+***
+
+### getAllSync()
+
+```ts
+getAllSync(): StoredAttachment[]
+```
+
+#### Returns
+
+[`StoredAttachment`](../interfaces/stored-attachment)[]
+
+***
+
+### getForMessage()
+
+```ts
+getForMessage(messageId): Promise<StoredAttachment[]>
+```
+
+Get all attachments for a specific message.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `messageId` | `string` | The message's snowflake ID |
+
+#### Returns
+
+`Promise`\<[`StoredAttachment`](../interfaces/stored-attachment)[]\>
+
+Array of stored attachments belonging to the message
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`getForMessage`](../interfaces/attachment-storage#getformessage)
+
+***
+
+### getForMessageSync()
+
+```ts
+getForMessageSync(messageId): StoredAttachment[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+[`StoredAttachment`](../interfaces/stored-attachment)[]
+
+***
+
+### getStats()
+
+```ts
+getStats(): Promise<StorageStats>
+```
+
+Get storage statistics.
+
+#### Returns
+
+`Promise`\<[`StorageStats`](../interfaces/storage-stats)\>
+
+Current storage metrics
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`getStats`](../interfaces/attachment-storage#getstats)
+
+***
+
+### getSync()
+
+```ts
+getSync(id): undefined | StoredAttachment
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`StoredAttachment`](../interfaces/stored-attachment)
+
+***
+
+### store()
+
+```ts
+store(attachment): Promise<void>
+```
+
+Store an attachment.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `attachment` | [`StoredAttachment`](../interfaces/stored-attachment) | The attachment data to store |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Promise that resolves when storage is complete
+
+#### Implementation of
+
+[`AttachmentStorage`](../interfaces/attachment-storage).[`store`](../interfaces/attachment-storage#store)
+
+***
+
+### storeSync()
+
+```ts
+storeSync(attachment): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `attachment` | [`StoredAttachment`](../interfaces/stored-attachment) |
+
+#### Returns
+
+`void`

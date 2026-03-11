@@ -1,0 +1,22 @@
+---
+title: "RemoteCursor<ClientData>"
+---
+
+# Interface: RemoteCursor\<ClientData\>
+
+Represents a remote cursor with client info.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="clientid"></a> `clientId` | `string` | Client ID of cursor owner |
+| <a id="isyou"></a> `isYou` | `boolean` | Whether this is the current client's cursor |
+| <a id="position"></a> `position` | [`CursorPosition`](cursor-position) | Cursor position |
+| <a id="user"></a> `user` | [`Client`](client)\<`ClientData`\> | Client metadata |

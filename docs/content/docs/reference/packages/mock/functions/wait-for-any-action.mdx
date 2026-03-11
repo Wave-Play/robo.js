@@ -1,0 +1,26 @@
+---
+title: "waitForAnyAction()"
+---
+
+# Function: waitForAnyAction()
+
+```ts
+function waitForAnyAction(
+   sessionId, 
+   filter, 
+timeout?): Promise<RecordedAction>
+```
+
+Wait for any action matching a filter
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `filter` | (`action`) =\> `boolean` |
+| `timeout`? | `number` |
+
+## Returns
+
+`Promise`\<[`RecordedAction`](../interfaces/recorded-action)\>

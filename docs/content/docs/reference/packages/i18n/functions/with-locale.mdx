@@ -1,0 +1,129 @@
+---
+title: "withLocale()"
+---
+
+# Function: withLocale()
+
+## Call Signature
+
+```ts
+function withLocale(local): <K>(key, params?) => Locale<K>
+```
+
+Binds a `LocaleLike` to produce a curried translator.
+
+- **Loose mode (default):** returns a `t$` that accepts optional params based on `ParamsFor<K>`.
+- **Strict mode:** pass `{ strict: true }` to return a `tr$` that **requires** all params
+  for keys that have any (using your `MaybeArgs<K>` tuple).
+
+Overloads:
+- `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => ReturnOf<K>`
+- `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => ReturnOf<K>`
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `local` | `any` | A `LocaleLike` (string, `{ locale }`, `{ guildLocale }`, or a Discord Interaction). |
+
+### Returns
+
+`Function`
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `K` *extends* [`Locale`](../variables/locale) |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `params`? | [`Locale`](../variables/locale)\<`K`\> |
+
+#### Returns
+
+[`Locale`](../variables/locale)\<`K`\>
+
+### Examples
+
+```ts
+// Loose (default): params optional when message has params
+const t$ = withLocale('en-US')
+t$('common:hello.user', { user: { name: 'Robo' } })
+t$('stats:pets.count', { count: 2 })
+t$('common:ping') // key with no params
+```
+
+```ts
+// Strict: params required when message has params
+const tr$ = withLocale('en-US', { strict: true })
+tr$('common:hello.user', { user: { name: 'Robo' } })  // ✅ required
+// tr$('common:hello.user')                           // ❌ compile-time error
+tr$('common:ping')                                    // ✅ key with no params
+```
+
+## Call Signature
+
+```ts
+function withLocale(local, opts): <K>(key, ...args) => Locale<K>
+```
+
+Binds a `LocaleLike` to produce a curried translator.
+
+- **Loose mode (default):** returns a `t$` that accepts optional params based on `ParamsFor<K>`.
+- **Strict mode:** pass `{ strict: true }` to return a `tr$` that **requires** all params
+  for keys that have any (using your `MaybeArgs<K>` tuple).
+
+Overloads:
+- `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => ReturnOf<K>`
+- `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => ReturnOf<K>`
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `local` | `any` | A `LocaleLike` (string, `{ locale }`, `{ guildLocale }`, or a Discord Interaction). |
+| `opts` | \{ `strict`: `true`; \} | - |
+| `opts.strict` | `true` | - |
+
+### Returns
+
+`Function`
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `K` *extends* [`Locale`](../variables/locale) |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| ...`args` | `MaybeArgs`\<`K`\> |
+
+#### Returns
+
+[`Locale`](../variables/locale)\<`K`\>
+
+### Examples
+
+```ts
+// Loose (default): params optional when message has params
+const t$ = withLocale('en-US')
+t$('common:hello.user', { user: { name: 'Robo' } })
+t$('stats:pets.count', { count: 2 })
+t$('common:ping') // key with no params
+```
+
+```ts
+// Strict: params required when message has params
+const tr$ = withLocale('en-US', { strict: true })
+tr$('common:hello.user', { user: { name: 'Robo' } })  // ✅ required
+// tr$('common:hello.user')                           // ❌ compile-time error
+tr$('common:ping')                                    // ✅ key with no params
+```

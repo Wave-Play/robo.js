@@ -1,0 +1,16 @@
+---
+title: "TokenLimitRule"
+---
+
+# Interface: TokenLimitRule
+
+Configuration describing a single token limit rule.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="maxtokens"></a> `maxTokens` | `number` | Maximum tokens allowed within the window. |
+| <a id="message"></a> `message?` | `string` | Optional message surfaced when the limit is exceeded. |
+| <a id="mode"></a> `mode?` | [`TokenLimitMode`](../type-aliases/token-limit-mode) | Enforcement mode. Use `block` to throw [TokenLimitError](../classes/token-limit-error), or `warn` to emit events without blocking execution. |
+| <a id="window"></a> `window` | [`TokenSummaryWindow`](../type-aliases/token-summary-window) | Sliding window in which the limit is evaluated. |

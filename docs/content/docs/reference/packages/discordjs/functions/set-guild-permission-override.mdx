@@ -1,0 +1,28 @@
+---
+title: "setGuildPermissionOverride()"
+---
+
+# Function: setGuildPermissionOverride()
+
+```ts
+function setGuildPermissionOverride(
+   permissions, 
+   commandKey, 
+   guildId, 
+   permissionBits): void
+```
+
+Set a guild-specific permission override for a command.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `permissions` | `Map`\<`string`, [`AggregatedPermissions`](../interfaces/aggregated-permissions)\> | The aggregated permissions map |
+| `commandKey` | `string` | The command key |
+| `guildId` | `string` | The guild ID |
+| `permissionBits` | `bigint` | The permission bitfield for this guild |
+
+## Returns
+
+`void`

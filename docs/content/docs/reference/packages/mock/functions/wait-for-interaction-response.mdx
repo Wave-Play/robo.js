@@ -1,0 +1,24 @@
+---
+title: "waitForInteractionResponse()"
+---
+
+# Function: waitForInteractionResponse()
+
+```ts
+function waitForInteractionResponse(sessionId, options?): Promise<RecordedAction>
+```
+
+Wait for an interaction response
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `options`? | \{ `timeout`: `number`; `type`: `number`; \} |
+| `options.timeout`? | `number` |
+| `options.type`? | `number` |
+
+## Returns
+
+`Promise`\<[`RecordedAction`](../interfaces/recorded-action)\>

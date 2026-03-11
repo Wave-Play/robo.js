@@ -1,0 +1,72 @@
+---
+title: "GuildConfig"
+---
+
+# Interface: GuildConfig
+
+Per-guild XP system configuration
+
+All fields have sensible defaults matching standard behavior.
+
+## Examples
+
+```ts
+{
+ *   cooldownSeconds: 120,
+ *   xpRate: 1.5,
+ *   noXpRoleIds: ['123456789012345678'],
+ *   noXpChannelIds: ['234567890123456789'],
+ *   roleRewards: [
+ *     { level: 5, roleId: '345678901234567890' },
+ *     { level: 10, roleId: '456789012345678901' }
+ *   ],
+ *   rewardsMode: 'stack',
+ *   removeRewardOnXpLoss: true,
+ *   leaderboard: { public: true },
+ *   multipliers: {
+ *     server: 2.0,
+ *     role: { '567890123456789012': 1.5 },
+ *     user: { '678901234567890123': 0.5 }
+ *   },
+ *   theme: {
+ *     embedColor: 0x5865F2,
+ *     backgroundUrl: 'https://example.com/background.png'
+ *   },
+ *   labels: {
+ *     xpDisplayName: 'Reputation'
+ *   }
+ * }
+```
+
+```ts
+Common terminology alternatives:
+- 'Reputation' - For community reputation systems
+- 'Points' - For point-based reward systems
+- 'Karma' - For Reddit-style karma systems
+- 'Credits' - For economy/currency systems
+- 'Stars' - For achievement/rating systems
+```
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="cooldownseconds"></a> `cooldownSeconds` | `number` | Minimum seconds between XP awards for same user (default: 60) |
+| <a id="labels"></a> `labels?` | \{ `xpDisplayName`: `string`; \} | Optional custom terminology for XP system branding |
+| `labels.xpDisplayName?` | `string` | Custom display name for XP (e.g., 'Reputation', 'Karma', 'Points') **Default** `'XP'` |
+| <a id="leaderboard"></a> `leaderboard` | \{ `public`: `boolean`; \} | Leaderboard visibility settings |
+| `leaderboard.public` | `boolean` | Whether the leaderboard is publicly visible **Default** `false` |
+| <a id="levels"></a> `levels?` | `LevelCurveConfig` | Level curve configuration defining how XP maps to levels Controls the progression curve for this guild/store. Supports four preset types: - 'quadratic': Smooth, accelerating growth (default) - 'linear': Constant XP per level - 'exponential': Rapid, accelerating growth (requires level cap) - 'lookup': Hand-tuned thresholds from array Each store can have a different curve (e.g., default store uses quadratic, reputation store uses linear). Configuration is stored in Flashcore and can be set via XP.config.set() or /xp config commands. **Default** `Quadratic curve with default values (a=5, b=50, c=100)` **Examples** `Linear curve with 100 XP per level { levels: { type: 'linear', params: { xpPerLevel: 100 } } }` `Lookup table with custom thresholds { levels: { type: 'lookup', params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] } } }` `Exponential curve with level cap { levels: { type: 'exponential', params: { base: 1.5, multiplier: 100 }, maxLevel: 50 } }` **Remarks** Per-store configuration enables multi-dimensional progression systems: - Default store: Standard quadratic leveling - Reputation store: Linear progression (100 XP per level) - Combat store: Exponential prestige levels Configuration precedence (highest to lowest): 1. PluginOptions.levels.getCurve callback (code-based) 2. GuildConfig.levels preset (stored in Flashcore) 3. Default quadratic curve (a=5, b=50, c=100) |
+| <a id="multipliers"></a> `multipliers?` | \{ `role`: `Record`\<`string`, `number`\>; `server`: `number`; `user`: `Record`\<`string`, `number`\>; \} | Optional per-role, per-user, and server-wide multipliers |
+| `multipliers.role?` | `Record`\<`string`, `number`\> | Per-role multipliers (roleId → multiplier) |
+| `multipliers.server?` | `number` | Server-wide multiplier applied to all users (stacks with xpRate) |
+| `multipliers.user?` | `Record`\<`string`, `number`\> | Per-user multipliers (userId → multiplier) |
+| <a id="noxpchannelids"></a> `noXpChannelIds` | `string`[] | Messages in these channels don't award XP (default: []) |
+| <a id="noxproleids"></a> `noXpRoleIds` | `string`[] | Users with these roles don't gain XP (default: []) |
+| <a id="removerewardonxploss"></a> `removeRewardOnXpLoss` | `boolean` | Remove roles when user loses levels (default: false) |
+| <a id="rewardsmode"></a> `rewardsMode` | [`RewardsMode`](../type-aliases/rewards-mode) | How role rewards stack (default: 'stack') |
+| <a id="rolerewards"></a> `roleRewards` | [`RoleReward`](role-reward)[] | Roles awarded at specific levels (default: []) |
+| <a id="theme"></a> `theme?` | \{ `backgroundUrl`: `string`; `embedColor`: `number`; \} | Optional theme customization for rank and leaderboard embeds |
+| `theme.backgroundUrl?` | `string` | Reserved for future web-based rank card renderer |
+| `theme.embedColor?` | `number` | Custom embed color in hex (e.g., 0x5865F2 for Discord Blurple) |
+| <a id="xprate"></a> `xpRate` | `number` | Global XP multiplier for this guild (default: 1.0) |

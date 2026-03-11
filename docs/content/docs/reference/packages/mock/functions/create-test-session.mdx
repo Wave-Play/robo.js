@@ -1,0 +1,25 @@
+---
+title: "createTestSession()"
+---
+
+# Function: createTestSession()
+
+```ts
+function createTestSession(testFilePath, config): Promise<TestSession>
+```
+
+Create a test session with automatic registry tracking
+
+When running via `robo mock test`, this returns the shared session
+that the bot is connected to. Otherwise, it creates a new session.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `testFilePath` | `string` | Path to the test file (use __filename) |
+| `config` | [`CreateTestSessionConfig`](../interfaces/create-test-session-config) | Session configuration |
+
+## Returns
+
+`Promise`\<[`TestSession`](../interfaces/test-session)\>

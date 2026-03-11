@@ -1,0 +1,20 @@
+---
+title: "Event<K>"
+---
+
+# Interface: Event\<K\>
+
+Event module structure expected in handler files.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* keyof `ClientEvents` | keyof `ClientEvents` |
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="config"></a> `config?` | [`EventConfig`](event-config) |
+| <a id="default"></a> `default` | [`EventHandler`](../type-aliases/event-handler)\<`K`\> |

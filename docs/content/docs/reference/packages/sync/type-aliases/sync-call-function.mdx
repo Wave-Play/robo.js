@@ -1,0 +1,29 @@
+---
+title: "SyncCallFunction()"
+---
+
+# Type Alias: SyncCallFunction()
+
+```ts
+type SyncCallFunction = <Payload, Result>(method, payload?) => Promise<CallResult<Result>>;
+```
+
+The call function type returned by useSyncCall.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `Payload` | `unknown` |
+| `Result` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `method` | `string` |
+| `payload`? | `Payload` |
+
+## Returns
+
+`Promise`\<[`CallResult`](../interfaces/call-result)\<`Result`\>\>

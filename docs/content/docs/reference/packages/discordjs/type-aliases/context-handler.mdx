@@ -1,0 +1,22 @@
+---
+title: "ContextHandler()"
+---
+
+# Type Alias: ContextHandler()
+
+```ts
+type ContextHandler = (interaction, target) => unknown | Promise<unknown>;
+```
+
+Generic context handler (either user or message).
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interaction` | `ContextMenuCommandInteraction` |
+| `target` | `User` \| `Message` |
+
+## Returns
+
+`unknown` \| `Promise`\<`unknown`\>

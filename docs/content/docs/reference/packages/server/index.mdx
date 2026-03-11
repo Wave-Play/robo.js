@@ -1,0 +1,71 @@
+---
+title: "DIRECTORY"
+description: "API reference for @robojs/server"
+---
+
+# @robojs/server
+
+API reference documentation for `@robojs/server`.
+
+## Classes
+
+- [`CloudflareProvider`](classes/cloudflare-provider) - Cloudflare Tunnel Provider implementation.
+- [`RoboRequest`](classes/robo-request) - Extends the [Web Request API](https://developer.mozilla.org/docs/Web/API/Request) with additional convenience methods.
+- [`RoboResponse`](classes/robo-response) - Extends the [Web Response API](https://developer.mozilla.org/docs/Web/API/Response) with additional convenience methods.
+
+## Interfaces
+
+- [`ApiEntry`](interfaces/api-entry)
+- [`ApiHandlerModule`](interfaces/api-handler-module) - API handler module with exports.
+- [`Api`](interfaces/api)
+- [`DefinedEndpoint`](interfaces/defined-endpoint)
+- [`EndpointSchema`](interfaces/endpoint-schema) - Endpoint schema definition for typed APIs.
+- [`FindAvailablePortOptions`](interfaces/find-available-port-options) - Options for finding an available port.
+- [`FindAvailablePortResult`](interfaces/find-available-port-result) - Result of finding an available port.
+- [`ForTestingOptions`](interfaces/for-testing-options) - Options for creating a RoboRequest for testing purposes.
+- [`ResolvedPluginRoute`](interfaces/resolved-plugin-route) - Resolved plugin route configuration with normalized prefixes and asset info.
+- [`RoboReply`](interfaces/robo-reply)
+- [`TestClientRoute`](interfaces/test-client-route) - Test client route configuration.
+- [`TestClient`](interfaces/test-client) - Test client instance for testing multiple routes.
+- [`TestRequestOptions`](interfaces/test-request-options) - Options for creating a test request.
+- [`TestRouteOptions`](interfaces/test-route-options) - Options for testing a route module.
+- [`TestRouteResult`](interfaces/test-route-result) - Result type for route testing that includes both Response and convenience methods.
+- [`TunnelConfig`](interfaces/tunnel-config) - Plugin tunnel configuration.
+- [`TunnelInstance`](interfaces/tunnel-instance) - Represents a running tunnel instance.
+- [`TunnelProviderConfig`](interfaces/tunnel-provider-config) - Configuration for tunnel providers.
+- [`TunnelProvider`](interfaces/tunnel-provider) - Interface for tunnel providers.
+- [`TypedRoboRequest`](interfaces/typed-robo-request) - Enhanced request with typed accessors based on schema.
+
+## Type Aliases
+
+- [`ApiHandler`](type-aliases/api-handler) - API handler function type.
+- [`HttpMethodExport`](type-aliases/http-method-export)
+- [`HttpMethod`](type-aliases/http-method)
+- [`NotFoundHandler`](type-aliases/not-found-handler)
+- [`PluginPrefixConfig`](type-aliases/plugin-prefix-config) - Plugin prefix configuration - supports both simple string and granular object.
+- [`PluginPrefixMap`](type-aliases/plugin-prefix-map) - Centralized plugin prefix configuration in @robojs/server config.
+- [`RouteHandler`](type-aliases/route-handler)
+- [`TestableModule`](type-aliases/testable-module) - Handler module that can be tested.
+- [`TypedHandler`](type-aliases/typed-handler)
+- [`WebSocketHandler`](type-aliases/web-socket-handler)
+
+## Functions
+
+- [`CreateTestClient`](functions/create-test-client) - Creates a fluent test client for testing multiple routes.
+- [`CreateTestRequest`](functions/create-test-request) - Creates a RoboRequest suitable for testing API handlers.
+- [`Define`](functions/define) - Define a typed API endpoint with optional Zod schema.
+- [`FindAvailablePort`](functions/find-available-port) - Find an available port, starting from the given port and incrementing if necessary.
+- [`GetPluginRouteRegistry`](functions/get-plugin-route-registry) - Get the global plugin route registry.
+- [`GetServerEngine`](functions/get-server-engine)
+- [`InitPluginRoutes`](functions/init-plugin-routes) - Initialize the plugin route registry with prefix configuration.
+- [`IsPortAvailable`](functions/is-port-available) - Check if a specific port is available on the given hostname.
+- [`Ready`](functions/ready) - Returns a promise that resolves when the plugin is all set up.
+- [`TestHandler`](functions/test-handler) - Tests a specific handler function directly without method dispatch.
+- [`TestRoute`](functions/test-route) - Tests an API route module by dispatching to the appropriate handler.
+
+## Variables
+
+- [`Default_max_port_attempts`](variables/default_max_port_attempts) - Default maximum number of port increment attempts.
+- [`Http_methods`](variables/http_methods) - Supported HTTP methods for named exports.
+- [`Schema_symbol`](variables/schema_symbol)
+- [`Server`](variables/server) - Use this to interact with the server.

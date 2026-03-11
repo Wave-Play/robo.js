@@ -1,76 +1,29 @@
 ---
-title: "@robojs/i18n"
-description: API reference for the internationalization plugin.
+title: "DIRECTORY"
+description: "API reference for @robojs/i18n"
 ---
 
 # @robojs/i18n
 
-Internationalization support with locale management and translation utilities.
+API reference documentation for `@robojs/i18n`.
 
-<Cards>
-  <Card href="/docs/plugins/i18n" title="Plugin Guide" description="Full documentation and usage examples." />
-</Cards>
+## Interfaces
 
-## Main Exports
+- [`PluginConfig`](interfaces/plugin-config) - Plugin options for `@robojs/i18n` (e.g., `defaultLocale`).
 
-### t (Translate)
+## Type Aliases
 
-Main translation function.
+- [`LocaleLike`](type-aliases/locale-like) - A union describing acceptable inputs that carry a locale (string or objects with `locale`/`guildLocale`).
 
-```typescript
-import { t } from '@robojs/i18n'
+## Functions
 
-// Simple translation
-const greeting = t('hello')
+- [`ClearFormatterCache`](functions/clear-formatter-cache) - Clears the in-memory MessageFormat cache (useful for tests and hot reloads).
+- [`CreateCommandConfig`](functions/create-command-config) - Creates a **localized** command configuration for Robo.js projects.
+- [`LoadLocales`](functions/load-locales) - Loads locale JSONs, builds **slash-namespaced** & flattened keys, stores values in State, and writes generated types.
+- [`T`](functions/t) - Formats a localized message by key with **strongly-typed params** inferred from your MF2 message.
+- [`Tr`](functions/tr) - `tr` — a **strict** version of `t`:.
+- [`WithLocale`](functions/with-locale)
 
-// With interpolation
-const message = t('welcome', { name: 'User' })
+## Variables
 
-// With locale override
-const spanish = t('hello', { lng: 'es' })
-```
-
-### getLocale
-
-Get the current locale for a user or guild.
-
-```typescript
-import { getLocale } from '@robojs/i18n'
-
-const locale = await getLocale(userId, guildId)
-```
-
-### setLocale
-
-Set the locale for a user or guild.
-
-```typescript
-import { setLocale } from '@robojs/i18n'
-
-await setLocale(userId, guildId, 'es')
-```
-
-## Translation Files
-
-Place translation files in `/src/i18n`:
-
-```
-/src/i18n
-├── en.json
-├── es.json
-├── fr.json
-└── de.json
-```
-
-Example translation file:
-
-```json title="/src/i18n/en.json"
-{
-  "hello": "Hello!",
-  "welcome": "Welcome, {{name}}!"
-}
-```
-
-<Cards>
-  <Card href="/docs/plugins/i18n" title="Plugin Guide" description="See full configuration options." />
-</Cards>
+- [`Locale`](variables/locale)

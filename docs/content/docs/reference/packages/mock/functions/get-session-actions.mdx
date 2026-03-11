@@ -1,0 +1,29 @@
+---
+title: "getSessionActions()"
+---
+
+# Function: getSessionActions()
+
+```ts
+function getSessionActions(sessionId, options?): Promise<{
+  actions: RecordedAction[];
+}>
+```
+
+Get recorded actions for a session
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `options`? | \{ `limit`: `number`; `since`: `number`; `type`: `string`; \} |
+| `options.limit`? | `number` |
+| `options.since`? | `number` |
+| `options.type`? | `string` |
+
+## Returns
+
+`Promise`\<\{
+  `actions`: [`RecordedAction`](../interfaces/recorded-action)[];
+ \}\>

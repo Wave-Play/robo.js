@@ -1,0 +1,25 @@
+---
+title: "expectNoAction()"
+---
+
+# Function: expectNoAction()
+
+```ts
+function expectNoAction(sessionId, options): Promise<void>
+```
+
+Assert that no action of a type was recorded
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `options` | \{ `description`: `string`; `type`: `string`; `waitMs`: `number`; \} |
+| `options.description` | `string` |
+| `options.type` | `string` |
+| `options.waitMs`? | `number` |
+
+## Returns
+
+`Promise`\<`void`\>

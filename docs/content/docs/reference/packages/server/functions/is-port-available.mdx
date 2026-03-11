@@ -1,0 +1,24 @@
+---
+title: "isPortAvailable()"
+---
+
+# Function: isPortAvailable()
+
+```ts
+function isPortAvailable(port, hostname): Promise<boolean>
+```
+
+Check if a specific port is available on the given hostname
+
+## Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `port` | `number` | `undefined` | Port number to check |
+| `hostname` | `string` | `'localhost'` | Hostname to bind to (defaults to 'localhost') |
+
+## Returns
+
+`Promise`\<`boolean`\>
+
+Promise\<boolean\> - true if port is available, false if in use

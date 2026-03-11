@@ -1,0 +1,25 @@
+---
+title: "SyncMiddlewareContext<T, ClientData>"
+---
+
+# Interface: SyncMiddlewareContext\<T, ClientData\>
+
+Context passed to middleware handlers.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="cleankey"></a> `cleanKey` | `string` | The normalized key string |
+| <a id="client"></a> `client` | [`HandlerClient`](handler-client)\<`ClientData`\> | The client making the request |
+| <a id="key"></a> `key` | `string`[] | The full key array |
+| <a id="messagetype"></a> `messageType` | `string` | Message type ('update', 'call', etc.) |
+| <a id="params"></a> `params` | `Record`\<`string`, `string`\> | Dynamic route parameters |
+| <a id="state"></a> `state` | `T` | The state data (newState for 'before', final state for 'after') |

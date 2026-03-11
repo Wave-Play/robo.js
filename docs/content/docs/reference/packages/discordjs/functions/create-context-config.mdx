@@ -1,0 +1,59 @@
+---
+title: "createContextConfig()"
+---
+
+# Function: createContextConfig()
+
+```ts
+function createContextConfig<C>(config): C
+```
+
+Creates a context menu configuration with proper type validation.
+This is a type-safe identity function that helps TypeScript validate config properties.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`ContextConfig`](../interfaces/context-config) |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `config` | [`SmartContextConfig`](../type-aliases/smart-context-config)\<`C`\> | The context menu configuration object |
+
+## Returns
+
+`C`
+
+The same configuration with validated types
+
+## Examples
+
+```ts
+import { createContextConfig } from '@robojs/discordjs'
+
+// User context menu
+export const config = createContextConfig({
+  description: 'Get user info'
+})
+
+export default (interaction, user) => {
+  return `User: ${user.username} (${user.id})`
+}
+```
+
+```ts
+// Message context menu with permissions
+export const config = createContextConfig({
+  description: 'Pin this message',
+  defaultMemberPermissions: 'ManageMessages',
+  contexts: ['Guild']
+})
+
+export default async (interaction, message) => {
+  await message.pin()
+  return 'Message pinned!'
+}
+```

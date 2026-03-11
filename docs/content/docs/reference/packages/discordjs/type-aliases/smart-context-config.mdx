@@ -1,0 +1,18 @@
+---
+title: "SmartContextConfig<C>"
+---
+
+# Type Alias: SmartContextConfig\<C\>
+
+```ts
+type SmartContextConfig<C> = ExactContextConfig<C> & EnforceContextConfig<C>;
+```
+
+Smart context config type that enables TypeScript validation.
+Used with `createContextConfig()` for type safety.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`ContextConfig`](../interfaces/context-config) |

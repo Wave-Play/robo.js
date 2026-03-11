@@ -1,0 +1,356 @@
+---
+title: "abstract BaseEngine"
+---
+
+# Class: `abstract` BaseEngine
+
+Abstract base class to be extended by AI engine implementations. Provides hook orchestration,
+default capability flags, and optional voice-session helpers.
+
+## Examples
+
+```ts
+class MyEngine extends BaseEngine {
+  public async chat(messages: ChatMessage[], options: ChatOptions) {
+    // Call provider API and translate the result to ChatResult
+    return provider.complete(messages, options)
+  }
+
+  public getFunctionHandlers() {
+    return {}
+  }
+
+  public getInfo() {
+    return { name: 'my-engine', version: '1.0.0' }
+  }
+}
+```
+
+```ts
+engine.on('chat', async (ctx) => {
+  return ctx.messages.filter(Boolean)
+})
+```
+
+```ts
+if (engine.supportedFeatures().voice) {
+  await engine.startVoiceSession(options)
+}
+```
+
+## Remarks
+
+Subclasses must implement [BaseEngine.chat](base-engine#chat), [BaseEngine.generateImage](base-engine#generateimage),
+[BaseEngine.getFunctionHandlers](base-engine#getfunctionhandlers), and [BaseEngine.getInfo](base-engine#getinfo). Override optional voice
+methods when providing realtime functionality.
+
+## Extended by
+
+- [`OpenAiEngine`](../../../engines/openai/classes/open-ai-engine)
+
+## Constructors
+
+### new BaseEngine()
+
+```ts
+new BaseEngine(): BaseEngine
+```
+
+#### Returns
+
+[`BaseEngine`](base-engine)
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="_hooks"></a> `_hooks` | `protected` | `Map`\<[`HookEvent`](../type-aliases/hook-event), [`Hook`](../type-aliases/hook)[]\> | Registered hooks keyed by event type. |
+
+## Methods
+
+### callHooks()
+
+#### Call Signature
+
+```ts
+callHooks(event, context): Promise<void>
+```
+
+Sequentially executes registered hooks for the given event while allowing each hook to mutate
+the message array.
+
+##### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `"chat"` | Hook event name. |
+| `context` | [`ChatHookContext`](../interfaces/chat-hook-context) | Mutable hook context. |
+
+##### Returns
+
+`Promise`\<`void`\>
+
+Latest message array after all hooks have run.
+
+#### Call Signature
+
+```ts
+callHooks(event, context): Promise<void | ChatReply>
+```
+
+Sequentially executes registered hooks for the given event while allowing each hook to mutate
+the message array.
+
+##### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `"reply"` | Hook event name. |
+| `context` | [`ReplyHookContext`](../interfaces/reply-hook-context) | Mutable hook context. |
+
+##### Returns
+
+`Promise`\<`void` \| [`ChatReply`](../interfaces/chat-reply)\>
+
+Latest message array after all hooks have run.
+
+***
+
+### chat()
+
+```ts
+abstract chat(messages, options): Promise<ChatResult>
+```
+
+Produces a conversational response based on supplied messages and options.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `messages` | [`ChatMessage`](../interfaces/chat-message)[] | Message history presented to the engine. |
+| `options` | [`ChatOptions`](../interfaces/chat-options) | Additional configuration for the completion request. |
+
+#### Returns
+
+`Promise`\<[`ChatResult`](../interfaces/chat-result)\>
+
+Chat response including tool calls, conversation state, and voice metadata.
+
+***
+
+### generateImage()
+
+```ts
+abstract generateImage(options): Promise<GenerateImageResult>
+```
+
+Generates an image using the backing provider.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`GenerateImageOptions`](../interfaces/generate-image-options) | Prompt and configuration for the image request. |
+
+#### Returns
+
+`Promise`\<[`GenerateImageResult`](../interfaces/generate-image-result)\>
+
+Generated images represented as base64 payloads or URLs.
+
+***
+
+### getFunctionHandlers()
+
+```ts
+abstract getFunctionHandlers(): Record<string, Command>
+```
+
+Returns a mapping of function names to Robo command handlers invoked during tool execution.
+
+#### Returns
+
+`Record`\<`string`, `Command`\>
+
+***
+
+### getInfo()
+
+```ts
+abstract getInfo(): Record<string, unknown>
+```
+
+Provides descriptive information about the engine for diagnostics or inspection tooling.
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+***
+
+### getMCPTools()?
+
+```ts
+optional getMCPTools(): MCPTool[]
+```
+
+Optionally returns MCP (Model Context Protocol) tool configurations for this engine.
+Engines that support MCP should override this method to return their configured MCP servers.
+
+#### Returns
+
+[`MCPTool`](../interfaces/mcp-tool)[]
+
+Array of MCP tool configurations, or empty array if MCP is not supported.
+
+***
+
+### init()
+
+```ts
+init(): Promise<void>
+```
+
+Perform asynchronous initialization prior to handling requests. Override for custom setup.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### off()
+
+```ts
+off(event, hook): void
+```
+
+Removes a previously registered hook from the engine.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | [`HookEvent`](../type-aliases/hook-event) | Hook event name. |
+| `hook` | [`Hook`](../type-aliases/hook) | Hook callback to remove. |
+
+#### Returns
+
+`void`
+
+***
+
+### on()
+
+```ts
+on(event, hook): void
+```
+
+Registers a hook to run during specific engine orchestration events.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | [`HookEvent`](../type-aliases/hook-event) | Hook event name. |
+| `hook` | [`Hook`](../type-aliases/hook) | Hook callback to register. |
+
+#### Returns
+
+`void`
+
+***
+
+### startVoiceSession()
+
+```ts
+startVoiceSession(_options): Promise<VoiceSessionHandle>
+```
+
+Starts a realtime voice session. Engines without voice capabilities should override
+[BaseEngine.supportedFeatures](base-engine#supportedfeatures) or this method to avoid throwing.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `_options` | [`VoiceSessionStartOptions`](../interfaces/voice-session-start-options) | Voice session options supplied by the caller. |
+
+#### Returns
+
+`Promise`\<[`VoiceSessionHandle`](../interfaces/voice-session-handle)\>
+
+#### Throws
+
+Always throws when not overridden by subclasses.
+
+***
+
+### stopVoiceSession()
+
+```ts
+stopVoiceSession(_handle): Promise<void>
+```
+
+Stops a realtime voice session previously started by [BaseEngine.startVoiceSession](base-engine#startvoicesession).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `_handle` | [`VoiceSessionHandle`](../interfaces/voice-session-handle) | Voice session handle. |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
+
+Always throws when voice is unsupported.
+
+***
+
+### summarizeToolResult()?
+
+```ts
+optional summarizeToolResult(_params): Promise<{
+  responseId: null | string;
+  summary: string;
+}>
+```
+
+Optionally summarize tool execution results for provider-specific follow-up prompts.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `_params` | \{ `call`: [`ChatFunctionCall`](../interfaces/chat-function-call); `model`: `string`; `resultText`: `string`; `success`: `boolean`; \} | Details describing the tool invocation to summarize. |
+| `_params.call` | [`ChatFunctionCall`](../interfaces/chat-function-call) | - |
+| `_params.model`? | `string` | - |
+| `_params.resultText` | `string` | - |
+| `_params.success` | `boolean` | - |
+
+#### Returns
+
+`Promise`\<\{
+  `responseId`: `null` \| `string`;
+  `summary`: `string`;
+ \}\>
+
+Summary text and an optional response identifier for traceability.
+
+***
+
+### supportedFeatures()
+
+```ts
+supportedFeatures(): EngineSupportedFeatures
+```
+
+Returns the supported feature flags for the engine. Override to enable capabilities.
+
+#### Returns
+
+[`EngineSupportedFeatures`](../interfaces/engine-supported-features)

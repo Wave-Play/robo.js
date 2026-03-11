@@ -1,0 +1,48 @@
+---
+title: "StageMessage"
+---
+
+# Interface: StageMessage
+
+Simplified message data for stage clients
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="attachments"></a> `attachments` | `unknown`[] |
+| <a id="author"></a> `author` | [`StageUser`](stage-user) |
+| <a id="channel_id"></a> `channel_id` | `string` |
+| <a id="components"></a> `components` | `unknown`[] |
+| <a id="content"></a> `content` | `string` |
+| <a id="edited_timestamp"></a> `edited_timestamp?` | `null` \| `string` |
+| <a id="embeds"></a> `embeds` | `unknown`[] |
+| <a id="flags"></a> `flags?` | `number` |
+| <a id="guild_id"></a> `guild_id?` | `string` |
+| <a id="id"></a> `id` | `string` |
+| <a id="interaction"></a> `interaction?` | \{ `id`: `string`; `name`: `string`; `type`: `number`; `user`: [`StageUser`](stage-user); \} |
+| `interaction.id` | `string` |
+| `interaction.name?` | `string` |
+| `interaction.type` | `number` |
+| `interaction.user` | [`StageUser`](stage-user) |
+| <a id="interaction_metadata"></a> `interaction_metadata?` | \{ `authorizing_integration_owners`: `Record`\<`number`, `string`\>; `id`: `string`; `original_response_message_id`: `string`; `target_message_id`: `string`; `target_user`: [`StageUser`](stage-user); `type`: `number`; `user`: [`StageUser`](stage-user); \} |
+| `interaction_metadata.authorizing_integration_owners?` | `Record`\<`number`, `string`\> |
+| `interaction_metadata.id` | `string` |
+| `interaction_metadata.original_response_message_id?` | `string` |
+| `interaction_metadata.target_message_id?` | `string` |
+| `interaction_metadata.target_user?` | [`StageUser`](stage-user) |
+| `interaction_metadata.type` | `number` |
+| `interaction_metadata.user` | [`StageUser`](stage-user) |
+| <a id="message_reference"></a> `message_reference?` | \{ `channel_id`: `string`; `guild_id`: `string`; `message_id`: `string`; \} |
+| `message_reference.channel_id?` | `string` |
+| `message_reference.guild_id?` | `string` |
+| `message_reference.message_id?` | `string` |
+| <a id="pinned"></a> `pinned?` | `boolean` |
+| <a id="reactions"></a> `reactions?` | `StageReaction`[] |
+| <a id="thread_id"></a> `thread_id?` | `string` |
+| <a id="thread_last_message_at"></a> `thread_last_message_at?` | `string` |
+| <a id="thread_message_count"></a> `thread_message_count?` | `number` |
+| <a id="thread_name"></a> `thread_name?` | `string` |
+| <a id="thread_owner"></a> `thread_owner?` | [`StageUser`](stage-user) |
+| <a id="timestamp"></a> `timestamp` | `string` |
+| <a id="type"></a> `type?` | `number` |

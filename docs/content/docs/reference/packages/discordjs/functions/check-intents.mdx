@@ -1,0 +1,23 @@
+---
+title: "checkIntents()"
+---
+
+# Function: checkIntents()
+
+```ts
+function checkIntents(client, events): void
+```
+
+Check if the client has the required intents for registered events.
+Logs warnings for any missing intents.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `client` | `Client`\<`boolean`\> | Discord.js client instance |
+| `events` | `Record`\<`string`, `unknown`[]\> | Map of event names to handler records |
+
+## Returns
+
+`void`

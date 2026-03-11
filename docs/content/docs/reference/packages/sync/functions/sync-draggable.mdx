@@ -1,0 +1,77 @@
+---
+title: "SyncDraggable()"
+---
+
+# Function: SyncDraggable()
+
+```ts
+function SyncDraggable<T, ClientData>(props): React.ReactElement | null
+```
+
+Declarative component wrapper for making any element draggable and synchronized.
+
+Automatically handles positioning, locking, interpolation, and touch/mouse events.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`DragState`](../interfaces/drag-state) | [`DragState`](../interfaces/drag-state) |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `props` | [`SyncDraggableProps`](../interfaces/sync-draggable-props)\<`T`, `ClientData`\> |
+
+## Returns
+
+`React.ReactElement` \| `null`
+
+## Examples
+
+```ts
+// Basic usage
+<SyncDraggable
+  id={['ball', '1']}
+  initial={{ x: 0.5, y: 0.5 }}
+  interpolate={{ x: 0.2, y: 0.2 }}
+  bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
+>
+  <div className="ball">Drag me!</div>
+</SyncDraggable>
+```
+
+```ts
+// With render props for custom styling
+<SyncDraggable
+  id={['piece', index]}
+  initial={{ x: 0.1, y: 0.1 }}
+  interpolate={{ x: 0.15, y: 0.15 }}
+>
+  {({ isDragging, canInteract, state }) => (
+    <div
+      className="game-piece"
+      style={{
+        cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
+        opacity: isDragging ? 0.8 : 1
+      }}
+    >
+      Piece at ({state.x.toFixed(2)}, {state.y.toFixed(2)})
+    </div>
+  )}
+</SyncDraggable>
+```
+
+```ts
+// With lifecycle callbacks
+<SyncDraggable
+  id={['card', cardId]}
+  initial={{ x: 0.5, y: 0.5 }}
+  onDragStart={(s) => console.log('Started dragging at', s.x, s.y)}
+  onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
+>
+  <Card />
+</SyncDraggable>
+```

@@ -1,0 +1,23 @@
+---
+title: "StageSendMessageData"
+---
+
+# Interface: StageSendMessageData
+
+Data for send_message command
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="author"></a> `author?` | \{ `id`: `string`; `username`: `string`; \} |
+| `author.id?` | `string` |
+| `author.username?` | `string` |
+| <a id="channel_id"></a> `channel_id` | `string` |
+| <a id="components"></a> `components?` | `unknown`[] |
+| <a id="content"></a> `content` | `string` |
+| <a id="embeds"></a> `embeds?` | `unknown`[] |
+| <a id="message_reference"></a> `message_reference?` | \{ `channel_id`: `string`; `guild_id`: `string`; `message_id`: `string`; \} |
+| `message_reference.channel_id?` | `string` |
+| `message_reference.guild_id?` | `string` |
+| `message_reference.message_id?` | `string` |

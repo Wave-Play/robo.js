@@ -1,0 +1,17 @@
+---
+title: "SyncStatus"
+---
+
+# Interface: SyncStatus
+
+Sync status for SyncBox components.
+Apps can use this to show loading/syncing indicators.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="lastsyncedat"></a> `lastSyncedAt?` | `number` | Timestamp of last successful sync |
+| <a id="stale"></a> `stale` | `boolean` | Whether state might be outdated (connection issues) |
+| <a id="synced"></a> `synced` | `boolean` | Whether initial state has been received |
+| <a id="syncing"></a> `syncing` | `boolean` | Whether an update is currently being sent |

@@ -1,0 +1,18 @@
+---
+title: "LockContext"
+---
+
+# Interface: LockContext
+
+Lock context for lockable SyncBox.
+Provides lock/unlock capabilities and ownership tracking.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="islocked"></a> `isLocked` | `boolean` | Whether the box is currently locked by anyone |
+| <a id="islockholder"></a> `isLockHolder` | `boolean` | Whether current client holds the lock |
+| <a id="lock"></a> `lock` | () =\> `void` | Acquire the lock (automatically uses current client ID) |
+| <a id="lockedby"></a> `lockedBy` | `null` \| `string` | Client ID of the lock holder, or null if unlocked |
+| <a id="unlock"></a> `unlock` | () =\> `void` | Release the lock |

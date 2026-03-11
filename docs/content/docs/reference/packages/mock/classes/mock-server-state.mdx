@@ -1,0 +1,3841 @@
+---
+title: "MockServerState"
+---
+
+# Class: MockServerState
+
+Centralized state management for a mock session.
+Provides CRUD methods for all mock entities.
+
+## Implements
+
+- [`SessionState`](../interfaces/session-state)
+
+## Constructors
+
+### new MockServerState()
+
+```ts
+new MockServerState(options?): MockServerState
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`StateOptions`](../interfaces/state-options) |
+
+#### Returns
+
+[`MockServerState`](mock-server-state)
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="applicationemojis"></a> `applicationEmojis` | `readonly` | `Map`\<`string`, `MockEmoji`\> | - |
+| <a id="applicationid"></a> `applicationId` | `readonly` | `string` | - |
+| <a id="attachmentstorage"></a> `attachmentStorage` | `readonly` | [`MemoryAttachmentStorage`](memory-attachment-storage) | Attachment storage backend. **See** - AttachmentStorage for the interface - MemoryAttachmentStorage for the default implementation |
+| <a id="auditlogs"></a> `auditLogs` | `readonly` | `Map`\<`string`, `MockAuditLogEntry`[]\> | - |
+| <a id="automodrules"></a> `autoModRules` | `readonly` | `Map`\<`string`, `MockAutoModRule`\> | - |
+| <a id="bans"></a> `bans` | `readonly` | `Map`\<`string`, `MockBan`\> | - |
+| <a id="botuser"></a> `botUser` | `readonly` | [`MockUser`](../interfaces/mock-user) | - |
+| <a id="channels"></a> `channels` | `readonly` | `Map`\<`string`, [`MockChannel`](../interfaces/mock-channel)\> | - |
+| <a id="commandpermissions"></a> `commandPermissions` | `readonly` | `Map`\<`string`, `MockCommandPermission`[]\> | - |
+| <a id="commands"></a> `commands` | `readonly` | `Map`\<`string`, `MockApplicationCommand`\> | - |
+| <a id="dmchannels"></a> `dmChannels` | `readonly` | `Map`\<`string`, [`MockChannel`](../interfaces/mock-channel)\> | - |
+| <a id="emojis"></a> `emojis` | `readonly` | `Map`\<`string`, `MockEmoji`\> | - |
+| <a id="guildmembers"></a> `guildMembers` | `readonly` | `Map`\<`string`, [`MockGuildMember`](../interfaces/mock-guild-member)\> | - |
+| <a id="guilds"></a> `guilds` | `readonly` | `Map`\<`string`, [`MockGuild`](../interfaces/mock-guild)\> | - |
+| <a id="interactions"></a> `interactions` | `readonly` | `Map`\<`string`, [`MockInteraction`](../interfaces/mock-interaction)\> | - |
+| <a id="invites"></a> `invites` | `readonly` | `Map`\<`string`, `MockInvite`\> | - |
+| <a id="messages"></a> `messages` | `readonly` | `Map`\<`string`, [`MockMessage`](../interfaces/mock-message)\> | - |
+| <a id="pollvotes"></a> `pollVotes` | `readonly` | `Map`\<`string`, `Map`\<`string`, `number`[]\>\> | - |
+| <a id="roles"></a> `roles` | `readonly` | `Map`\<`string`, [`MockRole`](../interfaces/mock-role)\> | - |
+| <a id="scheduledevents"></a> `scheduledEvents` | `readonly` | `Map`\<`string`, `MockScheduledEvent`\> | - |
+| <a id="stageinstances"></a> `stageInstances` | `readonly` | `Map`\<`string`, `MockStageInstance`\> | - |
+| <a id="stickers"></a> `stickers` | `readonly` | `Map`\<`string`, `MockSticker`\> | - |
+| <a id="threadmembers"></a> `threadMembers` | `readonly` | `Map`\<`string`, `Map`\<`string`, [`MockThreadMember`](../interfaces/mock-thread-member)\>\> | - |
+| <a id="users"></a> `users` | `readonly` | `Map`\<`string`, [`MockUser`](../interfaces/mock-user)\> | - |
+| <a id="voicestates"></a> `voiceStates` | `readonly` | `Map`\<`string`, `MockVoiceState`\> | - |
+| <a id="webhooks"></a> `webhooks` | `readonly` | `Map`\<`string`, [`MockWebhook`](../interfaces/mock-webhook)\> | - |
+
+## Accessors
+
+### currentUser
+
+#### Get Signature
+
+```ts
+get currentUser(): MockUser
+```
+
+Get the current acting user for Stage UI interactions.
+Creates a default user on first access if none is set.
+
+##### Returns
+
+[`MockUser`](../interfaces/mock-user)
+
+#### Set Signature
+
+```ts
+set currentUser(user): void
+```
+
+Set the current acting user.
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `user` | [`MockUser`](../interfaces/mock-user) |
+
+##### Returns
+
+`void`
+
+Current "acting" user for Stage UI interactions (separate from botUser)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`currentUser`](../interfaces/session-state#currentuser)
+
+***
+
+### sequence
+
+#### Get Signature
+
+```ts
+get sequence(): number
+```
+
+##### Returns
+
+`number`
+
+#### Set Signature
+
+```ts
+set sequence(value): void
+```
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `number` |
+
+##### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`sequence`](../interfaces/session-state#sequence)
+
+## Methods
+
+### addChannel()
+
+```ts
+addChannel(channel): void
+```
+
+Add a channel to the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channel` | [`MockChannel`](../interfaces/mock-channel) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addChannel`](../interfaces/session-state#addchannel)
+
+***
+
+### addChannelToGuild()
+
+```ts
+addChannelToGuild(guildId, channel): void
+```
+
+Add a channel to a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `channel` | [`MockChannel`](../interfaces/mock-channel) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addChannelToGuild`](../interfaces/session-state#addchanneltoguild)
+
+***
+
+### addForumTag()
+
+```ts
+addForumTag(channelId, tag): undefined | MockForumTag
+```
+
+Add a tag to a forum channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `tag` | `Omit`\<[`MockForumTag`](../interfaces/mock-forum-tag), `"id"`\> |
+
+#### Returns
+
+`undefined` \| [`MockForumTag`](../interfaces/mock-forum-tag)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addForumTag`](../interfaces/session-state#addforumtag)
+
+***
+
+### addGuild()
+
+```ts
+addGuild(guild): void
+```
+
+Add a guild to the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guild` | [`MockGuild`](../interfaces/mock-guild) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addGuild`](../interfaces/session-state#addguild)
+
+***
+
+### addInteraction()
+
+```ts
+addInteraction(interaction): void
+```
+
+Add an interaction to the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interaction` | [`MockInteraction`](../interfaces/mock-interaction) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addInteraction`](../interfaces/session-state#addinteraction)
+
+***
+
+### addMemberRole()
+
+```ts
+addMemberRole(
+   guildId, 
+   userId, 
+   roleId): boolean
+```
+
+Add a role to a member
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `roleId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if added, false if member/role not found or already has role
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addMemberRole`](../interfaces/session-state#addmemberrole)
+
+***
+
+### addMemberToGuild()
+
+```ts
+addMemberToGuild(
+   guildId, 
+   userId, 
+   config?): void
+```
+
+Add a user as a member to a guild.
+Creates the guild member entry if it doesn't exist.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `config`? | `Partial`\<[`MockGuildMemberConfig`](../interfaces/mock-guild-member-config)\> |
+
+#### Returns
+
+`void`
+
+***
+
+### addPollVote()
+
+```ts
+addPollVote(
+   messageId, 
+   userId, 
+   answerId): boolean
+```
+
+Add a vote to a poll
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `answerId` | `number` |
+
+#### Returns
+
+`boolean`
+
+true if vote was added, false if already voted (single-select) or invalid
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addPollVote`](../interfaces/session-state#addpollvote)
+
+***
+
+### addReaction()
+
+```ts
+addReaction(
+   messageId, 
+   userId, 
+   emoji): undefined | MockReaction[]
+```
+
+Add a reaction to a message
+Returns the updated reactions array or undefined if message not found
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `emoji` | \{ `id`: `null` \| `string`; `name`: `string`; \} |
+| `emoji.id` | `null` \| `string` |
+| `emoji.name` | `string` |
+
+#### Returns
+
+`undefined` \| `MockReaction`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addReaction`](../interfaces/session-state#addreaction)
+
+***
+
+### addScheduledEventSubscriber()
+
+```ts
+addScheduledEventSubscriber(
+   guildId, 
+   eventId, 
+   userId): boolean
+```
+
+Add a subscriber to a scheduled event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if added, false if event not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addScheduledEventSubscriber`](../interfaces/session-state#addscheduledeventsubscriber)
+
+***
+
+### addSticker()
+
+```ts
+addSticker(sticker): void
+```
+
+Add a sticker directly to state (for control API)
+This allows adding standard/nitro stickers without a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sticker` | `MockSticker` |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addSticker`](../interfaces/session-state#addsticker)
+
+***
+
+### addThreadMember()
+
+```ts
+addThreadMember(threadId, userId): undefined | MockThreadMember
+```
+
+Add a member to a thread
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockThreadMember`](../interfaces/mock-thread-member)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addThreadMember`](../interfaces/session-state#addthreadmember)
+
+***
+
+### addUser()
+
+```ts
+addUser(user): void
+```
+
+Add a user to the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `user` | [`MockUser`](../interfaces/mock-user) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`addUser`](../interfaces/session-state#adduser)
+
+***
+
+### bulkOverwriteCommands()
+
+```ts
+bulkOverwriteCommands(configs, guildId?): null | MockApplicationCommand[]
+```
+
+Bulk overwrite commands for a scope (global or guild)
+Replaces all existing commands with the provided ones
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `configs` | `MockApplicationCommandConfig`[] |
+| `guildId`? | `string` |
+
+#### Returns
+
+`null` \| `MockApplicationCommand`[]
+
+Array of created commands, or null if validation fails
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`bulkOverwriteCommands`](../interfaces/session-state#bulkoverwritecommands)
+
+***
+
+### checkAutoArchiveThreads()
+
+```ts
+checkAutoArchiveThreads(): string[]
+```
+
+Check and archive inactive threads based on auto_archive_duration
+Returns array of thread IDs that were archived
+
+#### Returns
+
+`string`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`checkAutoArchiveThreads`](../interfaces/session-state#checkautoarchivethreads)
+
+***
+
+### checkPollExpiry()
+
+```ts
+checkPollExpiry(messageId): boolean
+```
+
+Check if a poll has expired and finalize it
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if poll was expired
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`checkPollExpiry`](../interfaces/session-state#checkpollexpiry)
+
+***
+
+### cleanupExpiredInteractions()
+
+```ts
+cleanupExpiredInteractions(): void
+```
+
+Cleanup expired interactions (older than 15 minutes)
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`cleanupExpiredInteractions`](../interfaces/session-state#cleanupexpiredinteractions)
+
+***
+
+### createAuditLogEntry()
+
+```ts
+createAuditLogEntry(guildId, config): MockAuditLogEntry
+```
+
+Create an audit log entry for a guild
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild ID |
+| `config` | `MockAuditLogEntryConfig` | The audit log entry configuration |
+
+#### Returns
+
+`MockAuditLogEntry`
+
+The created audit log entry
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createAuditLogEntry`](../interfaces/session-state#createauditlogentry)
+
+***
+
+### createAutoModRule()
+
+```ts
+createAutoModRule(
+   guildId, 
+   config, 
+   creatorId): null | MockAutoModRule
+```
+
+Create an auto-mod rule
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockAutoModRuleConfig` |
+| `creatorId` | `string` |
+
+#### Returns
+
+`null` \| `MockAutoModRule`
+
+The created rule, or null if validation fails
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createAutoModRule`](../interfaces/session-state#createautomodrule)
+
+***
+
+### createBan()
+
+```ts
+createBan(
+   guildId, 
+   userId, 
+   config?): null | MockBan
+```
+
+Create a ban for a user in a guild
+Also removes the member from the guild if they're a member
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `config`? | `MockBanConfig` |
+
+#### Returns
+
+`null` \| `MockBan`
+
+The created ban, or null if guild doesn't exist
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createBan`](../interfaces/session-state#createban)
+
+***
+
+### createCommand()
+
+```ts
+createCommand(config, guildId?): null | MockApplicationCommand
+```
+
+Create a new application command
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | `MockApplicationCommandConfig` |
+| `guildId`? | `string` |
+
+#### Returns
+
+`null` \| `MockApplicationCommand`
+
+The created command, or null if validation fails
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createCommand`](../interfaces/session-state#createcommand)
+
+***
+
+### createEveryoneRole()
+
+```ts
+createEveryoneRole(guildId): MockRole
+```
+
+Create the
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockRole`](../interfaces/mock-role)
+
+#### Everyone
+
+role for a guild
+Called automatically when a guild is created
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createEveryoneRole`](../interfaces/session-state#createeveryonerole)
+
+***
+
+### createForumChannel()
+
+```ts
+createForumChannel(config): MockForumChannel
+```
+
+Create a forum or media channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockForumChannelConfig`](../interfaces/mock-forum-channel-config) |
+
+#### Returns
+
+[`MockForumChannel`](../interfaces/mock-forum-channel)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createForumChannel`](../interfaces/session-state#createforumchannel)
+
+***
+
+### createForumPost()
+
+```ts
+createForumPost(config): {
+  message: MockMessage;
+  thread: MockForumThread;
+}
+```
+
+Create a forum post (thread with initial message)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockForumPostConfig`](../interfaces/mock-forum-post-config) |
+
+#### Returns
+
+```ts
+{
+  message: MockMessage;
+  thread: MockForumThread;
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="message"></a> `message` | [`MockMessage`](../interfaces/mock-message) |
+| <a id="thread"></a> `thread` | [`MockForumThread`](../interfaces/mock-forum-thread) |
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createForumPost`](../interfaces/session-state#createforumpost)
+
+***
+
+### createGuildEmoji()
+
+```ts
+createGuildEmoji(
+   guildId, 
+   config, 
+   uploaderId): null | MockEmoji
+```
+
+Create a guild emoji
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockEmojiConfig` |
+| `uploaderId` | `string` |
+
+#### Returns
+
+`null` \| `MockEmoji`
+
+The created emoji, or null if guild doesn't exist or limit reached
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createGuildEmoji`](../interfaces/session-state#createguildemoji)
+
+***
+
+### createGuildMember()
+
+```ts
+createGuildMember(
+   guildId, 
+   userId, 
+   config?): null | MockGuildMember
+```
+
+Create or add a member to a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `config`? | [`MockGuildMemberConfig`](../interfaces/mock-guild-member-config) |
+
+#### Returns
+
+`null` \| [`MockGuildMember`](../interfaces/mock-guild-member)
+
+The created/existing member, or null if guild doesn't exist
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createGuildMember`](../interfaces/session-state#createguildmember)
+
+***
+
+### createGuildRole()
+
+```ts
+createGuildRole(guildId, config?): null | MockRole
+```
+
+Create a new role in a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config`? | [`MockRoleConfig`](../interfaces/mock-role-config) |
+
+#### Returns
+
+`null` \| [`MockRole`](../interfaces/mock-role)
+
+The created role, or null if guild doesn't exist or limit reached
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createGuildRole`](../interfaces/session-state#createguildrole)
+
+***
+
+### createGuildSticker()
+
+```ts
+createGuildSticker(
+   guildId, 
+   config, 
+   uploaderId): null | MockSticker
+```
+
+Create a guild sticker
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockStickerConfig` |
+| `uploaderId` | `string` |
+
+#### Returns
+
+`null` \| `MockSticker`
+
+The created sticker, or null if guild doesn't exist or limit reached
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createGuildSticker`](../interfaces/session-state#createguildsticker)
+
+***
+
+### createInvite()
+
+```ts
+createInvite(
+   guildId, 
+   channelId, 
+   config, 
+   inviterId): null | MockInvite
+```
+
+Create an invite for a channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `channelId` | `string` |
+| `config` | `MockInviteConfig` |
+| `inviterId` | `string` |
+
+#### Returns
+
+`null` \| `MockInvite`
+
+The created invite, or null if channel doesn't exist
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createInvite`](../interfaces/session-state#createinvite)
+
+***
+
+### createMessage()
+
+```ts
+createMessage(config): MockMessage
+```
+
+Create and store a message
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockMessageConfig`](../interfaces/mock-message-config) |
+
+#### Returns
+
+[`MockMessage`](../interfaces/mock-message)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createMessage`](../interfaces/session-state#createmessage)
+
+***
+
+### createScheduledEvent()
+
+```ts
+createScheduledEvent(
+   guildId, 
+   config, 
+   creatorId): null | MockScheduledEvent
+```
+
+Create a scheduled event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockScheduledEventConfig` |
+| `creatorId` | `string` |
+
+#### Returns
+
+`null` \| `MockScheduledEvent`
+
+The created event, or null if validation fails
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createScheduledEvent`](../interfaces/session-state#createscheduledevent)
+
+***
+
+### createStageInstance()
+
+```ts
+createStageInstance(guildId, config): null | MockStageInstance
+```
+
+Create a stage instance
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `config` | `MockStageInstanceConfig` |
+
+#### Returns
+
+`null` \| `MockStageInstance`
+
+The created stage instance, or null if validation fails
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createStageInstance`](../interfaces/session-state#createstageinstance)
+
+***
+
+### createThread()
+
+```ts
+createThread(config): MockThread
+```
+
+Create a thread channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`MockThreadConfig`](../interfaces/mock-thread-config) |
+
+#### Returns
+
+[`MockThread`](../interfaces/mock-thread)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createThread`](../interfaces/session-state#createthread)
+
+***
+
+### createWebhook()
+
+```ts
+createWebhook(
+   channelId, 
+   config, 
+   creatorId): null | MockWebhook
+```
+
+Create a webhook
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `config` | [`MockWebhookConfig`](../interfaces/mock-webhook-config) |
+| `creatorId` | `string` |
+
+#### Returns
+
+`null` \| [`MockWebhook`](../interfaces/mock-webhook)
+
+The created webhook, or null if channel doesn't exist or limit reached
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`createWebhook`](../interfaces/session-state#createwebhook)
+
+***
+
+### deleteAttachment()
+
+```ts
+deleteAttachment(id): boolean
+```
+
+Delete an attachment by ID.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteAttachment`](../interfaces/session-state#deleteattachment)
+
+***
+
+### deleteAutoModRule()
+
+```ts
+deleteAutoModRule(guildId, ruleId): null | MockAutoModRule
+```
+
+Delete an auto-mod rule
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `ruleId` | `string` |
+
+#### Returns
+
+`null` \| `MockAutoModRule`
+
+The deleted rule, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteAutoModRule`](../interfaces/session-state#deleteautomodrule)
+
+***
+
+### deleteChannelOverwrite()
+
+```ts
+deleteChannelOverwrite(channelId, overwriteId): boolean
+```
+
+Delete a permission overwrite from a channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `overwriteId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteChannelOverwrite`](../interfaces/session-state#deletechanneloverwrite)
+
+***
+
+### deleteCommand()
+
+```ts
+deleteCommand(commandId): boolean
+```
+
+Delete a command by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteCommand`](../interfaces/session-state#deletecommand)
+
+***
+
+### deleteGuildEmoji()
+
+```ts
+deleteGuildEmoji(emojiId): boolean
+```
+
+Delete a guild emoji
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `emojiId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteGuildEmoji`](../interfaces/session-state#deleteguildemoji)
+
+***
+
+### deleteGuildRole()
+
+```ts
+deleteGuildRole(
+   guildId, 
+   roleId, 
+   reason?): boolean
+```
+
+Delete a role from a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `roleId` | `string` |
+| `reason`? | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found or cannot delete
+
+#### Everyone
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteGuildRole`](../interfaces/session-state#deleteguildrole)
+
+***
+
+### deleteGuildSticker()
+
+```ts
+deleteGuildSticker(stickerId): boolean
+```
+
+Delete a guild sticker
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stickerId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteGuildSticker`](../interfaces/session-state#deleteguildsticker)
+
+***
+
+### deleteInvite()
+
+```ts
+deleteInvite(code): null | MockInvite
+```
+
+Delete an invite by code
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `code` | `string` |
+
+#### Returns
+
+`null` \| `MockInvite`
+
+The deleted invite, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteInvite`](../interfaces/session-state#deleteinvite)
+
+***
+
+### deleteMessage()
+
+```ts
+deleteMessage(id): boolean
+```
+
+Delete a message and its associated attachments
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteMessage`](../interfaces/session-state#deletemessage)
+
+***
+
+### deleteScheduledEvent()
+
+```ts
+deleteScheduledEvent(guildId, eventId): boolean
+```
+
+Delete a scheduled event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteScheduledEvent`](../interfaces/session-state#deletescheduledevent)
+
+***
+
+### deleteStageInstance()
+
+```ts
+deleteStageInstance(channelId): null | MockStageInstance
+```
+
+Delete a stage instance
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`null` \| `MockStageInstance`
+
+The deleted stage instance, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteStageInstance`](../interfaces/session-state#deletestageinstance)
+
+***
+
+### deleteThread()
+
+```ts
+deleteThread(threadId): boolean
+```
+
+Delete a thread
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteThread`](../interfaces/session-state#deletethread)
+
+***
+
+### deleteWebhook()
+
+```ts
+deleteWebhook(webhookId): boolean
+```
+
+Delete a webhook
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `webhookId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if deleted, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`deleteWebhook`](../interfaces/session-state#deletewebhook)
+
+***
+
+### expirePoll()
+
+```ts
+expirePoll(messageId): boolean
+```
+
+Expire (finalize) a poll
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if poll was expired, false if already expired or no poll
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`expirePoll`](../interfaces/session-state#expirepoll)
+
+***
+
+### findCommandByName()
+
+```ts
+findCommandByName(name, guildId?): undefined | MockApplicationCommand
+```
+
+Find a command by name within a scope (global or guild)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `guildId`? | `string` |
+
+#### Returns
+
+`undefined` \| `MockApplicationCommand`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`findCommandByName`](../interfaces/session-state#findcommandbyname)
+
+***
+
+### getActiveThreadsForGuild()
+
+```ts
+getActiveThreadsForGuild(guildId): MockThread[]
+```
+
+Get all active (non-archived) threads in a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockThread`](../interfaces/mock-thread)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getActiveThreadsForGuild`](../interfaces/session-state#getactivethreadsforguild)
+
+***
+
+### getAttachment()
+
+```ts
+getAttachment(id): undefined | StoredAttachment
+```
+
+Get an attachment by ID.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`StoredAttachment`](../interfaces/stored-attachment)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getAttachment`](../interfaces/session-state#getattachment)
+
+***
+
+### getAttachmentsForMessage()
+
+```ts
+getAttachmentsForMessage(messageId): StoredAttachment[]
+```
+
+Get all attachments for a message.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+[`StoredAttachment`](../interfaces/stored-attachment)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getAttachmentsForMessage`](../interfaces/session-state#getattachmentsformessage)
+
+***
+
+### getAuditLogEntries()
+
+```ts
+getAuditLogEntries(guildId, options?): MockAuditLogEntry[]
+```
+
+Get audit log entries for a guild with optional filtering
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild ID |
+| `options`? | \{ `actionType`: `AuditLogEvent`; `before`: `string`; `limit`: `number`; `userId`: `string`; \} | Filtering options |
+| `options.actionType`? | `AuditLogEvent` | - |
+| `options.before`? | `string` | - |
+| `options.limit`? | `number` | - |
+| `options.userId`? | `string` | - |
+
+#### Returns
+
+`MockAuditLogEntry`[]
+
+Array of audit log entries
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getAuditLogEntries`](../interfaces/session-state#getauditlogentries)
+
+***
+
+### getAutoModRule()
+
+```ts
+getAutoModRule(guildId, ruleId): undefined | MockAutoModRule
+```
+
+Get an auto-mod rule by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `ruleId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockAutoModRule`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getAutoModRule`](../interfaces/session-state#getautomodrule)
+
+***
+
+### getBan()
+
+```ts
+getBan(guildId, userId): undefined | MockBan
+```
+
+Get a ban for a specific user in a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockBan`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getBan`](../interfaces/session-state#getban)
+
+***
+
+### getChannel()
+
+```ts
+getChannel(id): undefined | MockChannel
+```
+
+Get a channel by ID (includes guild channels and DM channels)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockChannel`](../interfaces/mock-channel)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getChannel`](../interfaces/session-state#getchannel)
+
+***
+
+### getChannelInvites()
+
+```ts
+getChannelInvites(channelId): MockInvite[]
+```
+
+Get all invites for a channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`MockInvite`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getChannelInvites`](../interfaces/session-state#getchannelinvites)
+
+***
+
+### getChannelOverwrites()
+
+```ts
+getChannelOverwrites(channelId): MockChannelOverwrite[]
+```
+
+Get permission overwrites for a channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+[`MockChannelOverwrite`](../interfaces/mock-channel-overwrite)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getChannelOverwrites`](../interfaces/session-state#getchanneloverwrites)
+
+***
+
+### getChannelsForGuild()
+
+```ts
+getChannelsForGuild(guildId): MockChannel[]
+```
+
+Get all channels for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockChannel`](../interfaces/mock-channel)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getChannelsForGuild`](../interfaces/session-state#getchannelsforguild)
+
+***
+
+### getCommand()
+
+```ts
+getCommand(commandId): undefined | MockApplicationCommand
+```
+
+Get a command by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockApplicationCommand`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getCommand`](../interfaces/session-state#getcommand)
+
+***
+
+### getDMChannel()
+
+```ts
+getDMChannel(recipientId): undefined | MockChannel
+```
+
+Get a DM channel by recipient user ID (uses currentUser as the other participant)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `recipientId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockChannel`](../interfaces/mock-channel)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getDMChannel`](../interfaces/session-state#getdmchannel)
+
+***
+
+### getEmoji()
+
+```ts
+getEmoji(emojiId): undefined | MockEmoji
+```
+
+Get an emoji by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `emojiId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockEmoji`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getEmoji`](../interfaces/session-state#getemoji)
+
+***
+
+### getForumChannel()
+
+```ts
+getForumChannel(id): undefined | MockForumChannel
+```
+
+Get a forum channel by ID (returns undefined if not a forum/media channel)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockForumChannel`](../interfaces/mock-forum-channel)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getForumChannel`](../interfaces/session-state#getforumchannel)
+
+***
+
+### getForumChannelsForGuild()
+
+```ts
+getForumChannelsForGuild(guildId): MockForumChannel[]
+```
+
+Get all forum/media channels in a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockForumChannel`](../interfaces/mock-forum-channel)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getForumChannelsForGuild`](../interfaces/session-state#getforumchannelsforguild)
+
+***
+
+### getForumPosts()
+
+```ts
+getForumPosts(forumChannelId, options?): MockForumThread[]
+```
+
+Get posts (threads) in a forum channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `forumChannelId` | `string` |
+| `options`? | \{ `archived`: `boolean`; \} |
+| `options.archived`? | `boolean` |
+
+#### Returns
+
+[`MockForumThread`](../interfaces/mock-forum-thread)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getForumPosts`](../interfaces/session-state#getforumposts)
+
+***
+
+### getForumThread()
+
+```ts
+getForumThread(id): undefined | MockForumThread
+```
+
+Get a forum thread by ID (returns undefined if not a forum thread)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockForumThread`](../interfaces/mock-forum-thread)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getForumThread`](../interfaces/session-state#getforumthread)
+
+***
+
+### getGlobalCommands()
+
+```ts
+getGlobalCommands(): MockApplicationCommand[]
+```
+
+Get all global commands (no guild_id)
+
+#### Returns
+
+`MockApplicationCommand`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGlobalCommands`](../interfaces/session-state#getglobalcommands)
+
+***
+
+### getGuild()
+
+```ts
+getGuild(id): undefined | MockGuild
+```
+
+Get a guild by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockGuild`](../interfaces/mock-guild)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuild`](../interfaces/session-state#getguild)
+
+***
+
+### getGuildAutoModRules()
+
+```ts
+getGuildAutoModRules(guildId): MockAutoModRule[]
+```
+
+Get all auto-mod rules for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockAutoModRule`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildAutoModRules`](../interfaces/session-state#getguildautomodrules)
+
+***
+
+### getGuildBans()
+
+```ts
+getGuildBans(guildId): MockBan[]
+```
+
+Get all bans for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockBan`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildBans`](../interfaces/session-state#getguildbans)
+
+***
+
+### getGuildCommands()
+
+```ts
+getGuildCommands(guildId): MockApplicationCommand[]
+```
+
+Get all commands for a specific guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockApplicationCommand`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildCommands`](../interfaces/session-state#getguildcommands)
+
+***
+
+### getGuildEmojis()
+
+```ts
+getGuildEmojis(guildId): MockEmoji[]
+```
+
+Get all emojis for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockEmoji`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildEmojis`](../interfaces/session-state#getguildemojis)
+
+***
+
+### getGuildInvites()
+
+```ts
+getGuildInvites(guildId): MockInvite[]
+```
+
+Get all invites for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockInvite`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildInvites`](../interfaces/session-state#getguildinvites)
+
+***
+
+### getGuildMember()
+
+```ts
+getGuildMember(guildId, userId): undefined | MockGuildMember
+```
+
+Get a guild member
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockGuildMember`](../interfaces/mock-guild-member)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildMember`](../interfaces/session-state#getguildmember)
+
+***
+
+### getGuildMembers()
+
+```ts
+getGuildMembers(guildId): MockGuildMember[]
+```
+
+Get all members of a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockGuildMember`](../interfaces/mock-guild-member)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildMembers`](../interfaces/session-state#getguildmembers)
+
+***
+
+### getGuildRole()
+
+```ts
+getGuildRole(guildId, roleId): undefined | MockRole
+```
+
+Get a role by ID within a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `roleId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockRole`](../interfaces/mock-role)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildRole`](../interfaces/session-state#getguildrole)
+
+***
+
+### getGuildRoles()
+
+```ts
+getGuildRoles(guildId): MockRole[]
+```
+
+Get all roles for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockRole`](../interfaces/mock-role)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildRoles`](../interfaces/session-state#getguildroles)
+
+***
+
+### getGuildScheduledEvents()
+
+```ts
+getGuildScheduledEvents(guildId): MockScheduledEvent[]
+```
+
+Get all scheduled events for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockScheduledEvent`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildScheduledEvents`](../interfaces/session-state#getguildscheduledevents)
+
+***
+
+### getGuildStageInstances()
+
+```ts
+getGuildStageInstances(guildId): MockStageInstance[]
+```
+
+Get all stage instances for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockStageInstance`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildStageInstances`](../interfaces/session-state#getguildstageinstances)
+
+***
+
+### getGuildStickers()
+
+```ts
+getGuildStickers(guildId): MockSticker[]
+```
+
+Get all stickers for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+`MockSticker`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getGuildStickers`](../interfaces/session-state#getguildstickers)
+
+***
+
+### getInteraction()
+
+```ts
+getInteraction(id): undefined | MockInteraction
+```
+
+Get an interaction by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockInteraction`](../interfaces/mock-interaction)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getInteraction`](../interfaces/session-state#getinteraction)
+
+***
+
+### getInteractionByToken()
+
+```ts
+getInteractionByToken(token): undefined | MockInteraction
+```
+
+Get an interaction by token
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockInteraction`](../interfaces/mock-interaction)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getInteractionByToken`](../interfaces/session-state#getinteractionbytoken)
+
+***
+
+### getInvite()
+
+```ts
+getInvite(code): undefined | MockInvite
+```
+
+Get an invite by code
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `code` | `string` |
+
+#### Returns
+
+`undefined` \| `MockInvite`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getInvite`](../interfaces/session-state#getinvite)
+
+***
+
+### getMessage()
+
+```ts
+getMessage(id): undefined | MockMessage
+```
+
+Get a message by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockMessage`](../interfaces/mock-message)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getMessage`](../interfaces/session-state#getmessage)
+
+***
+
+### getMessagesForChannel()
+
+```ts
+getMessagesForChannel(channelId, limit?): MockMessage[]
+```
+
+Get messages for a channel, optionally limited
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `limit`? | `number` |
+
+#### Returns
+
+[`MockMessage`](../interfaces/mock-message)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getMessagesForChannel`](../interfaces/session-state#getmessagesforchannel)
+
+***
+
+### getOrCreateDMChannel()
+
+```ts
+getOrCreateDMChannel(recipientId): MockChannel
+```
+
+Get or create a DM channel for a recipient (uses currentUser as the other participant)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `recipientId` | `string` |
+
+#### Returns
+
+[`MockChannel`](../interfaces/mock-channel)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getOrCreateDMChannel`](../interfaces/session-state#getorcreatedmchannel)
+
+***
+
+### getOrCreateTestUser()
+
+```ts
+getOrCreateTestUser(userId?): MockUser
+```
+
+Get or create a default test user for dispatching messages
+This creates a consistent "TestUser" that can be used when no author is specified
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `userId`? | `string` |
+
+#### Returns
+
+[`MockUser`](../interfaces/mock-user)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getOrCreateTestUser`](../interfaces/session-state#getorcreatetestuser)
+
+***
+
+### getPollVoters()
+
+```ts
+getPollVoters(messageId, answerId): string[]
+```
+
+Get all users who voted for a specific answer
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `answerId` | `number` |
+
+#### Returns
+
+`string`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getPollVoters`](../interfaces/session-state#getpollvoters)
+
+***
+
+### getRole()
+
+```ts
+getRole(roleId): undefined | MockRole
+```
+
+Get a role by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `roleId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockRole`](../interfaces/mock-role)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getRole`](../interfaces/session-state#getrole)
+
+***
+
+### getScheduledEvent()
+
+```ts
+getScheduledEvent(guildId, eventId): undefined | MockScheduledEvent
+```
+
+Get a scheduled event by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockScheduledEvent`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getScheduledEvent`](../interfaces/session-state#getscheduledevent)
+
+***
+
+### getScheduledEventSubscribers()
+
+```ts
+getScheduledEventSubscribers(
+   guildId, 
+   eventId, 
+   options?): {
+  member: MockGuildMember;
+  user: MockUser;
+ }[]
+```
+
+Get subscribers for a scheduled event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `options`? | \{ `after`: `string`; `before`: `string`; `limit`: `number`; `withMember`: `boolean`; \} |
+| `options.after`? | `string` |
+| `options.before`? | `string` |
+| `options.limit`? | `number` |
+| `options.withMember`? | `boolean` |
+
+#### Returns
+
+\{
+  `member`: [`MockGuildMember`](../interfaces/mock-guild-member);
+  `user`: [`MockUser`](../interfaces/mock-user);
+ \}[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getScheduledEventSubscribers`](../interfaces/session-state#getscheduledeventsubscribers)
+
+***
+
+### getStageInstance()
+
+```ts
+getStageInstance(channelId): undefined | MockStageInstance
+```
+
+Get a stage instance by channel ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockStageInstance`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getStageInstance`](../interfaces/session-state#getstageinstance)
+
+***
+
+### getSticker()
+
+```ts
+getSticker(stickerId): undefined | MockSticker
+```
+
+Get a sticker by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stickerId` | `string` |
+
+#### Returns
+
+`undefined` \| `MockSticker`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getSticker`](../interfaces/session-state#getsticker)
+
+***
+
+### getThread()
+
+```ts
+getThread(id): undefined | MockThread
+```
+
+Get a thread by ID (returns undefined if not a thread)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockThread`](../interfaces/mock-thread)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getThread`](../interfaces/session-state#getthread)
+
+***
+
+### getThreadMember()
+
+```ts
+getThreadMember(threadId, userId): undefined | MockThreadMember
+```
+
+Get a thread member
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockThreadMember`](../interfaces/mock-thread-member)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getThreadMember`](../interfaces/session-state#getthreadmember)
+
+***
+
+### getThreadMembers()
+
+```ts
+getThreadMembers(threadId): MockThreadMember[]
+```
+
+Get all members of a thread
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+[`MockThreadMember`](../interfaces/mock-thread-member)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getThreadMembers`](../interfaces/session-state#getthreadmembers)
+
+***
+
+### getThreadsForChannel()
+
+```ts
+getThreadsForChannel(channelId, options?): MockThread[]
+```
+
+Get all threads for a parent channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `options`? | \{ `archived`: `boolean`; \} |
+| `options.archived`? | `boolean` |
+
+#### Returns
+
+[`MockThread`](../interfaces/mock-thread)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getThreadsForChannel`](../interfaces/session-state#getthreadsforchannel)
+
+***
+
+### getUser()
+
+```ts
+getUser(id): undefined | MockUser
+```
+
+Get a user by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../interfaces/mock-user)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getUser`](../interfaces/session-state#getuser)
+
+***
+
+### getUserPollVotes()
+
+```ts
+getUserPollVotes(messageId, userId): number[]
+```
+
+Get all votes for a user on a poll
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`number`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getUserPollVotes`](../interfaces/session-state#getuserpollvotes)
+
+***
+
+### getWebhook()
+
+```ts
+getWebhook(webhookId): undefined | MockWebhook
+```
+
+Get a webhook by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `webhookId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockWebhook`](../interfaces/mock-webhook)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getWebhook`](../interfaces/session-state#getwebhook)
+
+***
+
+### getWebhookByToken()
+
+```ts
+getWebhookByToken(token): undefined | MockWebhook
+```
+
+Get a webhook by its token
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockWebhook`](../interfaces/mock-webhook)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getWebhookByToken`](../interfaces/session-state#getwebhookbytoken)
+
+***
+
+### getWebhooksForChannel()
+
+```ts
+getWebhooksForChannel(channelId): MockWebhook[]
+```
+
+Get all webhooks for a channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+[`MockWebhook`](../interfaces/mock-webhook)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getWebhooksForChannel`](../interfaces/session-state#getwebhooksforchannel)
+
+***
+
+### getWebhooksForGuild()
+
+```ts
+getWebhooksForGuild(guildId): MockWebhook[]
+```
+
+Get all webhooks for a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+
+#### Returns
+
+[`MockWebhook`](../interfaces/mock-webhook)[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`getWebhooksForGuild`](../interfaces/session-state#getwebhooksforguild)
+
+***
+
+### incrementThreadMessageCount()
+
+```ts
+incrementThreadMessageCount(threadId): void
+```
+
+Increment thread message count and update activity timestamp
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`incrementThreadMessageCount`](../interfaces/session-state#incrementthreadmessagecount)
+
+***
+
+### isBanned()
+
+```ts
+isBanned(guildId, userId): boolean
+```
+
+Check if a user is banned from a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`isBanned`](../interfaces/session-state#isbanned)
+
+***
+
+### isForumChannel()
+
+```ts
+isForumChannel(channelId): boolean
+```
+
+Check if a channel is a forum or media channel (type 15 or 16)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`isForumChannel`](../interfaces/session-state#isforumchannel)
+
+***
+
+### isForumThread()
+
+```ts
+isForumThread(threadId): boolean
+```
+
+Check if a thread is a forum thread (has applied_tags)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`isForumThread`](../interfaces/session-state#isforumthread)
+
+***
+
+### isThread()
+
+```ts
+isThread(channelId): boolean
+```
+
+Check if a channel is a thread type (10, 11, or 12)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`isThread`](../interfaces/session-state#isthread)
+
+***
+
+### nextSequence()
+
+```ts
+nextSequence(): number
+```
+
+Get and increment the sequence number
+
+#### Returns
+
+`number`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`nextSequence`](../interfaces/session-state#nextsequence)
+
+***
+
+### removeBan()
+
+```ts
+removeBan(guildId, userId): boolean
+```
+
+Remove a ban for a user in a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if removed, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeBan`](../interfaces/session-state#removeban)
+
+***
+
+### removeChannel()
+
+```ts
+removeChannel(id): boolean
+```
+
+Remove a channel from the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeChannel`](../interfaces/session-state#removechannel)
+
+***
+
+### removeForumTag()
+
+```ts
+removeForumTag(channelId, tagId): boolean
+```
+
+Remove a tag from a forum channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `tagId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeForumTag`](../interfaces/session-state#removeforumtag)
+
+***
+
+### removeGuild()
+
+```ts
+removeGuild(id): boolean
+```
+
+Remove a guild from the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeGuild`](../interfaces/session-state#removeguild)
+
+***
+
+### removeGuildMember()
+
+```ts
+removeGuildMember(guildId, userId): boolean
+```
+
+Remove a member from a guild
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if removed, false if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeGuildMember`](../interfaces/session-state#removeguildmember)
+
+***
+
+### removeInteraction()
+
+```ts
+removeInteraction(id): boolean
+```
+
+Remove an interaction from the state
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeInteraction`](../interfaces/session-state#removeinteraction)
+
+***
+
+### removeMemberRole()
+
+```ts
+removeMemberRole(
+   guildId, 
+   userId, 
+   roleId): boolean
+```
+
+Remove a role from a member
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `roleId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if removed, false if member not found or doesn't have role
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeMemberRole`](../interfaces/session-state#removememberrole)
+
+***
+
+### removePollVote()
+
+```ts
+removePollVote(
+   messageId, 
+   userId, 
+   answerId): boolean
+```
+
+Remove a vote from a poll (only for multiselect polls)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `answerId` | `number` |
+
+#### Returns
+
+`boolean`
+
+true if vote was removed, false if not voted or invalid
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removePollVote`](../interfaces/session-state#removepollvote)
+
+***
+
+### removeReaction()
+
+```ts
+removeReaction(
+   messageId, 
+   userId, 
+   emoji): undefined | MockReaction[]
+```
+
+Remove a reaction from a message
+Returns the updated reactions array or undefined if message/reaction not found
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+| `userId` | `string` |
+| `emoji` | \{ `id`: `null` \| `string`; `name`: `string`; \} |
+| `emoji.id` | `null` \| `string` |
+| `emoji.name` | `string` |
+
+#### Returns
+
+`undefined` \| `MockReaction`[]
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeReaction`](../interfaces/session-state#removereaction)
+
+***
+
+### removeScheduledEventSubscriber()
+
+```ts
+removeScheduledEventSubscriber(
+   guildId, 
+   eventId, 
+   userId): boolean
+```
+
+Remove a subscriber from a scheduled event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if removed, false if event not found or user wasn't subscribed
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeScheduledEventSubscriber`](../interfaces/session-state#removescheduledeventsubscriber)
+
+***
+
+### removeThreadMember()
+
+```ts
+removeThreadMember(threadId, userId): boolean
+```
+
+Remove a member from a thread
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `userId` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeThreadMember`](../interfaces/session-state#removethreadmember)
+
+***
+
+### removeUser()
+
+```ts
+removeUser(id): boolean
+```
+
+Remove a user from the state (cannot remove bot user)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`removeUser`](../interfaces/session-state#removeuser)
+
+***
+
+### reset()
+
+```ts
+reset(): void
+```
+
+Reset state to initial values (keeps bot user)
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`reset`](../interfaces/session-state#reset)
+
+***
+
+### serialize()
+
+```ts
+serialize(): SerializedSessionState
+```
+
+Serialize state for API responses
+
+#### Returns
+
+[`SerializedSessionState`](../interfaces/serialized-session-state)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`serialize`](../interfaces/session-state#serialize)
+
+***
+
+### setChannelOverwrite()
+
+```ts
+setChannelOverwrite(channelId, overwrite): boolean
+```
+
+Set a permission overwrite on a channel
+Creates or updates the overwrite for the given role/member ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `overwrite` | [`MockChannelOverwrite`](../interfaces/mock-channel-overwrite) |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`setChannelOverwrite`](../interfaces/session-state#setchanneloverwrite)
+
+***
+
+### storeAttachment()
+
+```ts
+storeAttachment(attachment): void
+```
+
+Store an attachment using the configured storage backend.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `attachment` | [`StoredAttachment`](../interfaces/stored-attachment) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`storeAttachment`](../interfaces/session-state#storeattachment)
+
+***
+
+### switchCurrentUser()
+
+```ts
+switchCurrentUser(userId): undefined | MockUser
+```
+
+Switch to a different user as the current user.
+Returns the user if found, undefined otherwise.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../interfaces/mock-user)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`switchCurrentUser`](../interfaces/session-state#switchcurrentuser)
+
+***
+
+### updateAutoModRule()
+
+```ts
+updateAutoModRule(
+   guildId, 
+   ruleId, 
+   updates): null | MockAutoModRule
+```
+
+Update an auto-mod rule
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `ruleId` | `string` |
+| `updates` | `MockAutoModRuleUpdateConfig` |
+
+#### Returns
+
+`null` \| `MockAutoModRule`
+
+The updated rule, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateAutoModRule`](../interfaces/session-state#updateautomodrule)
+
+***
+
+### updateCommand()
+
+```ts
+updateCommand(commandId, updates): null | MockApplicationCommand
+```
+
+Update an existing command
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandId` | `string` |
+| `updates` | `Partial`\<`MockApplicationCommandConfig`\> |
+
+#### Returns
+
+`null` \| `MockApplicationCommand`
+
+The updated command, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateCommand`](../interfaces/session-state#updatecommand)
+
+***
+
+### updateCurrentUser()
+
+```ts
+updateCurrentUser(updates): MockUser
+```
+
+Update the current user's properties without changing their ID.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `updates` | `Partial`\<`Omit`\<[`MockUser`](../interfaces/mock-user), `"id"`\>\> |
+
+#### Returns
+
+[`MockUser`](../interfaces/mock-user)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateCurrentUser`](../interfaces/session-state#updatecurrentuser)
+
+***
+
+### updateForumTag()
+
+```ts
+updateForumTag(
+   channelId, 
+   tagId, 
+   updates): undefined | MockForumTag
+```
+
+Update a tag in a forum channel
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `tagId` | `string` |
+| `updates` | `Partial`\<`Omit`\<[`MockForumTag`](../interfaces/mock-forum-tag), `"id"`\>\> |
+
+#### Returns
+
+`undefined` \| [`MockForumTag`](../interfaces/mock-forum-tag)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateForumTag`](../interfaces/session-state#updateforumtag)
+
+***
+
+### updateForumThreadTags()
+
+```ts
+updateForumThreadTags(threadId, appliedTags): undefined | MockForumThread
+```
+
+Update applied tags on a forum thread
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `appliedTags` | `string`[] |
+
+#### Returns
+
+`undefined` \| [`MockForumThread`](../interfaces/mock-forum-thread)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateForumThreadTags`](../interfaces/session-state#updateforumthreadtags)
+
+***
+
+### updateGuildEmoji()
+
+```ts
+updateGuildEmoji(emojiId, updates): null | MockEmoji
+```
+
+Update a guild emoji
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `emojiId` | `string` |
+| `updates` | \{ `name`: `string`; `roles`: `string`[]; \} |
+| `updates.name`? | `string` |
+| `updates.roles`? | `string`[] |
+
+#### Returns
+
+`null` \| `MockEmoji`
+
+The updated emoji, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateGuildEmoji`](../interfaces/session-state#updateguildemoji)
+
+***
+
+### updateGuildMember()
+
+```ts
+updateGuildMember(
+   guildId, 
+   userId, 
+   updates): null | MockGuildMember
+```
+
+Update a guild member
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `userId` | `string` |
+| `updates` | `Partial`\<[`MockGuildMemberConfig`](../interfaces/mock-guild-member-config)\> |
+
+#### Returns
+
+`null` \| [`MockGuildMember`](../interfaces/mock-guild-member)
+
+The updated member, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateGuildMember`](../interfaces/session-state#updateguildmember)
+
+***
+
+### updateGuildRole()
+
+```ts
+updateGuildRole(
+   guildId, 
+   roleId, 
+   updates, 
+   reason?): null | MockRole
+```
+
+Update a role
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `roleId` | `string` |
+| `updates` | `Partial`\<[`MockRoleConfig`](../interfaces/mock-role-config)\> |
+| `reason`? | `string` |
+
+#### Returns
+
+`null` \| [`MockRole`](../interfaces/mock-role)
+
+The updated role, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateGuildRole`](../interfaces/session-state#updateguildrole)
+
+***
+
+### updateGuildRolePositions()
+
+```ts
+updateGuildRolePositions(guildId, positions): MockRole[]
+```
+
+Update role positions in batch
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `positions` | \{ `id`: `string`; `position`: `number`; \}[] |
+
+#### Returns
+
+[`MockRole`](../interfaces/mock-role)[]
+
+The updated roles
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateGuildRolePositions`](../interfaces/session-state#updateguildrolepositions)
+
+***
+
+### updateGuildSticker()
+
+```ts
+updateGuildSticker(stickerId, updates): null | MockSticker
+```
+
+Update a guild sticker
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stickerId` | `string` |
+| `updates` | \{ `description`: `string`; `name`: `string`; `tags`: `string`; \} |
+| `updates.description`? | `string` |
+| `updates.name`? | `string` |
+| `updates.tags`? | `string` |
+
+#### Returns
+
+`null` \| `MockSticker`
+
+The updated sticker, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateGuildSticker`](../interfaces/session-state#updateguildsticker)
+
+***
+
+### updateMessage()
+
+```ts
+updateMessage(id, updates): undefined | MockMessage
+```
+
+Update a message
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `updates` | `Partial`\<[`MockMessage`](../interfaces/mock-message)\> |
+
+#### Returns
+
+`undefined` \| [`MockMessage`](../interfaces/mock-message)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateMessage`](../interfaces/session-state#updatemessage)
+
+***
+
+### updatePollResults()
+
+```ts
+updatePollResults(messageId): void
+```
+
+Update poll results based on current votes
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `messageId` | `string` |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updatePollResults`](../interfaces/session-state#updatepollresults)
+
+***
+
+### updateScheduledEvent()
+
+```ts
+updateScheduledEvent(
+   guildId, 
+   eventId, 
+   updates): null | MockScheduledEvent
+```
+
+Update a scheduled event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `guildId` | `string` |
+| `eventId` | `string` |
+| `updates` | `MockScheduledEventUpdateConfig` |
+
+#### Returns
+
+`null` \| `MockScheduledEvent`
+
+The updated event, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateScheduledEvent`](../interfaces/session-state#updatescheduledevent)
+
+***
+
+### updateStageInstance()
+
+```ts
+updateStageInstance(channelId, updates): null | MockStageInstance
+```
+
+Update a stage instance
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `channelId` | `string` |
+| `updates` | \{ `privacyLevel`: `StageInstancePrivacyLevel`; `topic`: `string`; \} |
+| `updates.privacyLevel`? | `StageInstancePrivacyLevel` |
+| `updates.topic`? | `string` |
+
+#### Returns
+
+`null` \| `MockStageInstance`
+
+The updated stage instance, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateStageInstance`](../interfaces/session-state#updatestageinstance)
+
+***
+
+### updateThread()
+
+```ts
+updateThread(threadId, updates): undefined | MockThread
+```
+
+Update thread metadata
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `threadId` | `string` |
+| `updates` | `Partial`\<\{ `archived`: `boolean`; `auto_archive_duration`: `60` \| `1440` \| `4320` \| `10080`; `invitable`: `boolean`; `locked`: `boolean`; `name`: `string`; `rateLimitPerUser`: `number`; \}\> |
+
+#### Returns
+
+`undefined` \| [`MockThread`](../interfaces/mock-thread)
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateThread`](../interfaces/session-state#updatethread)
+
+***
+
+### updateWebhook()
+
+```ts
+updateWebhook(webhookId, updates): null | MockWebhook
+```
+
+Update a webhook
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `webhookId` | `string` |
+| `updates` | \{ `avatar`: `null` \| `string`; `channel_id`: `string`; `name`: `string`; \} |
+| `updates.avatar`? | `null` \| `string` |
+| `updates.channel_id`? | `string` |
+| `updates.name`? | `string` |
+
+#### Returns
+
+`null` \| [`MockWebhook`](../interfaces/mock-webhook)
+
+The updated webhook, or null if not found
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`updateWebhook`](../interfaces/session-state#updatewebhook)
+
+***
+
+### useInvite()
+
+```ts
+useInvite(code): boolean
+```
+
+Increment invite use count (when someone joins via invite)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `code` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if invite is still valid, false if expired/maxed out
+
+#### Implementation of
+
+[`SessionState`](../interfaces/session-state).[`useInvite`](../interfaces/session-state#useinvite)

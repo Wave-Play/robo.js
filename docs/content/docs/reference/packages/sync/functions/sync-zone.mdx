@@ -1,0 +1,51 @@
+---
+title: "SyncZone()"
+---
+
+# Function: SyncZone()
+
+```ts
+function SyncZone(props): Element
+```
+
+A context provider that establishes a sync zone with key prefix inheritance.
+
+Zones enable:
+- Key prefix accumulation (nested zones combine prefixes)
+- Host inheritance (all children share the zone's host determination)
+- Component reusability (same component can be used in different zones)
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `props` | [`SyncZoneProps`](../interfaces/sync-zone-props) |
+
+## Returns
+
+`Element`
+
+## Examples
+
+```ts
+// Basic zone
+<SyncZone id={['game', 'room1']}>
+  <SyncBox id={['player']} />  // key becomes 'game.room1.player'
+</SyncZone>
+```
+
+```ts
+// Nested zones
+<SyncZone id={['game']}>
+  <SyncZone id={['board']}>
+    <SyncBox id={['piece']} />  // key becomes 'game.board.piece'
+  </SyncZone>
+</SyncZone>
+```
+
+```ts
+// Explicit host
+<SyncZone id={['match']} hostRules="explicit" host={adminClientId}>
+  <GameBoard />
+</SyncZone>
+```

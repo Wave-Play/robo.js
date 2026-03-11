@@ -1,0 +1,20 @@
+---
+title: "TypeNameOfOption<K>"
+---
+
+# Type Alias: TypeNameOfOption\<K\>
+
+```ts
+type TypeNameOfOption<K> = K extends {
+  type: infer T;
+ } ? T extends keyof CommandOptionTypes ? T : "string" : "string";
+```
+
+Gets the discriminant "type name" of an option `K`.
+If `type` is omitted, we default to `'string'` (matching Discord.js behavior).
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `K` |

@@ -1,0 +1,25 @@
+---
+title: "ConnectionState"
+---
+
+# Interface: ConnectionState
+
+WebSocket connection state
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="botuser"></a> `botUser?` | [`MockUser`](mock-user) | Per-connection bot identity (resolved during IDENTIFY) Each bot connection gets its own identity, auto-detected from Discord token or generated |
+| <a id="dispatchhistory"></a> `dispatchHistory?` | \{ `data`: `unknown`; `event`: `string`; `seq`: `number`; \}[] | Ring buffer of dispatched events for RESUME replay |
+| <a id="heartbeatinterval"></a> `heartbeatInterval` | `number` | - |
+| <a id="id"></a> `id` | `string` | - |
+| <a id="identified"></a> `identified` | `boolean` | - |
+| <a id="intents"></a> `intents` | `number` | - |
+| <a id="lastacksequence"></a> `lastAckSequence` | `null` \| `number` | - |
+| <a id="lastheartbeat"></a> `lastHeartbeat` | `number` | - |
+| <a id="missedheartbeats"></a> `missedHeartbeats` | `number` | - |
+| <a id="realtoken"></a> `realToken?` | `string` | Original Discord token for identity resolution Stored so we can fetch the bot's real identity from Discord API |
+| <a id="sequence"></a> `sequence` | `number` | - |
+| <a id="sessionid"></a> `sessionId` | `string` | - |
+| <a id="token"></a> `token` | `null` \| `string` | - |

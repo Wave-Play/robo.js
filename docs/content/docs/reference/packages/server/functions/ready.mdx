@@ -1,6 +1,5 @@
 ---
-title: "ready"
-description: "Wait for the Robo.js server to be fully initialized"
+title: "ready()"
 ---
 
 # Function: ready()
@@ -13,37 +12,4 @@ Returns a promise that resolves when the plugin is all set up.
 
 ## Returns
 
-`Promise<void>` - A promise that resolves when the server is ready
-
-## Example
-
-```ts
-import { ready } from '@robojs/server'
-
-// Ensure the server is fully initialized before performing operations
-async function initializeApp() {
-  // Wait for the server to be ready
-  await ready()
-  
-  console.log('Server is now ready!')
-  
-  // Perform operations that require the server to be fully initialized
-  setupCustomRoutes()
-  registerMiddleware()
-}
-
-initializeApp().catch(error => {
-  console.error('Failed to initialize app:', error)
-})
-```
-
-## Notes
-
-- This function is useful when you need to ensure the server is fully initialized before performing certain operations
-- It is equivalent to calling `Server.ready()`
-- The promise will only resolve once all server initialization tasks are complete
-- If the server fails to initialize, the promise will reject with the appropriate error
-
-## Related
-
-- [Server](/ref/packages/server/variables/server) - The Server variable with a ready method
+`Promise`\<`void`\>

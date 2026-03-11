@@ -1,0 +1,48 @@
+---
+title: "formatCardContentV2()"
+---
+
+# Function: formatCardContentV2()
+
+```ts
+function formatCardContentV2(
+   card, 
+   guildId, 
+   guild?): Promise<{
+  components: ContainerBuilder[];
+  flags: number;
+}>
+```
+
+Formats a roadmap card into Discord Components v2 structure with rich presentation.
+
+Uses ContainerBuilder, SectionBuilder, and TextDisplayBuilder to create a visually
+appealing layout with the card description, assignee avatar as thumbnail accessory,
+and metadata (assignees, labels, last updated) in separate sections.
+
+Assignees are redacted - only mapped Discord users are mentioned, and Jira names are never shown.
+The first assignee's avatar is displayed as a thumbnail accessory in the main content section.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `card` | [`RoadmapCard`](../type-aliases/roadmap-card) | The roadmap card to format. |
+| `guildId` | `string` | The Discord guild ID for looking up assignee mappings. |
+| `guild`? | `Guild` | Optional guild object for validating Discord user existence and fetching avatars. |
+
+## Returns
+
+`Promise`\<\{
+  `components`: `ContainerBuilder`[];
+  `flags`: `number`;
+ \}\>
+
+Object containing Components v2 structure with flags and components array.
+
+## Example
+
+```ts
+const { flags, components } = await formatCardContentV2(card, guildId, guild);
+await thread.send({ flags, components });
+```

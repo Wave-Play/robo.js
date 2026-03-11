@@ -1,0 +1,62 @@
+---
+title: "useSyncDrag()"
+---
+
+# Function: useSyncDrag()
+
+```ts
+function useSyncDrag<T, ClientData>(
+   key, 
+   initialState, 
+options?): DragResult<T, ClientData>
+```
+
+Hook for creating draggable elements with synchronized positions.
+
+Handles locking, interpolation, bounds, and gesture detection automatically.
+Returns handlers to spread onto your draggable element.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`DragState`](../interfaces/drag-state) | [`DragState`](../interfaces/drag-state) |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | (`null` \| `string`)[] |
+| `initialState` | `T` |
+| `options`? | [`DragOptions`](../interfaces/drag-options)\<`T`\> |
+
+## Returns
+
+[`DragResult`](../interfaces/drag-result)\<`T`, `ClientData`\>
+
+## Example
+
+```ts
+function DraggableBall({ id }: { id: string }) {
+  const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+    ['ball', id],
+    { x: 0.5, y: 0.5 },
+    { interpolate: { x: 0.2, y: 0.2 }, bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 } }
+  )
+
+  return (
+    <div
+      {...dragHandlers}
+      style={{
+        position: 'absolute',
+        left: `${state.x * 100}%`,
+        top: `${state.y * 100}%`,
+        cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+      }}
+    >
+      Ball
+    </div>
+  )
+}
+```

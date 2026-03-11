@@ -1,0 +1,22 @@
+---
+title: "waitForAction()"
+---
+
+# Function: waitForAction()
+
+```ts
+function waitForAction(sessionId, options): Promise<RecordedAction[]>
+```
+
+Wait for a specific action to be recorded
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `options` | \| `string` \| [`WaitForActionOptions`](../interfaces/wait-for-action-options) |
+
+## Returns
+
+`Promise`\<[`RecordedAction`](../interfaces/recorded-action)[]\>

@@ -1,0 +1,55 @@
+---
+title: "startMockRobo()"
+---
+
+# Function: startMockRobo()
+
+```ts
+function startMockRobo(options): Promise<MockRoboHandle>
+```
+
+Start a Robo connected to the mock server
+
+When `hmr: false` (default): Runs Robo.start() directly in the test process,
+giving you access to the Discord.js client and all bot internals.
+
+When `hmr: true`: Spawns `robo dev --hmr` as a child process for HMR testing.
+The client will be null but you get `waitForHmrReload()` and `waitForFullRestart()`.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`StartMockRoboOptions`](../interfaces/start-mock-robo-options) |
+
+## Returns
+
+`Promise`\<[`MockRoboHandle`](../interfaces/mock-robo-handle)\>
+
+## Example
+
+```typescript
+// Standard mode - direct access to client
+let bot: MockRoboHandle
+
+beforeAll(async () => {
+  bot = await startMockRobo({ name: 'my-test', testFilePath: __filename })
+})
+
+afterAll(async () => {
+  await bot.stop()
+})
+
+// HMR mode - for testing hot module replacement
+let bot: MockRoboHandle
+
+beforeAll(async () => {
+  bot = await startMockRobo({ name: 'hmr-test', testFilePath: __filename, hmr: true })
+})
+
+it('reloads handlers', async () => {
+  // Modify a file...
+  await bot.waitForHmrReload!()
+  // Test the updated handler...
+})
+```

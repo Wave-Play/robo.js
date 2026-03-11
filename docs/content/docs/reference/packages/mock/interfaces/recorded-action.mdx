@@ -1,0 +1,22 @@
+---
+title: "RecordedAction"
+---
+
+# Interface: RecordedAction
+
+Recorded action from bot (for test assertions)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="data"></a> `data` | `unknown` | Full payload data |
+| <a id="endpoint"></a> `endpoint?` | `string` | For REST actions: endpoint path (e.g., "POST /channels/123/messages") |
+| <a id="id"></a> `id` | `string` | Unique action ID |
+| <a id="interactionid"></a> `interactionId?` | `string` | For interaction responses: the interaction ID |
+| <a id="metadata"></a> `metadata?` | `ActionMetadata` | Optional metadata for tracing and orchestration. Used by external systems (like Disgraph) to correlate actions with their domain concepts (nodes, steps, scenarios). |
+| <a id="method"></a> `method?` | `string` | For REST actions: HTTP method |
+| <a id="responsetype"></a> `responseType?` | `number` | For interaction responses: the response type |
+| <a id="timestamp"></a> `timestamp` | `number` | Unix timestamp in milliseconds |
+| <a id="triggeredby"></a> `triggeredBy?` | `string` | ID of the event that triggered this action (for causal tracking) |
+| <a id="type"></a> `type` | [`ActionType`](../type-aliases/action-type) | Action type classification |

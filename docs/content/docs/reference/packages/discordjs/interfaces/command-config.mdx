@@ -1,0 +1,39 @@
+---
+title: "CommandConfig"
+---
+
+# Interface: CommandConfig
+
+Command configuration options.
+
+## Extends
+
+- [`BaseConfig`](base-config)
+
+## Extended by
+
+- [`CommandEntry`](command-entry)
+
+## Properties
+
+| Property | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="__auto"></a> `__auto?` | `true` | Internal: auto-generated handler marker | - | [`BaseConfig`](base-config).[`__auto`](base-config#__auto) |
+| <a id="__module"></a> `__module?` | `string` | Internal: module name | - | [`BaseConfig`](base-config).[`__module`](base-config#__module) |
+| <a id="__path"></a> `__path?` | `string` | Internal: file path | - | [`BaseConfig`](base-config).[`__path`](base-config#__path) |
+| <a id="__plugin"></a> `__plugin?` | \{ `name`: `string`; `path`: `string`; \} | Internal: plugin info | - | [`BaseConfig`](base-config).[`__plugin`](base-config#__plugin) |
+| `__plugin.name` | `string` | - | - | - |
+| `__plugin.path` | `string` | - | - | - |
+| <a id="contexts"></a> `contexts?` | [`CommandContext`](../type-aliases/command-context)[] | Interaction contexts where the command is available | - | - |
+| <a id="defaultmemberpermissions"></a> `defaultMemberPermissions?` | `string` \| `number` \| `bigint` | Default member permissions required to use the command | - | - |
+| <a id="description"></a> `description?` | `string` | Handler description | - | [`BaseConfig`](base-config).[`description`](base-config#description) |
+| <a id="descriptionlocalizations"></a> `descriptionLocalizations?` | `Record`\<`string`, `string`\> | Description localizations by locale code | - | - |
+| <a id="disabled"></a> `disabled?` | `boolean` | Whether the handler is disabled | - | [`BaseConfig`](base-config).[`disabled`](base-config#disabled) |
+| <a id="dmpermission"></a> ~~`dmPermission?`~~ | `boolean` | **Deprecated** Use `contexts` instead | - | - |
+| <a id="integrationtypes"></a> `integrationTypes?` | [`CommandIntegrationType`](../type-aliases/command-integration-type)[] | Installation contexts for the command | - | - |
+| <a id="namelocalizations"></a> `nameLocalizations?` | `Record`\<`string`, `string`\> | Name localizations by locale code | - | - |
+| <a id="nsfw"></a> `nsfw?` | `boolean` | Whether the command is age-restricted | - | - |
+| <a id="options"></a> `options?` | readonly [`CommandOption`](../type-aliases/command-option)[] | Command options/parameters | - | - |
+| <a id="sage"></a> `sage?` | `false` \| [`SageOptions`](sage-options) | Sage (auto-defer/reply) configuration | - | - |
+| <a id="serveronly"></a> `serverOnly?` | `string` \| `string`[] | Restrict to specific server IDs | - | [`BaseConfig`](base-config).[`serverOnly`](base-config#serveronly) |
+| <a id="timeout"></a> `timeout?` | `number` | Execution timeout in milliseconds | [`BaseConfig`](base-config).[`timeout`](base-config#timeout) | - |

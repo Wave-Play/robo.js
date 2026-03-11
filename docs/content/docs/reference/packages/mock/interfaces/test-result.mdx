@@ -1,0 +1,19 @@
+---
+title: "TestResult"
+---
+
+# Interface: TestResult
+
+Result for a single test case
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="assertions"></a> `assertions` | [`AssertionResult`](assertion-result)[] | Assertion results for UI display |
+| <a id="duration"></a> `duration` | `number` | Duration in milliseconds |
+| <a id="error"></a> `error?` | \{ `message`: `string`; `stack`: `string`; \} | Error details if test failed |
+| `error.message` | `string` | - |
+| `error.stack?` | `string` | - |
+| <a id="name"></a> `name` | `string` | Test name/description |
+| <a id="status"></a> `status` | `"passed"` \| `"failed"` \| `"skipped"` | Test status |

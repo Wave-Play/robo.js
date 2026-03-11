@@ -1,0 +1,429 @@
+---
+title: "ActionRecorder"
+---
+
+# Class: ActionRecorder
+
+ActionRecorder manages recorded actions for a session with memory management.
+Uses LRU-style eviction to prevent unbounded memory growth.
+
+## Implements
+
+- `IActionRecorder`
+
+## Constructors
+
+### new ActionRecorder()
+
+```ts
+new ActionRecorder(maxActions): ActionRecorder
+```
+
+#### Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `maxActions` | `number` | `DEFAULT_MAX_ACTIONS` |
+
+#### Returns
+
+[`ActionRecorder`](action-recorder)
+
+## Accessors
+
+### length
+
+#### Get Signature
+
+```ts
+get length(): number
+```
+
+Get the number of recorded actions
+
+##### Returns
+
+`number`
+
+#### Implementation of
+
+```ts
+IActionRecorder.length
+```
+
+***
+
+### maxLength
+
+#### Get Signature
+
+```ts
+get maxLength(): number
+```
+
+Get the maximum number of actions before eviction
+
+##### Returns
+
+`number`
+
+#### Implementation of
+
+```ts
+IActionRecorder.maxLength
+```
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all recorded actions
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+```ts
+IActionRecorder.clear
+```
+
+***
+
+### getActivityActions()
+
+```ts
+getActivityActions(): RecordedAction[]
+```
+
+Get all Activity-related actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+***
+
+### getAll()
+
+```ts
+getAll(): RecordedAction[]
+```
+
+Get all recorded actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getAll
+```
+
+***
+
+### getByType()
+
+```ts
+getByType(type): RecordedAction[]
+```
+
+Get actions by type
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`ActionType`](../type-aliases/action-type) |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getByType
+```
+
+***
+
+### getByTypes()
+
+```ts
+getByTypes(types): RecordedAction[]
+```
+
+Get actions by multiple types
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `types` | [`ActionType`](../type-aliases/action-type)[] |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getByTypes
+```
+
+***
+
+### getDispatches()
+
+```ts
+getDispatches(): RecordedAction[]
+```
+
+Get dispatch events (server → client)
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getDispatches
+```
+
+***
+
+### getForInteraction()
+
+```ts
+getForInteraction(interactionId): RecordedAction[]
+```
+
+Get actions for a specific interaction
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interactionId` | `string` |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getForInteraction
+```
+
+***
+
+### getGatewayMessages()
+
+```ts
+getGatewayMessages(): RecordedAction[]
+```
+
+Get all Gateway WebSocket message actions (client → server)
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getGatewayMessages
+```
+
+***
+
+### getInteractionResponses()
+
+```ts
+getInteractionResponses(): RecordedAction[]
+```
+
+Get all interaction response actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getInteractionResponses
+```
+
+***
+
+### getMessagesDeleted()
+
+```ts
+getMessagesDeleted(): RecordedAction[]
+```
+
+Get message_deleted actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getMessagesDeleted
+```
+
+***
+
+### getMessagesEdited()
+
+```ts
+getMessagesEdited(): RecordedAction[]
+```
+
+Get message_edited actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getMessagesEdited
+```
+
+***
+
+### getMessagesSent()
+
+```ts
+getMessagesSent(): RecordedAction[]
+```
+
+Get message_sent actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getMessagesSent
+```
+
+***
+
+### getRestRequests()
+
+```ts
+getRestRequests(): RecordedAction[]
+```
+
+Get all REST request actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getRestRequests
+```
+
+***
+
+### getSince()
+
+```ts
+getSince(timestamp): RecordedAction[]
+```
+
+Get actions since a specific timestamp
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `timestamp` | `number` |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getSince
+```
+
+***
+
+### getTriggeredBy()
+
+```ts
+getTriggeredBy(eventId): RecordedAction[]
+```
+
+Get actions triggered by a specific event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `eventId` | `string` |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+```ts
+IActionRecorder.getTriggeredBy
+```
+
+***
+
+### record()
+
+```ts
+record(
+   type, 
+   data, 
+   options?): RecordedAction
+```
+
+Record a new action
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`ActionType`](../type-aliases/action-type) |
+| `data` | `unknown` |
+| `options`? | [`RecordActionOptions`](../interfaces/record-action-options) |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)
+
+#### Implementation of
+
+```ts
+IActionRecorder.record
+```

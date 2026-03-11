@@ -1,0 +1,93 @@
+---
+title: "SessionStorage"
+---
+
+# Interface: SessionStorage
+
+Storage interface for session persistence
+Default implementation is in-memory, can be swapped for Flashcore
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="size"></a> `size` | `number` |
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### delete()
+
+```ts
+delete(id): boolean
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### get()
+
+```ts
+get(id): undefined | ISession
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| [`ISession`](i-session)
+
+***
+
+### set()
+
+```ts
+set(id, session): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `session` | [`ISession`](i-session) |
+
+#### Returns
+
+`void`
+
+***
+
+### values()
+
+```ts
+values(): IterableIterator<ISession, any, any>
+```
+
+#### Returns
+
+`IterableIterator`\<[`ISession`](i-session), `any`, `any`\>

@@ -1,0 +1,76 @@
+---
+title: "tokenLedger"
+---
+
+# Variable: tokenLedger
+
+```ts
+const tokenLedger: {
+  assertWithinLimit: (model, usageKind?) => Promise<void>;
+  configure: (configuration) => void;
+  getEntriesForDay: (dayKey) => Promise<TokenUsageEntry[]>;
+  getLifetimeTotals: (model?) => Promise<Record<string, TokenWindowTotals>>;
+  getLimitRule: (model) => TokenLimitRule | undefined;
+  getLimits: () => TokenLimitConfig;
+  getLimitState: (model) => Promise<TokenLimitState>;
+  getSummary: (query) => Promise<TokenSummaryResult>;
+  off: <T>(event, listener) => void;
+  on: <T>(event, listener) => void;
+  once: <T>(event, listener) => void;
+  recordUsage: (options) => Promise<TokenRecordResult | null>;
+  setLimits: (limits?) => void;
+  willExceedLimit: (model, tokens, window?) => Promise<boolean>;
+};
+```
+
+High-level facade exposing token accounting utilities, aggregation helpers, and limit
+enforcement hooks for the AI plugin.
+
+## Type declaration
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| <a id="assertwithinlimit"></a> `assertWithinLimit` | (`model`, `usageKind`?) =\> `Promise`\<`void`\> | - |
+| <a id="configure"></a> `configure` | (`configuration`) =\> `void` | configureTokenLedger |
+| <a id="getentriesforday"></a> `getEntriesForDay` | (`dayKey`) =\> `Promise`\<[`TokenUsageEntry`](../interfaces/token-usage-entry)[]\> | - |
+| <a id="getlifetimetotals"></a> `getLifetimeTotals` | (`model`?) =\> `Promise`\<`Record`\<`string`, [`TokenWindowTotals`](../interfaces/token-window-totals)\>\> | - |
+| <a id="getlimitrule"></a> `getLimitRule` | (`model`) =\> [`TokenLimitRule`](../interfaces/token-limit-rule) \| `undefined` | - |
+| <a id="getlimits"></a> `getLimits` | () =\> [`TokenLimitConfig`](../interfaces/token-limit-config) | - |
+| <a id="getlimitstate"></a> `getLimitState` | (`model`) =\> `Promise`\<[`TokenLimitState`](../interfaces/token-limit-state)\> | - |
+| <a id="getsummary"></a> `getSummary` | (`query`) =\> `Promise`\<[`TokenSummaryResult`](../interfaces/token-summary-result)\> | - |
+| <a id="off"></a> `off` | \<`T`\>(`event`, `listener`) =\> `void` | - |
+| <a id="on"></a> `on` | \<`T`\>(`event`, `listener`) =\> `void` | - |
+| <a id="once"></a> `once` | \<`T`\>(`event`, `listener`) =\> `void` | - |
+| <a id="recordusage"></a> `recordUsage` | (`options`) =\> `Promise`\<[`TokenRecordResult`](../interfaces/token-record-result) \| `null`\> | - |
+| <a id="setlimits"></a> `setLimits` | (`limits`?) =\> `void` | - |
+| <a id="willexceedlimit"></a> `willExceedLimit` | (`model`, `tokens`, `window`?) =\> `Promise`\<`boolean`\> | - |
+
+## Examples
+
+```ts
+const result = await tokenLedger.recordUsage({ model: 'gpt-4o', tokensIn: 500, tokensOut: 300 })
+console.log(result.totals.windows.day?.totals.total)
+```
+
+```ts
+const summary = await tokenLedger.getSummary({ model: 'gpt-4o', window: 'day' })
+```
+
+```ts
+tokenLedger.configure({
+  limits: { perModel: { 'gpt-4o': { window: 'day', maxTokens: 50_000, mode: 'warn' } } },
+  hooks: {
+    onLimitReached: ({ breaches }) => console.warn(breaches)
+  }
+})
+```
+
+## Remarks
+
+Aggregates are persisted via Flashcore and cached in-memory for fast read access.
+
+## See
+
+ - TokenLimitError
+ - TokenLimitConfig
+ - TokenSummaryQuery

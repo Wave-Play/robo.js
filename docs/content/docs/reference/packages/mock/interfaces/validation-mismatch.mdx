@@ -1,0 +1,16 @@
+---
+title: "ValidationMismatch"
+---
+
+# Interface: ValidationMismatch
+
+Details of a single validation mismatch
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="actual"></a> `actual` | `null` \| [`RecordedAction`](recorded-action) | The actual action received (null if missing) |
+| <a id="expected"></a> `expected` | [`RecordedAction`](recorded-action) | The expected action from the recording |
+| <a id="index"></a> `index` | `number` | Index of the action in the recording |
+| <a id="reason"></a> `reason` | `string` | Human-readable reason for the mismatch |

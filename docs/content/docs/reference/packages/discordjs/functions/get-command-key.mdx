@@ -1,0 +1,21 @@
+---
+title: "getCommandKey()"
+---
+
+# Function: getCommandKey()
+
+```ts
+function getCommandKey(interaction): string
+```
+
+Get the command key from an interaction (including subcommands)
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interaction` | \| `ChatInputCommandInteraction`\<`CacheType`\> \| `AutocompleteInteraction`\<`CacheType`\> \| \{ `commandName`: `string`; `options`: \{ `getSubcommand`: () =\> `string`; `getSubcommandGroup`: () =\> `string`; \}; \} |
+
+## Returns
+
+`string`

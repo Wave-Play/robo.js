@@ -1,86 +1,21 @@
 ---
-title: "MessagePayload"
-description: "Message format for state synchronization in Robo.js"
+title: "MessagePayload<T>"
 ---
 
 # Interface: MessagePayload\<T\>
 
-Defines the structure of messages used for state synchronization between components.
-
 ## Type Parameters
 
-| Type Parameter | Default | Description |
-| -------------- | ------- | ----------- |
-| `T` | `unknown \| undefined` | The type of the data payload |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` \| `undefined` |
 
 ## Properties
 
-### data
-
-```ts
-data: T;
-```
-
-The data payload of the message.
-
-### key?
-
-```ts
-optional key: string[];
-```
-
-Array of string keys that identify the state this message relates to.
-
-### type
-
-```ts
-type: 
-  | "get"
-  | "off"
-  | "on"
-  | "ping"
-  | "pong"
-  | "update";
-```
-
-The type of message being sent.
-
-| Value | Description |
-| ----- | ----------- |
-| `"get"` | Request to get the current state value |
-| `"off"` | Unsubscribe from state updates |
-| `"on"` | Subscribe to state updates |
-| `"ping"` | Connection test message |
-| `"pong"` | Response to ping message |
-| `"update"` | Update the state value |
-
-## Example
-
-```ts
-// Example of an update message
-const updateMessage: MessagePayload<number> = {
-  type: 'update',
-  key: ['counter'],
-  data: 5
-}
-
-// Example of a subscription message
-const subscribeMessage: MessagePayload<undefined> = {
-  type: 'on',
-  key: ['counter'],
-  data: undefined
-}
-```
-
-## Notes
-
-- Used internally by the synchronization system
-- Messages are passed between components to keep state in sync
-- The key array identifies which specific state is being referenced
-- Most developers won't interact with this interface directly
-- Used by `useSyncState` and `SyncContextProvider` behind the scenes
-
-## Related
-
-- [useSyncState](/ref/packages/sync/functions/use-sync-state) - Hook for using synchronized state
-- [SyncContextProvider](/ref/packages/sync/functions/sync-context-provider) - Provider component for sync context
+| Property | Type |
+| ------ | ------ |
+| <a id="data"></a> `data` | `T` |
+| <a id="fromclientid"></a> `fromClientId?` | `string` |
+| <a id="key"></a> `key?` | `string`[] |
+| <a id="targetclientid"></a> `targetClientId?` | `string` |
+| <a id="type"></a> `type` | [`MessageType`](../type-aliases/message-type) |

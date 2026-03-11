@@ -1,0 +1,24 @@
+---
+title: "hasRequiredPermissions()"
+---
+
+# Function: hasRequiredPermissions()
+
+```ts
+function hasRequiredPermissions(userPermissions, requiredPermissions): boolean
+```
+
+Validate that a user has the required permissions for a command.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userPermissions` | `bigint` | The user's permission bitfield |
+| `requiredPermissions` | `null` \| `bigint` | The required permission bitfield |
+
+## Returns
+
+`boolean`
+
+True if user has all required permissions

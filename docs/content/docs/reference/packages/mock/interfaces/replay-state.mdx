@@ -1,0 +1,19 @@
+---
+title: "ReplayState"
+---
+
+# Interface: ReplayState
+
+Real-time playback state for UI binding
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="currentaction"></a> `currentAction?` | [`RecordedAction`](recorded-action) | The action currently being replayed |
+| <a id="currentindex"></a> `currentIndex` | `number` | Current action index being replayed |
+| <a id="currenttime"></a> `currentTime` | `number` | Current time in ms since recording start |
+| <a id="duration"></a> `duration` | `number` | Total recording duration in ms |
+| <a id="mode"></a> `mode` | `"idle"` \| `"playing"` \| `"paused"` \| `"completed"` | Current playback mode |
+| <a id="speed"></a> `speed` | `number` | Current playback speed multiplier |
+| <a id="totalactions"></a> `totalActions` | `number` | Total number of actions to replay |

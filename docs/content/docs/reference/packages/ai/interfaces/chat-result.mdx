@@ -1,0 +1,20 @@
+---
+title: "ChatResult"
+---
+
+# Interface: ChatResult
+
+Normalized chat response structure returned by engines.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="conversation"></a> `conversation?` | [`ConversationState`](conversation-state) | Updated conversation state to persist for future calls. |
+| <a id="degradedmcpservers"></a> `degradedMcpServers?` | `null` \| `string`[] | MCP server labels that were degraded (removed) due to persistent failures. |
+| <a id="finish_reason"></a> `finish_reason` | `string` | Reason provided by the API for ending the completion. |
+| <a id="mcpcalls"></a> `mcpCalls?` | [`MCPCall`](mcp-call)[] | Any MCP calls emitted during the completion. |
+| <a id="message"></a> `message?` | [`ChatMessage`](chat-message) | Assistant message when no tool call was issued. |
+| <a id="rawresponse"></a> `rawResponse?` | `unknown` | Provider-specific payload for debugging or auditing. |
+| <a id="toolcalls"></a> `toolCalls?` | [`ChatFunctionCall`](chat-function-call)[] | Any tool calls emitted during the completion. |
+| <a id="voice"></a> `voice?` | [`VoiceChatResult`](voice-chat-result) | Voice response metadata, when applicable. |

@@ -1,0 +1,18 @@
+---
+title: "ReplayOptions"
+---
+
+# Interface: ReplayOptions
+
+Options for replaying a recorded session
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="oncomplete"></a> `onComplete?` | (`result`: [`ReplayResult`](replay-result)) =\> `void` | Callback when replay completes |
+| <a id="onprogress"></a> `onProgress?` | (`state`: [`ReplayState`](replay-state)) =\> `void` | Callback for progress updates (for UI integration) |
+| <a id="responsetimeout"></a> `responseTimeout?` | `number` | Timeout in ms for waiting on bot responses. Default: 5000 |
+| <a id="speed"></a> `speed?` | `number` | Speed multiplier (1 = real-time, 2 = 2x speed, 0 = instant). Default: 1 |
+| <a id="validate"></a> `validate?` | `boolean` | Whether to validate bot responses against recording. Default: false |
+| <a id="validationmode"></a> `validationMode?` | [`ValidationMode`](../type-aliases/validation-mode) | Validation strictness mode. Default: 'flexible' |

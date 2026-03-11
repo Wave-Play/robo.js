@@ -1,37 +1,36 @@
 ---
 title: "PlausibleAnalytics"
-description: "Plausible Analytics implementation for Robo.js"
 ---
 
 # Class: PlausibleAnalytics
-
-Plausible Analytics engine implementation for Robo.js analytics.
-
-```ts
-new PlausibleAnalytics(domain?): PlausibleAnalytics
-```
 
 ## Extends
 
 - `BaseEngine`
 
-## Constructor
+## Constructors
+
+### new PlausibleAnalytics()
 
 ```ts
 new PlausibleAnalytics(domain?): PlausibleAnalytics
 ```
 
-Creates a new Plausible Analytics tracking instance.
+#### Parameters
 
-### Parameters
+| Parameter | Type |
+| ------ | ------ |
+| `domain`? | `string` |
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `domain` | `string` | The domain registered with Plausible Analytics |
+#### Returns
 
-### Returns
+[`PlausibleAnalytics`](plausible-analytics)
 
-`PlausibleAnalytics` - A new Plausible Analytics instance
+#### Overrides
+
+```ts
+BaseEngine.constructor
+```
 
 ## Methods
 
@@ -41,22 +40,24 @@ Creates a new Plausible Analytics tracking instance.
 event(name, options): Promise<void>
 ```
 
-Tracks an event with Plausible Analytics.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `name` | `string` | The name of the event to track |
-| `options` | `EventOptions` | Configuration for the event |
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `options` | `EventOptions` |
 
 #### Returns
 
-`Promise<void>`
+`Promise`\<`void`\>
 
 #### Overrides
 
-`BaseEngine.event`
+```ts
+BaseEngine.event
+```
+
+***
 
 ### view()
 
@@ -64,65 +65,19 @@ Tracks an event with Plausible Analytics.
 view(page, options): Promise<void>
 ```
 
-Tracks a page view with Plausible Analytics.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `page` | `string` | The page path to track |
-| `options` | `ViewOptions` | Configuration for the page view |
+| Parameter | Type |
+| ------ | ------ |
+| `page` | `string` |
+| `options` | `ViewOptions` |
 
 #### Returns
 
-`Promise<void>`
+`Promise`\<`void`\>
 
 #### Overrides
 
-`BaseEngine.view`
-
-## Example
-
 ```ts
-import { PlausibleAnalytics } from '@robojs/analytics'
-
-// Create a Plausible Analytics instance
-const plausible = new PlausibleAnalytics('yourdomain.com')
-
-// Track a page view
-await plausible.view('/dashboard', {
-  title: 'User Dashboard'
-})
-
-// Track a custom event
-await plausible.event('signup', {
-  properties: {
-    source: 'referral',
-    plan: 'premium'
-  }
-})
+BaseEngine.view
 ```
-
-## Usage with ManyEngines
-
-```ts
-import { PlausibleAnalytics, GoogleAnalytics, ManyEngines } from '@robojs/analytics'
-
-// Create multiple analytics engines
-const plausible = new PlausibleAnalytics('yourdomain.com')
-const ga = new GoogleAnalytics({ measurementId: 'G-XXXXXXXXXX' })
-
-// Combine them into a single engine
-const analytics = new ManyEngines(plausible, ga)
-
-// Now all tracking calls will go to both engines
-await analytics.event('checkout_completed')
-```
-
-## Notes
-
-- Plausible Analytics is a privacy-friendly alternative to Google Analytics
-- This class implements server-side Plausible Analytics tracking
-- For client-side tracking, consider using Plausible's client-side scripts directly
-- All tracking is asynchronous and returns Promises
-- Custom events in Plausible are very flexible and don't require pre-configuration

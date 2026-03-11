@@ -1,0 +1,24 @@
+---
+title: "ReplyHook()"
+---
+
+# Type Alias: ReplyHook()
+
+```ts
+type ReplyHook = (context) => 
+  | Promise<ChatReply | void>
+  | ChatReply
+  | void;
+```
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`ReplyHookContext`](../interfaces/reply-hook-context) |
+
+## Returns
+
+  \| `Promise`\<[`ChatReply`](../interfaces/chat-reply) \| `void`\>
+  \| [`ChatReply`](../interfaces/chat-reply)
+  \| `void`

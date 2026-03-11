@@ -1,0 +1,25 @@
+---
+title: "ZoneContextValue<ClientData>"
+---
+
+# Interface: ZoneContextValue\<ClientData\>
+
+Context value provided by SyncZone to its children.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="broadcast"></a> `broadcast` | (`payload`: `unknown`) =\> `void` | Send ephemeral message to all clients in zone |
+| <a id="clients"></a> `clients` | [`Client`](client)\<`ClientData`\>[] | Clients subscribed to this zone |
+| <a id="connectionstatus"></a> `connectionStatus` | [`ConnectionStatus`](../type-aliases/connection-status) | Connection status |
+| <a id="hostid"></a> `hostId` | `string` | The host client ID for this zone |
+| <a id="ishost"></a> `isHost` | `boolean` | Whether current client is host of this zone |
+| <a id="prefix"></a> `prefix` | (`null` \| `string`)[] | Accumulated key prefix from nested zones |
+| <a id="send"></a> `send` | (`clientId`: `string`, `payload`: `unknown`) =\> `void` | Send ephemeral message to specific client |

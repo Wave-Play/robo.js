@@ -1,0 +1,121 @@
+---
+title: "TestInteractions"
+---
+
+# Class: TestInteractions
+
+Test helper for user interactions
+
+## Constructors
+
+### new TestInteractions()
+
+```ts
+new TestInteractions(session): TestInteractions
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `session` | [`Session`](../../index/classes/session) |
+
+#### Returns
+
+[`TestInteractions`](test-interactions)
+
+## Methods
+
+### clickButton()
+
+```ts
+clickButton(
+   user, 
+   messageId, 
+customId): Promise<void>
+```
+
+Have a user click a button
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `user` | `string` \| [`MockUser`](../../index/interfaces/mock-user) | User object or username |
+| `messageId` | `string` | Message containing the button |
+| `customId` | `string` | Button's custom ID |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### conversation()
+
+```ts
+conversation(channelId, messages): Promise<void>
+```
+
+Simulate a conversation between users
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `channelId` | `string` | The channel to send messages to |
+| `messages` | \{ `content`: `string`; `user`: `string`; \}[] | Array of \{user, content\} pairs |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### invokeCommand()
+
+```ts
+invokeCommand(
+   user, 
+   commandName, 
+options?): Promise<void>
+```
+
+Have a user invoke a slash command
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `user` | `string` \| [`MockUser`](../../index/interfaces/mock-user) | User object or username |
+| `commandName` | `string` | Command name (without slash) |
+| `options`? | `Record`\<`string`, `string` \| `number` \| `boolean`\> | Optional command options |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### sendMessage()
+
+```ts
+sendMessage(
+   user, 
+   channelId, 
+content): Promise<void>
+```
+
+Have a user send a message
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `user` | `string` \| [`MockUser`](../../index/interfaces/mock-user) | User object or username |
+| `channelId` | `string` | Channel to send to |
+| `content` | `string` | Message content |
+
+#### Returns
+
+`Promise`\<`void`\>

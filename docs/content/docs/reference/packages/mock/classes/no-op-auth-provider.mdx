@@ -1,0 +1,92 @@
+---
+title: "NoOpAuthProvider"
+---
+
+# Class: NoOpAuthProvider
+
+No-op auth provider that allows all requests
+Used for local development without authentication
+
+## Implements
+
+- [`AuthProvider`](../interfaces/auth-provider)
+
+## Constructors
+
+### new NoOpAuthProvider()
+
+```ts
+new NoOpAuthProvider(): NoOpAuthProvider
+```
+
+#### Returns
+
+[`NoOpAuthProvider`](no-op-auth-provider)
+
+## Methods
+
+### onSessionCreated()
+
+```ts
+onSessionCreated(_session, _auth): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `_session` | [`ISession`](../interfaces/i-session) |
+| `_auth` | [`AuthResult`](../interfaces/auth-result) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`AuthProvider`](../interfaces/auth-provider).[`onSessionCreated`](../interfaces/auth-provider#onsessioncreated)
+
+***
+
+### onSessionEnded()
+
+```ts
+onSessionEnded(_session, _auth): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `_session` | [`ISession`](../interfaces/i-session) |
+| `_auth` | [`AuthResult`](../interfaces/auth-result) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`AuthProvider`](../interfaces/auth-provider).[`onSessionEnded`](../interfaces/auth-provider#onsessionended)
+
+***
+
+### validateRequest()
+
+```ts
+validateRequest(_req): Promise<AuthResult>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `_req` | `Request` |
+
+#### Returns
+
+`Promise`\<[`AuthResult`](../interfaces/auth-result)\>
+
+#### Implementation of
+
+[`AuthProvider`](../interfaces/auth-provider).[`validateRequest`](../interfaces/auth-provider#validaterequest)

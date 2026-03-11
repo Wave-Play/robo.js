@@ -1,0 +1,64 @@
+---
+title: "EmailContext"
+---
+
+# Type Alias: EmailContext
+
+```ts
+type EmailContext = {
+  appName: string;
+  links: {
+     resetPassword: string;
+     verifyEmail: string;
+    };
+  request: {
+     origin: string | null;
+    };
+  session: {
+     id: string | null;
+     ip: string | null;
+     userAgent: string | null;
+    };
+  tokens: {
+     resetPassword: string;
+     verifyEmail: string;
+    };
+  user: {
+     email: string | null;
+     id: string;
+     name: string | null;
+    };
+};
+```
+
+Contextual data passed to every email template or builder, enabling
+personalized content and conditional workflows.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="appname"></a> `appName` | `string` | Application display name from config (defaults to "Robo.js"). |
+| <a id="links"></a> `links`? | \{ `resetPassword`: `string`; `verifyEmail`: `string`; \} | Pre-built absolute URLs for verification or password reset actions. |
+| `links.resetPassword`? | `string` | - |
+| `links.verifyEmail`? | `string` | - |
+| <a id="request"></a> `request`? | \{ `origin`: `string` \| `null`; \} | Request metadata such as origin/base URL used to build links. May be undefined when the request context is not available (e.g. background jobs). |
+| `request.origin`? | `string` \| `null` | - |
+| <a id="session"></a> `session`? | \{ `id`: `string` \| `null`; `ip`: `string` \| `null`; `userAgent`: `string` \| `null`; \} | Session metadata present for the `session:created` event. |
+| `session.id`? | `string` \| `null` | - |
+| `session.ip`? | `string` \| `null` | - |
+| `session.userAgent`? | `string` \| `null` | - |
+| <a id="tokens"></a> `tokens`? | \{ `resetPassword`: `string`; `verifyEmail`: `string`; \} | Raw tokens for verification/reset flows (use links for user-facing URLs). |
+| `tokens.resetPassword`? | `string` | - |
+| `tokens.verifyEmail`? | `string` | - |
+| <a id="user"></a> `user` | \{ `email`: `string` \| `null`; `id`: `string`; `name`: `string` \| `null`; \} | Adapter user record (email/name may be null for certain providers). |
+| `user.email`? | `string` \| `null` | - |
+| `user.id` | `string` | - |
+| `user.name`? | `string` \| `null` | - |
+
+## Example
+
+```ts
+const greeting = `Hi ${ctx.user.name ?? 'there'}`
+const auditNote = ctx.session?.ip ? `IP ${ctx.session.ip}` : 'No session data'
+```

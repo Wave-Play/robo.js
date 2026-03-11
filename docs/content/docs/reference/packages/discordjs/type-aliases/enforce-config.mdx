@@ -1,0 +1,18 @@
+---
+title: "EnforceConfig<C>"
+---
+
+# Type Alias: EnforceConfig\<C\>
+
+```ts
+type EnforceConfig<C> = Exclude<keyof C, keyof CommandConfig> extends never ? C : "Extra properties are not allowed in CommandConfig";
+```
+
+Enforces that no extra properties exist beyond CommandConfig.
+Returns an error message type if extra properties are found.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`CommandConfig`](../interfaces/command-config) |

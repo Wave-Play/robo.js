@@ -1,73 +1,94 @@
 ---
-title: "@robojs/auth"
-description: API reference for the authentication plugin.
+title: "DIRECTORY"
+description: "API reference for @robojs/auth"
 ---
 
 # @robojs/auth
 
-User authentication and authorization including OAuth2 support.
+API reference documentation for `@robojs/auth`.
 
-<Cards>
-  <Card href="/docs/plugins/auth" title="Plugin Guide" description="Full documentation and usage examples." />
-</Cards>
+## Classes
 
-## Main Exports
+- [`Argon2Hasher`](classes/argon2-hasher) - Default implementation of [PasswordHasher](../interfaces/password-hasher) using Argon2id.
 
-### Auth
+## Interfaces
 
-Main authentication utilities.
+- [`Argon2Params`](interfaces/argon2-params) - Tuning parameters for the Argon2id hashing algorithm.
+- [`AuthMailer`](interfaces/auth-mailer) - Interface mail adapter implementations must satisfy.
+- [`AuthPluginOptions`](interfaces/auth-plugin-options) - Configuration options for the `@robojs/auth` plugin.
+- [`ConfigureAuthProxyRuntimeOptions`](interfaces/configure-auth-proxy-runtime-options) - Runtime options for [configureAuthProxyRuntime](../functions/configure-auth-proxy-runtime) (upstream proxy mode).
+- [`ConfigureAuthRuntimeOptions`](interfaces/configure-auth-runtime-options) - Runtime configuration for [configureAuthRuntime](../functions/configure-auth-runtime) (local mode).
+- [`DeviceSession`](interfaces/device-session) - Public shape returned by `GET /sessions` and the `getSessions` client helper.
+- [`EmailPasswordAuthorizeContext`](interfaces/email-password-authorize-context) - Context object passed to custom `authorize` implementations.
+- [`EmailPasswordProviderMetadata`](interfaces/email-password-provider-metadata) - Metadata returned from the Email/Password provider factory.
+- [`EmailPasswordProviderOptions`](interfaces/email-password-provider-options) - Options accepted by the Email/Password provider factory.
+- [`EmailPasswordRouteContext`](interfaces/email-password-route-context) - Arguments provided to Email/Password route overrides while processing a request.
+- [`EmailPasswordRouteOverrides`](interfaces/email-password-route-overrides) - Optional handlers that replace built-in Email/Password routes.
+- [`EmailsOptions`](interfaces/emails-options) - Email system configuration controlling sender identity, mailer wiring,.
+- [`HashPasswordOptions`](interfaces/hash-password-options) - Optional overrides when calling [hashPassword](../functions/hash-password).
+- [`PasswordAdapter`](interfaces/password-adapter) - Auth.js adapter contract extended with password management helpers.
+- [`PasswordHashMetadata`](interfaces/password-hash-metadata) - Structured representation of a PHC-formatted Argon2id hash string.
+- [`PasswordHasher`](interfaces/password-hasher) - Interface for password hashing implementations.
+- [`PasswordRecord`](interfaces/password-record) - Persistent password metadata stored by the email-password provider.
+- [`PrismaAdapterModelOptions`](interfaces/prisma-adapter-model-options) - Customizes Prisma model names when your schema deviates from the defaults.
+- [`PrismaAdapterOptions`](interfaces/prisma-adapter-options) - Complete configuration object for [createPrismaAdapter](../functions/create-prisma-adapter).
+- [`PrismaClientLike`](interfaces/prisma-client-like) - Minimal Prisma client surface required by [createPrismaAdapter](../functions/create-prisma-adapter).
+- [`RequestPayloadHandle`](interfaces/request-payload-handle) - Utility handle for inspecting and mutating a parsed request payload.
+- [`SwitchSessionResult`](interfaces/switch-session-result) - Result shape for `POST /sessions/switch`.
 
-```typescript
-import { Auth } from '@robojs/auth'
+## Type Aliases
 
-// Get current user
-const user = await Auth.getUser(request)
+- [`AuthEmailEvent`](type-aliases/auth-email-event) - Events that can trigger custom email workflows.
+- [`EmailBuilder`](type-aliases/email-builder) - Builder used to assemble a message on-demand.
+- [`EmailContext`](type-aliases/email-context) - Contextual data passed to every email template or builder, enabling.
+- [`EmailPasswordAuthorize`](type-aliases/email-password-authorize)
+- [`EmailPasswordRouteHandler`](type-aliases/email-password-route-handler)
+- [`MailAttachment`](type-aliases/mail-attachment) - Attachment payload supplied to a mailer when sending transactional emails.
+- [`MailMessage`](type-aliases/mail-message) - Message contract understood by mail adapters and builders.
+- [`MailParty`](type-aliases/mail-party) - Represents an email party (sender or recipient).
+- [`MaybePromise`](type-aliases/maybe-promise) - Helper representing a value or promise thereof.
+- [`ReactEmailRenderable`](type-aliases/react-email-renderable) - Union describing values accepted by React email renderers.
+- [`ReactTemplateRenderer`](type-aliases/react-template-renderer) - Function signature for generating React email output using react-email.
+- [`ReactTemplateResult`](type-aliases/react-template-result) - Normalized result from invoking a React template renderer.
+- [`ResendMailerOptions`](type-aliases/resend-mailer-options) - Wire-up options passed to the Resend-backed mailer.
+- [`TemplateConfig`](type-aliases/template-config) - Describes how automated emails are rendered or composed—either via inline.
+- [`TemplateOverride`](type-aliases/template-override) - User-supplied override merged with the default template.
+- [`TemplateValue`](type-aliases/template-value) - Template helper value that can be static, lazy (Promise), or computed from.
 
-// Verify session
-const session = await Auth.verifySession(token)
+## Functions
 
-// Generate auth URL
-const url = Auth.getAuthUrl('discord')
-```
+- [`AssertPasswordAdapter`](functions/assert-password-adapter) - Validates that a supplied Auth.js adapter implements password helper methods.
+- [`ClearSessions`](functions/clear-sessions) - Removes all sessions from the device and signs out completely.
+- [`ConfigureAuthProxyRuntime`](functions/configure-auth-proxy-runtime) - Configures upstream proxy mode where Robo forwards auth routes to another.
+- [`ConfigureAuthRuntime`](functions/configure-auth-runtime) - Initializes Auth.js in local mode by creating a reusable handler that Robo's.
+- [`CreateAuthRequestHandler`](functions/create-auth-request-handler) - Bridges Robo.js requests to Auth.js so plugin routes can reuse the official handler.
+- [`CreateFlashcoreAdapter`](functions/create-flashcore-adapter) - Creates a password-capable Auth.js adapter that stores users, accounts,.
+- [`CreatePrismaAdapter`](functions/create-prisma-adapter) - Creates a password-capable Auth.js adapter backed by Prisma.
+- [`CreateResendMailer`](functions/create-resend-mailer) - Builds an `AuthMailer` implementation backed by the Resend email API.
+- [`GetCsrfToken`](functions/get-csrf-token) - Fetches the CSRF token used by Auth.js form submissions.
+- [`GetProviders`](functions/get-providers) - Lists OAuth, Email, and custom providers configured in Auth.js at runtime.
+- [`GetRequestPayload`](functions/get-request-payload) - Parses the Robo request body once and exposes a reusable payload helper.
+- [`GetServerSession`](functions/get-server-session) - Retrieves the active Auth.js Session using the configured runtime.
+- [`GetSession`](functions/get-session) - Retrieves the current Auth.js session object, if one exists.
+- [`GetSessions`](functions/get-sessions) - Lists all sessions stored on this device, including expired ones.
+- [`GetToken`](functions/get-token) - Extracts (and optionally decodes) the Auth.js session token.
+- [`HashPassword`](functions/hash-password) - Generates a PHC-formatted Argon2id hash string for a plaintext password.
+- [`ListPrismaUserIds`](functions/list-prisma-user-ids) - Retrieves a paginated list of Auth.js user IDs using Prisma.
+- [`ListPrismaUsers`](functions/list-prisma-users) - Retrieves paginated AdapterUser records via Prisma.
+- [`ListUserIds`](functions/list-user-ids) - Retrieves a paginated list of user IDs from the Flashcore user index.
+- [`ListUsers`](functions/list-users) - Retrieves paginated AdapterUser records by loading IDs from.
+- [`NeedsRehash`](functions/needs-rehash) - Determines whether a stored Argon2id hash needs to be regenerated.
+- [`NormalizeAuthOptions`](functions/normalize-auth-options) - Parses plugin configuration, applies defaults, and returns an Auth.js-ready option set.
+- [`RemoveSession`](functions/remove-session) - Removes a session from the device stack and deletes the server-side session.
+- [`SignIn`](functions/sign-in)
+- [`SignOut`](functions/sign-out)
+- [`SignUp`](functions/sign-up) - Initiates the sign-up flow for the Email/Password provider.
+- [`SwitchSession`](functions/switch-session) - Switches the active session to the given user.
+- [`VerifyPasswordHash`](functions/verify-password-hash) - Validates a password against a stored Argon2id hash.
 
-### Session
+## Variables
 
-Session management.
-
-```typescript
-import { Session } from '@robojs/auth'
-
-// Create session
-const session = await Session.create(userId)
-
-// Destroy session
-await Session.destroy(sessionId)
-```
-
-### Providers
-
-OAuth provider configuration.
-
-```typescript
-import { DiscordProvider } from '@robojs/auth/providers'
-
-const discord = new DiscordProvider({
-  clientId: process.env.DISCORD_CLIENT_ID,
-  clientSecret: process.env.DISCORD_CLIENT_SECRET
-})
-```
-
-## Configuration
-
-```javascript title="config/plugins/robojs/auth.mjs"
-export default {
-  providers: ['discord'],
-  session: {
-    maxAge: 86400 // 24 hours
-  }
-}
-```
-
-<Cards>
-  <Card href="/docs/plugins/auth" title="Plugin Guide" description="See full configuration options." />
-</Cards>
+- [`AuthLogger`](variables/auth-logger) - Namespaced logger for all `@robojs/auth` runtime output.
+- [`AuthPluginOptionsSchema`](variables/auth-plugin-options-schema) - Zod schema enforcing the structure of `@robojs/auth` plugin configuration.
+- [`Auth_routes`](variables/auth_routes) - Robo-authenticated routes mounted under the configured `basePath`.
+- [`Default_base_path`](variables/default_base_path) - Default route prefix used by the Auth plugin REST handlers.

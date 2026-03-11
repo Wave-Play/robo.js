@@ -1,0 +1,43 @@
+---
+title: "PrismaAdapterOptions"
+---
+
+# Interface: PrismaAdapterOptions
+
+Complete configuration object for [createPrismaAdapter](../functions/create-prisma-adapter).
+
+Fields:
+- `client`: Required [PrismaClientLike](prisma-client-like) instance with user + password models.
+- `secret`: Required token hashing secret. Minimum 32 characters recommended.
+- `models?`: Optional [PrismaAdapterModelOptions](prisma-adapter-model-options) for custom model names.
+
+⚠️ Security:
+- Never commit secrets; load them from environment variables or secret stores.
+
+Performance notes:
+- Each adapter method runs 1–3 database queries. Enable Prisma connection pooling for high throughput.
+
+Edge cases:
+- Call `await prisma.$connect()` before passing the client if your environment requires manual connections.
+
+## Examples
+
+```ts
+createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+```
+
+```ts
+createPrismaAdapter({
+	client: prisma,
+	secret: process.env.AUTH_SECRET!,
+	models: { password: 'userCredentials' }
+})
+```
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="client"></a> `client` | [`PrismaClientLike`](prisma-client-like) |
+| <a id="models"></a> `models?` | [`PrismaAdapterModelOptions`](prisma-adapter-model-options) |
+| <a id="secret"></a> `secret` | `string` |

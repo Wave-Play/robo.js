@@ -1,0 +1,30 @@
+---
+title: "MailAttachment"
+---
+
+# Type Alias: MailAttachment
+
+```ts
+type MailAttachment = {
+  content: Buffer | string;
+  contentType: string;
+  filename: string;
+};
+```
+
+Attachment payload supplied to a mailer when sending transactional emails.
+Not every provider supports attachments—consult your mailer for limits.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="content"></a> `content` | `Buffer` \| `string` | File data, either as a Buffer or base64 string. |
+| <a id="contenttype"></a> `contentType`? | `string` | MIME type for the attachment. Many providers infer this automatically. |
+| <a id="filename"></a> `filename` | `string` | Filename visible to recipients (e.g. `invoice.pdf`). |
+
+## Example
+
+```ts
+{ filename: 'receipt.pdf', content: pdfBuffer, contentType: 'application/pdf' }
+```

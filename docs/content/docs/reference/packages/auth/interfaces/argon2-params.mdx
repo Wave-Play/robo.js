@@ -1,0 +1,47 @@
+---
+title: "Argon2Params"
+---
+
+# Interface: Argon2Params
+
+Tuning parameters for the Argon2id hashing algorithm. Higher settings
+increase resistance to brute-force attacks but also raise CPU/RAM costs.
+
+Fields:
+- `memorySize`: Memory cost in KiB. Default 4096 (4 MiB). Increase to 8192+ for high-security apps.
+- `passes`: Number of iterations/time cost. Default 3. Raising this linearly increases hashing time.
+- `parallelism`: Thread count. Default 1. Increase on multi-core servers; keep ≤ available cores.
+- `tagLength`: Output hash length in bytes. Default 32 (256 bits). Use 32 or 64 for most cases.
+
+⚠️ Security:
+- Memory cost is the strongest defense against GPU attacks; use the highest value your infra tolerates.
+- Never drop below 4096 KiB / 3 passes / 1 parallelism / 32-byte tag.
+- Changing parameters requires rehashing existing passwords (see [needsRehash](../functions/needs-rehash)).
+
+Performance:
+- 4096 KiB with 3 passes hashes in ~50 ms on typical servers; 8192 KiB doubles that.
+- High parallelism increases RAM usage proportionally.
+
+## Examples
+
+```ts
+const params: Argon2Params = { memorySize: 4096, passes: 3, parallelism: 1, tagLength: 32 }
+```
+
+```ts
+const params: Argon2Params = { memorySize: 8192, passes: 4, parallelism: 1, tagLength: 32 }
+```
+
+## See
+
+ - DEFAULT_ARGON2_PARAMS
+ - hashPassword
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="memorysize"></a> `memorySize` | `number` |
+| <a id="parallelism"></a> `parallelism` | `number` |
+| <a id="passes"></a> `passes` | `number` |
+| <a id="taglength"></a> `tagLength` | `number` |

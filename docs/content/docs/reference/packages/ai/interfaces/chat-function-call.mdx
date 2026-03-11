@@ -1,0 +1,15 @@
+---
+title: "ChatFunctionCall"
+---
+
+# Interface: ChatFunctionCall
+
+Invocation payload provided when an engine requests tool execution.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="arguments"></a> `arguments` | `Record`\<`string`, `unknown`\> | Parsed arguments adhering to [ChatFunctionParameters](chat-function-parameters). |
+| <a id="id"></a> `id?` | `string` | Identifier supplied when the model tracks a tool call across responses. |
+| <a id="name"></a> `name` | `string` | Name of the function to execute. |

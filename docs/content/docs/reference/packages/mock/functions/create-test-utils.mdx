@@ -1,0 +1,99 @@
+---
+title: "createTestUtils()"
+---
+
+# Function: createTestUtils()
+
+## Call Signature
+
+```ts
+function createTestUtils(sessionOrId): TestUtils
+```
+
+Create test utilities for a session.
+
+Accepts either the internal `Session` instance or a `sessionId` string.
+When given a string, the session is resolved from the in-process session manager
+(requires the mock server to be running in the same process).
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionOrId` | [`Session`](../../index/classes/session) | The session instance or session ID string |
+
+### Returns
+
+[`TestUtils`](../interfaces/test-utils)
+
+Object with users and interactions helpers
+
+### Example
+
+```typescript
+import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
+
+const bot = await startMockRobo({ name: 'test' })
+const { users, interactions } = createTestUtils(bot.sessionId)
+
+// Create test users
+const [alice, bob] = users.createMany(['Alice', 'Bob'])
+
+// Simulate a conversation
+await interactions.conversation(channelId, [
+  { user: 'Alice', content: 'Hello!' },
+  { user: 'Bob', content: 'Hi there!' }
+])
+
+// Act as a specific user
+await users.as(alice, async () => {
+  // Do something as Alice
+})
+```
+
+## Call Signature
+
+```ts
+function createTestUtils(sessionOrId): TestUtils
+```
+
+Create test utilities for a session.
+
+Accepts either the internal `Session` instance or a `sessionId` string.
+When given a string, the session is resolved from the in-process session manager
+(requires the mock server to be running in the same process).
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionOrId` | `string` | The session instance or session ID string |
+
+### Returns
+
+[`TestUtils`](../interfaces/test-utils)
+
+Object with users and interactions helpers
+
+### Example
+
+```typescript
+import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
+
+const bot = await startMockRobo({ name: 'test' })
+const { users, interactions } = createTestUtils(bot.sessionId)
+
+// Create test users
+const [alice, bob] = users.createMany(['Alice', 'Bob'])
+
+// Simulate a conversation
+await interactions.conversation(channelId, [
+  { user: 'Alice', content: 'Hello!' },
+  { user: 'Bob', content: 'Hi there!' }
+])
+
+// Act as a specific user
+await users.as(alice, async () => {
+  // Do something as Alice
+})
+```

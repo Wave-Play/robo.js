@@ -1,0 +1,30 @@
+---
+title: "clearSessions()"
+---
+
+# Function: clearSessions()
+
+```ts
+function clearSessions(options?): Promise<Response>
+```
+
+Removes all sessions from the device and signs out completely.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `ClientOptions` | Overrides for base path, headers, or a custom fetch implementation. |
+
+## Returns
+
+`Promise`\<`Response`\>
+
+The raw `Response` from the server.
+
+## Example
+
+```ts
+await clearSessions()
+window.location.href = '/auth'
+```

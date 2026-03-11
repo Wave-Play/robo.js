@@ -1,69 +1,20 @@
 ---
-title: "RouteHandler"
-description: "Request handler function for Robo.js server routes"
+title: "RouteHandler()"
 ---
 
 # Type Alias: RouteHandler()
 
 ```ts
-type RouteHandler: (req, res) => unknown | Promise<unknown>;
+type RouteHandler = (req, res) => unknown | Promise<unknown>;
 ```
-
-Defines the structure of a request handler function for Robo.js server routes.
 
 ## Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `req` | [`RoboRequest`](/ref/packages/server/classes/robo-request) | The request object containing all information about the incoming request |
-| `res` | [`RoboReply`](/ref/packages/server/interfaces/robo-reply) | The response object used to send a reply back to the client |
+| Parameter | Type |
+| ------ | ------ |
+| `req` | [`RoboRequest`](../classes/robo-request) |
+| `res` | [`RoboReply`](../interfaces/robo-reply) |
 
 ## Returns
 
-`unknown | Promise<unknown>` - The response data or a Promise resolving to the response data
-
-## Example
-
-```ts
-import { RouteHandler } from '@robojs/server'
-
-// Define a typed route handler
-const getUserHandler: RouteHandler = async (req, res) => {
-  // Get the user ID from route parameters
-  const userId = req.params.id
-  
-  try {
-    // Fetch user data (example)
-    const user = await fetchUserById(userId)
-    
-    // Return the user data as JSON
-    return res.json(user)
-  } catch (error) {
-    // Handle errors
-    return res.code(404).json({ 
-      error: 'User not found',
-      message: error.message
-    })
-  }
-}
-
-// Alternative style with direct return
-const createUserHandler: RouteHandler = async (req, res) => {
-  // Parse the request body
-  const userData = await req.json()
-  
-  // Create the user (example)
-  const newUser = await createUser(userData)
-  
-  // Set status code and return response
-  return res.code(201).json(newUser)
-}
-```
-
-## Notes
-
-- The handler can return a value directly or use the `res` object to send a response
-- When returning a value directly, it will be automatically converted to a response
-- You can return a Promise to handle asynchronous operations
-- For more control over the response, use the methods provided by the `res` object
-- The function signature is similar to Express-style handlers but with modern Promise support
+`unknown` \| `Promise`\<`unknown`\>

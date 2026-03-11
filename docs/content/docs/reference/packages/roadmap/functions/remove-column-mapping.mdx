@@ -1,0 +1,31 @@
+---
+title: "removeColumnMapping()"
+---
+
+# Function: removeColumnMapping()
+
+```ts
+function removeColumnMapping(guildId, status): void
+```
+
+Removes a mapping for a provider status name.
+
+This helper removes an existing column mapping. After removal, the
+status will use the provider-level default mapping.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+| `status` | `string` | The provider status name to unmap |
+
+## Returns
+
+`void`
+
+## Example
+
+```ts
+removeColumnMapping(guildId, 'QA');
+```

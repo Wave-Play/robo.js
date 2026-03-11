@@ -1,0 +1,29 @@
+---
+title: "RecalcOptions"
+---
+
+# Interface: RecalcOptions
+
+Options for recalculating user levels
+
+## Examples
+
+```ts
+// Default store
+await XP.recalcLevel(guildId, userId) // Uses 'default'
+```
+
+```ts
+// Custom store
+await XP.recalcLevel(guildId, userId, { storeId: 'reputation' })
+```
+
+## Extends
+
+- [`StoreOptions`](store-options)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="storeid"></a> `storeId?` | `string` | Store identifier for isolating XP data **Default** `'default'` | [`StoreOptions`](store-options).[`storeId`](store-options#storeid) |

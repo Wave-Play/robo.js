@@ -1,0 +1,36 @@
+---
+title: "MiddlewareNamespaceController"
+---
+
+# Interface: MiddlewareNamespaceController
+
+Namespace controller for portal.discord.middleware
+Provides access to middleware chain.
+
+## Methods
+
+### chain()
+
+```ts
+chain(): Promise<MiddlewareChainEntry[]>
+```
+
+Get the ordered middleware chain (sorted by order, filtered by enabled)
+
+#### Returns
+
+`Promise`\<[`MiddlewareChainEntry`](middleware-chain-entry)[]\>
+
+***
+
+### list()
+
+```ts
+list(): string[]
+```
+
+Get all middleware keys
+
+#### Returns
+
+`string`[]

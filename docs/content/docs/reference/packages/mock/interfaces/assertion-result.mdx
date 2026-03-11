@@ -1,0 +1,17 @@
+---
+title: "AssertionResult"
+---
+
+# Interface: AssertionResult
+
+Result of a single assertion (for UI persistence)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="actual"></a> `actual` | `unknown` | Actual value (serialized) |
+| <a id="description"></a> `description` | `string` | Human-readable description of what was asserted |
+| <a id="diff"></a> `diff?` | `string` | Human-readable diff for UI display |
+| <a id="expected"></a> `expected` | `unknown` | Expected value (serialized) |
+| <a id="passed"></a> `passed` | `boolean` | Whether the assertion passed |

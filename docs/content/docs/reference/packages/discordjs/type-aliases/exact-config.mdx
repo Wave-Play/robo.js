@@ -1,0 +1,17 @@
+---
+title: "ExactConfig<C>"
+---
+
+# Type Alias: ExactConfig\<C\>
+
+```ts
+type ExactConfig<C> = { [K in keyof C]: K extends keyof CommandConfig ? C[K] : never };
+```
+
+Ensures the config only contains valid CommandConfig properties.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`CommandConfig`](../interfaces/command-config) |

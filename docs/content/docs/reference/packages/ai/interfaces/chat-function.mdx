@@ -1,0 +1,15 @@
+---
+title: "ChatFunction"
+---
+
+# Interface: ChatFunction
+
+Definition describing an available tool or function call that an engine may invoke.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description` | `string` | Human-readable description surfaced to the model. |
+| <a id="name"></a> `name` | `string` | Programmatic identifier for the function. |
+| <a id="parameters"></a> `parameters` | [`ChatFunctionParameters`](chat-function-parameters) | JSON schema describing the function arguments. |

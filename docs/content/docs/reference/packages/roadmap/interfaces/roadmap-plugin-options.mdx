@@ -1,0 +1,60 @@
+---
+title: "RoadmapPluginOptions"
+---
+
+# Interface: RoadmapPluginOptions
+
+Plugin options interface
+
+These options can be configured in config/plugins/robojs/roadmap.* files
+to customize the roadmap plugin behavior.
+
+## Examples
+
+Basic configuration with Jira provider:
+```ts
+// config/plugins/robojs/roadmap.ts
+export default {
+  provider: {
+    type: 'jira',
+    options: {
+      url: process.env.JIRA_URL,
+      email: process.env.JIRA_EMAIL,
+      apiToken: process.env.JIRA_API_TOKEN,
+      jql: '(issuetype = Epic AND (labels NOT IN ("Private") OR labels IS EMPTY)) OR labels IN ("Public")'
+    }
+  }
+}
+```
+
+Advanced configuration with pre-instantiated provider:
+```ts
+import { JiraProvider } from '@robojs/roadmap'
+
+const customProvider = new JiraProvider({
+  type: 'jira',
+  options: {
+    url: 'https://company.atlassian.net',
+    email: 'bot@company.com',
+    apiToken: 'secret-token',
+    jql: 'project = MYPROJECT'
+  }
+})
+
+export default {
+  provider: customProvider,
+  autoSync: true,
+  autocompleteCacheTtl: 600000 // 10 minutes
+}
+```
+
+## Properties
+
+| Property | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="autocompletecachettl"></a> `autocompleteCacheTtl?` | `number` | `300000 (5 minutes)` | Time-to-live in milliseconds for autocomplete cache entries (issue types, columns, labels). Controls how long autocomplete suggestions are cached before being refreshed from the provider. Lower values provide fresher data but increase API calls; higher values reduce API load but may show stale data. **Remarks** This setting affects all autocomplete handlers in roadmap commands. The cache is per-guild and shared across all autocomplete options. **Example** `export default { autocompleteCacheTtl: 600000 // 10 minutes }` |
+| <a id="autosync"></a> `autoSync?` | `boolean` | `false` | Whether to automatically sync on startup. **Remarks** Currently not implemented - reserved for future enhancement |
+| <a id="ephemeralcommands"></a> `ephemeralCommands?` | `boolean` | `true` | Whether roadmap command responses (e.g., /roadmap add, /roadmap edit) should be ephemeral. When true, command replies are only visible to the invoking user. When false, results are posted visibly in the channel so project teams can see card creation and edit activity. **Example** `export default { ephemeralCommands: false // share add/edit results with the whole channel }` |
+| <a id="provider"></a> `provider?` | \| [`ProviderConfig`](../type-aliases/provider-config) \| [`RoadmapProvider`](../classes/roadmap-provider)\<[`ProviderConfig`](../type-aliases/provider-config)\> | `undefined` | Provider configuration or pre-instantiated provider instance. Can be either: - A ProviderConfig object with type and options - A pre-instantiated RoadmapProvider instance (for advanced customization) If not provided, falls back to environment variables (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN). |
+| <a id="syncinterval"></a> `syncInterval?` | `number` | `undefined` | Interval in milliseconds for automatic syncing. **Remarks** Reserved for future implementation |
+| <a id="threadtitletemplate"></a> `threadTitleTemplate?` | `string` | `undefined (uses just the title)` | Default template string for formatting Discord thread titles. Supports placeholders: `{id}` for the card ID and `{title}` for the card title. This serves as a default that can be overridden per-guild via guild settings. If not provided, thread titles will use just the card title. **Example** `export default { threadTitleTemplate: "[{id}] {title}" // Default format for all guilds }` |

@@ -1,0 +1,28 @@
+---
+title: "ValidateHandler()<T, ClientData>"
+---
+
+# Type Alias: ValidateHandler()\<T, ClientData\>
+
+```ts
+type ValidateHandler<T, ClientData> = (context) => boolean | string | Promise<boolean | string>;
+```
+
+Validation function - return true to accept, false or string to reject.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`SyncUpdateContext`](../interfaces/sync-update-context)\<`T`, `ClientData`\> |
+
+## Returns
+
+`boolean` \| `string` \| `Promise`\<`boolean` \| `string`\>

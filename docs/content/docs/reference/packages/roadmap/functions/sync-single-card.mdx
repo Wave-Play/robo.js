@@ -1,0 +1,51 @@
+---
+title: "syncSingleCard()"
+---
+
+# Function: syncSingleCard()
+
+```ts
+function syncSingleCard(
+   card, 
+   guild, 
+   provider): Promise<
+  | {
+  threadId: string;
+  threadUrl: string;
+ }
+| null>
+```
+
+Synchronizes a single roadmap card to Discord and returns thread metadata.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `card` | [`RoadmapCard`](../type-aliases/roadmap-card) | The roadmap card to sync. |
+| `guild` | `Guild` | The Discord guild to sync to. |
+| `provider` | [`RoadmapProvider`](../classes/roadmap-provider)\<[`ProviderConfig`](../type-aliases/provider-config)\> | The roadmap provider instance. |
+
+## Returns
+
+`Promise`\<
+  \| \{
+  `threadId`: `string`;
+  `threadUrl`: `string`;
+ \}
+  \| `null`\>
+
+Object containing thread ID and URL, or null if skipped (e.g., archived column).
+
+## Throws
+
+Error if forums not configured, card column not found, or Discord sync fails.
+
+## Example
+
+```ts
+const result = await syncSingleCard(newCard, guild, provider);
+if (result) {
+  const { threadId, threadUrl } = result;
+}
+```

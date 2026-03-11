@@ -1,0 +1,22 @@
+---
+title: "CursorResult<ClientData>"
+---
+
+# Interface: CursorResult\<ClientData\>
+
+Result returned by useSyncCursor hook.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="clientid"></a> `clientId` | `string` | Current client ID |
+| <a id="cursors"></a> `cursors` | [`RemoteCursor`](remote-cursor)\<`ClientData`\>[] | All cursors including yours |
+| <a id="remotecursors"></a> `remoteCursors` | [`RemoteCursor`](remote-cursor)\<`ClientData`\>[] | Only other users' cursors (use this for rendering to avoid self-rerenders) |
+| <a id="updateposition"></a> `updatePosition` | (`pos`: \{ `active`: `boolean`; `x`: `number`; `y`: `number`; \}) =\> `void` | Manually update cursor position (useful for custom tracking) |

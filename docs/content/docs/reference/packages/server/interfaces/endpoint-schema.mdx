@@ -1,0 +1,21 @@
+---
+title: "EndpointSchema"
+---
+
+# Interface: EndpointSchema
+
+Endpoint schema definition for typed APIs.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="body"></a> `body?` | `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\> |
+| <a id="deprecated"></a> `deprecated?` | `boolean` |
+| <a id="description"></a> `description?` | `string` |
+| <a id="headers"></a> `headers?` | `HeadersSchema` |
+| <a id="params"></a> `params?` | `ZodObject`\<`Readonly`\<\{\}\>, `$strip`\> |
+| <a id="query"></a> `query?` | `ZodObject`\<`Readonly`\<\{\}\>, `$strip`\> |
+| <a id="response"></a> `response?` | `Partial`\<`Record`\<`HttpStatusCode`, `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\>\>\> |
+| <a id="summary"></a> `summary?` | `string` |
+| <a id="tags"></a> `tags?` | `string`[] |

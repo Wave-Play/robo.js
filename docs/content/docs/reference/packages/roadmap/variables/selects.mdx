@@ -1,0 +1,59 @@
+---
+title: "Selects"
+---
+
+# Variable: Selects
+
+```ts
+const Selects: {
+  AssigneeDiscordUser: {
+     id: string;
+    };
+  AssigneeJiraName: {
+     id: string;
+    };
+  AuthorizedCreatorRoles: {
+     id: string;
+    };
+  ColumnMappingColumn: {
+     id: string;
+    };
+  ColumnMappingStatus: {
+     id: string;
+    };
+};
+```
+
+Select menu component IDs used in interactive messages.
+
+Each select menu ID is prefixed with the namespace to ensure uniqueness
+across all plugins and prevent conflicts with other components.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="assigneediscorduser"></a> `AssigneeDiscordUser` | \{ `id`: `string`; \} | User select menu for choosing a Discord user to map to a Jira assignee. Used in the setup command to allow administrators to select which Discord user should be mentioned when a Jira assignee appears in roadmap cards. |
+| `AssigneeDiscordUser.id` | `string` | - |
+| <a id="assigneejiraname"></a> `AssigneeJiraName` | \{ `id`: `string`; \} | String select menu for choosing a Jira assignee name to map. Used in the setup command to allow administrators to select which Jira assignee name they want to map to a Discord user. Populated with known Jira assignee names from synced cards. |
+| `AssigneeJiraName.id` | `string` | - |
+| <a id="authorizedcreatorroles"></a> `AuthorizedCreatorRoles` | \{ `id`: `string`; \} | Role select menu for choosing which roles can create roadmap cards. Used in the setup command to allow administrators to grant card creation permissions to specific roles beyond just administrators. Users with any of the selected roles will be able to use the `/roadmap add` command. |
+| `AuthorizedCreatorRoles.id` | `string` | - |
+| <a id="columnmappingcolumn"></a> `ColumnMappingColumn` | \{ `id`: `string`; \} | String select menu for choosing a column to map a status to. Used in the setup command to allow administrators to select which column a provider status should map to, or select "Track Only" to map to null. |
+| `ColumnMappingColumn.id` | `string` | - |
+| <a id="columnmappingstatus"></a> `ColumnMappingStatus` | \{ `id`: `string`; \} | String select menu for choosing a provider status name to map. Used in the setup command to allow administrators to select which provider status they want to map to a column. Populated with known status names from synced cards. |
+| `ColumnMappingStatus.id` | `string` | - |
+
+## Example
+
+```ts
+import { RoleSelectMenuBuilder } from 'discord.js';
+import { Selects } from './constants.js';
+
+// Create a role select menu
+const select = new RoleSelectMenuBuilder()
+  .setCustomId(Selects.AuthorizedCreatorRoles.id)
+  .setPlaceholder('Select roles')
+  .setMinValues(0)
+  .setMaxValues(10);
+```

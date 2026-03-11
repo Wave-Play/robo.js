@@ -1,0 +1,32 @@
+---
+title: "DefinedEndpoint()<TSchema>"
+---
+
+# Interface: DefinedEndpoint()\<TSchema\>
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TSchema` *extends* [`EndpointSchema`](endpoint-schema) |
+
+```ts
+interface DefinedEndpoint(request, reply): unknown
+```
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `request` | [`RoboRequest`](../classes/robo-request) |
+| `reply` | [`RoboReply`](robo-reply) |
+
+## Returns
+
+`unknown`
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="schema_symbol"></a> `[SCHEMA_SYMBOL]` | `TSchema` |

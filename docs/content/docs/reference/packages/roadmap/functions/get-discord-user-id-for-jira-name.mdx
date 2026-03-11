@@ -1,0 +1,36 @@
+---
+title: "getDiscordUserIdForJiraName()"
+---
+
+# Function: getDiscordUserIdForJiraName()
+
+```ts
+function getDiscordUserIdForJiraName(guildId, jiraName): string | undefined
+```
+
+Looks up the Discord user ID for a Jira assignee name.
+
+This helper performs a case-sensitive lookup of the Jira assignee name
+in the assignee mapping. Returns undefined if no mapping exists.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+| `jiraName` | `string` | The Jira assignee display name to look up |
+
+## Returns
+
+`string` \| `undefined`
+
+The Discord user ID if a mapping exists, undefined otherwise
+
+## Example
+
+```ts
+const discordUserId = getDiscordUserIdForJiraName(guildId, 'Alice Jira');
+if (discordUserId) {
+  // Use the Discord user ID
+}
+```

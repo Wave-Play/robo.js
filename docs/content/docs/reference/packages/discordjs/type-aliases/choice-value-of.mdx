@@ -1,0 +1,20 @@
+---
+title: "ChoiceValueOf<C>"
+---
+
+# Type Alias: ChoiceValueOf\<C\>
+
+```ts
+type ChoiceValueOf<C> = C extends {
+  value: infer V;
+ } ? V : never;
+```
+
+Extracts the literal `value` type from a single choice entry.
+Example: \{ name: 'Red', value: 'red' \} -\> 'red'
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` |

@@ -1,0 +1,15 @@
+---
+title: "TokenRecordResult"
+---
+
+# Interface: TokenRecordResult
+
+Response returned after successfully recording usage.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="breaches"></a> `breaches` | [`TokenLimitBreach`](token-limit-breach)[] | Breaches triggered by the usage operation. |
+| <a id="entry"></a> `entry` | [`TokenUsageEntry`](token-usage-entry) | Persisted usage entry. |
+| <a id="totals"></a> `totals` | `UsageTotalsSnapshot` | Updated totals snapshot after recording the entry. |

@@ -1,0 +1,2092 @@
+---
+title: "Session"
+---
+
+# Class: Session
+
+Represents an isolated test session with its own state
+
+## Implements
+
+- [`ISession`](../interfaces/i-session)
+
+## Constructors
+
+### new Session()
+
+```ts
+new Session(options?): Session
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`CreateSessionOptions`](../interfaces/create-session-options) |
+
+#### Returns
+
+[`Session`](session)
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="config"></a> `config?` | `readonly` | [`SessionConfig`](../interfaces/session-config) | - |
+| <a id="connections"></a> `connections` | `readonly` | `Map`\<`string`, [`ConnectionState`](../interfaces/connection-state)\> | - |
+| <a id="createdat"></a> `createdAt` | `readonly` | `number` | - |
+| <a id="expiresat"></a> `expiresAt` | `readonly` | `number` | - |
+| <a id="id"></a> `id` | `readonly` | `string` | - |
+| <a id="logrecorder"></a> `logRecorder` | `readonly` | `LogRecorder` | - |
+| <a id="name"></a> `name?` | `readonly` | `string` | - |
+| <a id="recorder"></a> `recorder` | `readonly` | [`ActionRecorder`](action-recorder) | - |
+| <a id="scenariomanager"></a> `scenarioManager` | `readonly` | `ScenarioManager` | - |
+| <a id="state"></a> `state` | `readonly` | [`MockServerState`](mock-server-state) | - |
+| <a id="token"></a> `token` | `readonly` | `string` | - |
+| <a id="voiceservers"></a> `voiceServers` | `readonly` | `Map`\<`string`, `VoiceServerState`\> | Voice server state by guild ID Tracks active voice connections for @discordjs/voice support |
+
+## Accessors
+
+### actionCount
+
+#### Get Signature
+
+```ts
+get actionCount(): number
+```
+
+Get the number of recorded actions
+
+##### Returns
+
+`number`
+
+***
+
+### heartbeatInterval
+
+#### Get Signature
+
+```ts
+get heartbeatInterval(): null | number
+```
+
+Get the heartbeat interval for this session.
+Returns null if using the global gateway default.
+
+##### Returns
+
+`null` \| `number`
+
+#### Set Signature
+
+```ts
+set heartbeatInterval(interval): void
+```
+
+Set the heartbeat interval for new connections in this session.
+Set to null to use the global gateway default.
+Only affects NEW connections - existing connections keep their original interval.
+
+##### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `interval` | `null` \| `number` | Heartbeat interval in milliseconds (100-120000), or null for default |
+
+##### Returns
+
+`void`
+
+***
+
+### isEnding
+
+#### Get Signature
+
+```ts
+get isEnding(): boolean
+```
+
+Check if session is ending
+
+##### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`isEnding`](../interfaces/i-session#isending)
+
+***
+
+### isExpired
+
+#### Get Signature
+
+```ts
+get isExpired(): boolean
+```
+
+Check if session has expired
+
+##### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`isExpired`](../interfaces/i-session#isexpired)
+
+***
+
+### isLoopDetected
+
+#### Get Signature
+
+```ts
+get isLoopDetected(): boolean
+```
+
+Check if a loop is currently detected (in cooldown)
+
+##### Returns
+
+`boolean`
+
+***
+
+### isRateLimitSimulationActive
+
+#### Get Signature
+
+```ts
+get isRateLimitSimulationActive(): boolean
+```
+
+Check if rate limit simulation is currently active (without consuming it)
+
+##### Returns
+
+`boolean`
+
+***
+
+### loopProtectionEnabled
+
+#### Get Signature
+
+```ts
+get loopProtectionEnabled(): boolean
+```
+
+Check if loop protection is enabled
+
+##### Returns
+
+`boolean`
+
+#### Set Signature
+
+```ts
+set loopProtectionEnabled(enabled): void
+```
+
+Enable or disable loop protection.
+When disabled, the server will not detect or prevent event loops.
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `enabled` | `boolean` |
+
+##### Returns
+
+`void`
+
+***
+
+### permissionEnforcement
+
+#### Get Signature
+
+```ts
+get permissionEnforcement(): "none" | "basic" | "strict"
+```
+
+Get the current permission enforcement level.
+Falls back to config value if not set at runtime.
+
+##### Returns
+
+`"none"` \| `"basic"` \| `"strict"`
+
+#### Set Signature
+
+```ts
+set permissionEnforcement(level): void
+```
+
+Set the permission enforcement level at runtime.
+Set to null to use the config default.
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `level` | `null` \| `"none"` \| `"basic"` \| `"strict"` |
+
+##### Returns
+
+`void`
+
+***
+
+### rateLimitConfig
+
+#### Get Signature
+
+```ts
+get rateLimitConfig(): {
+  enabled: boolean;
+  persistent: boolean;
+  retryAfter: number;
+  scope: "all" | "messages" | "interactions" | "guilds" | "channels";
+  triggeredCount: number;
+}
+```
+
+Get the current rate limit configuration
+
+##### Returns
+
+```ts
+{
+  enabled: boolean;
+  persistent: boolean;
+  retryAfter: number;
+  scope: "all" | "messages" | "interactions" | "guilds" | "channels";
+  triggeredCount: number;
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="enabled-1"></a> `enabled` | `boolean` |
+| <a id="persistent"></a> `persistent` | `boolean` |
+| <a id="retryafter"></a> `retryAfter` | `number` |
+| <a id="scope"></a> `scope` | `"all"` \| `"messages"` \| `"interactions"` \| `"guilds"` \| `"channels"` |
+| <a id="triggeredcount"></a> `triggeredCount` | `number` |
+
+## Methods
+
+### addPermissionOverride()
+
+```ts
+addPermissionOverride(override): PermissionOverride
+```
+
+Add a new permission override
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `override` | `Omit`\<`PermissionOverride`, `"id"` \| `"createdAt"`\> & \{ `id`: `string`; \} | The override to add (id will be generated if not provided) |
+
+#### Returns
+
+`PermissionOverride`
+
+The added override with generated ID
+
+***
+
+### asUser()
+
+```ts
+asUser<T>(userId, action): Promise<T>
+```
+
+Perform an action as a specific user (temporary switch)
+Restores the original current user after the action completes
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to act as |
+| `action` | () =\> `T` \| `Promise`\<`T`\> | The action to perform |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+The result of the action
+
+***
+
+### checkRateLimit()
+
+```ts
+checkRateLimit(endpoint?): 
+  | null
+  | {
+  retryAfter: number;
+}
+```
+
+Check if rate limit simulation should trigger for a given endpoint
+If triggered, returns the retry-after value and optionally disables simulation
+Returns null if not simulating rate limit or endpoint doesn't match scope
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `endpoint`? | `string` | Optional endpoint path to check against scope |
+
+#### Returns
+
+  \| `null`
+  \| \{
+  `retryAfter`: `number`;
+ \}
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`checkRateLimit`](../interfaces/i-session#checkratelimit)
+
+***
+
+### clearActionContext()
+
+```ts
+clearActionContext(): void
+```
+
+Clear the action context.
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`clearActionContext`](../interfaces/i-session#clearactioncontext)
+
+***
+
+### clearActions()
+
+```ts
+clearActions(): void
+```
+
+Clear recorded actions without resetting state
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`clearActions`](../interfaces/i-session#clearactions)
+
+***
+
+### clearLogs()
+
+```ts
+clearLogs(): void
+```
+
+Clear recorded logs without resetting state
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`clearLogs`](../interfaces/i-session#clearlogs)
+
+***
+
+### clearPermissionDeniedEvents()
+
+```ts
+clearPermissionDeniedEvents(): void
+```
+
+Clear permission denied events history
+
+#### Returns
+
+`void`
+
+***
+
+### clearPermissionOverrides()
+
+```ts
+clearPermissionOverrides(): void
+```
+
+Clear all permission overrides
+
+#### Returns
+
+`void`
+
+***
+
+### clickButtonAs()
+
+```ts
+clickButtonAs(
+   userId, 
+   messageId, 
+customId): Promise<MockInteraction>
+```
+
+Click a button as a specific user
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to click as |
+| `messageId` | `string` | The message containing the button |
+| `customId` | `string` | The button's custom ID |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### createUser()
+
+```ts
+createUser(config, setAsCurrent): MockUser
+```
+
+Create a new user and optionally set as current
+
+#### Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `config` | \{ `avatar`: `null` \| `string`; `bot`: `boolean`; `status`: `"online"` \| `"offline"` \| `"idle"` \| `"dnd"`; `username`: `string`; \} | `undefined` | User configuration |
+| `config.avatar`? | `null` \| `string` | `undefined` | - |
+| `config.bot`? | `boolean` | `undefined` | - |
+| `config.status`? | `"online"` \| `"offline"` \| `"idle"` \| `"dnd"` | `undefined` | - |
+| `config.username` | `string` | `undefined` | - |
+| `setAsCurrent` | `boolean` | `false` | Whether to set this user as the current user (default: false) |
+
+#### Returns
+
+[`MockUser`](../interfaces/mock-user)
+
+The created user
+
+***
+
+### dispatch()
+
+```ts
+dispatch(event, data): Promise<void>
+```
+
+Dispatch an event to all connections in this session
+Sends the event via WebSocket to connected bots
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `event` | `string` |
+| `data` | `unknown` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`dispatch`](../interfaces/i-session#dispatch)
+
+***
+
+### dispatchAutocomplete()
+
+```ts
+dispatchAutocomplete(options): Promise<MockInteraction>
+```
+
+Dispatch an INTERACTION_CREATE event for autocomplete
+Creates an autocomplete interaction for testing bot autocomplete handlers
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchAutocompleteOptions`](../interfaces/dispatch-autocomplete-options) | Autocomplete options including focused option |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### dispatchAutoModerationActionExecution()
+
+```ts
+dispatchAutoModerationActionExecution(options): Promise<void>
+```
+
+Dispatch AUTO_MODERATION_ACTION_EXECUTION event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | \{ `action`: `MockAutoModAction`; `channelId`: `string`; `content`: `string`; `guildId`: `string`; `matchedContent`: `string`; `matchedKeyword`: `string`; `messageId`: `string`; `ruleId`: `string`; `ruleTriggerType`: `AutoModerationTriggerType`; `userId`: `string`; \} | The action execution details |
+| `options.action` | `MockAutoModAction` | - |
+| `options.channelId`? | `string` | - |
+| `options.content` | `string` | - |
+| `options.guildId` | `string` | - |
+| `options.matchedContent`? | `string` | - |
+| `options.matchedKeyword`? | `string` | - |
+| `options.messageId`? | `string` | - |
+| `options.ruleId` | `string` | - |
+| `options.ruleTriggerType` | `AutoModerationTriggerType` | - |
+| `options.userId` | `string` | - |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchAutoModerationRuleCreate()
+
+```ts
+dispatchAutoModerationRuleCreate(rule): Promise<void>
+```
+
+Dispatch AUTO_MODERATION_RULE_CREATE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `rule` | `MockAutoModRule` | The auto-mod rule that was created |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchAutoModerationRuleDelete()
+
+```ts
+dispatchAutoModerationRuleDelete(rule): Promise<void>
+```
+
+Dispatch AUTO_MODERATION_RULE_DELETE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `rule` | `MockAutoModRule` | The auto-mod rule that was deleted |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchAutoModerationRuleUpdate()
+
+```ts
+dispatchAutoModerationRuleUpdate(rule): Promise<void>
+```
+
+Dispatch AUTO_MODERATION_RULE_UPDATE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `rule` | `MockAutoModRule` | The auto-mod rule that was updated |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchButtonClick()
+
+```ts
+dispatchButtonClick(options): Promise<MockInteraction>
+```
+
+Dispatch an INTERACTION_CREATE event for a button click
+Creates an interaction in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchButtonClickOptions`](../interfaces/dispatch-button-click-options) | Button click options |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### dispatchContextMenu()
+
+```ts
+dispatchContextMenu(options): Promise<MockInteraction>
+```
+
+Dispatch an INTERACTION_CREATE event for a context menu command
+Creates an interaction in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchContextMenuOptions`](../interfaces/dispatch-context-menu-options) | Context menu command options |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### dispatchGuildBanAdd()
+
+```ts
+dispatchGuildBanAdd(guildId, user): Promise<void>
+```
+
+Dispatch GUILD_BAN_ADD event when a user is banned
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the user was banned |
+| `user` | [`MockUser`](../interfaces/mock-user) | The user who was banned |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildBanRemove()
+
+```ts
+dispatchGuildBanRemove(guildId, user): Promise<void>
+```
+
+Dispatch GUILD_BAN_REMOVE event when a user is unbanned
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the user was unbanned |
+| `user` | [`MockUser`](../interfaces/mock-user) | The user who was unbanned |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildEmojisUpdate()
+
+```ts
+dispatchGuildEmojisUpdate(guildId): Promise<void>
+```
+
+Dispatch GUILD_EMOJIS_UPDATE event when emojis change
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild whose emojis changed |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildMemberAdd()
+
+```ts
+dispatchGuildMemberAdd(
+   guildId, 
+   member, 
+user): Promise<void>
+```
+
+Dispatch GUILD_MEMBER_ADD event when a member joins a guild
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the member joined |
+| `member` | [`MockGuildMember`](../interfaces/mock-guild-member) | The member who joined |
+| `user` | [`MockUser`](../interfaces/mock-user) | The user associated with the member |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildMemberRemove()
+
+```ts
+dispatchGuildMemberRemove(guildId, user): Promise<void>
+```
+
+Dispatch GUILD_MEMBER_REMOVE event when a member leaves or is removed from a guild
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the member was removed |
+| `user` | [`MockUser`](../interfaces/mock-user) | The user who was removed |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildMemberUpdate()
+
+```ts
+dispatchGuildMemberUpdate(
+   guildId, 
+   member, 
+user): Promise<void>
+```
+
+Dispatch GUILD_MEMBER_UPDATE event when a member is updated
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the member was updated |
+| `member` | [`MockGuildMember`](../interfaces/mock-guild-member) | The updated member |
+| `user` | [`MockUser`](../interfaces/mock-user) | The user associated with the member |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildRoleCreate()
+
+```ts
+dispatchGuildRoleCreate(guildId, role): Promise<void>
+```
+
+Dispatch GUILD_ROLE_CREATE event when a role is created
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the role was created |
+| `role` | [`MockRole`](../interfaces/mock-role) | The created role |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildRoleDelete()
+
+```ts
+dispatchGuildRoleDelete(guildId, roleId): Promise<void>
+```
+
+Dispatch GUILD_ROLE_DELETE event when a role is deleted
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the role was deleted |
+| `roleId` | `string` | The ID of the deleted role |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildRoleUpdate()
+
+```ts
+dispatchGuildRoleUpdate(guildId, role): Promise<void>
+```
+
+Dispatch GUILD_ROLE_UPDATE event when a role is updated
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild where the role was updated |
+| `role` | [`MockRole`](../interfaces/mock-role) | The updated role |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildScheduledEventCreate()
+
+```ts
+dispatchGuildScheduledEventCreate(event): Promise<void>
+```
+
+Dispatch GUILD_SCHEDULED_EVENT_CREATE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `MockScheduledEvent` | The scheduled event that was created |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildScheduledEventDelete()
+
+```ts
+dispatchGuildScheduledEventDelete(event): Promise<void>
+```
+
+Dispatch GUILD_SCHEDULED_EVENT_DELETE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `MockScheduledEvent` | The scheduled event that was deleted |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildScheduledEventUpdate()
+
+```ts
+dispatchGuildScheduledEventUpdate(event): Promise<void>
+```
+
+Dispatch GUILD_SCHEDULED_EVENT_UPDATE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `event` | `MockScheduledEvent` | The scheduled event that was updated |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildScheduledEventUserAdd()
+
+```ts
+dispatchGuildScheduledEventUserAdd(
+   guildId, 
+   eventId, 
+userId): Promise<void>
+```
+
+Dispatch GUILD_SCHEDULED_EVENT_USER_ADD event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild ID |
+| `eventId` | `string` | The scheduled event ID |
+| `userId` | `string` | The user ID who subscribed |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildScheduledEventUserRemove()
+
+```ts
+dispatchGuildScheduledEventUserRemove(
+   guildId, 
+   eventId, 
+userId): Promise<void>
+```
+
+Dispatch GUILD_SCHEDULED_EVENT_USER_REMOVE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild ID |
+| `eventId` | `string` | The scheduled event ID |
+| `userId` | `string` | The user ID who unsubscribed |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchGuildStickersUpdate()
+
+```ts
+dispatchGuildStickersUpdate(guildId): Promise<void>
+```
+
+Dispatch GUILD_STICKERS_UPDATE event when stickers change
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The guild whose stickers changed |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchInviteCreate()
+
+```ts
+dispatchInviteCreate(invite): Promise<void>
+```
+
+Dispatch INVITE_CREATE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `invite` | `MockInvite` | The invite that was created |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchInviteDelete()
+
+```ts
+dispatchInviteDelete(invite): Promise<void>
+```
+
+Dispatch INVITE_DELETE event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `invite` | `MockInvite` | The invite that was deleted |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchMessage()
+
+```ts
+dispatchMessage(options): Promise<MockMessage>
+```
+
+Dispatch a MESSAGE_CREATE event
+Creates a message in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | \{ `attachments`: [`MockAttachment`](../interfaces/mock-attachment)[]; `author`: `Partial`\<[`MockUser`](../interfaces/mock-user)\> & \{ `id`: `string`; `username`: `string`; \}; `call`: \{ `ended_timestamp`: `null` \| `string`; `participants`: `string`[]; \}; `channelId`: `string`; `components`: `unknown`[]; `content`: `string`; `embeds`: `unknown`[]; `guildId`: `string`; `id`: `string`; `mentions`: `string`[]; `messageReference`: \{ `channel_id`: `string`; `guild_id`: `string`; `message_id`: `string`; \}; `position`: `number`; `reactions`: \{ `count`: `number`; `emoji`: \{ `id`: `null` \| `string`; `name`: `string`; \}; `me`: `boolean`; \}[]; `roleSubscriptionData`: \{ `isRenewal`: `boolean`; `roleSubscriptionListingId`: `string`; `tierName`: `string`; `totalMonthsSubscribed`: `number`; \}; `type`: `number`; \} | Message creation options |
+| `options.attachments`? | [`MockAttachment`](../interfaces/mock-attachment)[] | - |
+| `options.author`? | `Partial`\<[`MockUser`](../interfaces/mock-user)\> & \{ `id`: `string`; `username`: `string`; \} | - |
+| `options.call`? | \{ `ended_timestamp`: `null` \| `string`; `participants`: `string`[]; \} | Call info for DM call messages (MessageType.Call = 3) |
+| `options.call.ended_timestamp`? | `null` \| `string` | - |
+| `options.call.participants` | `string`[] | - |
+| `options.channelId` | `string` | - |
+| `options.components`? | `unknown`[] | - |
+| `options.content`? | `string` | - |
+| `options.embeds`? | `unknown`[] | - |
+| `options.guildId`? | `string` | - |
+| `options.id`? | `string` | Optional message ID - if not provided, one will be generated |
+| `options.mentions`? | `string`[] | User IDs that are mentioned in this message |
+| `options.messageReference`? | \{ `channel_id`: `string`; `guild_id`: `string`; `message_id`: `string`; \} | Reference to another message (for replies) |
+| `options.messageReference.channel_id`? | `string` | - |
+| `options.messageReference.guild_id`? | `string` | - |
+| `options.messageReference.message_id`? | `string` | - |
+| `options.position`? | `number` | Message position (for threads/forums) |
+| `options.reactions`? | \{ `count`: `number`; `emoji`: \{ `id`: `null` \| `string`; `name`: `string`; \}; `me`: `boolean`; \}[] | Reactions to apply to the message after creation |
+| `options.roleSubscriptionData`? | \{ `isRenewal`: `boolean`; `roleSubscriptionListingId`: `string`; `tierName`: `string`; `totalMonthsSubscribed`: `number`; \} | Role subscription data for subscription purchase messages (MessageType.RoleSubscriptionPurchase = 25) |
+| `options.roleSubscriptionData.isRenewal` | `boolean` | - |
+| `options.roleSubscriptionData.roleSubscriptionListingId` | `string` | - |
+| `options.roleSubscriptionData.tierName` | `string` | - |
+| `options.roleSubscriptionData.totalMonthsSubscribed` | `number` | - |
+| `options.type`? | `number` | Message type (default 0 = DEFAULT, 7 = USER_JOIN, 8 = GUILD_BOOST, etc.) |
+
+#### Returns
+
+`Promise`\<[`MockMessage`](../interfaces/mock-message)\>
+
+The created message
+
+***
+
+### dispatchModalSubmit()
+
+```ts
+dispatchModalSubmit(options): Promise<MockInteraction>
+```
+
+Dispatch an INTERACTION_CREATE event for a modal submit
+Creates an interaction in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchModalSubmitOptions`](../interfaces/dispatch-modal-submit-options) | Modal submit options |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### dispatchPollVote()
+
+```ts
+dispatchPollVote(options): Promise<boolean>
+```
+
+Dispatch a MESSAGE_POLL_VOTE_ADD or MESSAGE_POLL_VOTE_REMOVE event
+Adds/removes a vote from a poll and dispatches the event to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | \{ `action`: `"add"` \| `"remove"`; `answerId`: `number`; `messageId`: `string`; `userId`: `string`; \} | Poll vote options |
+| `options.action` | `"add"` \| `"remove"` | - |
+| `options.answerId` | `number` | - |
+| `options.messageId` | `string` | - |
+| `options.userId` | `string` | - |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+true if the vote was successfully added/removed
+
+***
+
+### dispatchReaction()
+
+```ts
+dispatchReaction(options): Promise<boolean>
+```
+
+Dispatch a MESSAGE_REACTION_ADD or MESSAGE_REACTION_REMOVE event
+Updates state and dispatches to connected bots and Stage UI
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | \{ `action`: `"add"` \| `"remove"`; `channelId`: `string`; `emoji`: \{ `id`: `null` \| `string`; `name`: `string`; \}; `guildId`: `string`; `messageId`: `string`; `userId`: `string`; \} | Reaction options |
+| `options.action` | `"add"` \| `"remove"` | - |
+| `options.channelId` | `string` | - |
+| `options.emoji` | \{ `id`: `null` \| `string`; `name`: `string`; \} | - |
+| `options.emoji.id` | `null` \| `string` | - |
+| `options.emoji.name` | `string` | - |
+| `options.guildId`? | `string` | - |
+| `options.messageId` | `string` | - |
+| `options.userId` | `string` | - |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+true if successful, false if message not found
+
+***
+
+### dispatchSelectMenu()
+
+```ts
+dispatchSelectMenu(options): Promise<MockInteraction>
+```
+
+Dispatch an INTERACTION_CREATE event for a select menu interaction
+Creates an interaction in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchSelectMenuOptions`](../interfaces/dispatch-select-menu-options) | Select menu options |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### dispatchSlashCommand()
+
+```ts
+dispatchSlashCommand(options): Promise<MockInteraction>
+```
+
+Dispatch an INTERACTION_CREATE event for a slash command
+Creates an interaction in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchSlashCommandOptions`](../interfaces/dispatch-slash-command-options) | Slash command options |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### dispatchThreadCreate()
+
+```ts
+dispatchThreadCreate(options): Promise<MockThread>
+```
+
+Dispatch a THREAD_CREATE event
+Creates a thread in state and dispatches it to connected bots
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`DispatchThreadCreateOptions`](../interfaces/dispatch-thread-create-options) | Thread creation options |
+
+#### Returns
+
+`Promise`\<[`MockThread`](../interfaces/mock-thread)\>
+
+The created thread
+
+***
+
+### dispatchThreadDelete()
+
+```ts
+dispatchThreadDelete(threadId): Promise<void>
+```
+
+Dispatch a THREAD_DELETE event
+Deletes a thread and dispatches the event
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `threadId` | `string` | ID of the thread to delete |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchThreadJoin()
+
+```ts
+dispatchThreadJoin(threadId): Promise<void>
+```
+
+Dispatch THREAD_MEMBER_UPDATE for bot joining a thread
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `threadId` | `string` | ID of the thread to join |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchThreadLeave()
+
+```ts
+dispatchThreadLeave(threadId): Promise<void>
+```
+
+Dispatch THREAD_MEMBER_UPDATE for bot leaving a thread
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `threadId` | `string` | ID of the thread to leave |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchThreadListSync()
+
+```ts
+dispatchThreadListSync(guildId, channelIds?): Promise<void>
+```
+
+Dispatch THREAD_LIST_SYNC for syncing active threads
+Sent when bot gains access to channels
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | ID of the guild |
+| `channelIds`? | `string`[] | Optional specific channel IDs to sync (if not provided, syncs all) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchThreadMemberAdd()
+
+```ts
+dispatchThreadMemberAdd(threadId, userId): Promise<void>
+```
+
+Dispatch THREAD_MEMBERS_UPDATE for adding a user to a thread
+This is for testing - simulates another user being added
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `threadId` | `string` | ID of the thread |
+| `userId` | `string` | ID of the user to add |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchThreadMemberRemove()
+
+```ts
+dispatchThreadMemberRemove(threadId, userId): Promise<void>
+```
+
+Dispatch THREAD_MEMBERS_UPDATE for removing a user from a thread
+This is for testing - simulates another user being removed
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `threadId` | `string` | ID of the thread |
+| `userId` | `string` | ID of the user to remove |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dispatchThreadUpdate()
+
+```ts
+dispatchThreadUpdate(threadId, updates): Promise<MockThread>
+```
+
+Dispatch a THREAD_UPDATE event
+Updates thread metadata and dispatches the change
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `threadId` | `string` | ID of the thread to update |
+| `updates` | \{ `archived`: `boolean`; `autoArchiveDuration`: `60` \| `1440` \| `4320` \| `10080`; `invitable`: `boolean`; `locked`: `boolean`; `name`: `string`; \} | Thread updates (name, archived, locked, etc.) |
+| `updates.archived`? | `boolean` | - |
+| `updates.autoArchiveDuration`? | `60` \| `1440` \| `4320` \| `10080` | - |
+| `updates.invitable`? | `boolean` | - |
+| `updates.locked`? | `boolean` | - |
+| `updates.name`? | `string` | - |
+
+#### Returns
+
+`Promise`\<[`MockThread`](../interfaces/mock-thread)\>
+
+The updated thread
+
+***
+
+### end()
+
+```ts
+end(): Promise<void>
+```
+
+End the session and clean up resources
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### exportRecording()
+
+```ts
+exportRecording(): SessionRecording
+```
+
+Export the session as a recording object
+Returns a JSON-serializable recording with metadata and all actions
+
+#### Returns
+
+[`SessionRecording`](../interfaces/session-recording)
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`exportRecording`](../interfaces/i-session#exportrecording)
+
+***
+
+### getActionContext()
+
+```ts
+getActionContext(): null | ActionContext
+```
+
+Get the current action context.
+
+#### Returns
+
+`null` \| `ActionContext`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getActionContext`](../interfaces/i-session#getactioncontext)
+
+***
+
+### getActions()
+
+```ts
+getActions(): RecordedAction[]
+```
+
+Get all recorded actions for test assertions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getActions`](../interfaces/i-session#getactions)
+
+***
+
+### getActionsByType()
+
+```ts
+getActionsByType(type): RecordedAction[]
+```
+
+Get actions by type
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`ActionType`](../type-aliases/action-type) |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getActionsByType`](../interfaces/i-session#getactionsbytype)
+
+***
+
+### getActionsSince()
+
+```ts
+getActionsSince(timestamp): RecordedAction[]
+```
+
+Get actions since a specific timestamp
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `timestamp` | `number` |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getActionsSince`](../interfaces/i-session#getactionssince)
+
+***
+
+### getCurrentUser()
+
+```ts
+getCurrentUser(): MockUser
+```
+
+Get the current acting user
+
+#### Returns
+
+[`MockUser`](../interfaces/mock-user)
+
+***
+
+### getDispatches()
+
+```ts
+getDispatches(): RecordedAction[]
+```
+
+Get dispatch events (server → client)
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getDispatches`](../interfaces/i-session#getdispatches)
+
+***
+
+### getGatewayMessages()
+
+```ts
+getGatewayMessages(): RecordedAction[]
+```
+
+Get all Gateway WebSocket message actions (client → server)
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getGatewayMessages`](../interfaces/i-session#getgatewaymessages)
+
+***
+
+### getInteractionResponses()
+
+```ts
+getInteractionResponses(): RecordedAction[]
+```
+
+Get all interaction response actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getInteractionResponses`](../interfaces/i-session#getinteractionresponses)
+
+***
+
+### getLogs()
+
+```ts
+getLogs(): SessionLogEntry[]
+```
+
+Get all captured logs
+
+#### Returns
+
+`SessionLogEntry`[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getLogs`](../interfaces/i-session#getlogs)
+
+***
+
+### getLogsSince()
+
+```ts
+getLogsSince(timestamp): SessionLogEntry[]
+```
+
+Get logs since a timestamp
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `timestamp` | `number` |
+
+#### Returns
+
+`SessionLogEntry`[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getLogsSince`](../interfaces/i-session#getlogssince)
+
+***
+
+### getMessagesSent()
+
+```ts
+getMessagesSent(): RecordedAction[]
+```
+
+Get message_sent actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getMessagesSent`](../interfaces/i-session#getmessagessent)
+
+***
+
+### getPermissionDeniedEvents()
+
+```ts
+getPermissionDeniedEvents(): PermissionDeniedEvent[]
+```
+
+Get recent permission denied events
+
+#### Returns
+
+`PermissionDeniedEvent`[]
+
+***
+
+### getPermissionOverride()
+
+```ts
+getPermissionOverride(id): undefined | PermissionOverride
+```
+
+Get a specific permission override by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`undefined` \| `PermissionOverride`
+
+***
+
+### getPermissionOverrides()
+
+```ts
+getPermissionOverrides(): PermissionOverride[]
+```
+
+Get all permission overrides
+
+#### Returns
+
+`PermissionOverride`[]
+
+***
+
+### getRestRequests()
+
+```ts
+getRestRequests(): RecordedAction[]
+```
+
+Get all REST request actions
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)[]
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`getRestRequests`](../interfaces/i-session#getrestrequests)
+
+***
+
+### getUser()
+
+```ts
+getUser(userId): undefined | MockUser
+```
+
+Get a specific user by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../interfaces/mock-user)
+
+***
+
+### getUsers()
+
+```ts
+getUsers(): MockUser[]
+```
+
+Get all users in the session
+
+#### Returns
+
+[`MockUser`](../interfaces/mock-user)[]
+
+***
+
+### invokeCommandAs()
+
+```ts
+invokeCommandAs(
+   userId, 
+   commandName, 
+options?): Promise<MockInteraction>
+```
+
+Invoke a command as a specific user
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to invoke as |
+| `commandName` | `string` | The command name |
+| `options`? | `Record`\<`string`, `string` \| `number` \| `boolean`\> | Optional command options |
+
+#### Returns
+
+`Promise`\<[`MockInteraction`](../interfaces/mock-interaction)\>
+
+The created interaction
+
+***
+
+### recordAction()
+
+```ts
+recordAction(
+   type, 
+   data, 
+   options?): RecordedAction
+```
+
+Record an action from the bot (REST API call, Gateway message, etc.)
+Automatically merges in the current action context if metadata/triggeredBy not provided.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`ActionType`](../type-aliases/action-type) |
+| `data` | `unknown` |
+| `options`? | [`RecordActionOptions`](../interfaces/record-action-options) |
+
+#### Returns
+
+[`RecordedAction`](../interfaces/recorded-action)
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`recordAction`](../interfaces/i-session#recordaction)
+
+***
+
+### recordLog()
+
+```ts
+recordLog(entry): SessionLogEntry
+```
+
+Record a log entry from a connected bot
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `entry` | `Omit`\<`SessionLogEntry`, `"id"`\> | The log entry (without id, which will be generated) |
+
+#### Returns
+
+`SessionLogEntry`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`recordLog`](../interfaces/i-session#recordlog)
+
+***
+
+### recordPermissionDenied()
+
+```ts
+recordPermissionDenied(event): PermissionDeniedEvent
+```
+
+Record a permission denied event (for Stage UI display)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `event` | `Omit`\<`PermissionDeniedEvent`, `"timestamp"` \| `"sessionId"`\> |
+
+#### Returns
+
+`PermissionDeniedEvent`
+
+***
+
+### removePermissionOverride()
+
+```ts
+removePermissionOverride(id): boolean
+```
+
+Remove a permission override by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+true if the override was removed, false if not found
+
+***
+
+### reset()
+
+```ts
+reset(): void
+```
+
+Reset session state (clear guilds, channels, etc. but keep bot user)
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`reset`](../interfaces/i-session#reset)
+
+***
+
+### runAutoArchiveCheck()
+
+```ts
+runAutoArchiveCheck(): Promise<string[]>
+```
+
+Manually run auto-archive check and dispatch THREAD_UPDATE for archived threads
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+Array of archived thread IDs
+
+***
+
+### saveRecording()
+
+```ts
+saveRecording(filePath): Promise<void>
+```
+
+Save the recording to a JSON file
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `filePath` | `string` | Path to save the recording |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### sendMessageAs()
+
+```ts
+sendMessageAs(
+   userId, 
+   channelId, 
+content): Promise<MockMessage>
+```
+
+Send a message as a specific user
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to send as |
+| `channelId` | `string` | The channel to send to |
+| `content` | `string` | The message content |
+
+#### Returns
+
+`Promise`\<[`MockMessage`](../interfaces/mock-message)\>
+
+The created message
+
+***
+
+### setActionContext()
+
+```ts
+setActionContext(context): void
+```
+
+Set the action context for metadata propagation.
+Actions recorded while this context is active will inherit the metadata.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | `null` \| `ActionContext` |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`setActionContext`](../interfaces/i-session#setactioncontext)
+
+***
+
+### setCurrentUser()
+
+```ts
+setCurrentUser(userId): undefined | MockUser
+```
+
+Set the current acting user by ID (switches to existing user)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `userId` | `string` |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../interfaces/mock-user)
+
+The switched user, or undefined if not found
+
+***
+
+### setRateLimitSimulation()
+
+```ts
+setRateLimitSimulation(config, retryAfter): void
+```
+
+Enable rate limit simulation for testing
+When enabled, matching API requests will return a 429 response
+
+#### Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `config` | \| `boolean` \| \{ `enabled`: `boolean`; `persistent`: `boolean`; `retryAfter`: `number`; `scope`: `"all"` \| `"messages"` \| `"interactions"` \| `"guilds"` \| `"channels"`; \} | `undefined` | Rate limit configuration or simple enabled boolean for backward compatibility |
+| `retryAfter` | `number` | `1` | Retry-After value in seconds (only used when config is boolean) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`setRateLimitSimulation`](../interfaces/i-session#setratelimitsimulation)
+
+***
+
+### startAutoArchive()
+
+```ts
+startAutoArchive(intervalMs): void
+```
+
+Start automatic thread archiving based on auto_archive_duration
+
+#### Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `intervalMs` | `number` | `60000` | How often to check for inactive threads (default: 60000ms / 1 minute) |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`startAutoArchive`](../interfaces/i-session#startautoarchive)
+
+***
+
+### stopAutoArchive()
+
+```ts
+stopAutoArchive(): void
+```
+
+Stop automatic thread archiving
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ISession`](../interfaces/i-session).[`stopAutoArchive`](../interfaces/i-session#stopautoarchive)
+
+***
+
+### updateUser()
+
+```ts
+updateUser(userId, updates): undefined | MockUser
+```
+
+Update a user's properties
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userId` | `string` | The user ID to update |
+| `updates` | `Partial`\<\{ `avatar`: `null` \| `string`; `status`: `"online"` \| `"offline"` \| `"idle"` \| `"dnd"`; `username`: `string`; \}\> | The properties to update |
+
+#### Returns
+
+`undefined` \| [`MockUser`](../interfaces/mock-user)
+
+The updated user, or undefined if not found

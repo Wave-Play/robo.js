@@ -1,0 +1,29 @@
+---
+title: "LeaderboardEntry"
+---
+
+# Interface: LeaderboardEntry
+
+Leaderboard entry with user rank information
+
+Used by the leaderboard service for sorted, cached results.
+
+## Example
+
+```ts
+{
+ *   userId: '123456789012345678',
+ *   xp: 3450,
+ *   level: 15,
+ *   rank: 1
+ * }
+```
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="level"></a> `level` | `number` | Current level (derived from XP) |
+| <a id="rank"></a> `rank` | `number` | 1-indexed position on the leaderboard |
+| <a id="userid"></a> `userId` | `string` | Discord user ID |
+| <a id="xp"></a> `xp` | `number` | Total XP for this user |

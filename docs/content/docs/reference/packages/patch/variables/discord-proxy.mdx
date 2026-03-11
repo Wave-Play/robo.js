@@ -1,89 +1,19 @@
 ---
 title: "DiscordProxy"
-description: "Automatically patch internal requests in Discord Activities"
 ---
 
 # Variable: DiscordProxy
 
 ```ts
-const DiscordProxy: object;
+const DiscordProxy: {
+  patch: () => void;
+  Vite: () => Plugin;
+};
 ```
 
-Utilities to automatically patch internal requests when in a Discord Activity. This is necessary to ensure that network requests from within Discord Activities work correctly by prefixing them with the `/.proxy` path.
+## Type declaration
 
-## Methods
-
-### patch()
-
-```ts
-patch: () => void;
-```
-
-Automatically patches all internal requests when in a Discord Activity.
-This updates the `fetch` and `WebSocket` APIs to always include the `/.proxy` prefix.
-
-Run this at the very beginning of your app to ensure all requests are proxied.
-
-#### Returns
-
-`void`
-
-### Vite()
-
-```ts
-Vite: () => Plugin;
-```
-
-Vite plugin to inject the Discord proxy patch script into the index.html.
-
-In development, the script loads synchronously to ensure patch is applied before Vite's HMR runs.
-In production, the script is bundled into the output and referenced from the index.html.
-
-The patch script is equivalent to running:
-```js
-import { DiscordProxy } from '@robojs/patch'
-
-DiscordProxy.patch()
-```
-
-#### Returns
-
-`Plugin` - A Vite plugin
-
-## Example
-
-### Manual Patching
-
-```ts
-import { DiscordProxy } from '@robojs/patch'
-
-// Apply the patch at the very beginning of your app
-DiscordProxy.patch()
-
-// Now all fetch and WebSocket requests will be proxied automatically
-fetch('https://api.example.com/data')
-// Will actually request: /.proxy/https://api.example.com/data
-```
-
-### With Vite
-
-```ts
-// vite.config.js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { DiscordProxy } from '@robojs/patch'
-
-export default defineConfig({
-  plugins: [
-    react(),
-    DiscordProxy.Vite()
-  ]
-})
-```
-
-## Notes
-
-- This patch is essential for Discord Activities to work correctly
-- It should be applied as early as possible in your application's lifecycle
-- The Vite plugin is recommended for Vite-based projects as it ensures correct timing
-- For non-Vite projects, call `DiscordProxy.patch()` directly
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| <a id="patch"></a> `patch` | () =\> `void` | - |
+| <a id="vite"></a> `Vite` | () =\> `Plugin` | VitePlugin |

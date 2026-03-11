@@ -1,0 +1,24 @@
+---
+title: "SyncContext<ClientData>"
+---
+
+# Interface: SyncContext\<ClientData\>
+
+Context object returned by useSyncState, useSyncContext, and useSyncBroadcast.
+Provides client awareness, host status, and messaging capabilities.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="broadcast"></a> `broadcast` | (`payload`: `unknown`) =\> `void` | Send an ephemeral message to all clients in the room |
+| <a id="clientid"></a> `clientId` | `string` | The current client's unique identifier |
+| <a id="clients"></a> `clients` | [`Client`](client)\<`ClientData`\>[] | Array of all clients connected to this key/room |
+| <a id="ishost"></a> `isHost` | `boolean` | Whether the current client is the host (first to connect) |
+| <a id="send"></a> `send` | (`clientId`: `string`, `payload`: `unknown`) =\> `void` | Send an ephemeral message to a specific client |

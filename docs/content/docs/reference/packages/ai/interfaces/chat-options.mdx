@@ -1,0 +1,39 @@
+---
+title: "ChatOptions"
+---
+
+# Interface: ChatOptions
+
+Options controlling a chat invocation.
+
+## Examples
+
+```ts
+const options: ChatOptions = {
+  model: 'gpt-4o-mini',
+  showTyping: true
+}
+```
+
+```ts
+const options: ChatOptions = {
+  userId: '123',
+  voice: {
+    sessionId: 'abc',
+    strategy: 'server-vad'
+  }
+}
+```
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="conversation"></a> `conversation?` | [`ConversationInput`](conversation-input) | Existing conversation context to continue. |
+| <a id="functions"></a> `functions?` | [`ChatFunction`](chat-function)[] | List of available functions the engine may call. |
+| <a id="model"></a> `model?` | `string` | Preferred model identifier. |
+| <a id="showtyping"></a> `showTyping?` | `boolean` | Toggle for Discord typing indicator. |
+| <a id="temperature"></a> `temperature?` | `number` | Temperature applied to sampling, when supported. |
+| <a id="threadid"></a> `threadId?` | `null` \| `string` | Discord thread identifier for context. |
+| <a id="userid"></a> `userId?` | `null` \| `string` | Discord user identifier for analytics attribution. |
+| <a id="voice"></a> `voice?` | [`VoiceChatOptions`](voice-chat-options) | Voice chat configuration enabling hybrid sessions. |

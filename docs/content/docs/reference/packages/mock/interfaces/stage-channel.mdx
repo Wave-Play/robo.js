@@ -1,0 +1,27 @@
+---
+title: "StageChannel"
+---
+
+# Interface: StageChannel
+
+Simplified channel data for stage clients
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="guild_id"></a> `guild_id?` | `string` | - |
+| <a id="id"></a> `id` | `string` | - |
+| <a id="is_private"></a> `is_private?` | `boolean` | Mock-only flag to indicate restricted/private channels |
+| <a id="message_count"></a> `message_count?` | `number` | - |
+| <a id="name"></a> `name` | `string` | - |
+| <a id="owner_id"></a> `owner_id?` | `string` | - |
+| <a id="parent_id"></a> `parent_id?` | `null` \| `string` | - |
+| <a id="position"></a> `position?` | `number` | - |
+| <a id="thread_metadata"></a> `thread_metadata?` | \{ `archive_timestamp`: `string`; `archived`: `boolean`; `auto_archive_duration`: `number`; `locked`: `boolean`; \} | - |
+| `thread_metadata.archive_timestamp` | `string` | - |
+| `thread_metadata.archived` | `boolean` | - |
+| `thread_metadata.auto_archive_duration` | `number` | - |
+| `thread_metadata.locked` | `boolean` | - |
+| <a id="topic"></a> `topic?` | `null` \| `string` | - |
+| <a id="type"></a> `type` | `number` | - |

@@ -1,73 +1,23 @@
 ---
 title: "Server"
-description: "Core server interface for Robo.js"
 ---
 
 # Variable: Server
 
 ```ts
-const Server: object;
+const Server: {
+  config: () => unknown;
+  get: () => BaseEngine | undefined;
+  ready: () => Promise<void>;
+};
 ```
 
 Use this to interact with the server.
 
-## Type Declaration
+## Type declaration
 
-### config()
-
-```ts
-config: () => unknown;
-```
-
-Retrieves the current server configuration.
-
-#### Returns
-
-`unknown` - The current server configuration
-
-### get()
-
-```ts
-get: () => any;
-```
-
-Gets the underlying server instance.
-
-#### Returns
-
-`any` - The underlying server instance
-
-### ready()
-
-```ts
-ready: () => Promise<void>;
-```
-
-Returns a promise that resolves when the server is all set up.
-
-#### Returns
-
-`Promise<void>` - Promise that resolves when the server is ready
-
-## Example
-
-```ts
-import { Server } from '@robojs/server'
-
-// Wait for the server to be ready
-await Server.ready()
-
-// Get the server configuration
-const config = Server.config()
-console.log('Server config:', config)
-
-// Get the underlying server instance (useful for advanced use cases)
-const serverInstance = Server.get()
-```
-
-## Notes
-
-- The `Server` variable provides a convenient way to interact with the Robo.js server
-- Use the `ready()` method to ensure the server is fully initialized before performing operations
-- For most use cases, you won't need to directly access the server instance
-- The server is automatically started and managed by Robo.js
+| Name | Type |
+| ------ | ------ |
+| <a id="config"></a> `config` | () =\> `unknown` |
+| <a id="get"></a> `get` | () =\> `BaseEngine` \| `undefined` |
+| <a id="ready"></a> `ready` | () =\> `Promise`\<`void`\> |

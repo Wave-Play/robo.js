@@ -1,0 +1,42 @@
+---
+title: "MockMessageConfig"
+---
+
+# Interface: MockMessageConfig
+
+Configuration for creating a mock message
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="attachments"></a> `attachments?` | [`MockAttachment`](mock-attachment)[] | - |
+| <a id="authorid"></a> `authorId` | `string` | - |
+| <a id="call"></a> `call?` | `MockMessageCall` | - |
+| <a id="channelid"></a> `channelId` | `string` | - |
+| <a id="components"></a> `components?` | `unknown`[] | - |
+| <a id="content"></a> `content?` | `string` | - |
+| <a id="embeds"></a> `embeds?` | `unknown`[] | - |
+| <a id="flags"></a> `flags?` | `number` | - |
+| <a id="guildid"></a> `guildId?` | `string` | - |
+| <a id="id"></a> `id?` | `string` | - |
+| <a id="interactionmetadata"></a> `interactionMetadata?` | `MockMessageInteractionMetadata` | - |
+| <a id="interactionname"></a> `interactionName?` | `string` | - |
+| <a id="mentions"></a> `mentions?` | `string`[] | User IDs that are mentioned in this message |
+| <a id="message_reference"></a> `message_reference?` | \{ `channel_id`: `string`; `guild_id`: `string`; `message_id`: `string`; \} | - |
+| `message_reference.channel_id?` | `string` | - |
+| `message_reference.guild_id?` | `string` | - |
+| `message_reference.message_id?` | `string` | - |
+| <a id="messagesnapshots"></a> `messageSnapshots?` | `MockMessageSnapshot`[] | - |
+| <a id="nonce"></a> `nonce?` | `null` \| `string` \| `number` | Message nonce for deduplication |
+| <a id="poll"></a> `poll?` | `MockPollConfig` | - |
+| <a id="position"></a> `position?` | `number` | - |
+| <a id="resolved"></a> `resolved?` | `unknown` | - |
+| <a id="rolesubscriptiondata"></a> `roleSubscriptionData?` | \{ `isRenewal`: `boolean`; `roleSubscriptionListingId`: `string`; `tierName`: `string`; `totalMonthsSubscribed`: `number`; \} | - |
+| `roleSubscriptionData.isRenewal` | `boolean` | - |
+| `roleSubscriptionData.roleSubscriptionListingId` | `string` | - |
+| `roleSubscriptionData.tierName` | `string` | - |
+| `roleSubscriptionData.totalMonthsSubscribed` | `number` | - |
+| <a id="sticker_ids"></a> `sticker_ids?` | `string`[] | - |
+| <a id="tts"></a> `tts?` | `boolean` | - |
+| <a id="type"></a> `type?` | `number` | - |

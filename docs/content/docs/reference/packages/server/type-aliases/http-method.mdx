@@ -1,58 +1,9 @@
 ---
 title: "HttpMethod"
-description: "HTTP method types for Robo.js server routes"
 ---
 
 # Type Alias: HttpMethod
 
 ```ts
-type HttpMethod: 
-  | "GET"
-  | "POST"
-  | "PUT"
-  | "DELETE"
-  | "PATCH"
-  | "OPTIONS"
-  | "HEAD";
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" | "HEAD";
 ```
-
-Defines the standard HTTP methods that can be used in Robo.js server routes.
-
-## Values
-
-| Value | Description |
-| ----- | ----------- |
-| `"GET"` | Retrieve data from the server |
-| `"POST"` | Submit data to the server to create a new resource |
-| `"PUT"` | Update an existing resource on the server |
-| `"DELETE"` | Remove a resource from the server |
-| `"PATCH"` | Apply partial modifications to a resource |
-| `"OPTIONS"` | Retrieve the communication options available for a resource |
-| `"HEAD"` | Same as GET but only returns headers, not the body |
-
-## Example
-
-```ts
-import { HttpMethod } from '@robojs/server'
-
-// Type-safe HTTP method usage
-function createRoute(path: string, method: HttpMethod, handler: RouteHandler) {
-  // Implementation details
-}
-
-// Using the type
-createRoute('/users', 'GET', async (req, res) => {
-  // Handle GET request for users
-})
-
-createRoute('/users', 'POST', async (req, res) => {
-  // Handle POST request to create a user
-})
-```
-
-## Notes
-
-- The HTTP method is typically specified when defining server routes
-- HTTP methods are case-sensitive and should be uppercase
-- Different HTTP methods can share the same route path for different operations
-- When building RESTful APIs, use the appropriate HTTP method for each type of operation

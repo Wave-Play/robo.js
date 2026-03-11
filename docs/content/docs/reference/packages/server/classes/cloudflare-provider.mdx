@@ -1,0 +1,139 @@
+---
+title: "CloudflareProvider"
+---
+
+# Class: CloudflareProvider
+
+Cloudflare Tunnel Provider implementation.
+
+## Implements
+
+- [`TunnelProvider`](../interfaces/tunnel-provider)
+
+## Constructors
+
+### new CloudflareProvider()
+
+```ts
+new CloudflareProvider(): CloudflareProvider
+```
+
+#### Returns
+
+[`CloudflareProvider`](cloudflare-provider)
+
+## Properties
+
+| Property | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="name"></a> `name` | `string` | `'cloudflare'` | Provider name (e.g., 'cloudflare', 'ngrok') |
+
+## Methods
+
+### initialize()
+
+```ts
+initialize(config): Promise<boolean>
+```
+
+Initialize tunnel configuration (optional, for static tunnels)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`TunnelProviderConfig`](../interfaces/tunnel-provider-config) |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`TunnelProvider`](../interfaces/tunnel-provider).[`initialize`](../interfaces/tunnel-provider#initialize)
+
+***
+
+### install()
+
+```ts
+install(): Promise<void>
+```
+
+Install the tunnel binary
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`TunnelProvider`](../interfaces/tunnel-provider).[`install`](../interfaces/tunnel-provider#install)
+
+***
+
+### isInstalled()
+
+```ts
+isInstalled(): boolean
+```
+
+Check if the tunnel binary is installed
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`TunnelProvider`](../interfaces/tunnel-provider).[`isInstalled`](../interfaces/tunnel-provider#isinstalled)
+
+***
+
+### start()
+
+```ts
+start(url, config?): Promise<TunnelInstance>
+```
+
+Start the tunnel and return the instance
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `url` | `string` |
+| `config`? | [`TunnelProviderConfig`](../interfaces/tunnel-provider-config) |
+
+#### Returns
+
+`Promise`\<[`TunnelInstance`](../interfaces/tunnel-instance)\>
+
+#### Implementation of
+
+[`TunnelProvider`](../interfaces/tunnel-provider).[`start`](../interfaces/tunnel-provider#start)
+
+***
+
+### stop()
+
+```ts
+stop(instance, signal): Promise<void>
+```
+
+Stop a running tunnel instance
+
+#### Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `instance` | [`TunnelInstance`](../interfaces/tunnel-instance) | `undefined` |
+| `signal` | `Signals` | `'SIGINT'` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`TunnelProvider`](../interfaces/tunnel-provider).[`stop`](../interfaces/tunnel-provider#stop)

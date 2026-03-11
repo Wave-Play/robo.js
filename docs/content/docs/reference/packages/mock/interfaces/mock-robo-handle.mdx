@@ -1,0 +1,28 @@
+---
+title: "MockRoboHandle"
+---
+
+# Interface: MockRoboHandle
+
+Result of starting a mock Robo
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="botuser"></a> `botUser` | \{ `id`: `string`; `username`: `string`; \} | Bot user info |
+| `botUser.id` | `string` | - |
+| `botUser.username` | `string` | - |
+| <a id="channels"></a> `channels` | \{ `guildId`: `string`; `id`: `string`; `name`: `string`; `type`: `number`; \}[] | Available channels |
+| <a id="client"></a> `client` | `unknown` | The Discord.js client (from @robojs/discordjs) - null when hmr: true |
+| <a id="gethmrcount"></a> `getHmrCount?` | () =\> `number` | Get current HMR reload count - use before file changes to track position (only when hmr: true) |
+| <a id="getrestartcount"></a> `getRestartCount?` | () =\> `number` | Get current restart count - use before file changes to track position (only when hmr: true) |
+| <a id="guildid"></a> `guildId` | `string` | Default guild ID |
+| <a id="guilds"></a> `guilds` | \{ `id`: `string`; `name`: `string`; \}[] | Available guilds |
+| <a id="process"></a> `process?` | `ChildProcess` | Child process (only when hmr: true) |
+| <a id="serverport"></a> `serverPort` | `number` | The port the Robo server is running on |
+| <a id="sessionid"></a> `sessionId` | `string` | Session ID the bot is connected to |
+| <a id="stop"></a> `stop` | () =\> `Promise`\<`void`\> | Stop the bot and clean up |
+| <a id="token"></a> `token` | `string` | Session token |
+| <a id="waitforfullrestart"></a> `waitForFullRestart?` | (`timeout`?: `number`, `fromCount`?: `number`) =\> `Promise`\<`void`\> | Wait for full restart to complete (only when hmr: true). Pass fromCount from getRestartCount() captured before file changes. |
+| <a id="waitforhmrreload"></a> `waitForHmrReload?` | (`timeout`?: `number`, `fromCount`?: `number`) =\> `Promise`\<`void`\> | Wait for HMR reload to complete (only when hmr: true). Pass fromCount from getHmrCount() captured before file changes. |

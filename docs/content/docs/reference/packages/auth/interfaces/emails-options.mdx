@@ -1,0 +1,23 @@
+---
+title: "EmailsOptions"
+---
+
+# Interface: EmailsOptions
+
+Email system configuration controlling sender identity, mailer wiring,
+template overrides, and event-driven triggers.
+
+## Remarks
+
+Mirrors the shape validated by emailsSchema. For practical
+integration examples (Resend, React Email, template disabling) see
+`packages/@robojs/auth/README.md`.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="from"></a> `from?` | [`MailParty`](../type-aliases/mail-party) | Default sender for all automated emails (string or `{ name, address }`). Individual builders/templates can override `from` per message. **Examples** `'noreply@example.com'` `{ name: 'Robo.js', address: 'bot@example.com' }` **See** MailParty |
+| <a id="mailer"></a> `mailer?` | \| [`AuthMailer`](auth-mailer) \| () =\> \| [`AuthMailer`](auth-mailer) \| `Promise`\<[`AuthMailer`](auth-mailer)\> \| \{ `export`: `string`; `module`: `string`; \} | Mailer reference used to deliver messages. Supports: 1. Direct [AuthMailer](auth-mailer) instance (e.g. `createResendMailer({ apiKey, from })`) 2. Lazy factory returning a mailer (sync or async) for deferred imports 3. Module spec `{ module: string, export?: string }` resolved at runtime When using `{ module, export? }`, the resolved export must implement `AuthMailer`, not a raw SDK class. ⚠️ If the mailer implements `verify()`, it is called during startup to catch misconfiguration early. When omitted entirely, the system logs and skips email delivery instead of crashing. **Examples** `ResendMailer({ apiKey: process.env.RESEND_API_KEY!, from: 'bot@example.com' })` `() => createResendMailer({ apiKey: process.env.RESEND_API_KEY!, from: 'bot@example.com' })` `{ module: './my-mailer.js' }` |
+| <a id="templates"></a> `templates?` | `Partial`\<`Record`\<[`AuthEmailEvent`](../type-aliases/auth-email-event), [`TemplateOverride`](../type-aliases/template-override)\>\> | Per-event template overrides or `false` to suppress an event entirely. Supports inline subject/html/text values, React renderers (via `@react-email/components`), provider templates via `templateId`, and selective field overrides merged with the defaults. Events: 'user:created', 'session:created', 'email:verification-requested', 'email:verified', 'password:reset-requested', 'password:reset-completed'. **Examples** `{ 'user:created': { subject: 'Welcome', text: ctx => `Hi $\{ctx.user.email\}` } }` `{ 'password:reset-requested': { subject: 'Reset Password', react: ctx => <ResetEmail {...ctx} /> } }` `{ 'session:created': false }` **See** TemplateOverride |
+| <a id="triggers"></a> `triggers?` | `Partial`\<`Record`\<[`AuthEmailEvent`](../type-aliases/auth-email-event), \| [`EmailBuilder`](../type-aliases/email-builder) \| [`EmailBuilder`](../type-aliases/email-builder)[]\>\> | Custom builders executed when specific email events fire. Accepts a single builder or an array executed sequentially. Return `null` to skip sending (useful for conditional logic or audit-only hooks). Builders run before template rendering and receive the full [EmailContext](../type-aliases/email-context) (user, session, links, tokens, etc.). **Example** `{ 	 * 'password:reset-requested': [auditLogBuilder, smsAlertBuilder] 	 * }` **See** EmailBuilder |

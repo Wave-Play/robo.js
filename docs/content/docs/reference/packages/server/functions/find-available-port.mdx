@@ -1,0 +1,27 @@
+---
+title: "findAvailablePort()"
+---
+
+# Function: findAvailablePort()
+
+```ts
+function findAvailablePort(options): Promise<FindAvailablePortResult>
+```
+
+Find an available port, starting from the given port and incrementing if necessary
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`FindAvailablePortOptions`](../interfaces/find-available-port-options) | Options for finding the port |
+
+## Returns
+
+`Promise`\<[`FindAvailablePortResult`](../interfaces/find-available-port-result)\>
+
+Promise with the available port information
+
+## Throws
+
+Error if no available port found within maxAttempts

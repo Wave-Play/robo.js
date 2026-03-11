@@ -1,0 +1,8 @@
+{
+  "title": "@robojs/patch",
+  "pages": [
+    "index",
+    "---Variables---",
+    "variables/discord-proxy"
+  ]
+}

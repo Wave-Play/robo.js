@@ -1,0 +1,36 @@
+---
+title: "TestSession"
+---
+
+# Interface: TestSession
+
+Test session wrapper with convenience methods
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="botuser"></a> `botUser` | \{ `id`: `string`; `username`: `string`; \} | Bot user info |
+| `botUser.id` | `string` | - |
+| `botUser.username` | `string` | - |
+| <a id="channels"></a> `channels` | \{ `guildId`: `string`; `id`: `string`; `name`: `string`; `type`: `number`; \}[] | Pre-configured channels |
+| <a id="guildid"></a> `guildId` | `string` | Convenience: first guild ID |
+| <a id="guilds"></a> `guilds` | \{ `id`: `string`; `name`: `string`; \}[] | Pre-configured guilds |
+| <a id="id"></a> `id` | `string` | Session ID |
+| <a id="name"></a> `name?` | `string` | Session name |
+| <a id="testfilepath"></a> `testFilePath?` | `string` | Test file path this session is associated with |
+| <a id="token"></a> `token` | `string` | Bot token for this session |
+
+## Methods
+
+### destroy()
+
+```ts
+destroy(): Promise<void>
+```
+
+Destroy the session and clean up
+
+#### Returns
+
+`Promise`\<`void`\>

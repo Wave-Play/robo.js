@@ -1,0 +1,44 @@
+---
+title: "MockThread"
+---
+
+# Interface: MockThread
+
+Thread channel data (extends MockChannel)
+Types: 10 = ANNOUNCEMENT_THREAD, 11 = PUBLIC_THREAD, 12 = PRIVATE_THREAD
+
+## Extends
+
+- [`MockChannel`](mock-channel)
+
+## Extended by
+
+- [`MockForumThread`](mock-forum-thread)
+
+## Properties
+
+| Property | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="bitrate"></a> `bitrate?` | `number` | - | - | [`MockChannel`](mock-channel).[`bitrate`](mock-channel#bitrate) |
+| <a id="defaultautoarchiveduration"></a> `defaultAutoArchiveDuration?` | `number` | - | - | [`MockChannel`](mock-channel).[`defaultAutoArchiveDuration`](mock-channel#defaultautoarchiveduration) |
+| <a id="guildid"></a> `guildId?` | `string` | - | - | [`MockChannel`](mock-channel).[`guildId`](mock-channel#guildid) |
+| <a id="id"></a> `id` | `string` | - | - | [`MockChannel`](mock-channel).[`id`](mock-channel#id) |
+| <a id="lastmessageid"></a> `lastMessageId?` | `null` \| `string` | - | - | - |
+| <a id="membercount"></a> `memberCount` | `number` | - | - | - |
+| <a id="messagecount"></a> `messageCount` | `number` | - | - | - |
+| <a id="name"></a> `name` | `string` | - | - | [`MockChannel`](mock-channel).[`name`](mock-channel#name) |
+| <a id="nsfw"></a> `nsfw?` | `boolean` | - | - | [`MockChannel`](mock-channel).[`nsfw`](mock-channel#nsfw) |
+| <a id="ownerid"></a> `ownerId` | `string` | - | - | - |
+| <a id="parentid"></a> `parentId` | `string` | - | [`MockChannel`](mock-channel).[`parentId`](mock-channel#parentid) | - |
+| <a id="permissionoverwrites"></a> `permissionOverwrites?` | [`MockChannelOverwrite`](mock-channel-overwrite)[] | - | - | [`MockChannel`](mock-channel).[`permissionOverwrites`](mock-channel#permissionoverwrites) |
+| <a id="position"></a> `position?` | `number` | - | - | [`MockChannel`](mock-channel).[`position`](mock-channel#position) |
+| <a id="ratelimitperuser"></a> `rateLimitPerUser?` | `number` | - | [`MockChannel`](mock-channel).[`rateLimitPerUser`](mock-channel#ratelimitperuser) | - |
+| <a id="recipientids"></a> `recipientIds?` | `string`[] | For DM channels: IDs of the users in this DM (always 2 for regular DMs) | - | [`MockChannel`](mock-channel).[`recipientIds`](mock-channel#recipientids) |
+| <a id="rtcregion"></a> `rtcRegion?` | `null` \| `string` | - | - | [`MockChannel`](mock-channel).[`rtcRegion`](mock-channel#rtcregion) |
+| <a id="status"></a> `status?` | `null` \| `string` | - | - | [`MockChannel`](mock-channel).[`status`](mock-channel#status) |
+| <a id="threadmetadata"></a> `threadMetadata` | [`MockThreadMetadata`](mock-thread-metadata) | - | - | - |
+| <a id="topic"></a> `topic?` | `null` \| `string` | - | - | [`MockChannel`](mock-channel).[`topic`](mock-channel#topic) |
+| <a id="totalmessagesent"></a> `totalMessageSent?` | `number` | - | - | - |
+| <a id="type"></a> `type` | `10` \| `11` \| `12` | - | [`MockChannel`](mock-channel).[`type`](mock-channel#type) | - |
+| <a id="userlimit"></a> `userLimit?` | `number` | - | - | [`MockChannel`](mock-channel).[`userLimit`](mock-channel#userlimit) |
+| <a id="videoqualitymode"></a> `videoQualityMode?` | `null` \| `number` | - | - | [`MockChannel`](mock-channel).[`videoQualityMode`](mock-channel#videoqualitymode) |

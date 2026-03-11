@@ -1,0 +1,36 @@
+---
+title: "SerializedMockThread"
+---
+
+# Interface: SerializedMockThread
+
+## Extends
+
+- [`SerializedMockChannel`](serialized-mock-channel)
+
+## Extended by
+
+- [`SerializedMockForumThread`](serialized-mock-forum-thread)
+
+## Properties
+
+| Property | Type | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="guildid"></a> `guildId?` | `string` | - | [`SerializedMockChannel`](serialized-mock-channel).[`guildId`](serialized-mock-channel#guildid) |
+| <a id="id"></a> `id` | `string` | - | [`SerializedMockChannel`](serialized-mock-channel).[`id`](serialized-mock-channel#id) |
+| <a id="lastmessageid"></a> `lastMessageId?` | `null` \| `string` | - | - |
+| <a id="membercount"></a> `memberCount` | `number` | - | - |
+| <a id="messagecount"></a> `messageCount` | `number` | - | - |
+| <a id="name"></a> `name` | `string` | - | [`SerializedMockChannel`](serialized-mock-channel).[`name`](serialized-mock-channel#name) |
+| <a id="ownerid"></a> `ownerId` | `string` | - | - |
+| <a id="parentid"></a> `parentId` | `string` | [`SerializedMockChannel`](serialized-mock-channel).[`parentId`](serialized-mock-channel#parentid) | - |
+| <a id="threadmetadata"></a> `threadMetadata` | \{ `archive_timestamp`: `string`; `archived`: `boolean`; `auto_archive_duration`: `number`; `create_timestamp`: `string`; `invitable`: `boolean`; `last_activity_timestamp`: `string`; `locked`: `boolean`; \} | - | - |
+| `threadMetadata.archive_timestamp` | `string` | - | - |
+| `threadMetadata.archived` | `boolean` | - | - |
+| `threadMetadata.auto_archive_duration` | `number` | - | - |
+| `threadMetadata.create_timestamp?` | `string` | - | - |
+| `threadMetadata.invitable?` | `boolean` | - | - |
+| `threadMetadata.last_activity_timestamp?` | `string` | - | - |
+| `threadMetadata.locked` | `boolean` | - | - |
+| <a id="totalmessagesent"></a> `totalMessageSent?` | `number` | - | - |
+| <a id="type"></a> `type` | `10` \| `11` \| `12` | [`SerializedMockChannel`](serialized-mock-channel).[`type`](serialized-mock-channel#type) | - |

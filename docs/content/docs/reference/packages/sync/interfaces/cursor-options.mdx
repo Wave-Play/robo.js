@@ -1,0 +1,17 @@
+---
+title: "CursorOptions"
+---
+
+# Interface: CursorOptions
+
+Options for useSyncCursor hook.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="autotrack"></a> `autoTrack?` | `boolean` | Automatically track mouse movement (default: false). Set to true for convenience, or false for manual control via updatePosition. |
+| <a id="hideonleave"></a> `hideOnLeave?` | `boolean` | Set active=false when mouse leaves window (default: true) |
+| <a id="inactivetimeout"></a> `inactiveTimeout?` | `number` | Milliseconds before removing inactive cursors (default: 3000) |
+| <a id="normalize"></a> `normalize?` | `boolean` | Convert coordinates to 0-1 viewport range (default: true) |
+| <a id="throttle"></a> `throttle?` | `number` | Milliseconds between cursor updates (default: 16 for ~60fps) |

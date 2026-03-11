@@ -1,0 +1,15 @@
+---
+title: "VoiceChatResult"
+---
+
+# Interface: VoiceChatResult
+
+Voice-specific response envelope accompanying chat results.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="audio"></a> `audio?` | `AsyncIterable`\<[`VoicePlaybackDelta`](voice-playback-delta), `any`, `any`\> | Async iterator streaming audio playback deltas. |
+| <a id="metadata"></a> `metadata?` | [`VoiceChatMetadata`](voice-chat-metadata) | Additional metadata describing the voice session. |
+| <a id="sessionid"></a> `sessionId` | `string` | Identifier of the active voice session. |

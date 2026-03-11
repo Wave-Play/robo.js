@@ -1,0 +1,20 @@
+---
+title: "TestFileEntry"
+---
+
+# Interface: TestFileEntry
+
+Entry for a single test file
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="completedat"></a> `completedAt?` | `number` | Timestamp when test file completed |
+| <a id="path"></a> `path` | `string` | Test file path (relative to project root) |
+| <a id="pendingassertions"></a> `pendingAssertions?` | [`AssertionResult`](assertion-result)[] | Assertions recorded before test entries were created (will be merged) |
+| <a id="recordingpath"></a> `recordingPath?` | `string` | Path to saved recording file (relative to .robo/mock/recordings/) |
+| <a id="sessionid"></a> `sessionId` | `string` | Session ID associated with this test file |
+| <a id="startedat"></a> `startedAt` | `number` | Timestamp when test file started |
+| <a id="status"></a> `status` | `"running"` \| `"passed"` \| `"failed"` | Status of the test file |
+| <a id="tests"></a> `tests` | [`TestResult`](test-result)[] | Individual test results |

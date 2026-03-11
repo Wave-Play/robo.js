@@ -2,6 +2,23 @@
   "title": "Packages",
   "description": "Reference documentation for Robo.js packages",
   "icon": "Boxes",
-  "defaultOpen": true,
-  "pages": ["..."]
+  "pages": [
+    "ai",
+    "analytics",
+    "auth",
+    "better-stack",
+    "cron",
+    "dev",
+    "discordjs",
+    "giveaways",
+    "i18n",
+    "mock",
+    "moderation",
+    "patch",
+    "roadmap",
+    "server",
+    "sync",
+    "trpc",
+    "xp"
+  ]
 }

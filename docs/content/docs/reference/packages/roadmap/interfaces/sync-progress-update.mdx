@@ -1,0 +1,29 @@
+---
+title: "SyncProgressUpdate"
+---
+
+# Interface: SyncProgressUpdate
+
+Progress update data sent during sync operations.
+
+## Remarks
+
+This interface provides real-time feedback about sync progress, enabling
+UI updates and progress tracking. The stats object is a snapshot of current
+progress and will be updated as the sync proceeds.
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="currentcard"></a> `currentCard` | `readonly` | [`RoadmapCard`](../type-aliases/roadmap-card) | The card currently being processed |
+| <a id="currentindex"></a> `currentIndex` | `readonly` | `number` | Zero-based index of the card currently being processed |
+| <a id="dryrun"></a> `dryRun` | `readonly` | `boolean` | Whether this is a dry run (no changes applied) |
+| <a id="errors"></a> `errors` | `readonly` | readonly `SyncError`[] | List of errors that have occurred during synchronization |
+| <a id="stats"></a> `stats` | `readonly` | \{ `archived`: `number`; `created`: `number`; `errors`: `number`; `total`: `number`; `updated`: `number`; \} | Current sync statistics (snapshot) |
+| `stats.archived` | `readonly` | `number` | - |
+| `stats.created` | `readonly` | `number` | - |
+| `stats.errors` | `readonly` | `number` | - |
+| `stats.total` | `readonly` | `number` | - |
+| `stats.updated` | `readonly` | `number` | - |
+| <a id="totalcards"></a> `totalCards` | `readonly` | `number` | Total number of cards to process in this sync |

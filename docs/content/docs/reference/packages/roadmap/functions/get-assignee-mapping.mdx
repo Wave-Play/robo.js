@@ -1,0 +1,33 @@
+---
+title: "getAssigneeMapping()"
+---
+
+# Function: getAssigneeMapping()
+
+```ts
+function getAssigneeMapping(guildId): Record<string, string>
+```
+
+Retrieves the assignee mapping for a guild.
+
+This helper returns the map of Jira assignee names to Discord user IDs.
+Returns an empty object if no mappings exist.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+
+## Returns
+
+`Record`\<`string`, `string`\>
+
+Record mapping Jira assignee names to Discord user IDs
+
+## Example
+
+```ts
+const mapping = getAssigneeMapping(guildId);
+// { "Alice Jira": "1234567890123456789", "Bob Jira": "9876543210987654321" }
+```

@@ -1,0 +1,63 @@
+---
+title: "CommandsNamespaceController"
+---
+
+# Interface: CommandsNamespaceController
+
+Namespace controller for portal.discord.commands
+Provides access to all commands and execution utilities.
+
+## Methods
+
+### execute()
+
+```ts
+execute(name, interaction): Promise<void>
+```
+
+Execute a command programmatically
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `interaction` | `ChatInputCommandInteraction`\<`CacheType`\> |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### get()
+
+```ts
+get(name): Promise<null | CommandHandler>
+```
+
+Get a specific command handler by name
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+`Promise`\<`null` \| [`CommandHandler`](../type-aliases/command-handler)\>
+
+***
+
+### list()
+
+```ts
+list(): string[]
+```
+
+Get all command keys
+
+#### Returns
+
+`string`[]

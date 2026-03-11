@@ -1,0 +1,23 @@
+---
+title: "MockForumPostConfig"
+---
+
+# Interface: MockForumPostConfig
+
+Configuration for creating a forum post (thread with initial message)
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="applied_tags"></a> `applied_tags?` | `string`[] |
+| <a id="autoarchiveduration"></a> `autoArchiveDuration?` | `60` \| `1440` \| `4320` \| `10080` |
+| <a id="message"></a> `message` | \{ `attachments`: `unknown`[]; `components`: `unknown`[]; `content`: `string`; `embeds`: `unknown`[]; \} |
+| `message.attachments?` | `unknown`[] |
+| `message.components?` | `unknown`[] |
+| `message.content?` | `string` |
+| `message.embeds?` | `unknown`[] |
+| <a id="name"></a> `name` | `string` |
+| <a id="ownerid"></a> `ownerId?` | `string` |
+| <a id="parentid"></a> `parentId` | `string` |
+| <a id="ratelimitperuser"></a> `rateLimitPerUser?` | `number` |

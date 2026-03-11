@@ -1,0 +1,18 @@
+---
+title: "MiddlewareResult"
+---
+
+# Type Alias: MiddlewareResult
+
+```ts
+type MiddlewareResult = 
+  | {
+  continue: true;
+ }
+  | {
+  reason: string;
+  reject: true;
+};
+```
+
+Result from middleware 'before' handler.

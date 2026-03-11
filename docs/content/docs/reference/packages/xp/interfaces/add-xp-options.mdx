@@ -1,0 +1,29 @@
+---
+title: "AddXPOptions"
+---
+
+# Interface: AddXPOptions
+
+Options for adding XP to a user
+
+## Examples
+
+```ts
+{ reason: 'admin_bonus' }
+```
+
+```ts
+// Custom store with reason
+{ reason: 'quest', storeId: 'reputation' }
+```
+
+## Extends
+
+- [`StoreOptions`](store-options)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="reason"></a> `reason?` | `string` | Optional audit trail reason for XP change | - |
+| <a id="storeid"></a> `storeId?` | `string` | Store identifier (defaults to 'default') | [`StoreOptions`](store-options).[`storeId`](store-options#storeid) |

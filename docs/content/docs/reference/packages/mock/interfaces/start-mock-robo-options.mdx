@@ -1,0 +1,21 @@
+---
+title: "StartMockRoboOptions"
+---
+
+# Interface: StartMockRoboOptions
+
+Options for starting a mock Robo
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="activity"></a> `activity?` | `boolean` | Skip waiting for a Discord Gateway bot connection. Use this for Discord Activities or other projects with `disableBot: true` that don't connect to the Gateway. When enabled, waits for the Robo HTTP server to be ready instead of waiting for a Gateway connection. |
+| <a id="hmr"></a> `hmr?` | `boolean` | Enable HMR mode - spawns `robo dev --hmr` as child process instead of running Robo.start() directly. Required for testing hot module replacement. When enabled: - `client` will be null (runs in separate process) - `process` will contain the child process - `waitForHmrReload()` and `waitForFullRestart()` will be available |
+| <a id="logfile"></a> `logFile?` | `string` \| `boolean` | Enable file logging for this test. - true: Auto-name from testFilePath (e.g., "ping.test.log") - string: Custom log file path - false: Disable file logging - undefined: Auto-enable when running under `robo mock test` with testFilePath |
+| <a id="loglevel"></a> `logLevel?` | `"error"` \| `"trace"` \| `"debug"` \| `"info"` \| `"warn"` | Log level for file output. **Default** `'debug'` |
+| <a id="name"></a> `name?` | `string` | Session name |
+| <a id="port"></a> `port?` | `number` | Mock server port (auto-discovered if not specified) |
+| <a id="testfilepath"></a> `testFilePath?` | `string` | Test file path for registry tracking and log file naming (use __filename) |
+| <a id="timeout"></a> `timeout?` | `number` | Timeout for bot to connect in ms (default: 30000) |
+| <a id="verbose"></a> `verbose?` | `boolean` | Enable verbose output (shows logs in console alongside file) |

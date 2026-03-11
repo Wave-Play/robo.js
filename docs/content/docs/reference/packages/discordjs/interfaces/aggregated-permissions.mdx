@@ -1,0 +1,15 @@
+---
+title: "AggregatedPermissions"
+---
+
+# Interface: AggregatedPermissions
+
+Aggregated permission information for a command.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="defaultmemberpermissions"></a> `defaultMemberPermissions` | `null` \| `bigint` | Default member permissions required (bitfield) |
+| <a id="guildoverrides"></a> `guildOverrides` | `Map`\<`string`, `bigint`\> | Guild-specific overrides |
+| <a id="permissionnames"></a> `permissionNames` | `string`[] | Permission names for display |

@@ -1,0 +1,75 @@
+---
+title: "MiddlewareController"
+---
+
+# Interface: MiddlewareController
+
+Middleware controller for portal.discord.middleware()
+
+## Methods
+
+### getOrder()
+
+```ts
+getOrder(): number
+```
+
+Get middleware order
+
+#### Returns
+
+`number`
+
+***
+
+### isEnabled()
+
+```ts
+isEnabled(): boolean
+```
+
+Check if middleware is enabled
+
+#### Returns
+
+`boolean`
+
+***
+
+### setEnabled()
+
+```ts
+setEnabled(value): void
+```
+
+Enable or disable the middleware
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `boolean` |
+
+#### Returns
+
+`void`
+
+***
+
+### setOrder()
+
+```ts
+setOrder(order): void
+```
+
+Set middleware execution order
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `order` | `number` |
+
+#### Returns
+
+`void`

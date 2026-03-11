@@ -1,0 +1,42 @@
+---
+title: "ContextNamespaceController"
+---
+
+# Interface: ContextNamespaceController
+
+Namespace controller for portal.discordjs.context
+Provides access to all context menus.
+
+## Methods
+
+### get()
+
+```ts
+get(name): Promise<null | ContextHandler>
+```
+
+Get a specific context menu handler by name
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+`Promise`\<`null` \| [`ContextHandler`](../type-aliases/context-handler)\>
+
+***
+
+### list()
+
+```ts
+list(): string[]
+```
+
+Get all context menu keys
+
+#### Returns
+
+`string`[]

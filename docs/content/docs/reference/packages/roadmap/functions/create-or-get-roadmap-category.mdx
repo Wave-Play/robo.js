@@ -1,0 +1,42 @@
+---
+title: "createOrGetRoadmapCategory()"
+---
+
+# Function: createOrGetRoadmapCategory()
+
+```ts
+function createOrGetRoadmapCategory(options): Promise<{
+  category: CategoryChannel;
+  forums: Map<string, ForumChannel>;
+}>
+```
+
+Creates or retrieves the roadmap category with forum channels for each column (idempotent).
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`CreateRoadmapForumsOptions`](../interfaces/create-roadmap-forums-options) | Guild and columns to create forums for. |
+
+## Returns
+
+`Promise`\<\{
+  `category`: `CategoryChannel`;
+  `forums`: `Map`\<`string`, `ForumChannel`\>;
+ \}\>
+
+Category and map of column names to forum channels.
+
+## Throws
+
+Error if bot lacks Manage Channels permission.
+
+## Example
+
+```ts
+const { category, forums } = await createOrGetRoadmapCategory({
+  guild: interaction.guild,
+  columns: [{ id: 'backlog', name: 'Backlog', order: 0 }]
+});
+```

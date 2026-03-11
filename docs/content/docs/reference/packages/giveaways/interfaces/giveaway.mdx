@@ -1,0 +1,34 @@
+---
+title: "Giveaway"
+---
+
+# Interface: Giveaway
+
+Flashcore-backed data model representing a single giveaway lifecycle.
+
+Giveaway records are written when a giveaway is created, mutated as entries
+are collected and winners announced, and stored in the `giveaways:data`
+namespace for durability across restarts.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="allowroleids"></a> `allowRoleIds` | `string`[] | Whitelist of role IDs; empty array allows all roles to enter. |
+| <a id="channelid"></a> `channelId` | `string` | Discord channel ID where the giveaway message lives. |
+| <a id="createdat"></a> `createdAt` | `number` | Epoch timestamp (ms) when the giveaway record was created. |
+| <a id="cronjobid"></a> `cronJobId?` | `null` \| `string` | Optional cron job identifier when scheduled via @robojs/cron. |
+| <a id="denyroleids"></a> `denyRoleIds` | `string`[] | Blacklist of role IDs prohibited from entering. |
+| <a id="endsat"></a> `endsAt` | `number` | Epoch timestamp (ms) at which the giveaway should end. |
+| <a id="entries"></a> `entries` | `Record`\<`string`, `number`\> | Entrant weighting map keyed by Discord user ID. |
+| <a id="finalizedat"></a> `finalizedAt` | `null` \| `number` | Epoch timestamp (ms) when the giveaway ended or was cancelled. |
+| <a id="guildid"></a> `guildId` | `string` | Discord guild ID hosting the giveaway. |
+| <a id="id"></a> `id` | `string` | Unique giveaway identifier, currently a ULID string. |
+| <a id="messageid"></a> `messageId` | `string` | Discord message ID for the giveaway announcement. |
+| <a id="minaccountagedays"></a> `minAccountAgeDays` | `null` \| `number` | Minimum required account age for entrants, or null to disable. |
+| <a id="prize"></a> `prize` | `string` | Prize description that appears in embeds and DMs. |
+| <a id="rerolls"></a> `rerolls` | `string`[][] | Historical reroll batches, newest appended to the array. |
+| <a id="startedby"></a> `startedBy` | `string` | Discord user ID of the moderator that started the giveaway. |
+| <a id="status"></a> `status` | `"active"` \| `"ended"` \| `"cancelled"` | Current lifecycle state of the giveaway. |
+| <a id="winners"></a> `winners` | `string`[] | User IDs selected as winners when the giveaway finalized. |
+| <a id="winnerscount"></a> `winnersCount` | `number` | Number of winners that should be selected when the giveaway ends. |

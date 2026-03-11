@@ -1,0 +1,28 @@
+---
+title: "findCommandDifferences()"
+---
+
+# Function: findCommandDifferences()
+
+```ts
+function findCommandDifferences(
+   oldCommands, 
+   newCommands, 
+   differenceType, 
+   prefix): string[]
+```
+
+Find differences between old and new command sets.
+
+## Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `oldCommands` | `Record`\<`string`, [`CommandEntry`](../interfaces/command-entry)\> | `undefined` |
+| `newCommands` | `Record`\<`string`, [`CommandEntry`](../interfaces/command-entry)\> | `undefined` |
+| `differenceType` | `"added"` \| `"removed"` \| `"changed"` | `undefined` |
+| `prefix` | `string` | `''` |
+
+## Returns
+
+`string`[]

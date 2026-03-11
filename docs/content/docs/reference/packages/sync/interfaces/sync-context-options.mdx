@@ -1,0 +1,20 @@
+---
+title: "SyncContextOptions<ClientData>"
+---
+
+# Interface: SyncContextOptions\<ClientData\>
+
+Options for useSyncContext hook callbacks.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="onconnect"></a> `onConnect?` | (`client`: [`Client`](client)\<`ClientData`\>) =\> `void` | Called when a client connects to this key/room |
+| <a id="ondisconnect"></a> `onDisconnect?` | (`client`: [`Client`](client)\<`ClientData`\>) =\> `void` | Called when a client disconnects from this key/room |

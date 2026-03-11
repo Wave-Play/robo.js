@@ -1,0 +1,22 @@
+---
+title: "buildContextMenuInteractionPayload()"
+---
+
+# Function: buildContextMenuInteractionPayload()
+
+```ts
+function buildContextMenuInteractionPayload(options): GatewayPayload
+```
+
+Build an INTERACTION_CREATE payload for context menu commands (op 0, t: "INTERACTION_CREATE")
+For USER (type 2) and MESSAGE (type 3) application commands
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`ContextMenuInteractionPayloadOptions`](../interfaces/context-menu-interaction-payload-options) |
+
+## Returns
+
+[`GatewayPayload`](../interfaces/gateway-payload)

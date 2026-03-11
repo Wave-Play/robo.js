@@ -1,0 +1,18 @@
+---
+title: "SyncOptions"
+---
+
+# Interface: SyncOptions
+
+Options for synchronizing roadmap data to Discord.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="dryrun"></a> `dryRun?` | `boolean` | Optional flag to preview changes without applying them (defaults to false) |
+| <a id="guild"></a> `guild` | `Guild` | The Discord guild to sync |
+| <a id="onprogress"></a> `onProgress?` | (`update`: [`SyncProgressUpdate`](sync-progress-update)) =\> `void` \| `Promise`\<`void`\> | Optional callback invoked during sync to report progress |
+| <a id="provider"></a> `provider` | [`RoadmapProvider`](../classes/roadmap-provider)\<[`ProviderConfig`](../type-aliases/provider-config)\> | The roadmap provider instance |
+| <a id="signal"></a> `signal?` | `AbortSignal` | Optional abort signal that allows callers to cancel an in-flight sync. When triggered, the sync stops before processing the next card and throws a `SyncCanceledError`, preserving progress up to that point. |
+| <a id="syncid"></a> `syncId?` | `string` | Optional sync identifier for traceability across logs/UI |

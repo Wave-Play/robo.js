@@ -1,0 +1,28 @@
+---
+title: "getEffectivePermissions()"
+---
+
+# Function: getEffectivePermissions()
+
+```ts
+function getEffectivePermissions(
+   permissions, 
+   commandKey, 
+   guildId?): bigint | null
+```
+
+Get effective permissions for a command in a specific guild.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `permissions` | `Map`\<`string`, [`AggregatedPermissions`](../interfaces/aggregated-permissions)\> | The aggregated permissions map |
+| `commandKey` | `string` | The command key |
+| `guildId`? | `string` | The guild ID (optional) |
+
+## Returns
+
+`bigint` \| `null`
+
+The effective permission bitfield

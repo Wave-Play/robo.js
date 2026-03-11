@@ -1,0 +1,37 @@
+---
+title: "getHistoricalActions()"
+---
+
+# Function: getHistoricalActions()
+
+```ts
+function getHistoricalActions(sessionId, options?): Promise<RecordedAction[]>
+```
+
+Get all historical actions from a session (including those from before test started).
+
+This is useful for testing lifecycle hooks like `ready` events that fire during
+bot startup, before your test code begins waiting for actions.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | - |
+| `options`? | \{ `filter`: (`action`) =\> `boolean`; `type`: `string`; \} | - |
+| `options.filter`? | (`action`) =\> `boolean` | Custom filter function |
+| `options.type`? | `string` | Filter by action type |
+
+## Returns
+
+`Promise`\<[`RecordedAction`](../interfaces/recorded-action)[]\>
+
+## Example
+
+```typescript
+// Check what happened during startup
+const actions = await getHistoricalActions(bot.sessionId, {
+  type: 'gateway_presence_update'
+})
+expect(actions.length).toBeGreaterThan(0)
+```

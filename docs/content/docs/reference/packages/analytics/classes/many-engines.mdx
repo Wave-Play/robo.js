@@ -1,38 +1,36 @@
 ---
 title: "ManyEngines"
-description: "Combine multiple analytics engines for Robo.js"
 ---
 
 # Class: ManyEngines
-
-A utility class that allows you to use multiple analytics engines simultaneously.
-This enables you to send tracking data to multiple analytics providers with a single API call.
-
-```ts
-new ManyEngines(...engines): ManyEngines
-```
 
 ## Extends
 
 - `BaseEngine`
 
-## Constructor
+## Constructors
+
+### new ManyEngines()
 
 ```ts
 new ManyEngines(...engines): ManyEngines
 ```
 
-Creates a new instance that combines multiple analytics engines.
+#### Parameters
 
-### Parameters
+| Parameter | Type |
+| ------ | ------ |
+| ...`engines` | `BaseEngine`[] |
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `...engines` | `BaseEngine[]` | One or more analytics engine instances |
+#### Returns
 
-### Returns
+[`ManyEngines`](many-engines)
 
-`ManyEngines` - A new instance that proxies calls to all provided engines
+#### Overrides
+
+```ts
+BaseEngine.constructor
+```
 
 ## Methods
 
@@ -42,22 +40,24 @@ Creates a new instance that combines multiple analytics engines.
 event(name, options?): Promise<void>
 ```
 
-Tracks an event with all configured analytics engines.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `name` | `string` | The name of the event to track |
-| `options` | `EventOptions` | Optional configuration for the event |
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `options`? | `EventOptions` |
 
 #### Returns
 
-`Promise<void>` - Resolves when all engines have processed the event
+`Promise`\<`void`\>
 
 #### Overrides
 
-`BaseEngine.event`
+```ts
+BaseEngine.event
+```
+
+***
 
 ### view()
 
@@ -65,56 +65,19 @@ Tracks an event with all configured analytics engines.
 view(page, options?): Promise<void>
 ```
 
-Tracks a page view with all configured analytics engines.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `page` | `string` | The page path to track |
-| `options` | `ViewOptions` | Optional configuration for the page view |
+| Parameter | Type |
+| ------ | ------ |
+| `page` | `string` |
+| `options`? | `ViewOptions` |
 
 #### Returns
 
-`Promise<void>` - Resolves when all engines have processed the page view
+`Promise`\<`void`\>
 
 #### Overrides
 
-`BaseEngine.view`
-
-## Example
-
 ```ts
-import { 
-  ManyEngines, 
-  GoogleAnalytics, 
-  PlausibleAnalytics 
-} from '@robojs/analytics'
-
-// Create individual analytics engines
-const ga = new GoogleAnalytics({
-  measurementId: 'G-XXXXXXXXXX'
-})
-
-const plausible = new PlausibleAnalytics('yourdomain.com')
-
-// Combine them into a single engine
-const analytics = new ManyEngines(ga, plausible)
-
-// Track events and page views once - data is sent to both services
-await analytics.view('/dashboard')
-await analytics.event('button_clicked', {
-  properties: {
-    button_id: 'submit',
-    page: 'checkout'
-  }
-})
+BaseEngine.view
 ```
-
-## Notes
-
-- All events and page views are sent to all configured engines
-- If any engine fails, other engines will still receive the data
-- The returned Promise only resolves when all engines have completed
-- You can combine any engines that extend the BaseEngine class
-- This is useful for transitioning between analytics providers or using multiple providers simultaneously

@@ -1,0 +1,22 @@
+---
+title: "getSage()"
+---
+
+# Function: getSage()
+
+```ts
+function getSage(commandConfig?): SageOptions
+```
+
+Get effective Sage options from command config and plugin config.
+Priority order for deferBuffer: command.sage.deferBuffer \> plugin.sage.deferBuffer \> plugin.timeouts.commandDeferral \> default
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `commandConfig`? | [`CommandConfig`](../interfaces/command-config) |
+
+## Returns
+
+[`SageOptions`](../interfaces/sage-options)

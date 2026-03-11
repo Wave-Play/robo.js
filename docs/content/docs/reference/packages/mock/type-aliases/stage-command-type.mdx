@@ -1,0 +1,44 @@
+---
+title: "StageCommandType"
+---
+
+# Type Alias: StageCommandType
+
+```ts
+type StageCommandType = 
+  | "send_message"
+  | "invoke_command"
+  | "invoke_context_command"
+  | "click_button"
+  | "select_option"
+  | "submit_modal"
+  | "add_reaction"
+  | "remove_reaction"
+  | "start_typing"
+  | "request_state"
+  | "subscribe_channel"
+  | "set_current_user"
+  | "switch_user"
+  | "join_voice"
+  | "leave_voice"
+  | "update_voice_state"
+  | "control_response"
+  | "launch_activity"
+  | "close_activity"
+  | "activity_rpc"
+  | "activity_set_url_mappings"
+  | "activity_set_csp_mode"
+  | "activity_authorize_result"
+  | "activity_set_auth_settings"
+  | "activity_reset_auth"
+  | "activity_set_platform_state"
+  | "activity_set_iap_state"
+  | "activity_set_relationships"
+  | "activity_set_quests"
+  | "activity_purchase_result"
+  | "activity_set_origin_mode"
+  | "activity_set_sdk_shim"
+  | "activity_emit_event";
+```
+
+Command types sent from stage clients to server

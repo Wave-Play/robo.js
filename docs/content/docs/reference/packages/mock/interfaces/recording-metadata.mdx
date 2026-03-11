@@ -1,0 +1,23 @@
+---
+title: "RecordingMetadata"
+---
+
+# Interface: RecordingMetadata
+
+Metadata for a session recording
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="actioncount"></a> `actionCount` | `number` | Total number of actions recorded |
+| <a id="applicationid"></a> `applicationId` | `string` | Application ID |
+| <a id="botuser"></a> `botUser` | \{ `id`: `string`; `username`: `string`; \} | Bot user info |
+| `botUser.id` | `string` | - |
+| `botUser.username` | `string` | - |
+| <a id="duration"></a> `duration` | `number` | Duration in milliseconds |
+| <a id="endtime"></a> `endTime` | `number` | Session end/export timestamp (ms) |
+| <a id="recordedat"></a> `recordedAt` | `string` | Recording creation timestamp (ISO 8601) |
+| <a id="sessionid"></a> `sessionId` | `string` | Session ID |
+| <a id="sessionname"></a> `sessionName?` | `string` | Optional session name |
+| <a id="starttime"></a> `startTime` | `number` | Session start timestamp (ms) |

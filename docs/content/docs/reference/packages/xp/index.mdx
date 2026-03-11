@@ -1,78 +1,53 @@
 ---
-title: "@robojs/xp"
-description: API reference for the XP and leveling plugin.
+title: "DIRECTORY"
+description: "API reference for @robojs/xp"
 ---
 
 # @robojs/xp
 
-Experience points and leveling system for Discord bots.
+API reference documentation for `@robojs/xp`.
 
-<Cards>
-  <Card href="/docs/plugins/xp" title="Plugin Guide" description="Full documentation and usage examples." />
-</Cards>
+## Interfaces
 
-## Main Exports
+- [`AddXpOptions`](interfaces/add-xp-options) - Options for adding XP to a user.
+- [`FlashcoreOptions`](interfaces/flashcore-options) - Options for Flashcore storage layer operations.
+- [`GetXpOptions`](interfaces/get-xp-options) - Options for retrieving XP data.
+- [`GuildConfig`](interfaces/guild-config) - Per-guild XP system configuration.
+- [`LeaderboardEntry`](interfaces/leaderboard-entry) - Leaderboard entry with user rank information.
+- [`LevelDownEvent`](interfaces/level-down-event) - Event emitted when a user levels down (XP loss).
+- [`LevelProgress`](interfaces/level-progress) - Level progress information from computeLevelFromTotalXp.
+- [`LevelUpEvent`](interfaces/level-up-event) - Event emitted when a user levels up.
+- [`PluginOptions`](interfaces/plugin-options) - Plugin configuration options for @robojs/xp.
+- [`RecalcOptions`](interfaces/recalc-options) - Options for recalculating user levels.
+- [`RecalcResult`](interfaces/recalc-result)
+- [`RoleReward`](interfaces/role-reward) - Role reward configuration.
+- [`StoreOptions`](interfaces/store-options) - Options for specifying which data store to use.
+- [`UserXp`](interfaces/user-xp) - User XP data stored per guild member.
+- [`XpChangeEvent`](interfaces/xp-change-event) - Event emitted when a user's XP changes (without level change).
+- [`XpChangeResult`](interfaces/xp-change-result)
+- [`XpRemoveResult`](interfaces/xp-remove-result)
+- [`XpSetResult`](interfaces/xp-set-result)
 
-### XP
+## Type Aliases
 
-The main XP manager for tracking and managing experience points.
+- [`GlobalConfig`](type-aliases/global-config) - Global configuration defaults applied to all guilds.
+- [`RewardsMode`](type-aliases/rewards-mode) - Role reward mode - determines how multiple role rewards are applied.
 
-```typescript
-import { XP } from '@robojs/xp'
+## Functions
 
-// Get user XP
-const xp = await XP.get(userId, guildId)
+- [`FormatXp`](functions/format-xp) - Formats XP with commas and custom label.
+- [`GetXpLabel`](functions/get-xp-label) - Extracts custom XP label from guild config with fallback to 'XP'.
 
-// Add XP to user
-await XP.add(userId, guildId, amount)
+## Variables
 
-// Get user level
-const level = await XP.getLevel(userId, guildId)
-```
-
-### Levels
-
-Level configuration and calculations.
-
-```typescript
-import { Levels } from '@robojs/xp'
-
-// Get level thresholds
-const threshold = Levels.getThreshold(level)
-
-// Calculate level from XP
-const level = Levels.fromXP(xpAmount)
-```
-
-### Leaderboard
-
-Leaderboard functionality for ranking users.
-
-```typescript
-import { Leaderboard } from '@robojs/xp'
-
-// Get top users
-const top = await Leaderboard.getTop(guildId, 10)
-```
-
-## Configuration
-
-Configure the plugin in `config/plugins/robojs/xp.mjs`:
-
-```javascript
-export default {
-  levelRoles: {
-    5: 'role-id-for-level-5',
-    10: 'role-id-for-level-10'
-  },
-  multipliers: {
-    channels: {
-      'channel-id': 2.0
-    }
-  }
-}
-```
-
-<Cards>
-  <Card href="/docs/plugins/xp" title="Plugin Guide" description="See full configuration options." />
-</Cards>
+- [`Config`](variables/config) - Configuration management for XP system.
+- [`Constants`](variables/constants) - Default configuration constants.
+- [`Default_curve_a`](variables/default_curve_a) - Default quadratic curve coefficients.
+- [`Default_curve_b`](variables/default_curve_b)
+- [`Default_curve_c`](variables/default_curve_c)
+- [`Events`](variables/events) - Event system for XP changes and level progression.
+- [`Leaderboard`](variables/leaderboard) - Leaderboard API for ranking and leaderboard operations.
+- [`Math`](variables/math) - Standard level curve mathematics.
+- [`Rewards`](variables/rewards) - Role rewards reconciliation API.
+- [`Xp1`](variables/xp-1) - XP manipulation API for programmatic XP management.
+- [`Xp`](variables/xp)

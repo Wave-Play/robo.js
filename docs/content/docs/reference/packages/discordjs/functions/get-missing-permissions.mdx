@@ -1,0 +1,24 @@
+---
+title: "getMissingPermissions()"
+---
+
+# Function: getMissingPermissions()
+
+```ts
+function getMissingPermissions(userPermissions, requiredPermissions): string[]
+```
+
+Get missing permissions for a user.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `userPermissions` | `bigint` | The user's permission bitfield |
+| `requiredPermissions` | `null` \| `bigint` | The required permission bitfield |
+
+## Returns
+
+`string`[]
+
+Array of missing permission names

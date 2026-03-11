@@ -1,0 +1,18 @@
+---
+title: "ValidationResult"
+---
+
+# Interface: ValidationResult
+
+Results of validating bot responses during replay
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="extra"></a> `extra` | `number` | Number of extra responses not in recording |
+| <a id="matched"></a> `matched` | `number` | Number of responses that matched |
+| <a id="mismatched"></a> `mismatched` | `number` | Number of responses that did not match |
+| <a id="mismatches"></a> `mismatches` | [`ValidationMismatch`](validation-mismatch)[] | Details of each mismatch |
+| <a id="missing"></a> `missing` | `number` | Number of expected responses that were missing |
+| <a id="passed"></a> `passed` | `boolean` | Whether all validations passed |

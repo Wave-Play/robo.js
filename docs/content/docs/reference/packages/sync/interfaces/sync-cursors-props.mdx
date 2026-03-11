@@ -1,0 +1,26 @@
+---
+title: "SyncCursorsProps<ClientData>"
+---
+
+# Interface: SyncCursorsProps\<ClientData\>
+
+Props for SyncCursors component.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="colorfn"></a> `colorFn?` | (`clientId`: `string`) =\> `string` | Color function to generate cursor color from client ID |
+| <a id="defaultcursorstyle"></a> `defaultCursorStyle?` | `CSSProperties` | Default style for cursor wrapper |
+| <a id="labelkey"></a> `labelKey?` | keyof `ClientData` \| (`client`) =\> `string` | Key to use for label from client data, or function to extract label |
+| <a id="rendercursor"></a> `renderCursor?` | (`cursor`: [`RemoteCursor`](remote-cursor)\<`ClientData`\>) =\> `ReactNode` | Custom cursor renderer |
+| <a id="roomkey"></a> `roomKey` | (`null` \| `string`)[] | Room key for cursor synchronization |
+| <a id="showlabels"></a> `showLabels?` | `boolean` | Show user labels next to cursors (default: true) |
+| <a id="throttle"></a> `throttle?` | `number` | Milliseconds between cursor updates (default: 16) |
+| <a id="zindex"></a> `zIndex?` | `number` | Z-index for cursor container (default: 9999) |

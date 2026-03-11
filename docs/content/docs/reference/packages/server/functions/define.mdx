@@ -1,0 +1,48 @@
+---
+title: "define()"
+---
+
+# Function: define()
+
+```ts
+function define<TSchema>(schema, handler): DefinedEndpoint<TSchema>
+```
+
+Define a typed API endpoint with optional Zod schema.
+
+Provides:
+- TypeScript inference for request.json(), request.query, request.params
+- Type-safe header access via request.header('x-api-key')
+- OpenAPI 3.1 spec generation during build
+
+IMPORTANT: Body is NOT auto-parsed. Call `await request.json()`.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TSchema` *extends* [`EndpointSchema`](../interfaces/endpoint-schema) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `schema` | `TSchema` |
+| `handler` | [`TypedHandler`](../type-aliases/typed-handler)\<`TSchema`\> |
+
+## Returns
+
+[`DefinedEndpoint`](../interfaces/defined-endpoint)\<`TSchema`\>
+
+## Example
+
+```ts
+export const POST = define({
+  summary: 'Create user',
+  body: z.object({ name: z.string() }),
+  response: { 201: z.object({ id: z.string() }) }
+}, async (request) => {
+  const body = await request.json()  // Typed!
+  return { id: '123' }
+})
+```

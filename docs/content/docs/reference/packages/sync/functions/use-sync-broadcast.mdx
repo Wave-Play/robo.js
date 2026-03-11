@@ -1,0 +1,46 @@
+---
+title: "useSyncBroadcast()"
+---
+
+# Function: useSyncBroadcast()
+
+```ts
+function useSyncBroadcast<ClientData>(handler, key): SyncBroadcastResult<ClientData>
+```
+
+Hook for sending and receiving ephemeral broadcasts in a sync room.
+
+Unlike state updates, broadcasts are fire-and-forget messages that don't
+persist and don't trigger re-renders of other components. They're ideal
+for things like cursor movements, typing indicators, or game actions.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `handler` | `BroadcastHandler`\<`ClientData`\> |
+| `key` | (`null` \| `string`)[] |
+
+## Returns
+
+[`SyncBroadcastResult`](../interfaces/sync-broadcast-result)\<`ClientData`\>
+
+## Example
+
+```ts
+const { broadcast, context, send } = useSyncBroadcast((message, { client }) => {
+  console.log(client.id, 'said', message)
+}, ['chat-room'])
+
+// Send to everyone
+broadcast('Hello!')
+
+// Send to specific client
+send(targetClientId, 'Private message')
+```

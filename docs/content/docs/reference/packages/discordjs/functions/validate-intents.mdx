@@ -1,0 +1,40 @@
+---
+title: "validateIntents()"
+---
+
+# Function: validateIntents()
+
+```ts
+function validateIntents(configuredIntents, eventNames): {
+  missing: string[];
+  suggestions: string[];
+  valid: boolean;
+}
+```
+
+Validate that all required intents are present for given events.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `configuredIntents` | `number` \| `bigint` | Bitfield of configured intents |
+| `eventNames` | `string`[] | Array of event names |
+
+## Returns
+
+```ts
+{
+  missing: string[];
+  suggestions: string[];
+  valid: boolean;
+}
+```
+
+Object with validation result and details
+
+| Name | Type |
+| ------ | ------ |
+| <a id="missing"></a> `missing` | `string`[] |
+| <a id="suggestions"></a> `suggestions` | `string`[] |
+| <a id="valid"></a> `valid` | `boolean` |

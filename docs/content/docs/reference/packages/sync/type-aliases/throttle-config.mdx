@@ -1,0 +1,17 @@
+---
+title: "ThrottleConfig<T>"
+---
+
+# Type Alias: ThrottleConfig\<T\>
+
+```ts
+type ThrottleConfig<T> = number | { [K in keyof T]?: number };
+```
+
+Throttle config - either a single number or per-field config.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |

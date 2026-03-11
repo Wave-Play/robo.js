@@ -1,0 +1,37 @@
+---
+title: "xp"
+---
+
+# Variable: xp
+
+```ts
+const xp: {
+  add: (guildId, userId, amount, options?) => Promise<XPChangeResult>;
+  addXP: (guildId, userId, amount, options?) => Promise<XPChangeResult>;
+  get: (guildId, userId, options?) => Promise<number>;
+  getLevel: (guildId, userId, options?) => Promise<number>;
+  getUser: (guildId, userId, options?) => Promise<UserXP | null>;
+  getXP: (guildId, userId, options?) => Promise<number>;
+  recalc: (guildId, userId, options?) => Promise<RecalcResult>;
+  remove: (guildId, userId, amount, options?) => Promise<XPRemoveResult>;
+  removeXP: (guildId, userId, amount, options?) => Promise<XPRemoveResult>;
+  set: (guildId, userId, totalXp, options?) => Promise<XPSetResult>;
+  setXP: (guildId, userId, totalXp, options?) => Promise<XPSetResult>;
+ } = XP;
+```
+
+## Type declaration
+
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="add"></a> `add` | (`guildId`, `userId`, `amount`, `options`?) =\> `Promise`\<[`XPChangeResult`](../interfaces/xp-change-result)\> | addXPCore | Add XP to a user (emits events, triggers role reconciliation) |
+| <a id="addxp"></a> `addXP` | (`guildId`, `userId`, `amount`, `options`?) =\> `Promise`\<[`XPChangeResult`](../interfaces/xp-change-result)\> | addXPCore | Add XP to a user - alias for add() |
+| <a id="get"></a> `get` | (`guildId`, `userId`, `options`?) =\> `Promise`\<`number`\> | getXPCore | Get user's total XP (returns 0 if not found) |
+| <a id="getlevel"></a> `getLevel` | (`guildId`, `userId`, `options`?) =\> `Promise`\<`number`\> | getLevelCore | Get user's level (returns 0 if not found) |
+| <a id="getuser"></a> `getUser` | (`guildId`, `userId`, `options`?) =\> `Promise`\<[`UserXP`](../interfaces/user-xp) \| `null`\> | getUserDataCore | Get full user XP record (returns null if not found) |
+| <a id="getxp"></a> `getXP` | (`guildId`, `userId`, `options`?) =\> `Promise`\<`number`\> | getXPCore | Get user's total XP - alias for get() |
+| <a id="recalc"></a> `recalc` | (`guildId`, `userId`, `options`?) =\> `Promise`\<[`RecalcResult`](../interfaces/recalc-result)\> | recalcLevelCore | Recalculate level from total XP and reconcile roles |
+| <a id="remove"></a> `remove` | (`guildId`, `userId`, `amount`, `options`?) =\> `Promise`\<[`XPRemoveResult`](../interfaces/xp-remove-result)\> | removeXPCore | Remove XP from a user (emits events, triggers role reconciliation) |
+| <a id="removexp"></a> `removeXP` | (`guildId`, `userId`, `amount`, `options`?) =\> `Promise`\<[`XPRemoveResult`](../interfaces/xp-remove-result)\> | removeXPCore | Remove XP from a user - alias for remove() |
+| <a id="set"></a> `set` | (`guildId`, `userId`, `totalXp`, `options`?) =\> `Promise`\<[`XPSetResult`](../interfaces/xp-set-result)\> | setXPCore | Set absolute XP value for a user (emits events, triggers role reconciliation) |
+| <a id="setxp"></a> `setXP` | (`guildId`, `userId`, `totalXp`, `options`?) =\> `Promise`\<[`XPSetResult`](../interfaces/xp-set-result)\> | setXPCore | Set absolute XP value for a user - alias for set() |

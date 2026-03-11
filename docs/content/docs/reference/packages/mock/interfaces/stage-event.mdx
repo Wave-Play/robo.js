@@ -1,0 +1,16 @@
+---
+title: "StageEvent"
+---
+
+# Interface: StageEvent
+
+Event envelope sent from server to stage client
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="data"></a> `data` | `unknown` | Event-specific data |
+| <a id="seq"></a> `seq` | `number` | Monotonic sequence number for reconnection replay |
+| <a id="timestamp"></a> `timestamp` | `number` | Unix timestamp in milliseconds |
+| <a id="type"></a> `type` | [`StageEventType`](../type-aliases/stage-event-type) | Event type |

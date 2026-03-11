@@ -1,0 +1,21 @@
+---
+title: "SwitchSessionResult"
+---
+
+# Interface: SwitchSessionResult
+
+Result shape for `POST /sessions/switch`.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="error"></a> `error?` | `"session_expired"` \| `"not_found"` \| `"forbidden"` |
+| <a id="ok"></a> `ok` | `boolean` |
+| <a id="session"></a> `session?` | \{ `expires`: `string`; `user`: \{ `email`: `null` \| `string`; `id`: `string`; `image`: `null` \| `string`; `name`: `null` \| `string`; \}; \} |
+| `session.expires` | `string` |
+| `session.user` | \{ `email`: `null` \| `string`; `id`: `string`; `image`: `null` \| `string`; `name`: `null` \| `string`; \} |
+| `session.user.email?` | `null` \| `string` |
+| `session.user.id` | `string` |
+| `session.user.image?` | `null` \| `string` |
+| `session.user.name?` | `null` \| `string` |

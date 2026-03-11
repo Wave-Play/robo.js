@@ -1,0 +1,139 @@
+---
+title: "math"
+---
+
+# Variable: math
+
+```ts
+const math: {
+  computeLevelFromTotalXp: (totalXp) => LevelProgress(totalXp, curve) => LevelProgress;
+  isValidLevel: (level) => boolean;
+  isValidXp: (xp) => boolean;
+  progressInLevel: (totalXp) => {
+     current: number;
+     needed: number;
+     percentage: number;
+    }(totalXp, curve) => {
+     current: number;
+     needed: number;
+     percentage: number;
+    };
+  totalXpForLevel: (level) => number(level, curve) => number;
+  xpDeltaForLevelRange: (fromLevel, toLevel) => number(fromLevel, toLevel, curve) => number;
+  xpNeededForLevel: (level) => number(level, curve) => number;
+};
+```
+
+Standard level curve mathematics
+
+Provides pure, deterministic functions for XP calculations using the default
+formula: `XP = 5 * level² + 50 * level + 100`
+
+**Features:**
+- Calculate XP requirements for levels
+- Compute level from total XP
+- Calculate progress within a level
+- Validate XP and level values
+- Compute XP differences between level ranges
+
+**Performance:** All operations are O(1) or O(log n) - suitable for real-time use.
+
+**Formula Coefficients:**
+- DEFAULT_CURVE_A (5): Quadratic coefficient - controls exponential growth
+- DEFAULT_CURVE_B (50): Linear coefficient - controls linear growth
+- DEFAULT_CURVE_C (100): Constant - base XP for level 1
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="computelevelfromtotalxp"></a> `computeLevelFromTotalXp` | (`totalXp`) =\> [`LevelProgress`](../interfaces/level-progress)(`totalXp`, `curve`) =\> [`LevelProgress`](../interfaces/level-progress) | Compute current level and progress from total XP |
+| <a id="isvalidlevel"></a> `isValidLevel` | (`level`) =\> `boolean` | Validate if a level is valid (non-negative) |
+| <a id="isvalidxp"></a> `isValidXp` | (`xp`) =\> `boolean` | Validate if XP amount is valid (non-negative) |
+| <a id="progressinlevel"></a> `progressInLevel` | (`totalXp`) =\> \{ `current`: `number`; `needed`: `number`; `percentage`: `number`; \}(`totalXp`, `curve`) =\> \{ `current`: `number`; `needed`: `number`; `percentage`: `number`; \} | Calculate progress within current level (absolute and percentage) |
+| <a id="totalxpforlevel"></a> `totalXpForLevel` | (`level`) =\> `number`(`level`, `curve`) =\> `number` | Calculate cumulative XP needed to reach a level |
+| <a id="xpdeltaforlevelrange"></a> `xpDeltaForLevelRange` | (`fromLevel`, `toLevel`) =\> `number`(`fromLevel`, `toLevel`, `curve`) =\> `number` | Calculate XP difference between two levels |
+| <a id="xpneededforlevel"></a> `xpNeededForLevel` | (`level`) =\> `number`(`level`, `curve`) =\> `number` | Calculate XP required to reach a specific level from level 0 |
+
+## Examples
+
+### Basic Level Calculations
+
+```typescript
+import { math } from '@robojs/xp'
+
+// Calculate XP needed to reach level 10 from level 0
+const xpNeeded = math.xpNeededForLevel(10) // 1100
+
+// Calculate cumulative XP needed to reach level 50
+const totalXp = math.totalXpForLevel(50) // 137600
+
+// Calculate XP difference between levels 10 and 20
+const delta = math.xpDeltaForLevelRange(10, 20) // 2500
+```
+
+### Computing Level from XP
+
+```typescript
+import { math } from '@robojs/xp'
+
+// Get current level and progress from total XP
+const progress = math.computeLevelFromTotalXp(1500)
+console.log(`Level ${progress.level}`) // Level 10
+console.log(`Progress: ${progress.inLevel}/${progress.toNext}`) // Progress: 400/1200
+```
+
+### Building Progress Bars
+
+```typescript
+import { math } from '@robojs/xp'
+
+// Calculate progress for UI display
+const { percentage, inLevel, toNext } = math.progressInLevel(1500)
+console.log(`${percentage.toFixed(1)}% to next level`) // 33.3% to next level
+
+// Build a progress bar
+const barLength = 20
+const filled = Math.floor((inLevel / (inLevel + toNext)) * barLength)
+const bar = '▰'.repeat(filled) + '▱'.repeat(barLength - filled)
+console.log(`[${bar}] ${inLevel}/${inLevel + toNext} XP`)
+```
+
+### Validating User Input
+
+```typescript
+import { math } from '@robojs/xp'
+
+// Validate user input before setting XP
+const userInput = parseInt(input)
+if (!math.isValidXp(userInput)) {
+  throw new Error('XP must be a non-negative number')
+}
+
+// Validate level before calculations
+if (!math.isValidLevel(targetLevel)) {
+  throw new Error('Level must be a non-negative number')
+}
+```
+
+### Reward Planning
+
+```typescript
+import { math, constants } from '@robojs/xp'
+
+// Calculate XP rewards for reaching milestones
+const xpFor50 = math.totalXpForLevel(50)
+const xpFor100 = math.totalXpForLevel(100)
+const reward = Math.floor((xpFor100 - xpFor50) * 0.1) // 10% of XP difference
+
+console.log(`Reward for level 100: ${reward} XP`)
+
+// Use formula coefficients for custom calculations
+const { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C } = constants
+const customXp = (level: number) => DEFAULT_CURVE_A * level ** 2 + DEFAULT_CURVE_B * level + DEFAULT_CURVE_C
+```
+
+## Remarks
+
+All math functions are pure and deterministic - same inputs always produce
+same outputs. No side effects or external dependencies. Safe for concurrent use.

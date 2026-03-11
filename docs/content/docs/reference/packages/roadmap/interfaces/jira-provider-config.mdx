@@ -1,0 +1,33 @@
+---
+title: "JiraProviderConfig"
+---
+
+# Interface: JiraProviderConfig
+
+Configuration shape for the [JiraProvider](../classes/jira-provider).
+
+## Remarks
+
+Values can be provided directly on the config object, through the `options` bag, or via
+environment variables. Explicit config values take precedence, followed by option values, with
+environment variables acting as the final fallback. Missing required credentials will be surfaced
+during [JiraProvider.validateConfig](../classes/jira-provider#validateconfig).
+
+## Extends
+
+- [`ProviderConfig`](../type-aliases/provider-config)
+
+## Properties
+
+| Property | Modifier | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ | ------ |
+| <a id="apitoken"></a> `apiToken?` | `readonly` | `string` | Jira API token associated with the Atlassian account. | - | - |
+| <a id="defaultissuetype"></a> `defaultIssueType?` | `readonly` | `string` | Default issue type name for created issues (e.g., 'Epic', 'Task'). Defaults to 'Task' if not specified. | - | - |
+| <a id="discorduseridfieldid"></a> `discordUserIdFieldId?` | `readonly` | `string` | Jira custom field ID containing Discord User ID (e.g., 'customfield_10001'). When set, this field takes priority over Jira assignee mapping. The field should contain a Discord User ID (17-19 digit numeric string). | - | - |
+| <a id="email"></a> `email?` | `readonly` | `string` | Atlassian account email used for API authentication. | - | - |
+| <a id="jql"></a> `jql?` | `readonly` | `string` | Optional JQL query to scope the issues returned by the provider. | - | - |
+| <a id="maxresults"></a> `maxResults?` | `readonly` | `number` | Maximum number of issues to fetch per page when paging Jira search results. | - | - |
+| <a id="options"></a> `options` | `readonly` | `Record`\<`string`, `unknown`\> & \{ `apiToken`: `string`; `columnConfig`: `ColumnConfig`; `defaultIssueType`: `string`; `discordUserIdFieldId`: `string`; `email`: `string`; `jql`: `string`; `maxResults`: `number`; `projectKey`: `string`; `url`: `string`; \} | Provider options bag allowing runtime overrides via plugin configuration. | `ProviderConfig.options` | - |
+| <a id="projectkey"></a> `projectKey?` | `readonly` | `string` | Jira project key for creating issues (e.g., 'PROJ'). | - | - |
+| <a id="type"></a> `type` | `readonly` | `string` | Provider type identifier (e.g., `jira`, `github`). | - | `ProviderConfig.type` |
+| <a id="url"></a> `url?` | `readonly` | `string` | Fully qualified Jira Cloud base URL, e.g., `https://example.atlassian.net`. | - | - |

@@ -1,0 +1,25 @@
+---
+title: "waitForMessage()"
+---
+
+# Function: waitForMessage()
+
+```ts
+function waitForMessage(sessionId, options?): Promise<RecordedAction>
+```
+
+Wait for a message to be sent by the bot
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+| `options`? | \{ `channelId`: `string`; `content`: `string` \| `RegExp`; `timeout`: `number`; \} |
+| `options.channelId`? | `string` |
+| `options.content`? | `string` \| `RegExp` |
+| `options.timeout`? | `number` |
+
+## Returns
+
+`Promise`\<[`RecordedAction`](../interfaces/recorded-action)\>

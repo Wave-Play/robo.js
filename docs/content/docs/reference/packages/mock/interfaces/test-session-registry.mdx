@@ -1,0 +1,17 @@
+---
+title: "TestSessionRegistry"
+---
+
+# Interface: TestSessionRegistry
+
+Registry for a single test run
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="completedat"></a> `completedAt?` | `number` | Timestamp when test run completed |
+| <a id="runid"></a> `runId` | `string` | Unique test run ID |
+| <a id="startedat"></a> `startedAt` | `number` | Timestamp when test run started |
+| <a id="status"></a> `status` | `"error"` \| `"running"` \| `"passed"` \| `"failed"` | Overall status of the test run |
+| <a id="testfiles"></a> `testFiles` | [`TestFileEntry`](test-file-entry)[] | Per-file test results |

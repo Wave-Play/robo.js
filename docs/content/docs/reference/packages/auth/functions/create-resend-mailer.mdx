@@ -1,0 +1,29 @@
+---
+title: "createResendMailer()"
+---
+
+# Function: createResendMailer()
+
+```ts
+function createResendMailer(opts): AuthMailer
+```
+
+Builds an `AuthMailer` implementation backed by the Resend email API.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `opts` | [`ResendMailerOptions`](../type-aliases/resend-mailer-options) | Includes the Resend API key and optional default `from` address. |
+
+## Returns
+
+[`AuthMailer`](../../index/interfaces/auth-mailer)
+
+An `AuthMailer` that lazily imports the Resend SDK.
+
+## Example
+
+```ts
+const mailer = createResendMailer({ apiKey: process.env.RESEND_API_KEY!, from: 'Robo <noreply@example.com>' })
+```

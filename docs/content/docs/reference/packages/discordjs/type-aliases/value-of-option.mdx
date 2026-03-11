@@ -1,0 +1,20 @@
+---
+title: "ValueOfOption<K>"
+---
+
+# Type Alias: ValueOfOption\<K\>
+
+```ts
+type ValueOfOption<K> = TypeNameOfOption<K> extends "string" | "number" | "integer" ? [ChoiceUnionOfOption<K>] extends [never] ? BaseValueOfOption<K> : ChoiceUnionOfOption<K> : BaseValueOfOption<K>;
+```
+
+The final value type for an option `K`.
+- For choosable primitives (`'string' | 'number' | 'integer'`), if choices exist,
+  we replace the base value with the literal union of `choices[].value`.
+- For all other types (user, role, channel, etc.), we keep the base value.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `K` |

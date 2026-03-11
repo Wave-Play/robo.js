@@ -1,0 +1,25 @@
+---
+title: "MockForumChannelConfig"
+---
+
+# Interface: MockForumChannelConfig
+
+Configuration for creating a mock forum channel
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="available_tags"></a> `available_tags?` | `Omit`\<[`MockForumTag`](mock-forum-tag), `"id"`\>[] |
+| <a id="default_auto_archive_duration"></a> `default_auto_archive_duration?` | `60` \| `1440` \| `4320` \| `10080` |
+| <a id="default_forum_layout"></a> `default_forum_layout?` | [`ForumLayoutType`](../enumerations/forum-layout-type) |
+| <a id="default_reaction_emoji"></a> `default_reaction_emoji?` | `null` \| [`MockDefaultReaction`](mock-default-reaction) |
+| <a id="default_sort_order"></a> `default_sort_order?` | `null` \| [`ForumSortOrderType`](../enumerations/forum-sort-order-type) |
+| <a id="default_thread_rate_limit_per_user"></a> `default_thread_rate_limit_per_user?` | `number` |
+| <a id="guildid"></a> `guildId?` | `string` |
+| <a id="id"></a> `id?` | `string` |
+| <a id="name"></a> `name?` | `string` |
+| <a id="parentid"></a> `parentId?` | `null` \| `string` |
+| <a id="template"></a> `template?` | `string` |
+| <a id="topic"></a> `topic?` | `string` |
+| <a id="type"></a> `type?` | `15` \| `16` |

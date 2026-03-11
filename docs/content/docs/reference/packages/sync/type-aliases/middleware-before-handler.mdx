@@ -1,0 +1,31 @@
+---
+title: "MiddlewareBeforeHandler()<T, ClientData>"
+---
+
+# Type Alias: MiddlewareBeforeHandler()\<T, ClientData\>
+
+```ts
+type MiddlewareBeforeHandler<T, ClientData> = (context) => 
+  | MiddlewareResult
+| Promise<MiddlewareResult>;
+```
+
+Middleware 'before' handler.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`SyncMiddlewareContext`](../interfaces/sync-middleware-context)\<`T`, `ClientData`\> |
+
+## Returns
+
+  \| [`MiddlewareResult`](middleware-result)
+  \| `Promise`\<[`MiddlewareResult`](middleware-result)\>

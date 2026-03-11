@@ -1,0 +1,44 @@
+---
+title: "MockForumChannel"
+---
+
+# Interface: MockForumChannel
+
+Forum channel data (type 15) or Media channel data (type 16)
+
+## See
+
+https://discord.com/developers/docs/resources/channel#channel-object-channel-structure
+
+## Extends
+
+- [`MockChannel`](mock-channel)
+
+## Properties
+
+| Property | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="available_tags"></a> `available_tags` | [`MockForumTag`](mock-forum-tag)[] | - | - | - |
+| <a id="bitrate"></a> `bitrate?` | `number` | - | - | [`MockChannel`](mock-channel).[`bitrate`](mock-channel#bitrate) |
+| <a id="default_auto_archive_duration"></a> `default_auto_archive_duration?` | `60` \| `1440` \| `4320` \| `10080` | - | - | - |
+| <a id="default_forum_layout"></a> `default_forum_layout?` | [`ForumLayoutType`](../enumerations/forum-layout-type) | - | - | - |
+| <a id="default_reaction_emoji"></a> `default_reaction_emoji?` | `null` \| [`MockDefaultReaction`](mock-default-reaction) | - | - | - |
+| <a id="default_sort_order"></a> `default_sort_order?` | `null` \| [`ForumSortOrderType`](../enumerations/forum-sort-order-type) | - | - | - |
+| <a id="default_thread_rate_limit_per_user"></a> `default_thread_rate_limit_per_user?` | `number` | - | - | - |
+| <a id="defaultautoarchiveduration"></a> `defaultAutoArchiveDuration?` | `number` | - | - | [`MockChannel`](mock-channel).[`defaultAutoArchiveDuration`](mock-channel#defaultautoarchiveduration) |
+| <a id="guildid"></a> `guildId?` | `string` | - | - | [`MockChannel`](mock-channel).[`guildId`](mock-channel#guildid) |
+| <a id="id"></a> `id` | `string` | - | - | [`MockChannel`](mock-channel).[`id`](mock-channel#id) |
+| <a id="name"></a> `name` | `string` | - | - | [`MockChannel`](mock-channel).[`name`](mock-channel#name) |
+| <a id="nsfw"></a> `nsfw?` | `boolean` | - | - | [`MockChannel`](mock-channel).[`nsfw`](mock-channel#nsfw) |
+| <a id="parentid"></a> `parentId?` | `null` \| `string` | - | - | [`MockChannel`](mock-channel).[`parentId`](mock-channel#parentid) |
+| <a id="permissionoverwrites"></a> `permissionOverwrites?` | [`MockChannelOverwrite`](mock-channel-overwrite)[] | - | - | [`MockChannel`](mock-channel).[`permissionOverwrites`](mock-channel#permissionoverwrites) |
+| <a id="position"></a> `position?` | `number` | - | - | [`MockChannel`](mock-channel).[`position`](mock-channel#position) |
+| <a id="ratelimitperuser"></a> `rateLimitPerUser?` | `number` | - | - | [`MockChannel`](mock-channel).[`rateLimitPerUser`](mock-channel#ratelimitperuser) |
+| <a id="recipientids"></a> `recipientIds?` | `string`[] | For DM channels: IDs of the users in this DM (always 2 for regular DMs) | - | [`MockChannel`](mock-channel).[`recipientIds`](mock-channel#recipientids) |
+| <a id="rtcregion"></a> `rtcRegion?` | `null` \| `string` | - | - | [`MockChannel`](mock-channel).[`rtcRegion`](mock-channel#rtcregion) |
+| <a id="status"></a> `status?` | `null` \| `string` | - | - | [`MockChannel`](mock-channel).[`status`](mock-channel#status) |
+| <a id="template"></a> `template?` | `string` | - | - | - |
+| <a id="topic"></a> `topic?` | `string` | - | [`MockChannel`](mock-channel).[`topic`](mock-channel#topic) | - |
+| <a id="type"></a> `type` | `15` \| `16` | - | [`MockChannel`](mock-channel).[`type`](mock-channel#type) | - |
+| <a id="userlimit"></a> `userLimit?` | `number` | - | - | [`MockChannel`](mock-channel).[`userLimit`](mock-channel#userlimit) |
+| <a id="videoqualitymode"></a> `videoQualityMode?` | `null` \| `number` | - | - | [`MockChannel`](mock-channel).[`videoQualityMode`](mock-channel#videoqualitymode) |

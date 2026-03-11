@@ -1,0 +1,39 @@
+---
+title: "LevelDownEvent"
+---
+
+# Interface: LevelDownEvent
+
+Event emitted when a user levels down (XP loss)
+
+ All fields are read-only event data
+
+## Remarks
+
+The storeId field identifies which data store triggered this event. Role removal
+(when removeRewardOnXpLoss is enabled) only processes events from the default store
+to avoid conflicts.
+
+## Example
+
+```ts
+{
+ *   guildId: '123456789012345678',
+ *   userId: '234567890123456789',
+ *   storeId: 'default',
+ *   oldLevel: 5,
+ *   newLevel: 4,
+ *   totalXp: 1200
+ * }
+```
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="guildid"></a> `guildId` | `readonly` | `string` | Guild where level down occurred |
+| <a id="newlevel"></a> `newLevel` | `readonly` | `number` | New level (always \< oldLevel) |
+| <a id="oldlevel"></a> `oldLevel` | `readonly` | `number` | Previous level |
+| <a id="storeid"></a> `storeId` | `readonly` | `string` | Store identifier that triggered this event |
+| <a id="totalxp"></a> `totalXp` | `readonly` | `number` | Total XP after level down |
+| <a id="userid"></a> `userId` | `readonly` | `string` | User who leveled down |

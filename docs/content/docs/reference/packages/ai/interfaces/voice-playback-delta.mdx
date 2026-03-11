@@ -1,0 +1,18 @@
+---
+title: "VoicePlaybackDelta"
+---
+
+# Interface: VoicePlaybackDelta
+
+Delta describing audio playback data streamed to the caller.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channels"></a> `channels` | `number` | Number of channels contained in the audio chunk. |
+| <a id="data"></a> `data` | `Buffer` | Audio payload encoded as specified by [VoicePlaybackDelta.encoding](voice-playback-delta#encoding). |
+| <a id="encoding"></a> `encoding` | `"pcm16"` \| `"opus"` | Encoding of the playback data. |
+| <a id="isfinal"></a> `isFinal` | `boolean` | Indicates whether this is the final chunk for the response. |
+| <a id="samplerate"></a> `sampleRate` | `number` | Sample rate of the playback chunk. |
+| <a id="timestamp"></a> `timestamp` | `number` | Timestamp (ms) establishing playback ordering. |

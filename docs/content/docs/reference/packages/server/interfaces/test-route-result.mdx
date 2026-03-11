@@ -1,0 +1,69 @@
+---
+title: "TestRouteResult"
+---
+
+# Interface: TestRouteResult
+
+Result type for route testing that includes both Response and convenience methods
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="ok"></a> `ok` | `boolean` | Whether response status is 2xx |
+| <a id="response"></a> `response` | `Response` | The raw Response object |
+| <a id="status"></a> `status` | `number` | Response status code |
+
+## Methods
+
+### header()
+
+```ts
+header(name): string
+```
+
+Get a response header value
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+`string`
+
+***
+
+### json()
+
+```ts
+json<T>(): Promise<T>
+```
+
+Parse response body as JSON
+
+#### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### text()
+
+```ts
+text(): Promise<string>
+```
+
+Get response body as text
+
+#### Returns
+
+`Promise`\<`string`\>

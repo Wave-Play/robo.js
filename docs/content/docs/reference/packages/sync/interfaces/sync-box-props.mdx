@@ -1,0 +1,31 @@
+---
+title: "SyncBoxProps<T, ClientData>"
+---
+
+# Interface: SyncBoxProps\<T, ClientData\>
+
+Props for SyncBox component.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="as"></a> `as?` | `null` \| keyof IntrinsicElements \| `ComponentType`\<`unknown`\> | Element type to render (default: 'div', null for no wrapper) |
+| <a id="children"></a> `children?` | \| `ReactNode` \| [`SyncBoxRenderFunction`](../type-aliases/sync-box-render-function)\<`T`, `ClientData`\> | Children to render - can be ReactNode or render function |
+| <a id="classname"></a> `className?` | `string` | CSS class name for wrapper element |
+| <a id="id"></a> `id` | (`null` \| `string`)[] | Key suffix (combined with zone prefix) |
+| <a id="initialstate"></a> `initialState?` | `T` | Initial state value |
+| <a id="interpolate"></a> `interpolate?` | [`InterpolateConfig`](../type-aliases/interpolate-config)\<`T`\> | Interpolation config for smooth remote updates (field -\> lerp factor 0-1) |
+| <a id="lockable"></a> `lockable?` | `boolean` | Enable lockable mode for exclusive ownership |
+| <a id="onconflict"></a> `onConflict?` | (`localState`: `T`, `remoteState`: `T`) =\> `T` | Conflict resolution callback when remote update arrives during local changes |
+| <a id="onstatechange"></a> `onStateChange?` | (`state`: `T`, `prevState`: `undefined` \| `T`) =\> `void` | Callback when synced state changes |
+| <a id="onsyncstatuschange"></a> `onSyncStatusChange?` | (`status`: [`SyncStatus`](sync-status)) =\> `void` | Callback when sync status changes |
+| <a id="style"></a> `style?` | `CSSProperties` | CSS styles for wrapper element |
+| <a id="throttle"></a> `throttle?` | [`ThrottleConfig`](../type-aliases/throttle-config)\<`T`\> | Throttle setState calls - number (ms) or per-field config |

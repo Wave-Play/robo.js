@@ -1,0 +1,85 @@
+---
+title: "SyncBox()"
+---
+
+# Function: SyncBox()
+
+```ts
+function SyncBox<T, ClientData>(props): ReactElement<any, string | JSXElementConstructor<any>>
+```
+
+A synced container component that synchronizes arbitrary state across clients.
+
+SyncBox is general-purpose - apps define their own logic for what to sync
+(position, rotation, custom game state, etc.) and how to use it.
+
+Features:
+- Automatic zone prefix inheritance (works with SyncZone)
+- Imperative API via ref (getState, setState, getSyncStatus)
+- Render props support with setState passed directly
+- Lockable mode for exclusive ownership
+- Interpolation for smooth remote updates
+- Per-field or global throttling
+- Optimistic updates with conflict resolution
+- Optional wrapper element (as=\{null\} for none)
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `props` | [`SyncBoxProps`](../interfaces/sync-box-props)\<`T`, `ClientData`\> & \{ `ref`: `ForwardedRef`\<[`SyncBoxHandle`](../interfaces/sync-box-handle)\<`T`\>\>; \} |
+
+## Returns
+
+`ReactElement`\<`any`, `string` \| `JSXElementConstructor`\<`any`\>\>
+
+## Examples
+
+```ts
+// With lockable (automatic ownership tracking)
+<SyncBox id={['ball']} initialState={{ x: 0, y: 0 }} lockable>
+  {(state, setState, status, context, lock) => (
+    <div
+      onMouseDown={() => lock?.lock()}
+      onMouseUp={() => lock?.unlock()}
+      style={{ cursor: lock?.isLocked ? (lock.isLockHolder ? 'grabbing' : 'not-allowed') : 'grab' }}
+    />
+  )}
+</SyncBox>
+```
+
+```ts
+// With interpolation for smooth movement
+<SyncBox
+  id={['cursor']}
+  initialState={{ x: 0.5, y: 0.5 }}
+  interpolate={{ x: 0.15, y: 0.15 }}
+>
+  {(state) => <Cursor x={state?.x} y={state?.y} />}
+</SyncBox>
+```
+
+```ts
+// With optimistic updates
+<SyncBox id={['counter']} initialState={{ count: 0 }}>
+  {(state, setState) => (
+    <button onClick={() => setState({ count: (state?.count ?? 0) + 1 }, { optimistic: true })}>
+      {state?.count}
+    </button>
+  )}
+</SyncBox>
+```
+
+```ts
+// No wrapper element
+<SyncBox as={null} id={['data']} initialState={{ value: '' }}>
+  {(state, setState) => <input value={state?.value} onChange={e => setState({ value: e.target.value })} />}
+</SyncBox>
+```

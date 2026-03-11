@@ -1,0 +1,19 @@
+---
+title: "TokenSummaryQuery"
+---
+
+# Interface: TokenSummaryQuery
+
+Parameters controlling usage summary retrieval.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="cursor"></a> `cursor?` | `string` | Pagination cursor returned from prior results. |
+| <a id="limit"></a> `limit?` | `number` | Maximum number of rows to return (1-500). |
+| <a id="model"></a> `model?` | `string` | Filter results to a specific model. |
+| <a id="range"></a> `range?` | \{ `from`: `number`; `to`: `number`; \} | Timestamp range filter (milliseconds). |
+| `range.from?` | `number` | Inclusive lower bound timestamp. |
+| `range.to?` | `number` | Inclusive upper bound timestamp. |
+| <a id="window"></a> `window?` | [`TokenWindow`](../type-aliases/token-window) | Window to aggregate by; defaults to `day`. |

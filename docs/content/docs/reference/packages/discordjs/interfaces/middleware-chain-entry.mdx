@@ -1,0 +1,16 @@
+---
+title: "MiddlewareChainEntry"
+---
+
+# Interface: MiddlewareChainEntry
+
+Middleware chain entry with handler and metadata.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="enabled"></a> `enabled` | `boolean` | Whether middleware is enabled |
+| <a id="handler"></a> `handler` | [`MiddlewareHandler`](../type-aliases/middleware-handler) | Middleware handler function |
+| <a id="key"></a> `key` | `string` | Middleware key |
+| <a id="order"></a> `order` | `number` | Execution order |

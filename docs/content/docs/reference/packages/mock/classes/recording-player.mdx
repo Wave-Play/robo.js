@@ -1,0 +1,165 @@
+---
+title: "RecordingPlayer"
+---
+
+# Class: RecordingPlayer
+
+RecordingPlayer - Replays recorded sessions with timing and validation
+
+Designed for UI compatibility with real-time state updates.
+
+## Constructors
+
+### new RecordingPlayer()
+
+```ts
+new RecordingPlayer(recording): RecordingPlayer
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `recording` | [`SessionRecording`](../interfaces/session-recording) |
+
+#### Returns
+
+[`RecordingPlayer`](recording-player)
+
+## Methods
+
+### getState()
+
+```ts
+getState(): ReplayState
+```
+
+Get current playback state (for UI binding)
+
+#### Returns
+
+[`ReplayState`](../interfaces/replay-state)
+
+***
+
+### pause()
+
+```ts
+pause(): void
+```
+
+Pause playback
+
+#### Returns
+
+`void`
+
+***
+
+### play()
+
+```ts
+play(session, options?): Promise<ReplayResult>
+```
+
+Play the recording into a session
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `session` | [`Session`](session) |
+| `options`? | [`ReplayOptions`](../interfaces/replay-options) |
+
+#### Returns
+
+`Promise`\<[`ReplayResult`](../interfaces/replay-result)\>
+
+***
+
+### resume()
+
+```ts
+resume(): void
+```
+
+Resume playback
+
+#### Returns
+
+`void`
+
+***
+
+### seek()
+
+```ts
+seek(timeMs): void
+```
+
+Seek to a specific time in the recording
+Note: This only updates the state, actual seeking happens on next play
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `timeMs` | `number` |
+
+#### Returns
+
+`void`
+
+***
+
+### setSpeed()
+
+```ts
+setSpeed(speed): void
+```
+
+Change playback speed
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `speed` | `number` |
+
+#### Returns
+
+`void`
+
+***
+
+### stop()
+
+```ts
+stop(): void
+```
+
+Stop playback
+
+#### Returns
+
+`void`
+
+***
+
+### loadFromFile()
+
+```ts
+static loadFromFile(filePath): Promise<SessionRecording>
+```
+
+Load a recording from a JSON file
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `filePath` | `string` |
+
+#### Returns
+
+`Promise`\<[`SessionRecording`](../interfaces/session-recording)\>

@@ -1,0 +1,17 @@
+---
+title: "ExactContextConfig<C>"
+---
+
+# Type Alias: ExactContextConfig\<C\>
+
+```ts
+type ExactContextConfig<C> = { [K in keyof C]: K extends keyof ContextConfig ? C[K] : never };
+```
+
+Ensures the config only contains valid ContextConfig properties.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`ContextConfig`](../interfaces/context-config) |

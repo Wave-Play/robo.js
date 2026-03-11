@@ -1,0 +1,26 @@
+---
+title: "getChannelMessages()"
+---
+
+# Function: getChannelMessages()
+
+```ts
+function getChannelMessages(
+   sessionId, 
+   channelId, 
+limit): Promise<MockMessage[]>
+```
+
+Get messages from a channel
+
+## Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | `undefined` |
+| `channelId` | `string` | `undefined` |
+| `limit` | `number` | `50` |
+
+## Returns
+
+`Promise`\<[`MockMessage`](../interfaces/mock-message)[]\>

@@ -1,0 +1,22 @@
+---
+title: "SessionConfig"
+---
+
+# Interface: SessionConfig
+
+Configuration for session initial state
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="applicationid"></a> `applicationId?` | `string` | - |
+| <a id="approvedprivilegedintents"></a> `approvedPrivilegedIntents?` | `bigint` | Privileged intents that are "approved" for this session. Only relevant when enforceIntents is true. Default: All privileged intents approved (for ease of testing) Use bigint values from GatewayIntentBits: - GuildMembers (1 \<\< 1) - GuildPresences (1 \<\< 8) - MessageContent (1 \<\< 15) |
+| <a id="botuser"></a> `botUser?` | [`MockUserConfig`](mock-user-config) | - |
+| <a id="commands"></a> `commands?` | `MockApplicationCommandConfig`[] | Commands to seed in the session (for Stage UI testing) |
+| <a id="enforceintents"></a> `enforceIntents?` | `boolean` | Whether to filter events based on declared intents. - false (default): All events sent regardless of intents - true: Events filtered by declared intents, MESSAGE_CONTENT stripped Useful for testing that your bot declares correct intents. |
+| <a id="guilds"></a> `guilds?` | [`MockGuildConfig`](mock-guild-config)[] | - |
+| <a id="maxactions"></a> `maxActions?` | `number` | Maximum number of recorded actions before LRU eviction (default: 10000) |
+| <a id="maxlogs"></a> `maxLogs?` | `number` | Maximum number of recorded logs before LRU eviction (default: 10000) |
+| <a id="permissionenforcement"></a> `permissionEnforcement?` | `"none"` \| `"basic"` \| `"strict"` | Permission enforcement level for REST API calls. - 'none' (default): All actions succeed regardless of permissions - 'basic': Simple permission checks (requires the permission) - 'strict': Full Discord-accurate logic with hierarchy, context, owner bypass Useful for testing permission error handling in your bot. |
+| <a id="users"></a> `users?` | [`MockUserConfig`](mock-user-config)[] | - |

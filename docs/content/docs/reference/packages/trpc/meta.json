@@ -1,0 +1,10 @@
+{
+  "title": "@robojs/trpc",
+  "pages": [
+    "index",
+    "---Interfaces---",
+    "interfaces/context",
+    "---Functions---",
+    "functions/trpc-provider"
+  ]
+}

@@ -1,0 +1,39 @@
+---
+title: "DiscordjsAggregatedMetadata"
+---
+
+# Interface: DiscordjsAggregatedMetadata
+
+Aggregated Discord metadata with full traceability.
+Combines requirements from project + plugins.
+
+## Extends
+
+- `AggregatedMetadata`
+
+## Properties
+
+| Property | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="intents"></a> `intents` | \{ `byHandler`: `Record`\<`string`, `string`[]\>; `bySource`: `Record`\<`string`, \{ `explicit`: `string`[]; `inferred`: `string`[]; \}\>; `optional`: `string`[]; `required`: `string`[]; \} | Required gateway intents. | - | - |
+| `intents.byHandler` | `Record`\<`string`, `string`[]\> | Map of intent name to handler paths that require it | - | - |
+| `intents.bySource` | `Record`\<`string`, \{ `explicit`: `string`[]; `inferred`: `string`[]; \}\> | Breakdown by source (project or plugin name) | - | - |
+| `intents.optional` | `string`[] | Intents that are recommended but not required | - | - |
+| `intents.required` | `string`[] | Intents that must be enabled | - | - |
+| <a id="namespace"></a> `namespace` | `"discordjs"` | Namespace this metadata belongs to | `AggregatedMetadata.namespace` | - |
+| <a id="permissions"></a> `permissions` | \{ `bot`: `string`[]; `byHandler`: `Record`\<`string`, `string`[]\>; `bySource`: `Record`\<`string`, `string`[]\>; \} | Required bot permissions. | - | - |
+| `permissions.bot` | `string`[] | All permissions the bot needs | - | - |
+| `permissions.byHandler` | `Record`\<`string`, `string`[]\> | Map of permission to handler paths that require it | - | - |
+| `permissions.bySource` | `Record`\<`string`, `string`[]\> | Breakdown by source | - | - |
+| <a id="registration"></a> `registration` | \{ `commands`: \{ `bySource`: `Record`\<`string`, `number`\>; `total`: `number`; \}; `contextMenus`: \{ `bySource`: `Record`\<`string`, `number`\>; `total`: `number`; \}; \} | Registration statistics. | - | - |
+| `registration.commands` | \{ `bySource`: `Record`\<`string`, `number`\>; `total`: `number`; \} | Slash command counts | - | - |
+| `registration.commands.bySource` | `Record`\<`string`, `number`\> | - | - | - |
+| `registration.commands.total` | `number` | - | - | - |
+| `registration.contextMenus` | \{ `bySource`: `Record`\<`string`, `number`\>; `total`: `number`; \} | Context menu counts | - | - |
+| `registration.contextMenus.bySource` | `Record`\<`string`, `number`\> | - | - | - |
+| `registration.contextMenus.total` | `number` | - | - | - |
+| <a id="scopes"></a> `scopes` | \{ `bySource`: `Record`\<`string`, `string`[]\>; `optional`: `string`[]; `required`: `string`[]; \} | Required OAuth scopes. | - | - |
+| `scopes.bySource` | `Record`\<`string`, `string`[]\> | Breakdown by source | - | - |
+| `scopes.optional` | `string`[] | Optional scopes | - | - |
+| `scopes.required` | `string`[] | Required scopes | - | - |
+| <a id="sources"></a> `sources` | `string`[] | Sources that contributed to this metadata | - | `AggregatedMetadata.sources` |

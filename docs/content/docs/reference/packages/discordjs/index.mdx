@@ -1,0 +1,126 @@
+---
+title: "DIRECTORY"
+description: "API reference for @robojs/discordjs"
+---
+
+# @robojs/discordjs
+
+API reference documentation for `@robojs/discordjs`.
+
+## Interfaces
+
+- [`AggregatedPermissions`](interfaces/aggregated-permissions) - Aggregated permission information for a command.
+- [`BaseConfig`](interfaces/base-config) - Base configuration shared by all handler types.
+- [`CommandConfig`](interfaces/command-config) - Command configuration options.
+- [`CommandController`](interfaces/command-controller) - Command controller for portal.discordjs.command().
+- [`CommandDefaults`](interfaces/command-defaults) - Default command/context menu configuration.
+- [`CommandEntry`](interfaces/command-entry) - Command entry in manifest (includes subcommands).
+- [`Command`](interfaces/command) - Command module structure expected in handler files.
+- [`CommandsNamespaceController`](interfaces/commands-namespace-controller) - Namespace controller for portal.discord.commands.
+- [`ContextConfig`](interfaces/context-config) - Context menu configuration options.
+- [`ContextController`](interfaces/context-controller) - Context menu controller for portal.discordjs.context().
+- [`ContextNamespaceController`](interfaces/context-namespace-controller) - Namespace controller for portal.discordjs.context.
+- [`Context`](interfaces/context) - Context menu module structure expected in handler files.
+- [`DiscordConfig`](interfaces/discord-config) - Discord plugin configuration.
+- [`DiscordPortalNamespace`](interfaces/discord-portal-namespace) - Discord namespace on the portal.
+- [`DiscordjsAggregatedMetadata`](interfaces/discordjs-aggregated-metadata) - Aggregated Discord metadata with full traceability.
+- [`EventConfig`](interfaces/event-config) - Event configuration options.
+- [`EventController`](interfaces/event-controller) - Event controller for portal.discord.event().
+- [`Event`](interfaces/event) - Event module structure expected in handler files.
+- [`EventsNamespaceController`](interfaces/events-namespace-controller) - Namespace controller for portal.discord.events.
+- [`MiddlewareChainEntry`](interfaces/middleware-chain-entry) - Middleware chain entry with handler and metadata.
+- [`MiddlewareConfig`](interfaces/middleware-config) - Middleware configuration options.
+- [`MiddlewareController`](interfaces/middleware-controller) - Middleware controller for portal.discord.middleware().
+- [`MiddlewareData`](interfaces/middleware-data) - Middleware data passed to handler.
+- [`MiddlewareNamespaceController`](interfaces/middleware-namespace-controller) - Namespace controller for portal.discord.middleware.
+- [`MiddlewareResult`](interfaces/middleware-result) - Middleware result that can abort or modify processing.
+- [`Middleware`](interfaces/middleware) - Middleware module structure expected in handler files.
+- [`PluginState`](interfaces/plugin-state) - Plugin state interface for internal storage.
+- [`RegisterCommandsOptions`](interfaces/register-commands-options) - Options for command registration.
+- [`RetryEntry`](interfaces/retry-entry) - Retry tracking entry for telemetry/debugging.
+- [`SageOptions`](interfaces/sage-options) - Sage (auto-defer/reply) options for commands and context menus.
+- [`TimeoutConfig`](interfaces/timeout-config) - Timeout configuration for various operations.
+
+## Type Aliases
+
+- [`AutocompleteHandler`](type-aliases/autocomplete-handler) - Autocomplete handler function type.
+- [`BaseValueOfOption`](type-aliases/base-value-of-option) - Maps an option's discriminant type to its runtime value via `CommandOptionTypes`.
+- [`ChoiceUnionOfOption`](type-aliases/choice-union-of-option) - For an option `K`, produces a union of all `choices[].value` literals.
+- [`ChoiceValueOf`](type-aliases/choice-value-of) - Extracts the literal `value` type from a single choice entry.
+- [`CommandContext`](type-aliases/command-context) - Interaction context types.
+- [`CommandHandler`](type-aliases/command-handler) - Command handler function type.
+- [`CommandIntegrationType`](type-aliases/command-integration-type) - Integration/installation types.
+- [`CommandOptionTypes`](type-aliases/command-option-types) - Map of option type names to their resolved TypeScript types.
+- [`CommandOption`](type-aliases/command-option) - Command option with discriminated union for channel type.
+- [`CommandOptions`](type-aliases/command-options) - Infer options type from command config.
+- [`CommandResult`](type-aliases/command-result) - Command result type (what can be returned from a command).
+- [`ContextEntry`](type-aliases/context-entry) - Context menu entry in manifest.
+- [`ContextHandler`](type-aliases/context-handler) - Generic context handler (either user or message).
+- [`ContextTypeValue`](type-aliases/context-type-value)
+- [`DiscordEventName`](type-aliases/discord-event-name) - Discord.js event names.
+- [`EnforceConfig`](type-aliases/enforce-config) - Enforces that no extra properties exist beyond CommandConfig.
+- [`EnforceContextConfig`](type-aliases/enforce-context-config) - Enforces that no extra properties exist beyond ContextConfig.
+- [`EventEntry`](type-aliases/event-entry) - Event entry in manifest.
+- [`EventHandler`](type-aliases/event-handler) - Event handler function type.
+- [`ExactConfig`](type-aliases/exact-config) - Ensures the config only contains valid CommandConfig properties.
+- [`ExactContextConfig`](type-aliases/exact-context-config) - Ensures the config only contains valid ContextConfig properties.
+- [`MessageContextHandler`](type-aliases/message-context-handler) - Context menu handler function type (message context).
+- [`MiddlewareEntry`](type-aliases/middleware-entry) - Middleware entry in manifest.
+- [`MiddlewareHandler`](type-aliases/middleware-handler) - Middleware handler function type.
+- [`SmartCommandConfig`](type-aliases/smart-command-config) - Smart command config type that enables TypeScript to infer option types.
+- [`SmartContextConfig`](type-aliases/smart-context-config) - Smart context config type that enables TypeScript validation.
+- [`TypeNameOfOption`](type-aliases/type-name-of-option) - Gets the discriminant "type name" of an option `K`.
+- [`UserContextHandler`](type-aliases/user-context-handler) - Context menu handler function type (user context).
+- [`ValueOfOption`](type-aliases/value-of-option) - The final value type for an option `K`.
+
+## Functions
+
+- [`AddOptionToCommandBuilder`](functions/add-option-to-command-builder) - Add an option to a command or subcommand builder.
+- [`AggregateCommandPermissions`](functions/aggregate-command-permissions) - Aggregate permissions from command entries.
+- [`AggregateContextPermissions`](functions/aggregate-context-permissions) - Aggregate permissions from context menu entries.
+- [`BuildContextCommands`](functions/build-context-commands) - Build context menu commands for Discord API.
+- [`BuildSlashCommands`](functions/build-slash-commands) - Build slash commands for Discord API.
+- [`CheckIntents`](functions/check-intents) - Check if the client has the required intents for registered events.
+- [`CombinePermissions`](functions/combine-permissions) - Combine multiple permission bitfields.
+- [`CreateCommandConfig`](functions/create-command-config) - Creates a command configuration with proper type inference.
+- [`CreateCommandsNamespaceController`](functions/create-commands-namespace-controller) - Create a namespace controller for commands.
+- [`CreateContextConfig`](functions/create-context-config) - Creates a context menu configuration with proper type validation.
+- [`CreateContextNamespaceController`](functions/create-context-namespace-controller) - Create a namespace controller for context menus.
+- [`CreateEventsNamespaceController`](functions/create-events-namespace-controller) - Create a namespace controller for events.
+- [`CreateMiddlewareNamespaceController`](functions/create-middleware-namespace-controller) - Create a namespace controller for middleware.
+- [`ExecuteAutocompleteHandler`](functions/execute-autocomplete-handler) - Execute an autocomplete handler.
+- [`ExecuteCommandHandler`](functions/execute-command-handler) - Execute a slash command handler.
+- [`ExecuteContextHandler`](functions/execute-context-handler) - Execute a context menu handler.
+- [`ExecuteEventHandler`](functions/execute-event-handler) - Execute all handlers for an event.
+- [`ExtractCommandOptions`](functions/extract-command-options) - Extract command options from a Discord interaction.
+- [`FindCommandDifferences`](functions/find-command-differences) - Find differences between old and new command sets.
+- [`GetClient`](functions/get-client) - Get the Discord client instance.
+- [`GetCommandKey`](functions/get-command-key) - Get the command key from an interaction (including subcommands).
+- [`GetContextType`](functions/get-context-type) - Convert CommandContext to InteractionContextType.
+- [`GetEffectivePermissions`](functions/get-effective-permissions) - Get effective permissions for a command in a specific guild.
+- [`GetIntegrationType`](functions/get-integration-type) - Convert CommandIntegrationType to ApplicationIntegrationType.
+- [`GetIntentNames`](functions/get-intent-names) - Get intent names from a set of intent bits.
+- [`GetMissingPermissions`](functions/get-missing-permissions) - Get missing permissions for a user.
+- [`GetPermissionNames`](functions/get-permission-names) - Get permission names from a bitfield.
+- [`GetSage`](functions/get-sage) - Get effective Sage options from command config and plugin config.
+- [`HandleInteraction`](functions/handle-interaction) - Handle an incoming Discord interaction.
+- [`HasClient`](functions/has-client) - Check if the Discord client is initialized.
+- [`HasRequiredPermissions`](functions/has-required-permissions) - Validate that a user has the required permissions for a command.
+- [`InferIntents`](functions/infer-intents) - Infer required intents from a list of event names.
+- [`RegisterCommandsToDiscord`](functions/register-commands-to-discord) - Register commands with Discord API.
+- [`RegisterCommands`](functions/register-commands) - High-level command registration function.
+- [`SetGuildPermissionOverride`](functions/set-guild-permission-override) - Set a guild-specific permission override for a command.
+- [`ValidateIntents`](functions/validate-intents) - Validate that all required intents are present for given events.
+
+## Variables
+
+- [`Commands`](variables/commands) - Namespace controller for commands - access all commands, execute programmatically.
+- [`ContextType`](variables/context-type) - Discord ApplicationCommandType values for context menus.
+- [`Context`](variables/context) - Namespace controller for context menus - access all context menus.
+- [`DiscordLogger`](variables/discord-logger) - Plugin-wide logger instance.
+- [`Events`](variables/events) - Namespace controller for events - access all events, emit programmatically.
+- [`Flashcore_key_command_hash_prefix`](variables/flashcore_key_command_hash_prefix) - Flashcore key prefix for caching command hashes.
+- [`Flashcore_key_command_register_error`](variables/flashcore_key_command_register_error) - Flashcore key for tracking command registration errors.
+- [`Middleware`](variables/middleware) - Namespace controller for middleware - access middleware chain.
+- [`Permission_flags`](variables/permission_flags) - Map of permission names to their bitfield values.
+- [`Required_intents`](variables/required_intents) - Mapping of Discord event names to their required gateway intents.

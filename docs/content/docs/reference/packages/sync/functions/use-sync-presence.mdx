@@ -1,0 +1,51 @@
+---
+title: "useSyncPresence()"
+---
+
+# Function: useSyncPresence()
+
+```ts
+function useSyncPresence<T, ClientData>(key, options?): PresenceResult<T, ClientData>
+```
+
+Hook for tracking participant presence with arbitrary metadata.
+
+Provides a simple way to track who's connected and their current status,
+activity, or any custom presence data.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | (`null` \| `string`)[] |
+| `options`? | [`PresenceOptions`](../interfaces/presence-options)\<`T`\> |
+
+## Returns
+
+[`PresenceResult`](../interfaces/presence-result)\<`T`, `ClientData`\>
+
+## Example
+
+```ts
+const { participants, updatePresence } = useSyncPresence(['room', odId], {
+  initialPresence: { status: 'online', activity: 'idle' }
+})
+
+// Update your presence
+updatePresence({ activity: 'typing' })
+
+// Render participants
+{participants.map((p) => (
+  <div key={p.clientId}>
+    {p.user.data?.name} - {p.presence.status}
+    {p.isStale && ' (away)'}
+  </div>
+))}
+```

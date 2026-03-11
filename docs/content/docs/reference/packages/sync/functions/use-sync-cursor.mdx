@@ -1,0 +1,60 @@
+---
+title: "useSyncCursor()"
+---
+
+# Function: useSyncCursor()
+
+```ts
+function useSyncCursor<ClientData>(key, options?): CursorResult<ClientData>
+```
+
+Hook for tracking and broadcasting cursor positions in real-time.
+
+Optimized to avoid rerenders for your own cursor movement - only remote
+cursor changes trigger React state updates.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | (`null` \| `string`)[] |
+| `options`? | [`CursorOptions`](../interfaces/cursor-options) |
+
+## Returns
+
+[`CursorResult`](../interfaces/cursor-result)\<`ClientData`\>
+
+## Examples
+
+```ts
+// Manual tracking (default) - you control when to update
+const { remoteCursors, updatePosition } = useSyncCursor(['room', odId])
+
+useEffect(() => {
+  const handleMove = (e: MouseEvent) => {
+    updatePosition({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight })
+  }
+  window.addEventListener('mousemove', handleMove)
+  return () => window.removeEventListener('mousemove', handleMove)
+}, [updatePosition])
+```
+
+```ts
+// Auto tracking - cursor position is tracked automatically
+const { remoteCursors } = useSyncCursor(['room', odId], { autoTrack: true })
+```
+
+```ts
+// Render only remote cursors (your cursor is handled by the browser)
+{remoteCursors.map((cursor) => (
+  <div key={cursor.clientId} style={{ left: cursor.position.x * 100 + '%', top: cursor.position.y * 100 + '%' }}>
+    {cursor.user.data?.name}
+  </div>
+))}
+```

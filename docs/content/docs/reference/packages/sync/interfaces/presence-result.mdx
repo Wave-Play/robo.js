@@ -1,0 +1,24 @@
+---
+title: "PresenceResult<T, ClientData>"
+---
+
+# Interface: PresenceResult\<T, ClientData\>
+
+Result returned by useSyncPresence hook.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | - |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="clientid"></a> `clientId` | `string` | Current client's ID |
+| <a id="context"></a> `context` | [`SyncContext`](sync-context)\<`ClientData`\> | Full sync context for advanced usage |
+| <a id="ishost"></a> `isHost` | `boolean` | Whether current client is host |
+| <a id="participants"></a> `participants` | [`Participant`](participant)\<`T`, `ClientData`\>[] | Array of all participants with their presence data |
+| <a id="updatepresence"></a> `updatePresence` | (`update`: `Partial`\<`T`\> \| (`prev`) =\> `T`) =\> `void` | Update the current client's presence data |

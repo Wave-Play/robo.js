@@ -1,0 +1,170 @@
+---
+title: "SessionManager"
+---
+
+# Class: SessionManager
+
+Manages session lifecycle and storage
+
+## Constructors
+
+### new SessionManager()
+
+```ts
+new SessionManager(options?): SessionManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`SessionManagerOptions`](../interfaces/session-manager-options) |
+
+#### Returns
+
+[`SessionManager`](session-manager)
+
+## Accessors
+
+### size
+
+#### Get Signature
+
+```ts
+get size(): number
+```
+
+Get the number of active sessions
+
+##### Returns
+
+`number`
+
+## Methods
+
+### create()
+
+```ts
+create(options?): Promise<Session>
+```
+
+Create a new isolated session
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`CreateSessionOptions`](../interfaces/create-session-options) |
+
+#### Returns
+
+`Promise`\<[`Session`](session)\>
+
+***
+
+### delete()
+
+```ts
+delete(sessionId): Promise<boolean>
+```
+
+Delete a session
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### destroy()
+
+```ts
+destroy(): Promise<void>
+```
+
+Destroy the session manager and clean up all resources
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### findSessionByInteractionToken()
+
+```ts
+findSessionByInteractionToken(token): undefined | Session
+```
+
+Find a session containing an interaction with the given token
+Used by interaction callback endpoint to route responses to correct session
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+
+#### Returns
+
+`undefined` \| [`Session`](session)
+
+***
+
+### get()
+
+```ts
+get(sessionId): undefined | Session
+```
+
+Get a session by ID
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `sessionId` | `string` |
+
+#### Returns
+
+`undefined` \| [`Session`](session)
+
+***
+
+### getAll()
+
+```ts
+getAll(): Session[]
+```
+
+Get all active sessions
+
+#### Returns
+
+[`Session`](session)[]
+
+***
+
+### getByToken()
+
+```ts
+getByToken(token): undefined | Session
+```
+
+Get a session by token (parses "mock:\<session_id\>" format)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+
+#### Returns
+
+`undefined` \| [`Session`](session)

@@ -1,0 +1,29 @@
+---
+title: "BaseConfig"
+---
+
+# Interface: BaseConfig
+
+Base configuration shared by all handler types.
+
+## Extended by
+
+- [`CommandConfig`](command-config)
+- [`EventConfig`](event-config)
+- [`ContextConfig`](context-config)
+- [`MiddlewareConfig`](middleware-config)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="__auto"></a> `__auto?` | `true` | Internal: auto-generated handler marker |
+| <a id="__module"></a> `__module?` | `string` | Internal: module name |
+| <a id="__path"></a> `__path?` | `string` | Internal: file path |
+| <a id="__plugin"></a> `__plugin?` | \{ `name`: `string`; `path`: `string`; \} | Internal: plugin info |
+| `__plugin.name` | `string` | - |
+| `__plugin.path` | `string` | - |
+| <a id="description"></a> `description?` | `string` | Handler description |
+| <a id="disabled"></a> `disabled?` | `boolean` | Whether the handler is disabled |
+| <a id="serveronly"></a> `serverOnly?` | `string` \| `string`[] | Restrict to specific server IDs |
+| <a id="timeout"></a> `timeout?` | `number` | Execution timeout in milliseconds |

@@ -1,0 +1,35 @@
+---
+title: "mockRestAPI()"
+---
+
+# Function: mockRestAPI()
+
+```ts
+function mockRestAPI<T>(
+   token, 
+   endpoint, 
+options): Promise<T>
+```
+
+Make a request to the mock server REST API
+Useful for testing API endpoints directly
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `token` | `string` |
+| `endpoint` | `string` |
+| `options` | \{ `body`: `unknown`; `method`: `"GET"` \| `"POST"` \| `"PUT"` \| `"DELETE"` \| `"PATCH"`; \} |
+| `options.body`? | `unknown` |
+| `options.method`? | `"GET"` \| `"POST"` \| `"PUT"` \| `"DELETE"` \| `"PATCH"` |
+
+## Returns
+
+`Promise`\<`T`\>

@@ -1,0 +1,21 @@
+---
+title: "DispatchAutocompleteOptions"
+---
+
+# Interface: DispatchAutocompleteOptions
+
+Options for dispatching an autocomplete interaction
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channelid"></a> `channelId?` | `string` | Channel ID (auto-resolved if not provided) |
+| <a id="commandname"></a> `commandName` | `string` | Command name being typed |
+| <a id="focusedoption"></a> `focusedOption` | \{ `name`: `string`; `type`: `number`; `value`: `string`; \} | The option being autocompleted (must have focused: true) |
+| `focusedOption.name` | `string` | - |
+| `focusedOption.type?` | `number` | Option type (3=STRING, 4=INTEGER, 10=NUMBER) - defaults to STRING |
+| `focusedOption.value` | `string` | Current partial value user has typed |
+| <a id="guildid"></a> `guildId?` | `string` | Guild ID (auto-resolved if not provided) |
+| <a id="options"></a> `options?` | `Record`\<`string`, `string` \| `number` \| `boolean`\> | Other options already filled in (optional) |
+| <a id="user"></a> `user?` | [`MockUserConfig`](mock-user-config) | User triggering autocomplete |

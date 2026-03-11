@@ -1,0 +1,20 @@
+---
+title: "TokenUsageEntry"
+---
+
+# Interface: TokenUsageEntry
+
+Individual token usage record persisted to Flashcore.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="createdat"></a> `createdAt` | `number` | Timestamp (ms) when the usage occurred. |
+| <a id="id"></a> `id` | `string` | Unique identifier assigned to the usage entry. |
+| <a id="kind"></a> `kind?` | `string` | Optional usage category describing the request. |
+| <a id="metadata"></a> `metadata?` | `Record`\<`string`, `unknown`\> | Optional metadata for downstream analytics. |
+| <a id="model"></a> `model` | `string` | Model for which tokens were consumed. |
+| <a id="tokensin"></a> `tokensIn` | `number` | Number of prompt tokens recorded. |
+| <a id="tokensout"></a> `tokensOut` | `number` | Number of completion tokens recorded. |
+| <a id="total"></a> `total` | `number` | Combined total tokens. |

@@ -1,0 +1,25 @@
+---
+title: "SyncUpdateContext<T, ClientData>"
+---
+
+# Interface: SyncUpdateContext\<T, ClientData\>
+
+Context passed to validation and transform handlers.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="cleankey"></a> `cleanKey` | `string` | The normalized key string |
+| <a id="client"></a> `client` | [`HandlerClient`](handler-client)\<`ClientData`\> | The client making the update |
+| <a id="key"></a> `key` | `string`[] | The full key array |
+| <a id="newstate"></a> `newState` | `T` | The new state being set |
+| <a id="oldstate"></a> `oldState` | `undefined` \| `T` | The previous state (may be undefined for first update) |
+| <a id="params"></a> `params` | `Record`\<`string`, `string`\> | Dynamic route parameters extracted from key (e.g., \{ roomId: '123' \}) |

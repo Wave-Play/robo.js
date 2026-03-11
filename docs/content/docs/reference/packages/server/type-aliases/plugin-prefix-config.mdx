@@ -1,0 +1,39 @@
+---
+title: "PluginPrefixConfig"
+---
+
+# Type Alias: PluginPrefixConfig
+
+```ts
+type PluginPrefixConfig = 
+  | string
+  | {
+  api: string | false;
+  exclusive: boolean;
+  static: string | false;
+};
+```
+
+Plugin prefix configuration - supports both simple string and granular object.
+
+Examples:
+- `'/mock'` - Both API and static under /mock/* (exclusive by default)
+- `{ api: '/mock-api', static: '/mock-static' }` - Separate prefixes
+- `{ api: '/other', static: false }` - API prefixed, static at root
+- `{ api: '/mock', exclusive: false }` - Both prefixed and non-prefixed routes work
+
+## Type declaration
+
+`string`
+
+\{
+  `api`: `string` \| `false`;
+  `exclusive`: `boolean`;
+  `static`: `string` \| `false`;
+ \}
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| `api`? | `string` \| `false` | - |
+| `exclusive`? | `boolean` | Whether routes are ONLY accessible via the prefix (default: true). - `true`: Only `/mock/api/health` works, `/api/health` returns 404 - `false`: Both `/mock/api/health` and `/api/health` work |
+| `static`? | `string` \| `false` | - |

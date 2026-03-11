@@ -1,0 +1,453 @@
+---
+title: "abstract RoadmapProvider<TConfig>"
+---
+
+# Class: `abstract` RoadmapProvider\<TConfig\>
+
+Base class for roadmap data providers (Jira, GitHub Projects, Linear).
+
+## Remarks
+
+Extend this class to integrate external project management systems with the roadmap plugin.
+Implement the abstract methods to fetch cards, columns, and provider metadata.
+
+## Example
+
+```ts
+export class JiraRoadmapProvider extends RoadmapProvider<JiraProviderConfig> {
+  public async fetchCards(): Promise<RoadmapCard[]> {
+    // Fetch and map Jira issues to RoadmapCard
+    return [];
+  }
+
+  public async getColumns() {
+    return [{ id: 'todo', name: 'To Do', order: 0 }];
+  }
+}
+```
+
+## Extended by
+
+- [`JiraProvider`](jira-provider)
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TConfig` *extends* [`ProviderConfig`](../type-aliases/provider-config) | [`ProviderConfig`](../type-aliases/provider-config) |
+
+## Constructors
+
+### new RoadmapProvider()
+
+```ts
+protected new RoadmapProvider<TConfig>(config): RoadmapProvider<TConfig>
+```
+
+Creates a new roadmap provider instance with the supplied configuration.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `config` | `TConfig` | Provider specific configuration object. |
+
+#### Returns
+
+[`RoadmapProvider`](roadmap-provider)\<`TConfig`\>
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="config-1"></a> `config` | `readonly` | `TConfig` | Provider specific configuration object. |
+
+## Methods
+
+### createCard()
+
+```ts
+abstract createCard(input): Promise<CreateCardResult>
+```
+
+Creates a new card in the external provider system.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `input` | [`CreateCardInput`](../type-aliases/create-card-input) | Card data (title, description, column, labels, etc.). |
+
+#### Returns
+
+`Promise`\<[`CreateCardResult`](../type-aliases/create-card-result)\>
+
+Result containing the created card and success status.
+
+#### Throws
+
+Authentication, validation, or network errors.
+
+#### Example
+
+```ts
+public async createCard(input: CreateCardInput): Promise<CreateCardResult> {
+  const issue = await this.client.createIssue({
+    summary: input.title,
+    description: input.description,
+  });
+  return { card: this.mapIssueToCard(issue), success: true };
+}
+```
+
+***
+
+### fetchCards()
+
+```ts
+abstract fetchCards(): Promise<readonly RoadmapCard[]>
+```
+
+Fetches all roadmap cards from the provider.
+
+#### Returns
+
+`Promise`\<readonly [`RoadmapCard`](../type-aliases/roadmap-card)[]\>
+
+Array of roadmap cards.
+
+***
+
+### fetchCardsByDateRange()?
+
+```ts
+optional fetchCardsByDateRange(filter): Promise<readonly RoadmapCard[]>
+```
+
+Optional method to fetch cards filtered by date range (useful for reporting and activity analysis).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `filter` | [`DateRangeFilter`](../type-aliases/date-range-filter) | Date range filter with optional startDate, endDate, and dateField. |
+
+#### Returns
+
+`Promise`\<readonly [`RoadmapCard`](../type-aliases/roadmap-card)[]\>
+
+Cards matching the date criteria, ordered by date descending (most recent first).
+
+#### Example
+
+```ts
+public async fetchCardsByDateRange(filter: DateRangeFilter): Promise<readonly RoadmapCard[]> {
+  const jql = this.buildDateRangeJql(filter);
+  const issues = await this.searchIssues(jql);
+  return issues.map(this.mapIssueToCard);
+}
+```
+
+***
+
+### getCard()
+
+```ts
+abstract getCard(cardId): Promise<null | RoadmapCard>
+```
+
+Retrieves a single card by its provider-specific ID (e.g., Jira issue key 'PROJ-123').
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `cardId` | `string` | Provider-specific identifier. |
+
+#### Returns
+
+`Promise`\<`null` \| [`RoadmapCard`](../type-aliases/roadmap-card)\>
+
+Card if found, null if not found.
+
+#### Throws
+
+Authentication or network errors (not for missing cards).
+
+#### Example
+
+```ts
+public async getCard(cardId: string): Promise<RoadmapCard | null> {
+  try {
+    const issue = await this.client.getIssue(cardId);
+    return this.mapIssueToCard(issue);
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
+  }
+}
+```
+
+***
+
+### getColumns()
+
+```ts
+abstract getColumns(): Promise<readonly RoadmapColumn[]>
+```
+
+Retrieves the available roadmap columns.
+
+#### Returns
+
+`Promise`\<readonly [`RoadmapColumn`](../type-aliases/roadmap-column)[]\>
+
+Array of column definitions.
+
+#### Example
+
+```ts
+public async getColumns() {
+  return [
+    { id: 'backlog', name: 'Backlog', order: 0, archived: false },
+    { id: 'done', name: 'Done', order: 3, archived: true },
+  ];
+}
+```
+
+***
+
+### getIssueTypes()
+
+```ts
+abstract getIssueTypes(): Promise<readonly string[]>
+```
+
+Retrieves available issue types for card creation (e.g., 'Task', 'Story', 'Bug').
+
+#### Returns
+
+`Promise`\<readonly `string`[]\>
+
+Array of issue type names.
+
+#### Example
+
+```ts
+public async getIssueTypes(): Promise<readonly string[]> {
+  return ['Task', 'Story', 'Bug', 'Epic'];
+}
+```
+
+***
+
+### getLabels()
+
+```ts
+abstract getLabels(): Promise<readonly string[]>
+```
+
+Retrieves available labels for card categorization (e.g., 'bug', 'enhancement').
+
+#### Returns
+
+`Promise`\<readonly `string`[]\>
+
+Array of label names.
+
+#### Example
+
+```ts
+public async getLabels(): Promise<readonly string[]> {
+  return ['bug', 'enhancement', 'feature'];
+}
+```
+
+***
+
+### getProviderInfo()
+
+```ts
+abstract getProviderInfo(): Promise<ProviderInfo>
+```
+
+Returns provider metadata (name, version, capabilities) for diagnostics and logging.
+
+#### Returns
+
+`Promise`\<[`ProviderInfo`](../type-aliases/provider-info)\>
+
+Provider information.
+
+#### Example
+
+```ts
+public async getProviderInfo() {
+  return {
+    name: 'GitHub Projects',
+    version: '0.1.0',
+    capabilities: ['cards', 'columns'],
+  };
+}
+```
+
+***
+
+### getStatusMapping()?
+
+```ts
+optional getStatusMapping(): undefined | Record<string, null | string>
+```
+
+Optional method to get the status-to-column mapping for this provider.
+
+#### Returns
+
+`undefined` \| `Record`\<`string`, `null` \| `string`\>
+
+Record mapping provider status names to column names (or null for no forum).
+Returns undefined if no custom mapping is configured (uses default behavior).
+
+#### Remarks
+
+This method allows providers to expose their configured status mappings.
+If not implemented, the provider's default mapping logic is used.
+
+#### Example
+
+```ts
+public getStatusMapping(): Record<string, string | null> | undefined {
+  return this.config.options?.statusMapping;
+}
+```
+
+***
+
+### init()
+
+```ts
+init(): Promise<void>
+```
+
+Optional initialization hook called before the first sync. Default implementation is a no-op.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Example
+
+```ts
+public override async init() {
+  await this.client.authenticate();
+}
+```
+
+***
+
+### resolveColumn()
+
+```ts
+resolveColumn(status, guildMapping?): undefined | null | string
+```
+
+Resolves the target column for a given provider status, checking guild overrides first.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `status` | `string` | The provider status name to map. |
+| `guildMapping`? | `Record`\<`string`, `null` \| `string`\> | Optional guild-specific column mapping overrides. |
+
+#### Returns
+
+`undefined` \| `null` \| `string`
+
+The column name to map to, or null if the status should be tracked without a forum, or undefined if no mapping found (use default).
+
+#### Remarks
+
+This helper checks guild-specific column mappings first (runtime overrides),
+then falls back to provider-level mappings. Returns undefined if no mapping is found,
+indicating the provider should use its default mapping logic.
+
+#### Example
+
+```ts
+const guildMapping = getColumnMapping(guildId);
+const column = this.resolveColumn('In Progress', guildMapping);
+// Returns 'In Progress', null, or undefined
+```
+
+***
+
+### updateCard()
+
+```ts
+abstract updateCard(cardId, input): Promise<UpdateCardResult>
+```
+
+Updates an existing card (partial update - only provided fields are changed).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `cardId` | `string` | Provider-specific identifier. |
+| `input` | [`UpdateCardInput`](../type-aliases/update-card-input) | Partial card data to update. |
+
+#### Returns
+
+`Promise`\<[`UpdateCardResult`](../type-aliases/update-card-result)\>
+
+Result containing the updated card and success status.
+
+#### Throws
+
+Authentication, validation, not found, or network errors.
+
+#### Example
+
+```ts
+public async updateCard(cardId: string, input: UpdateCardInput): Promise<UpdateCardResult> {
+  const fields: Record<string, unknown> = {};
+  if (input.title) fields.summary = input.title;
+  if (input.description) fields.description = input.description;
+
+  await this.client.updateIssue(cardId, { fields });
+  const card = await this.getCard(cardId);
+
+  return { card: card!, success: true };
+}
+```
+
+***
+
+### validateConfig()
+
+```ts
+validateConfig(_config): boolean
+```
+
+Validates provider-specific configuration. Default implementation returns true.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `_config` | `TConfig` | Configuration to validate (defaults to instance config). |
+
+#### Returns
+
+`boolean`
+
+Whether the configuration is valid.
+
+#### Example
+
+```ts
+public override validateConfig(config = this.config) {
+  return Boolean(config.options?.apiToken);
+}
+```

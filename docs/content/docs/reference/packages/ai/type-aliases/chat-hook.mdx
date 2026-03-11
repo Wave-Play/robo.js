@@ -1,0 +1,24 @@
+---
+title: "ChatHook()"
+---
+
+# Type Alias: ChatHook()
+
+```ts
+type ChatHook = (context) => 
+  | Promise<void | ChatMessage[]>
+  | void
+  | ChatMessage[];
+```
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`ChatHookContext`](../interfaces/chat-hook-context) |
+
+## Returns
+
+  \| `Promise`\<`void` \| [`ChatMessage`](../interfaces/chat-message)[]\>
+  \| `void`
+  \| [`ChatMessage`](../interfaces/chat-message)[]

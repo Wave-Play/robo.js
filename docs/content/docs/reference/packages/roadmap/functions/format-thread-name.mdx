@@ -1,0 +1,44 @@
+---
+title: "formatThreadName()"
+---
+
+# Function: formatThreadName()
+
+```ts
+function formatThreadName(card, guildId): string
+```
+
+Formats a roadmap card title for use as a Discord thread name.
+
+Uses a configurable template string from guild settings, supporting placeholders:
+- `{id}` - The card ID (e.g., "ROBO-23")
+- `{title}` - The card title
+
+If no template is provided or it's empty, uses just the card title.
+Handles Discord's 100 character limit by truncating the title portion while
+preserving the template structure.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `card` | [`RoadmapCard`](../type-aliases/roadmap-card) | The roadmap card to format. |
+| `guildId` | `string` | The Discord guild ID for looking up settings. |
+
+## Returns
+
+`string`
+
+Formatted thread name respecting Discord's 100 character limit.
+
+## Example
+
+```ts
+const threadName = formatThreadName(card, guildId);
+// With threadTitleTemplate: "[{id}] {title}"
+// Returns: "[ROBO-23] Lorem ipsum"
+// With threadTitleTemplate: "{id} - {title}"
+// Returns: "ROBO-23 - Lorem ipsum"
+// With no template or empty string
+// Returns: "Lorem ipsum"
+```

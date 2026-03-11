@@ -1,58 +1,23 @@
 ---
-title: "@robojs/dev"
-description: API reference for the development utilities plugin.
+title: "DIRECTORY"
+description: "API reference for @robojs/dev"
 ---
 
 # @robojs/dev
 
-Development utilities for Robo.js projects.
+API reference documentation for `@robojs/dev`.
 
-<Cards>
-  <Card href="/docs/plugins/dev" title="Plugin Guide" description="Full documentation and usage examples." />
-</Cards>
+## Interfaces
 
-## Main Exports
+- [`DevPluginConfig`](interfaces/dev-plugin-config) - Configuration options for @robojs/dev plugin.
 
-### DevTools
+## Functions
 
-Development utilities for debugging and inspection.
+- [`HandleDebugButton`](functions/handle-debug-button) - Handles debug button interactions.
+- [`PrintErrorResponse`](functions/print-error-response) - Prints an error response to a command or message.
+- [`SendDebugError`](functions/send-debug-error) - Sends a debug error to a configured channel.
 
-```typescript
-import { DevTools } from '@robojs/dev'
+## Variables
 
-// Get Robo state
-const state = DevTools.getState()
-
-// Get registered commands
-const commands = DevTools.getCommands()
-
-// Get active events
-const events = DevTools.getEvents()
-```
-
-## Included Commands
-
-The plugin adds `/dev` subcommands for quick access to development information:
-
-- `/dev state` - View current Robo state
-- `/dev logs` - View recent logs
-- `/dev system` - View system information
-- `/dev commands` - List registered commands
-
-## Configuration
-
-Enable or disable specific dev commands:
-
-```javascript title="config/plugins/robojs/dev.mjs"
-export default {
-  commands: {
-    state: true,
-    logs: true,
-    system: true
-  }
-}
-```
-
-<Cards>
-  <Card href="/docs/plugins/dev" title="Plugin Guide" description="See full configuration options." />
-</Cards>
+- [`Debug_mode`](variables/debug_mode)
+- [`DevLogger`](variables/dev-logger)

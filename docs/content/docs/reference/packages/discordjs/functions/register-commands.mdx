@@ -1,0 +1,51 @@
+---
+title: "registerCommands()"
+---
+
+# Function: registerCommands()
+
+```ts
+function registerCommands(
+   dev, 
+   force, 
+   newCommands, 
+   newMessageContextCommands, 
+   newUserContextCommands, 
+   changedCommands, 
+   addedCommands, 
+   removedCommands, 
+   changedContextCommands, 
+   addedContextCommands, 
+   removedContextCommands, 
+config?): Promise<void>
+```
+
+High-level command registration function.
+
+Handles the full registration workflow including:
+- Loading environment variables
+- Building command structures
+- Logging changes with colors
+- Handling command deletions for removed commands
+- Error handling and user feedback
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `dev` | `boolean` |
+| `force` | `boolean` |
+| `newCommands` | `Record`\<`string`, [`CommandEntry`](../interfaces/command-entry)\> |
+| `newMessageContextCommands` | `Record`\<`string`, [`ContextConfig`](../interfaces/context-config)\> |
+| `newUserContextCommands` | `Record`\<`string`, [`ContextConfig`](../interfaces/context-config)\> |
+| `changedCommands` | `string`[] |
+| `addedCommands` | `string`[] |
+| `removedCommands` | `string`[] |
+| `changedContextCommands` | `string`[] |
+| `addedContextCommands` | `string`[] |
+| `removedContextCommands` | `string`[] |
+| `config`? | [`DiscordConfig`](../interfaces/discord-config) |
+
+## Returns
+
+`Promise`\<`void`\>

@@ -1,0 +1,21 @@
+---
+title: "SyncBroadcastResult<ClientData>"
+---
+
+# Interface: SyncBroadcastResult\<ClientData\>
+
+Result object returned by useSyncBroadcast hook.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="broadcast"></a> `broadcast` | (`payload`: `unknown`) =\> `void` | Send an ephemeral message to all clients in the room |
+| <a id="context"></a> `context` | [`SyncContext`](sync-context)\<`ClientData`\> | The sync context for this key/room |
+| <a id="send"></a> `send` | (`clientId`: `string`, `payload`: `unknown`) =\> `void` | Send an ephemeral message to a specific client |

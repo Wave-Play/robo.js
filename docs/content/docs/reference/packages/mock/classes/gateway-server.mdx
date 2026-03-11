@@ -1,0 +1,257 @@
+---
+title: "GatewayServer"
+---
+
+# Class: GatewayServer
+
+Discord Gateway WebSocket server
+Handles WebSocket connections and sends Gateway protocol messages
+
+## Constructors
+
+### new GatewayServer()
+
+```ts
+new GatewayServer(): GatewayServer
+```
+
+#### Returns
+
+[`GatewayServer`](gateway-server)
+
+## Accessors
+
+### connectionCount
+
+#### Get Signature
+
+```ts
+get connectionCount(): number
+```
+
+Get number of active connections
+
+##### Returns
+
+`number`
+
+## Methods
+
+### clearControlFlags()
+
+```ts
+clearControlFlags(sessionId): void
+```
+
+Clear control flags for a session
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | The session ID |
+
+#### Returns
+
+`void`
+
+***
+
+### close()
+
+```ts
+close(): void
+```
+
+Close all connections and shut down the server
+
+#### Returns
+
+`void`
+
+***
+
+### disconnectSession()
+
+```ts
+disconnectSession(
+   sessionId, 
+   closeCode, 
+   reason?): number
+```
+
+Force disconnect all connections for a session with a specific close code
+Used for testing reconnection handling
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | The session ID to disconnect |
+| `closeCode` | `number` | The WebSocket close code to use |
+| `reason`? | `string` | Optional reason string |
+
+#### Returns
+
+`number`
+
+Number of connections disconnected
+
+***
+
+### dispatchToSession()
+
+```ts
+dispatchToSession(
+   sessionId, 
+   event, 
+   data, 
+   guildId?): number
+```
+
+Dispatch an event to all connections in a session
+Handles intent filtering and sequence number management
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | The session to dispatch to |
+| `event` | `string` | The event name (e.g., "MESSAGE_CREATE") |
+| `data` | `unknown` | The event payload data (without op/s/t wrapper) |
+| `guildId`? | `string` | Optional guild ID for intent filtering |
+
+#### Returns
+
+`number`
+
+Number of connections the event was sent to
+
+***
+
+### getControlFlags()
+
+```ts
+getControlFlags(sessionId): undefined | ConnectionControlFlags
+```
+
+Get control flags for a session
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | The session ID |
+
+#### Returns
+
+`undefined` \| `ConnectionControlFlags`
+
+The control flags, or undefined if none set
+
+***
+
+### getHeartbeatInterval()
+
+```ts
+getHeartbeatInterval(): number
+```
+
+Get the current heartbeat interval
+
+#### Returns
+
+`number`
+
+***
+
+### handleUpgrade()
+
+```ts
+handleUpgrade(
+   req, 
+   socket, 
+   head): void
+```
+
+Handle HTTP upgrade request
+Called by @robojs/server when a WebSocket upgrade is requested
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `req` | `IncomingMessage` |
+| `socket` | `Duplex` |
+| `head` | `Buffer`\<`ArrayBufferLike`\> |
+
+#### Returns
+
+`void`
+
+***
+
+### invalidateSession()
+
+```ts
+invalidateSession(sessionId): boolean
+```
+
+Invalidate a session (clears session data for fresh READY on reconnect)
+Used for testing session invalidation handling
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | The session ID to invalidate |
+
+#### Returns
+
+`boolean`
+
+true if session was invalidated, false if not found
+
+***
+
+### setHeartbeatInterval()
+
+```ts
+setHeartbeatInterval(interval): void
+```
+
+Set the heartbeat interval for new connections (in ms)
+Default is 41250ms (standard Discord interval)
+Use shorter intervals for testing (e.g., 1000ms)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interval` | `number` |
+
+#### Returns
+
+`void`
+
+***
+
+### setStopHeartbeatAcks()
+
+```ts
+setStopHeartbeatAcks(sessionId, stop): void
+```
+
+Set whether to stop sending heartbeat ACKs for a session
+Used for testing heartbeat timeout handling
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionId` | `string` | The session ID to control |
+| `stop` | `boolean` | Whether to stop sending ACKs (true) or resume (false) |
+
+#### Returns
+
+`void`

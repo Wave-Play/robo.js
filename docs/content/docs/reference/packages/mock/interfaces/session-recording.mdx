@@ -1,0 +1,17 @@
+---
+title: "SessionRecording"
+---
+
+# Interface: SessionRecording
+
+Complete session recording with metadata for replay
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="actions"></a> `actions` | [`RecordedAction`](recorded-action)[] | All recorded actions in order |
+| <a id="initialconfig"></a> `initialConfig` | [`SessionConfig`](session-config) | Initial session configuration for replay |
+| <a id="logs"></a> `logs?` | `SessionLogEntry`[] | Captured logs from connected bots (optional, for log replay) |
+| <a id="metadata"></a> `metadata` | [`RecordingMetadata`](recording-metadata) | Metadata about the session |
+| <a id="version"></a> `version` | `1` | Recording format version |

@@ -1,0 +1,36 @@
+---
+title: "InteractionData"
+---
+
+# Interface: InteractionData
+
+Interaction dispatch data
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channel_id"></a> `channel_id?` | `string` | Channel ID (optional) |
+| <a id="data"></a> `data` | \{ `component_type`: `number`; `components`: \{ `components`: \{ `custom_id`: `string`; `type`: `number`; `value`: `string`; \}[]; `type`: `number`; \}[]; `custom_id`: `string`; `name`: `string`; `options`: \{ `focused`: `boolean`; `name`: `string`; `options`: \{ `focused`: `boolean`; `name`: `string`; `type`: `number`; `value`: `unknown`; \}[]; `type`: `number`; `value`: `unknown`; \}[]; `resolved`: `Record`\<`string`, `unknown`\>; `target_id`: `string`; `type`: `number`; `values`: `string`[]; \} | Interaction data |
+| `data.component_type?` | `number` | Component type for MESSAGE_COMPONENT |
+| `data.components?` | \{ `components`: \{ `custom_id`: `string`; `type`: `number`; `value`: `string`; \}[]; `type`: `number`; \}[] | Components for MODAL_SUBMIT |
+| `data.custom_id?` | `string` | Component custom_id for MESSAGE_COMPONENT |
+| `data.name?` | `string` | Command name for APPLICATION_COMMAND |
+| `data.options?` | \{ `focused`: `boolean`; `name`: `string`; `options`: \{ `focused`: `boolean`; `name`: `string`; `type`: `number`; `value`: `unknown`; \}[]; `type`: `number`; `value`: `unknown`; \}[] | Command options |
+| `data.resolved?` | `Record`\<`string`, `unknown`\> | Resolved data (users, members, channels, roles, messages) |
+| `data.target_id?` | `string` | Target ID for context menu commands (USER or MESSAGE) |
+| `data.type?` | `number` | Command type (1 = CHAT_INPUT, 2 = USER, 3 = MESSAGE) |
+| `data.values?` | `string`[] | Values for SELECT_MENU |
+| <a id="guild_id"></a> `guild_id?` | `string` | Guild ID (optional, for guild interactions) |
+| <a id="member"></a> `member?` | \{ `permissions`: `string`; `roles`: `string`[]; `user`: \{ `id`: `string`; `username`: `string`; \}; \} | Guild member who triggered the interaction (optional, for permission-aware dispatches) |
+| `member.permissions?` | `string` | - |
+| `member.roles?` | `string`[] | - |
+| `member.user?` | \{ `id`: `string`; `username`: `string`; \} | - |
+| `member.user.id?` | `string` | - |
+| `member.user.username?` | `string` | - |
+| <a id="message"></a> `message?` | \{ `[key: string]`: `unknown`; `id`: `string`; \} | Message associated with the interaction (for MESSAGE_COMPONENT interactions) |
+| `message.id` | `string` | - |
+| <a id="type"></a> `type` | `number` | Interaction type (2 = APPLICATION_COMMAND, 3 = MESSAGE_COMPONENT, 4 = AUTOCOMPLETE, 5 = MODAL_SUBMIT) |
+| <a id="user"></a> `user?` | \{ `id`: `string`; `username`: `string`; \} | User who triggered the interaction (optional, defaults to current test user). |
+| `user.id?` | `string` | - |
+| `user.username?` | `string` | - |

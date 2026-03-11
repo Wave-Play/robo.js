@@ -1,0 +1,17 @@
+---
+title: "EnforcePermissionsOptions"
+---
+
+# Interface: EnforcePermissionsOptions
+
+Options for enforcing permissions on an endpoint
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="body"></a> `body?` | `unknown` | Request body (for contextual checks like role changes) |
+| <a id="messageauthorid"></a> `messageAuthorId?` | `string` | Author ID of the message (for edit/delete checks) |
+| <a id="messageid"></a> `messageId?` | `string` | Message ID being operated on |
+| <a id="targetroleid"></a> `targetRoleId?` | `string` | Target role ID (for role management) |
+| <a id="targetuserid"></a> `targetUserId?` | `string` | Target user ID (for moderation actions) |

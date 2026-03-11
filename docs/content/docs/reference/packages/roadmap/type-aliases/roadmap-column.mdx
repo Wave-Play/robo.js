@@ -1,0 +1,32 @@
+---
+title: "RoadmapColumn"
+---
+
+# Type Alias: RoadmapColumn
+
+```ts
+type RoadmapColumn = {
+  archived: boolean;
+  createForum: boolean;
+  id: string;
+  name: string;
+  order: number;
+};
+```
+
+Describes a column or lane used to organize roadmap cards.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="archived"></a> `archived` | `boolean` | Signals whether items in this column should be considered archived. |
+| <a id="createforum"></a> `createForum`? | `boolean` | Whether to create a Discord forum channel for this column. If false, cards in this column are tracked but no forum thread is created. Defaults to true unless the column is archived. |
+| <a id="id"></a> `id` | `string` | Provider assigned identifier for the column. |
+| <a id="name"></a> `name` | `string` | Human readable column label. |
+| <a id="order"></a> `order` | `number` | Relative order used for sorting columns from left to right. |
+
+## Remarks
+
+Providers should return all actionable columns so the sync engine can mirror the structure in
+Discord. Archived columns inform downstream logic to hide or store cards without deleting data.

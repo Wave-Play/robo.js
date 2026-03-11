@@ -1,0 +1,38 @@
+---
+title: "registerCommandsToDiscord()"
+---
+
+# Function: registerCommandsToDiscord()
+
+```ts
+function registerCommandsToDiscord(
+   rest, 
+   clientId, 
+   guildId, 
+   commandData, 
+   force, 
+options?): Promise<void>
+```
+
+Register commands with Discord API.
+
+Supports:
+- Entry command detection and re-registration for Discord Activities
+- Retry tracking for telemetry/debugging
+- Configurable timeout
+- Rate limit handling with exponential backoff
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `rest` | `REST` |
+| `clientId` | `string` |
+| `guildId` | `undefined` \| `string` |
+| `commandData` | `unknown`[] |
+| `force` | `boolean` |
+| `options`? | \| `number` \| [`RegisterCommandsOptions`](../interfaces/register-commands-options) |
+
+## Returns
+
+`Promise`\<`void`\>

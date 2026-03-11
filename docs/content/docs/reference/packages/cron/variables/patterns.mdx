@@ -1,191 +1,181 @@
 ---
 title: "Patterns"
-description: "Pre-defined cron patterns for scheduling tasks"
 ---
 
 # Variable: Patterns
 
 ```ts
-const Patterns: object;
+const Patterns: {
+  EVERY_10_HOURS: EVERY_10_HOURS;
+  EVERY_10_MINUTES: EVERY_10_MINUTES;
+  EVERY_10_SECONDS: EVERY_10_SECONDS;
+  EVERY_11_HOURS: EVERY_11_HOURS;
+  EVERY_12_HOURS: EVERY_12_HOURS;
+  EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT: EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT;
+  EVERY_1ST_DAY_OF_MONTH_AT_NOON: EVERY_1ST_DAY_OF_MONTH_AT_NOON;
+  EVERY_2_HOURS: EVERY_2_HOURS;
+  EVERY_2ND_HOUR: EVERY_2ND_HOUR;
+  EVERY_2ND_HOUR_FROM_1AM_THROUGH_11PM: EVERY_2ND_HOUR_FROM_1AM_THROUGH_11PM;
+  EVERY_2ND_MONTH: EVERY_2ND_MONTH;
+  EVERY_3_HOURS: EVERY_3_HOURS;
+  EVERY_30_MINUTES: EVERY_30_MINUTES;
+  EVERY_30_MINUTES_BETWEEN_10AM_AND_7PM: EVERY_30_MINUTES_BETWEEN_10AM_AND_7PM;
+  EVERY_30_MINUTES_BETWEEN_9AM_AND_5PM: EVERY_30_MINUTES_BETWEEN_9AM_AND_5PM;
+  EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM: EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM;
+  EVERY_30_SECONDS: EVERY_30_SECONDS;
+  EVERY_4_HOURS: EVERY_4_HOURS;
+  EVERY_5_HOURS: EVERY_5_HOURS;
+  EVERY_5_MINUTES: EVERY_5_MINUTES;
+  EVERY_5_SECONDS: EVERY_5_SECONDS;
+  EVERY_6_HOURS: EVERY_6_HOURS;
+  EVERY_6_MONTHS: EVERY_6_MONTHS;
+  EVERY_7_HOURS: EVERY_7_HOURS;
+  EVERY_8_HOURS: EVERY_8_HOURS;
+  EVERY_9_HOURS: EVERY_9_HOURS;
+  EVERY_DAY_AT_10AM: EVERY_DAY_AT_10AM;
+  EVERY_DAY_AT_10PM: EVERY_DAY_AT_10PM;
+  EVERY_DAY_AT_11AM: EVERY_DAY_AT_11AM;
+  EVERY_DAY_AT_11PM: EVERY_DAY_AT_11PM;
+  EVERY_DAY_AT_1AM: EVERY_DAY_AT_1AM;
+  EVERY_DAY_AT_1PM: EVERY_DAY_AT_1PM;
+  EVERY_DAY_AT_2AM: EVERY_DAY_AT_2AM;
+  EVERY_DAY_AT_2PM: EVERY_DAY_AT_2PM;
+  EVERY_DAY_AT_3AM: EVERY_DAY_AT_3AM;
+  EVERY_DAY_AT_3PM: EVERY_DAY_AT_3PM;
+  EVERY_DAY_AT_4AM: EVERY_DAY_AT_4AM;
+  EVERY_DAY_AT_4PM: EVERY_DAY_AT_4PM;
+  EVERY_DAY_AT_5AM: EVERY_DAY_AT_5AM;
+  EVERY_DAY_AT_5PM: EVERY_DAY_AT_5PM;
+  EVERY_DAY_AT_6AM: EVERY_DAY_AT_6AM;
+  EVERY_DAY_AT_6PM: EVERY_DAY_AT_6PM;
+  EVERY_DAY_AT_7AM: EVERY_DAY_AT_7AM;
+  EVERY_DAY_AT_7PM: EVERY_DAY_AT_7PM;
+  EVERY_DAY_AT_8AM: EVERY_DAY_AT_8AM;
+  EVERY_DAY_AT_8PM: EVERY_DAY_AT_8PM;
+  EVERY_DAY_AT_9AM: EVERY_DAY_AT_9AM;
+  EVERY_DAY_AT_9PM: EVERY_DAY_AT_9PM;
+  EVERY_DAY_AT_MIDNIGHT: EVERY_DAY_AT_MIDNIGHT;
+  EVERY_DAY_AT_NOON: EVERY_DAY_AT_NOON;
+  EVERY_HOUR: EVERY_HOUR;
+  EVERY_MINUTE: EVERY_MINUTE;
+  EVERY_QUARTER: EVERY_QUARTER;
+  EVERY_SECOND: EVERY_SECOND;
+  EVERY_WEEK: EVERY_WEEK;
+  EVERY_WEEKDAY: EVERY_WEEKDAY;
+  EVERY_WEEKEND: EVERY_WEEKEND;
+  EVERY_YEAR: EVERY_YEAR;
+  FRIDAY: FRIDAY;
+  MONDAY: MONDAY;
+  SATURDAY: SATURDAY;
+  SUNDAY: SUNDAY;
+  THURSDAY: THURSDAY;
+  TUESDAY: TUESDAY;
+  WEDNESAY: WEDNESAY;
+  daily: ConstantExpressions;
+  everyDayAt: string;
+  everyHours: string;
+  everyHoursAt: string;
+  everyMinute: ConstantExpressions;
+  everyMinutes: string;
+  everyQuarter: ConstantExpressions;
+  everySecond: ConstantExpressions;
+  everySenconds: string;
+  everyWeekday: ConstantExpressions;
+  everyWeekdayAt: string;
+  everyWeekend: ConstantExpressions;
+  everyWeekendAt: string;
+  everyWeekOn: string;
+  hourly: ConstantExpressions;
+  monthly: ConstantExpressions;
+  weekly: ConstantExpressions;
+  yearly: ConstantExpressions;
+};
 ```
 
-A collection of pre-defined cron expressions and helper functions to simplify scheduling with the Cron function.
+## Type declaration
 
-## Common Patterns
-
-### Time-Based Patterns
-
-```ts
-// Daily patterns
-EVERY_DAY_AT_MIDNIGHT: '0 0 * * *'
-EVERY_DAY_AT_NOON: '0 12 * * *'
-
-// Hourly patterns
-EVERY_HOUR: '0 0-23/1 * * *'
-EVERY_2_HOURS: '0 0-23/2 * * *'
-EVERY_3_HOURS: '0 0-23/3 * * *'
-EVERY_4_HOURS: '0 0-23/4 * * *'
-EVERY_6_HOURS: '0 0-23/6 * * *'
-EVERY_8_HOURS: '0 0-23/8 * * *'
-EVERY_12_HOURS: '0 0-23/12 * * *'
-
-// Minute patterns
-EVERY_MINUTE: '*/1 * * * *'
-EVERY_5_MINUTES: '0 */5 * * * *'
-EVERY_10_MINUTES: '0 */10 * * * *'
-EVERY_30_MINUTES: '0 */30 * * * *'
-
-// Second patterns
-EVERY_SECOND: '* * * * * *'
-EVERY_5_SECONDS: '*/5 * * * * *'
-EVERY_10_SECONDS: '*/10 * * * * *'
-EVERY_30_SECONDS: '*/30 * * * * *'
-```
-
-### Day-of-Week Patterns
-
-```ts
-// Weekly patterns
-EVERY_WEEK: '0 0 * * 0'
-EVERY_WEEKDAY: '0 0 * * 1-5'
-EVERY_WEEKEND: '0 0 * * 6,0'
-
-// Days of the week
-SUNDAY: 0
-MONDAY: 1
-TUESDAY: 2
-WEDNESDAY: 3
-THURSDAY: 4
-FRIDAY: 5
-SATURDAY: 6
-```
-
-### Other Patterns
-
-```ts
-// Monthly and Yearly
-EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT: '0 0 1 * *'
-EVERY_1ST_DAY_OF_MONTH_AT_NOON: '0 12 1 * *'
-EVERY_QUARTER: '0 0 1 */3 *'
-EVERY_YEAR: '0 0 1 1 *'
-```
-
-## Helper Functions
-
-### daily()
-
-```ts
-daily(): ConstantExpressions
-```
-
-Run the task every day at 00:00
-Alias: EVERY_DAY_AT_MIDNIGHT
-
-#### Returns
-
-`ConstantExpressions`
-
-### hourly()
-
-```ts
-hourly(): ConstantExpressions
-```
-
-Run the task every hour
-Alias: EVERY_HOUR
-
-#### Returns
-
-`ConstantExpressions`
-
-### everyMinute()
-
-```ts
-everyMinute(): ConstantExpressions
-```
-
-Run the task every minute
-Alias: EVERY_MINUTE
-
-#### Returns
-
-`ConstantExpressions`
-
-### everyHours()
-
-```ts
-everyHours(hours = 1): string
-```
-
-Run the task every H hours
-
-#### Parameters
-
-| Parameter | Type | Default | Description |
-| --------- | ---- | ------- | ----------- |
-| `hours` | `number` | `1` | The number of hours between runs |
-
-#### Returns
-
-`string` - A cron expression
-
-### everyMinutes()
-
-```ts
-everyMinutes(minutes = 1): string
-```
-
-Run the task every M minutes
-
-#### Parameters
-
-| Parameter | Type | Default | Description |
-| --------- | ---- | ------- | ----------- |
-| `minutes` | `number` | `1` | The number of minutes between runs |
-
-#### Returns
-
-`string` - A cron expression
-
-### everyWeekOn()
-
-```ts
-everyWeekOn(day, time = '00:00'): string
-```
-
-Run the task at a specific time on a given day of the week.
-
-#### Parameters
-
-| Parameter | Type | Default | Description |
-| --------- | ---- | ------- | ----------- |
-| `day` | `number` | | The day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday) |
-| `time` | `string` | `'00:00'` | The time in 'HH:mm' format (24-hour clock) |
-
-#### Returns
-
-`string` - A cron expression
-
-## Example
-
-```ts
-import { Cron, Patterns } from '@robojs/cron'
-
-// Using pre-defined patterns
-Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, () => {
-  console.log('Running daily task at midnight')
-})
-
-Cron(Patterns.EVERY_30_MINUTES, () => {
-  console.log('Running every 30 minutes')
-})
-
-// Using helper functions
-Cron(Patterns.everyHours(2), () => {
-  console.log('Running every 2 hours')
-})
-
-Cron(Patterns.everyWeekOn(Patterns.MONDAY, '09:00'), () => {
-  console.log('Running every Monday at 9 AM')
-})
-```
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="every_10_hours"></a> `EVERY_10_HOURS` | `EVERY_10_HOURS` | '0 0-23/10 \* \* \*' | - |
+| <a id="every_10_minutes"></a> `EVERY_10_MINUTES` | `EVERY_10_MINUTES` | '0 \*/10 \* \* \* \*' | - |
+| <a id="every_10_seconds"></a> `EVERY_10_SECONDS` | `EVERY_10_SECONDS` | '\*/10 \* \* \* \* \*' | - |
+| <a id="every_11_hours"></a> `EVERY_11_HOURS` | `EVERY_11_HOURS` | '0 0-23/11 \* \* \*' | - |
+| <a id="every_12_hours"></a> `EVERY_12_HOURS` | `EVERY_12_HOURS` | '0 0-23/12 \* \* \*' | - |
+| <a id="every_1st_day_of_month_at_midnight"></a> `EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT` | `EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT` | '0 0 1 \* \*' | - |
+| <a id="every_1st_day_of_month_at_noon"></a> `EVERY_1ST_DAY_OF_MONTH_AT_NOON` | `EVERY_1ST_DAY_OF_MONTH_AT_NOON` | '0 12 1 \* \*' | - |
+| <a id="every_2_hours"></a> `EVERY_2_HOURS` | `EVERY_2_HOURS` | '0 0-23/2 \* \* \*' | - |
+| <a id="every_2nd_hour"></a> `EVERY_2ND_HOUR` | `EVERY_2ND_HOUR` | '0 \*/2 \* \* \*' | - |
+| <a id="every_2nd_hour_from_1am_through_11pm"></a> `EVERY_2ND_HOUR_FROM_1AM_THROUGH_11PM` | `EVERY_2ND_HOUR_FROM_1AM_THROUGH_11PM` | '0 1-23/2 \* \* \*' | - |
+| <a id="every_2nd_month"></a> `EVERY_2ND_MONTH` | `EVERY_2ND_MONTH` | '0 0 1 \*/2 \*' | - |
+| <a id="every_3_hours"></a> `EVERY_3_HOURS` | `EVERY_3_HOURS` | '0 0-23/3 \* \* \*' | - |
+| <a id="every_30_minutes"></a> `EVERY_30_MINUTES` | `EVERY_30_MINUTES` | '0 \*/30 \* \* \* \*' | - |
+| <a id="every_30_minutes_between_10am_and_7pm"></a> `EVERY_30_MINUTES_BETWEEN_10AM_AND_7PM` | `EVERY_30_MINUTES_BETWEEN_10AM_AND_7PM` | '0 \*/30 10-19 \* \* \*' | - |
+| <a id="every_30_minutes_between_9am_and_5pm"></a> `EVERY_30_MINUTES_BETWEEN_9AM_AND_5PM` | `EVERY_30_MINUTES_BETWEEN_9AM_AND_5PM` | '0 \*/30 9-17 \* \* \*' | - |
+| <a id="every_30_minutes_between_9am_and_6pm"></a> `EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM` | `EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM` | '0 \*/30 9-18 \* \* \*' | - |
+| <a id="every_30_seconds"></a> `EVERY_30_SECONDS` | `EVERY_30_SECONDS` | '\*/30 \* \* \* \* \*' | - |
+| <a id="every_4_hours"></a> `EVERY_4_HOURS` | `EVERY_4_HOURS` | '0 0-23/4 \* \* \*' | - |
+| <a id="every_5_hours"></a> `EVERY_5_HOURS` | `EVERY_5_HOURS` | '0 0-23/5 \* \* \*' | - |
+| <a id="every_5_minutes"></a> `EVERY_5_MINUTES` | `EVERY_5_MINUTES` | '0 \*/5 \* \* \* \*' | - |
+| <a id="every_5_seconds"></a> `EVERY_5_SECONDS` | `EVERY_5_SECONDS` | '\*/5 \* \* \* \* \*' | - |
+| <a id="every_6_hours"></a> `EVERY_6_HOURS` | `EVERY_6_HOURS` | '0 0-23/6 \* \* \*' | - |
+| <a id="every_6_months"></a> `EVERY_6_MONTHS` | `EVERY_6_MONTHS` | '0 0 1 \*/6 \*' | - |
+| <a id="every_7_hours"></a> `EVERY_7_HOURS` | `EVERY_7_HOURS` | '0 0-23/7 \* \* \*' | - |
+| <a id="every_8_hours"></a> `EVERY_8_HOURS` | `EVERY_8_HOURS` | '0 0-23/8 \* \* \*' | - |
+| <a id="every_9_hours"></a> `EVERY_9_HOURS` | `EVERY_9_HOURS` | '0 0-23/9 \* \* \*' | - |
+| <a id="every_day_at_10am"></a> `EVERY_DAY_AT_10AM` | `EVERY_DAY_AT_10AM` | '0 10 \* \* \*' | - |
+| <a id="every_day_at_10pm"></a> `EVERY_DAY_AT_10PM` | `EVERY_DAY_AT_10PM` | '0 22 \* \* \*' | - |
+| <a id="every_day_at_11am"></a> `EVERY_DAY_AT_11AM` | `EVERY_DAY_AT_11AM` | '0 11 \* \* \*' | - |
+| <a id="every_day_at_11pm"></a> `EVERY_DAY_AT_11PM` | `EVERY_DAY_AT_11PM` | '0 23 \* \* \*' | - |
+| <a id="every_day_at_1am"></a> `EVERY_DAY_AT_1AM` | `EVERY_DAY_AT_1AM` | '0 01 \* \* \*' | - |
+| <a id="every_day_at_1pm"></a> `EVERY_DAY_AT_1PM` | `EVERY_DAY_AT_1PM` | '0 13 \* \* \*' | - |
+| <a id="every_day_at_2am"></a> `EVERY_DAY_AT_2AM` | `EVERY_DAY_AT_2AM` | '0 02 \* \* \*' | - |
+| <a id="every_day_at_2pm"></a> `EVERY_DAY_AT_2PM` | `EVERY_DAY_AT_2PM` | '0 14 \* \* \*' | - |
+| <a id="every_day_at_3am"></a> `EVERY_DAY_AT_3AM` | `EVERY_DAY_AT_3AM` | '0 03 \* \* \*' | - |
+| <a id="every_day_at_3pm"></a> `EVERY_DAY_AT_3PM` | `EVERY_DAY_AT_3PM` | '0 15 \* \* \*' | - |
+| <a id="every_day_at_4am"></a> `EVERY_DAY_AT_4AM` | `EVERY_DAY_AT_4AM` | '0 04 \* \* \*' | - |
+| <a id="every_day_at_4pm"></a> `EVERY_DAY_AT_4PM` | `EVERY_DAY_AT_4PM` | '0 16 \* \* \*' | - |
+| <a id="every_day_at_5am"></a> `EVERY_DAY_AT_5AM` | `EVERY_DAY_AT_5AM` | '0 05 \* \* \*' | - |
+| <a id="every_day_at_5pm"></a> `EVERY_DAY_AT_5PM` | `EVERY_DAY_AT_5PM` | '0 17 \* \* \*' | - |
+| <a id="every_day_at_6am"></a> `EVERY_DAY_AT_6AM` | `EVERY_DAY_AT_6AM` | '0 06 \* \* \*' | - |
+| <a id="every_day_at_6pm"></a> `EVERY_DAY_AT_6PM` | `EVERY_DAY_AT_6PM` | '0 18 \* \* \*' | - |
+| <a id="every_day_at_7am"></a> `EVERY_DAY_AT_7AM` | `EVERY_DAY_AT_7AM` | '0 07 \* \* \*' | - |
+| <a id="every_day_at_7pm"></a> `EVERY_DAY_AT_7PM` | `EVERY_DAY_AT_7PM` | '0 19 \* \* \*' | - |
+| <a id="every_day_at_8am"></a> `EVERY_DAY_AT_8AM` | `EVERY_DAY_AT_8AM` | '0 08 \* \* \*' | - |
+| <a id="every_day_at_8pm"></a> `EVERY_DAY_AT_8PM` | `EVERY_DAY_AT_8PM` | '0 20 \* \* \*' | - |
+| <a id="every_day_at_9am"></a> `EVERY_DAY_AT_9AM` | `EVERY_DAY_AT_9AM` | '0 09 \* \* \*' | - |
+| <a id="every_day_at_9pm"></a> `EVERY_DAY_AT_9PM` | `EVERY_DAY_AT_9PM` | '0 21 \* \* \*' | - |
+| <a id="every_day_at_midnight"></a> `EVERY_DAY_AT_MIDNIGHT` | `EVERY_DAY_AT_MIDNIGHT` | '0 0 \* \* \*' | - |
+| <a id="every_day_at_noon"></a> `EVERY_DAY_AT_NOON` | `EVERY_DAY_AT_NOON` | '0 12 \* \* \*' | - |
+| <a id="every_hour"></a> `EVERY_HOUR` | `EVERY_HOUR` | '0 0-23/1 \* \* \*' | - |
+| <a id="every_minute"></a> `EVERY_MINUTE` | `EVERY_MINUTE` | '\*/1 \* \* \* \*' | - |
+| <a id="every_quarter"></a> `EVERY_QUARTER` | `EVERY_QUARTER` | '0 0 1 \*/3 \*' | - |
+| <a id="every_second"></a> `EVERY_SECOND` | `EVERY_SECOND` | '\* \* \* \* \* \*' | - |
+| <a id="every_week"></a> `EVERY_WEEK` | `EVERY_WEEK` | '0 0 \* \* 0' | - |
+| <a id="every_weekday"></a> `EVERY_WEEKDAY` | `EVERY_WEEKDAY` | '0 0 \* \* 1-5' | - |
+| <a id="every_weekend"></a> `EVERY_WEEKEND` | `EVERY_WEEKEND` | '0 0 \* \* 6,0' | - |
+| <a id="every_year"></a> `EVERY_YEAR` | `EVERY_YEAR` | '0 0 1 1 \*' | - |
+| <a id="friday"></a> `FRIDAY` | `FRIDAY` | 5 | - |
+| <a id="monday"></a> `MONDAY` | `MONDAY` | 1 | - |
+| <a id="saturday"></a> `SATURDAY` | `SATURDAY` | 6 | - |
+| <a id="sunday"></a> `SUNDAY` | `SUNDAY` | 0 | - |
+| <a id="thursday"></a> `THURSDAY` | `THURSDAY` | 4 | - |
+| <a id="tuesday"></a> `TUESDAY` | `TUESDAY` | 2 | - |
+| <a id="wednesay"></a> `WEDNESAY` | `WEDNESAY` | 3 | - |
+| <a id="daily"></a> `daily()` | `ConstantExpressions` | - | Run the task every day at 00:00 Alias: EVERY_DAY_AT_MIDNIGHT |
+| <a id="everydayat"></a> `everyDayAt()` | `string` | - | Run the task every day at HH:MM |
+| <a id="everyhours"></a> `everyHours()` | `string` | - | Run the task every H hours |
+| <a id="everyhoursat"></a> `everyHoursAt()` | `string` | - | Run the task every H hours at M minutes |
+| <a id="everyminute"></a> `everyMinute()` | `ConstantExpressions` | - | Run the task every minute Alias: EVERY_MINUTE |
+| <a id="everyminutes"></a> `everyMinutes()` | `string` | - | Run the task every M minutes |
+| <a id="everyquarter"></a> `everyQuarter()` | `ConstantExpressions` | - | Run the task every quarter (3 months) Alias: EVERY_QUARTER |
+| <a id="everysecond"></a> `everySecond()` | `ConstantExpressions` | - | Run the task every second Alias: EVERY_SECOND |
+| <a id="everysenconds"></a> `everySenconds()` | `string` | - | Run the task every S seconds |
+| <a id="everyweekday"></a> `everyWeekday()` | `ConstantExpressions` | - | Run the task every day from monday to friday at 00:00 Alias: EVERY_WEEKDAY |
+| <a id="everyweekdayat"></a> `everyWeekdayAt()` | `string` | - | Run the task every day from monday to friday at given time |
+| <a id="everyweekend"></a> `everyWeekend()` | `ConstantExpressions` | - | Run the task on saturday and sunday at 00:00 Alias: EVERY_WEEKDAY |
+| <a id="everyweekendat"></a> `everyWeekendAt()` | `string` | - | Run the task on saturday and sunday at given time |
+| <a id="everyweekon"></a> `everyWeekOn()` | `string` | - | Run the task at a specific time on a given day of the week. |
+| <a id="hourly"></a> `hourly()` | `ConstantExpressions` | - | Run the task every hour Alias: EVERY_HOUR |
+| <a id="monthly"></a> `monthly()` | `ConstantExpressions` | - | Run the task every first day of month at 00:00 Alias: EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT |
+| <a id="weekly"></a> `weekly()` | `ConstantExpressions` | - | Run the task every week on monday at 00:00 Alias: EVERY_WEEK |
+| <a id="yearly"></a> `yearly()` | `ConstantExpressions` | - | Run the task on the first day of every year at 00:00 Alias: EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT |

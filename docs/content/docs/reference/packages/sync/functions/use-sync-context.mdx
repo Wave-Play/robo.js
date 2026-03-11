@@ -1,0 +1,44 @@
+---
+title: "useSyncContext()"
+---
+
+# Function: useSyncContext()
+
+```ts
+function useSyncContext<ClientData>(optionsOrKey, keyIfOptions?): SyncContext<ClientData>
+```
+
+Hook to access the sync context for a given key/room.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `optionsOrKey` | `UseSyncContextOptions`\<`ClientData`\> |
+| `keyIfOptions`? | (`null` \| `string`)[] |
+
+## Returns
+
+[`SyncContext`](../interfaces/sync-context)\<`ClientData`\>
+
+## Examples
+
+```ts
+// Basic usage - get context only
+const ctx = useSyncContext(['game-room'])
+console.log(ctx.clients, ctx.isHost)
+```
+
+```ts
+// With callbacks for connect/disconnect events
+useSyncContext({
+  onConnect: (client) => console.log(client.id, 'joined'),
+  onDisconnect: (client) => console.log(client.id, 'left')
+}, ['game-room'])
+```

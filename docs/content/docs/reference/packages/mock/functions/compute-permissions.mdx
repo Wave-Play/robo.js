@@ -1,0 +1,30 @@
+---
+title: "computePermissions()"
+---
+
+# Function: computePermissions()
+
+```ts
+function computePermissions(
+   member, 
+   channel, 
+   guild, 
+   roles): bigint
+```
+
+Compute permissions for a member in a specific channel
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `member` | [`MockGuildMember`](../interfaces/mock-guild-member) | The guild member |
+| `channel` | [`MockChannel`](../interfaces/mock-channel) | The channel |
+| `guild` | [`MockGuild`](../interfaces/mock-guild) | The guild |
+| `roles` | [`MockRole`](../interfaces/mock-role)[] | All roles in the guild |
+
+## Returns
+
+`bigint`
+
+The computed permission bitfield

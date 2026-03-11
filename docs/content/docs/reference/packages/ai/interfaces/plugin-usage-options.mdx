@@ -1,0 +1,15 @@
+---
+title: "PluginUsageOptions"
+---
+
+# Interface: PluginUsageOptions
+
+Token usage configuration including limit rules and hooks.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="limits"></a> `limits?` | [`TokenLimitConfig`](token-limit-config) | Limit rules to enforce via the token ledger. |
+| <a id="onlimitreached"></a> `onLimitReached?` | (`payload`: [`UsageLimitEvent`](usage-limit-event)) =\> `void` \| `Promise`\<`void`\> | Hook fired when limit breaches occur. |
+| <a id="onrecorded"></a> `onRecorded?` | (`payload`: [`UsageRecordedEvent`](usage-recorded-event)) =\> `void` \| `Promise`\<`void`\> | Hook fired after usage is recorded. |

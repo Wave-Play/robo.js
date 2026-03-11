@@ -1,0 +1,49 @@
+---
+title: "AuthPluginOptions"
+---
+
+# Interface: AuthPluginOptions
+
+Configuration options for the `@robojs/auth` plugin.
+
+Refer to the plugin README for a comprehensive table of options and
+defaults. The CLI applies sane defaults; most fields are optional.
+
+Notable defaults:
+- `basePath`: "/api/auth"
+- `session.maxAge`: 2592000 (30 days)
+- `session.updateAge`: 86400 (24 hours)
+- `session.strategy`: 'database' when an adapter is present, otherwise 'jwt'
+
+Security notes:
+- `allowDangerousEmailAccountLinking` should remain `false` unless all OAuth
+  providers are fully trusted.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="adapter"></a> `adapter?` | `unknown` | Storage adapter for users, sessions, and accounts. **Example** `createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })` |
+| <a id="allowdangerousemailaccountlinking"></a> `allowDangerousEmailAccountLinking?` | `boolean` | ⚠️ Security: automatically link accounts by email across OAuth providers. Only enable if you fully trust every provider to verify email ownership. **Default** `false` |
+| <a id="appname"></a> `appName?` | `string` | Display name for the application. Used in emails and default UI strings. **Default** `"Robo.js"` **Example** `"My Awesome App"` |
+| <a id="basepath"></a> `basePath?` | `string` | Base path for all auth routes. **Default** `"/api/auth"` **Examples** `"/api/auth"` `"/auth"` |
+| <a id="callbacks"></a> `callbacks?` | \{\} | Auth.js callback hooks. |
+| <a id="cookies"></a> `cookies?` | `CookiesOptions` | Cookie overrides for Auth.js cookies. |
+| <a id="debug"></a> `debug?` | `boolean` | Enable verbose Auth.js debug logging. **Default** `false` |
+| <a id="email"></a> `email?` | \{ `deliver`: (...`args`) =\> `any`; `expiresInMinutes`: `number`; `from`: `string`; `sendVerificationRequest`: (...`args`) =\> `any`; `subject`: `string` \| (...`args`) =\> `any`; `template`: `string` \| (...`args`) =\> `any`; `text`: `string` \| (...`args`) =\> `any`; \} | Legacy email configuration (prefer the richer `emails` object). |
+| `email.deliver?` | (...`args`: \[`any`, `...unknown[]`\]) =\> `any` | - |
+| `email.expiresInMinutes?` | `number` | - |
+| `email.from?` | `string` | Sender email address (prefer `emails.from`). |
+| `email.sendVerificationRequest?` | (...`args`: \[`any`, `...unknown[]`\]) =\> `any` | Custom delivery function (prefer `emails.mailer`). |
+| `email.subject?` | `string` \| (...`args`) =\> `any` | - |
+| `email.template?` | `string` \| (...`args`) =\> `any` | HTML template string or function (prefer `emails.templates`). |
+| `email.text?` | `string` \| (...`args`) =\> `any` | - |
+| <a id="emails"></a> `emails?` | [`EmailsOptions`](emails-options) | Email system configuration: mailer, templates, and triggers. |
+| <a id="events"></a> `events?` | \{\} | Auth.js event handlers. |
+| <a id="pages"></a> `pages?` | `PagesOptions` | Custom UI page paths for Auth.js built‑in routes. |
+| <a id="providers"></a> `providers?` | `Provider`[] | Array of authentication providers (OAuth, email, credentials). **Default** `[]` |
+| <a id="redirectproxyurl"></a> `redirectProxyUrl?` | `string` | Proxy URL used on preview deployments to build correct redirects. |
+| <a id="secret"></a> `secret?` | `string` | Secret for JWT signing and token hashing. ⚠️ Security: Required in production. Reads from `AUTH_SECRET` or `NEXTAUTH_SECRET`. **Example** `process.env.AUTH_SECRET` |
+| <a id="session"></a> `session?` | `SessionOptions` | Session strategy and timing controls. **Default** `strategy: adapter ? 'database' : 'jwt', maxAge: 2592000, updateAge: 86400` |
+| <a id="upstream"></a> `upstream?` | `UpstreamOptions` | Forward all auth routes to another Robo instance. **Default** `cookieName: "authjs.session-token"; sessionStrategy falls back to local strategy when omitted` |
+| <a id="url"></a> `url?` | `string` | Canonical app URL used by Auth.js in redirects. |

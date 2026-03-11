@@ -1,0 +1,502 @@
+---
+title: "authPluginOptionsSchema"
+---
+
+# Variable: authPluginOptionsSchema
+
+```ts
+const authPluginOptionsSchema: ZodObject<{
+  adapter: ZodOptional<ZodUnknown>;
+  allowDangerousEmailAccountLinking: ZodOptional<ZodBoolean>;
+  appName: ZodOptional<ZodString>;
+  basePath: ZodOptional<ZodString>;
+  callbacks: ZodOptional<ZodObject<{
+     jwt: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     redirect: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     session: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     signIn: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+    }, "strip", ZodTypeAny, {
+     jwt: (...args) => any;
+     redirect: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+    }, {
+     jwt: (...args) => any;
+     redirect: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+    }>>;
+  cookies: ZodOptional<ZodObject<{
+     callbackUrl: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+     csrfToken: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+     nonce: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+     pkceCodeVerifier: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+     sessionToken: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+     state: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+     webauthnChallenge: ZodOptional<ZodOptional<ZodObject<{
+        name: ZodOptional<ZodString>;
+        options: ZodOptional<ZodAny>;
+       }, "strict", ZodTypeAny, {
+        name: string;
+        options: any;
+       }, {
+        name: string;
+        options: any;
+       }>>>;
+    }, "strip", ZodTypeAny, {
+     callbackUrl: {
+        name: string;
+        options: any;
+       };
+     csrfToken: {
+        name: string;
+        options: any;
+       };
+     nonce: {
+        name: string;
+        options: any;
+       };
+     pkceCodeVerifier: {
+        name: string;
+        options: any;
+       };
+     sessionToken: {
+        name: string;
+        options: any;
+       };
+     state: {
+        name: string;
+        options: any;
+       };
+     webauthnChallenge: {
+        name: string;
+        options: any;
+       };
+    }, {
+     callbackUrl: {
+        name: string;
+        options: any;
+       };
+     csrfToken: {
+        name: string;
+        options: any;
+       };
+     nonce: {
+        name: string;
+        options: any;
+       };
+     pkceCodeVerifier: {
+        name: string;
+        options: any;
+       };
+     sessionToken: {
+        name: string;
+        options: any;
+       };
+     state: {
+        name: string;
+        options: any;
+       };
+     webauthnChallenge: {
+        name: string;
+        options: any;
+       };
+    }>>;
+  debug: ZodOptional<ZodBoolean>;
+  email: ZodOptional<ZodObject<{
+     deliver: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     expiresInMinutes: ZodOptional<ZodOptional<ZodNumber>>;
+     from: ZodOptional<ZodOptional<ZodString>>;
+     sendVerificationRequest: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     subject: ZodOptional<ZodOptional<ZodUnion<[ZodString, ZodFunction<ZodTuple<..., ...>, ZodAny>]>>>;
+     template: ZodOptional<ZodOptional<ZodUnion<[ZodString, ZodFunction<ZodTuple<..., ...>, ZodAny>]>>>;
+     text: ZodOptional<ZodOptional<ZodUnion<[ZodString, ZodFunction<ZodTuple<..., ...>, ZodAny>]>>>;
+    }, "strip", ZodTypeAny, {
+     deliver: (...args) => any;
+     expiresInMinutes: number;
+     from: string;
+     sendVerificationRequest: (...args) => any;
+     subject: string | (...args) => any;
+     template: string | (...args) => any;
+     text: string | (...args) => any;
+    }, {
+     deliver: (...args) => any;
+     expiresInMinutes: number;
+     from: string;
+     sendVerificationRequest: (...args) => any;
+     subject: string | (...args) => any;
+     template: string | (...args) => any;
+     text: string | (...args) => any;
+    }>>;
+  emails: ZodOptional<ZodObject<{
+     from: ZodOptional<ZodOptional<ZodUnion<[ZodString, ZodObject<{
+        address: ...;
+        name: ...;
+       }, "strict", ZodTypeAny, {
+        address: ...;
+        name: ...;
+       }, {
+        address: ...;
+        name: ...;
+       }>]>>>;
+     mailer: ZodOptional<ZodOptional<ZodUnknown>>;
+     templates: ZodOptional<ZodOptional<ZodRecord<ZodString, ZodAny>>>;
+     triggers: ZodOptional<ZodOptional<ZodRecord<ZodString, ZodAny>>>;
+    }, "strip", ZodTypeAny, {
+     from:   | string
+        | {
+        address: string;
+        name: string;
+       };
+     mailer: unknown;
+     templates: Record<string, any>;
+     triggers: Record<string, any>;
+    }, {
+     from:   | string
+        | {
+        address: string;
+        name: string;
+       };
+     mailer: unknown;
+     templates: Record<string, any>;
+     triggers: Record<string, any>;
+    }>>;
+  events: ZodOptional<ZodObject<{
+     createUser: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     linkAccount: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     session: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     signIn: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     signOut: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+     updateUser: ZodOptional<ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>>;
+    }, "strip", ZodTypeAny, {
+     createUser: (...args) => any;
+     linkAccount: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+     signOut: (...args) => any;
+     updateUser: (...args) => any;
+    }, {
+     createUser: (...args) => any;
+     linkAccount: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+     signOut: (...args) => any;
+     updateUser: (...args) => any;
+    }>>;
+  pages: ZodOptional<ZodObject<{
+     error: ZodOptional<ZodOptional<ZodString>>;
+     newUser: ZodOptional<ZodOptional<ZodString>>;
+     signIn: ZodOptional<ZodOptional<ZodString>>;
+     signOut: ZodOptional<ZodOptional<ZodString>>;
+     verifyRequest: ZodOptional<ZodOptional<ZodString>>;
+    }, "strip", ZodTypeAny, {
+     error: string;
+     newUser: string;
+     signIn: string;
+     signOut: string;
+     verifyRequest: string;
+    }, {
+     error: string;
+     newUser: string;
+     signIn: string;
+     signOut: string;
+     verifyRequest: string;
+    }>>;
+  providers: ZodOptional<ZodArray<ZodAny, "many">>;
+  redirectProxyUrl: ZodOptional<ZodString>;
+  secret: ZodOptional<ZodString>;
+  session: ZodOptional<ZodObject<{
+     maxAge: ZodOptional<ZodNumber>;
+     strategy: ZodOptional<ZodEnum<["jwt", "database"]>>;
+     updateAge: ZodOptional<ZodNumber>;
+    }, "strip", ZodTypeAny, {
+     maxAge: number;
+     strategy: "jwt" | "database";
+     updateAge: number;
+    }, {
+     maxAge: number;
+     strategy: "jwt" | "database";
+     updateAge: number;
+    }>>;
+  upstream: ZodOptional<ZodObject<{
+     basePath: ZodOptional<ZodString>;
+     baseUrl: ZodString;
+     cookieName: ZodOptional<ZodString>;
+     fetch: ZodOptional<ZodFunction<ZodTuple<[ZodAny], ZodUnknown>, ZodAny>>;
+     headers: ZodOptional<ZodRecord<ZodString, ZodString>>;
+     secret: ZodOptional<ZodString>;
+     sessionStrategy: ZodOptional<ZodEnum<["jwt", "database"]>>;
+    }, "strict", ZodTypeAny, {
+     basePath: string;
+     baseUrl: string;
+     cookieName: string;
+     fetch: (...args) => any;
+     headers: Record<string, string>;
+     secret: string;
+     sessionStrategy: "jwt" | "database";
+    }, {
+     basePath: string;
+     baseUrl: string;
+     cookieName: string;
+     fetch: (...args) => any;
+     headers: Record<string, string>;
+     secret: string;
+     sessionStrategy: "jwt" | "database";
+    }>>;
+  url: ZodOptional<ZodString>;
+ }, "strict", ZodTypeAny, {
+  adapter: unknown;
+  allowDangerousEmailAccountLinking: boolean;
+  appName: string;
+  basePath: string;
+  callbacks: {
+     jwt: (...args) => any;
+     redirect: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+    };
+  cookies: {
+     callbackUrl: {
+        name: string;
+        options: any;
+       };
+     csrfToken: {
+        name: string;
+        options: any;
+       };
+     nonce: {
+        name: string;
+        options: any;
+       };
+     pkceCodeVerifier: {
+        name: string;
+        options: any;
+       };
+     sessionToken: {
+        name: string;
+        options: any;
+       };
+     state: {
+        name: string;
+        options: any;
+       };
+     webauthnChallenge: {
+        name: string;
+        options: any;
+       };
+    };
+  debug: boolean;
+  email: {
+     deliver: (...args) => any;
+     expiresInMinutes: number;
+     from: string;
+     sendVerificationRequest: (...args) => any;
+     subject: string | (...args) => any;
+     template: string | (...args) => any;
+     text: string | (...args) => any;
+    };
+  emails: {
+     from:   | string
+        | {
+        address: string;
+        name: string;
+       };
+     mailer: unknown;
+     templates: Record<string, any>;
+     triggers: Record<string, any>;
+    };
+  events: {
+     createUser: (...args) => any;
+     linkAccount: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+     signOut: (...args) => any;
+     updateUser: (...args) => any;
+    };
+  pages: {
+     error: string;
+     newUser: string;
+     signIn: string;
+     signOut: string;
+     verifyRequest: string;
+    };
+  providers: any[];
+  redirectProxyUrl: string;
+  secret: string;
+  session: {
+     maxAge: number;
+     strategy: "jwt" | "database";
+     updateAge: number;
+    };
+  upstream: {
+     basePath: string;
+     baseUrl: string;
+     cookieName: string;
+     fetch: (...args) => any;
+     headers: Record<string, string>;
+     secret: string;
+     sessionStrategy: "jwt" | "database";
+    };
+  url: string;
+ }, {
+  adapter: unknown;
+  allowDangerousEmailAccountLinking: boolean;
+  appName: string;
+  basePath: string;
+  callbacks: {
+     jwt: (...args) => any;
+     redirect: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+    };
+  cookies: {
+     callbackUrl: {
+        name: string;
+        options: any;
+       };
+     csrfToken: {
+        name: string;
+        options: any;
+       };
+     nonce: {
+        name: string;
+        options: any;
+       };
+     pkceCodeVerifier: {
+        name: string;
+        options: any;
+       };
+     sessionToken: {
+        name: string;
+        options: any;
+       };
+     state: {
+        name: string;
+        options: any;
+       };
+     webauthnChallenge: {
+        name: string;
+        options: any;
+       };
+    };
+  debug: boolean;
+  email: {
+     deliver: (...args) => any;
+     expiresInMinutes: number;
+     from: string;
+     sendVerificationRequest: (...args) => any;
+     subject: string | (...args) => any;
+     template: string | (...args) => any;
+     text: string | (...args) => any;
+    };
+  emails: {
+     from:   | string
+        | {
+        address: string;
+        name: string;
+       };
+     mailer: unknown;
+     templates: Record<string, any>;
+     triggers: Record<string, any>;
+    };
+  events: {
+     createUser: (...args) => any;
+     linkAccount: (...args) => any;
+     session: (...args) => any;
+     signIn: (...args) => any;
+     signOut: (...args) => any;
+     updateUser: (...args) => any;
+    };
+  pages: {
+     error: string;
+     newUser: string;
+     signIn: string;
+     signOut: string;
+     verifyRequest: string;
+    };
+  providers: any[];
+  redirectProxyUrl: string;
+  secret: string;
+  session: {
+     maxAge: number;
+     strategy: "jwt" | "database";
+     updateAge: number;
+    };
+  upstream: {
+     basePath: string;
+     baseUrl: string;
+     cookieName: string;
+     fetch: (...args) => any;
+     headers: Record<string, string>;
+     secret: string;
+     sessionStrategy: "jwt" | "database";
+    };
+  url: string;
+}>;
+```
+
+Zod schema enforcing the structure of `@robojs/auth` plugin configuration.
+
+## Example
+
+```ts
+const config = authPluginOptionsSchema.parse({ basePath: '/api/auth' })
+```
+
+## See
+
+AuthPluginOptions

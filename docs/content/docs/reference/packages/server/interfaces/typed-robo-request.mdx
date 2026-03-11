@@ -1,0 +1,85 @@
+---
+title: "TypedRoboRequest<TSchema>"
+---
+
+# Interface: TypedRoboRequest\<TSchema\>
+
+Enhanced request with typed accessors based on schema.
+
+CRITICAL: Body is NOT auto-parsed. Call `await request.json()`
+which returns the typed result.
+
+## Extends
+
+- `Omit`\<[`RoboRequest`](../classes/robo-request), `"params"` \| `"query"` \| `"json"` \| `"header"`\>
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TSchema` *extends* [`EndpointSchema`](endpoint-schema) |
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="internals"></a> `[INTERNALS]` | `public` | \{ `params`: `Record`\<`string`, `string`\>; `raw`: `IncomingMessage`; \} | `Omit.[INTERNALS]` |
+| `[INTERNALS].params` | `public` | `Record`\<`string`, `string`\> | - |
+| `[INTERNALS].raw` | `public` | `IncomingMessage` | - |
+| <a id="params"></a> `params` | `readonly` | `TSchema`\[`"params"`\] *extends* `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\> ? `InferSchema`\<`any`\[`any`\]\> : `Record`\<`string`, `string`\> | - |
+| <a id="query"></a> `query` | `readonly` | `TSchema`\[`"query"`\] *extends* `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\> ? `InferSchema`\<`any`\[`any`\]\> : `Record`\<`string`, `string` \| `string`[]\> | - |
+| <a id="raw"></a> `raw` | `public` | `IncomingMessage` | `Omit.raw` |
+
+## Methods
+
+### header()
+
+#### Call Signature
+
+```ts
+header<K>(name): TSchema["headers"] extends ZodObject<Shape, $strip> ? K extends keyof Shape ? Shape[K<K>] extends ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>> ? output<any[any]> : string : string : string
+```
+
+##### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `K` *extends* `string` |
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `K` |
+
+##### Returns
+
+`TSchema`\[`"headers"`\] *extends* `ZodObject`\<`Shape`, `$strip`\> ? `K` *extends* keyof `Shape` ? `Shape`\[`K`\<`K`\>\] *extends* `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\> ? `output`\<`any`\[`any`\]\> : `string` : `string` : `string`
+
+#### Call Signature
+
+```ts
+header(name): string
+```
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+##### Returns
+
+`string`
+
+***
+
+### json()
+
+```ts
+json(): Promise<TSchema["body"] extends ZodType<unknown, unknown, $ZodTypeInternals<unknown, unknown>> ? InferSchema<any[any]> : unknown>
+```
+
+#### Returns
+
+`Promise`\<`TSchema`\[`"body"`\] *extends* `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\> ? `InferSchema`\<`any`\[`any`\]\> : `unknown`\>

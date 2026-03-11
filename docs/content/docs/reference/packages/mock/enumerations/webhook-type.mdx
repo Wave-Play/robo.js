@@ -1,0 +1,19 @@
+---
+title: "WebhookType"
+---
+
+# Enumeration: WebhookType
+
+Webhook type enum
+
+## See
+
+https://discord.com/developers/docs/resources/webhook#webhook-object-webhook-types
+
+## Enumeration Members
+
+| Enumeration Member | Value | Description |
+| ------ | ------ | ------ |
+| <a id="application"></a> `Application` | `3` | Application webhook - used by applications for interactions |
+| <a id="channelfollower"></a> `ChannelFollower` | `2` | Channel Follower webhook - automatically created when following an announcement channel. NOT YET IMPLEMENTED: ChannelFollower webhooks require: - POST /channels/:id/followers endpoint to create them - Announcement channel type (ChannelType.GuildAnnouncement = 5) - Cross-server message forwarding when announcements are published - source_guild and source_channel fields in the webhook object These webhooks are auto-created and managed by Discord, not user-created. The endpoint GET /webhooks/:id will return them, but creation is via following. **See** https://discord.com/developers/docs/resources/channel#follow-announcement-channel |
+| <a id="incoming"></a> `Incoming` | `1` | Incoming webhook - can post messages with custom name/avatar |

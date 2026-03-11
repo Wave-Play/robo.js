@@ -1,0 +1,95 @@
+---
+title: "CommandController"
+---
+
+# Interface: CommandController
+
+Command controller for portal.discordjs.command()
+
+## Methods
+
+### getMetadata()
+
+```ts
+getMetadata(): Record<string, unknown>
+```
+
+Get command metadata
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+***
+
+### isEnabled()
+
+```ts
+isEnabled(): boolean
+```
+
+Check if command is enabled
+
+#### Returns
+
+`boolean`
+
+***
+
+### isEnabledForServer()
+
+```ts
+isEnabledForServer(serverId): boolean
+```
+
+Check if command is enabled for a specific server
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `serverId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### setEnabled()
+
+```ts
+setEnabled(value): void
+```
+
+Enable or disable the command
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `boolean` |
+
+#### Returns
+
+`void`
+
+***
+
+### setServerOnly()
+
+```ts
+setServerOnly(serverIds): void
+```
+
+Restrict command to specific servers
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `serverIds` | `string` \| `string`[] |
+
+#### Returns
+
+`void`

@@ -1,0 +1,19 @@
+---
+title: "ForTestingOptions"
+---
+
+# Interface: ForTestingOptions
+
+Options for creating a RoboRequest for testing purposes
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="baseurl"></a> `baseUrl?` | `string` | Base URL for constructing absolute URLs (defaults to 'http://localhost:3000') |
+| <a id="body"></a> `body?` | `unknown` | Request body (will be JSON stringified if object) |
+| <a id="headers"></a> `headers?` | `Record`\<`string`, `string`\> | Request headers |
+| <a id="method"></a> `method?` | `string` | HTTP method (defaults to 'GET') |
+| <a id="params"></a> `params?` | `Record`\<`string`, `string`\> | URL parameters extracted from dynamic segments like [id] |
+| <a id="path"></a> `path?` | `string` | URL path (defaults to '/test') |
+| <a id="query"></a> `query?` | `Record`\<`string`, `string` \| `string`[]\> | Query string parameters |

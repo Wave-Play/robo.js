@@ -1,0 +1,17 @@
+---
+title: "TokenLimitState"
+---
+
+# Interface: TokenLimitState
+
+Snapshot describing the real-time state of token limits for a model.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="blocked"></a> `blocked` | `boolean` | Indicates whether requests should be blocked under the configured rule. |
+| <a id="message"></a> `message?` | `string` | Optional message derived from the active rule. |
+| <a id="model"></a> `model` | `string` | Model identifier. |
+| <a id="rule"></a> `rule?` | [`TokenLimitRule`](token-limit-rule) | Active rule applied to the model, if one exists. |
+| <a id="windows"></a> `windows` | `Record`\<[`TokenSummaryWindow`](../type-aliases/token-summary-window), \{ `remaining`: `number`; `total`: `number`; `windowKey`: `string`; \}\> | Per-window state including remaining tokens and current window key. |

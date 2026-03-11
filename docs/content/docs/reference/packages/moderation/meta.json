@@ -1,0 +1,8 @@
+{
+  "title": "@robojs/moderation",
+  "pages": [
+    "index",
+    "---Functions---",
+    "functions/get-lockdown"
+  ]
+}

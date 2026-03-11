@@ -1,0 +1,24 @@
+---
+title: "Participant<T, ClientData>"
+---
+
+# Interface: Participant\<T, ClientData\>
+
+Represents a participant in the presence system.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | - |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="clientid"></a> `clientId` | `string` | The client's unique identifier |
+| <a id="isstale"></a> `isStale` | `boolean` | Whether this participant's presence data is stale |
+| <a id="isyou"></a> `isYou` | `boolean` | Whether this is the current client |
+| <a id="presence"></a> `presence` | `T` | The client's presence data |
+| <a id="user"></a> `user` | [`Client`](client)\<`ClientData`\> | Client metadata (name, avatar, etc.) |

@@ -1,0 +1,28 @@
+---
+title: "buildContextCommands()"
+---
+
+# Function: buildContextCommands()
+
+```ts
+function buildContextCommands(
+   contextCommands, 
+   type, 
+   config?, 
+   dev?): ContextMenuCommandBuilder[]
+```
+
+Build context menu commands for Discord API.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `contextCommands` | `Record`\<`string`, [`ContextConfig`](../interfaces/context-config)\> |
+| `type` | `"user"` \| `"message"` |
+| `config`? | [`DiscordConfig`](../interfaces/discord-config) |
+| `dev`? | `boolean` |
+
+## Returns
+
+`ContextMenuCommandBuilder`[]

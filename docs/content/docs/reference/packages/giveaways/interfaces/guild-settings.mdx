@@ -1,0 +1,27 @@
+---
+title: "GuildSettings"
+---
+
+# Interface: GuildSettings
+
+Per-guild configuration envelope that customizes giveaway behaviour.
+
+Settings are merged with DEFAULT\_SETTINGS at runtime to ensure a
+complete object is always available to commands and utilities.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="defaults"></a> `defaults` | \{ `buttonLabel`: `string`; `dmWinners`: `boolean`; `duration`: `string`; `winners`: `number`; \} | Default attributes applied to newly created giveaways. |
+| `defaults.buttonLabel` | `string` | Custom label displayed on the entry button component. |
+| `defaults.dmWinners` | `boolean` | Whether winners should receive direct messages when selected. |
+| `defaults.duration` | `string` | Default ISO 8601 duration string (e.g. `1h`, `2d`). |
+| `defaults.winners` | `number` | Default number of winners for `/giveaway start`. |
+| <a id="limits"></a> `limits` | \{ `maxDurationDays`: `number`; `maxWinners`: `number`; \} | Safety limits enforced across all giveaways within a guild. |
+| `limits.maxDurationDays` | `number` | Maximum giveaway duration expressed in whole days. |
+| `limits.maxWinners` | `number` | Upper bound on the number of winners that can be configured. |
+| <a id="restrictions"></a> `restrictions` | \{ `allowRoleIds`: `string`[]; `denyRoleIds`: `string`[]; `minAccountAgeDays`: `null` \| `number`; \} | Guild-wide entry requirements enforced for every giveaway. |
+| `restrictions.allowRoleIds` | `string`[] | Role IDs that are explicitly allowed to enter; empty means all roles allowed. |
+| `restrictions.denyRoleIds` | `string`[] | Role IDs that are prevented from entering. |
+| `restrictions.minAccountAgeDays` | `null` \| `number` | Minimum required Discord account age in days, or null to disable. |

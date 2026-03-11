@@ -1,0 +1,10 @@
+{
+  "title": "@robojs/cron",
+  "pages": [
+    "index",
+    "---Functions---",
+    "functions/cron",
+    "---Variables---",
+    "variables/patterns"
+  ]
+}

@@ -1,0 +1,30 @@
+---
+title: "controlAPI()"
+---
+
+# Function: controlAPI()
+
+```ts
+function controlAPI<T>(endpoint, options): Promise<T>
+```
+
+Make a request to the control API
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `endpoint` | `string` |
+| `options` | \{ `body`: `unknown`; `method`: `"GET"` \| `"POST"` \| `"PUT"` \| `"DELETE"` \| `"PATCH"`; \} |
+| `options.body`? | `unknown` |
+| `options.method`? | `"GET"` \| `"POST"` \| `"PUT"` \| `"DELETE"` \| `"PATCH"` |
+
+## Returns
+
+`Promise`\<`T`\>

@@ -1,0 +1,26 @@
+---
+title: "TypedHandler()<TSchema>"
+---
+
+# Type Alias: TypedHandler()\<TSchema\>
+
+```ts
+type TypedHandler<TSchema> = (request, reply) => unknown | Promise<unknown>;
+```
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TSchema` *extends* [`EndpointSchema`](../interfaces/endpoint-schema) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `request` | [`TypedRoboRequest`](../interfaces/typed-robo-request)\<`TSchema`\> |
+| `reply` | [`RoboReply`](../interfaces/robo-reply) |
+
+## Returns
+
+`unknown` \| `Promise`\<`unknown`\>

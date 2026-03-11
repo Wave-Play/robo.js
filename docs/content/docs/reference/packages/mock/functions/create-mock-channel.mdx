@@ -1,0 +1,29 @@
+---
+title: "createMockChannel()"
+---
+
+# Function: createMockChannel()
+
+```ts
+function createMockChannel(config?): MockChannel
+```
+
+Create a mock channel from config
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config`? | \{ `guildId`: `string`; `id`: `string`; `name`: `string`; `parentId`: `null` \| `string`; `position`: `number`; `recipientIds`: `string`[]; `topic`: `null` \| `string`; `type`: `number`; \} |
+| `config.guildId`? | `string` |
+| `config.id`? | `string` |
+| `config.name`? | `string` |
+| `config.parentId`? | `null` \| `string` |
+| `config.position`? | `number` |
+| `config.recipientIds`? | `string`[] |
+| `config.topic`? | `null` \| `string` |
+| `config.type`? | `number` |
+
+## Returns
+
+[`MockChannel`](../interfaces/mock-channel)

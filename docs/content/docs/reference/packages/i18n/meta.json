@@ -1,0 +1,19 @@
+{
+  "title": "@robojs/i18n",
+  "pages": [
+    "index",
+    "---Interfaces---",
+    "interfaces/plugin-config",
+    "---Type Aliases---",
+    "type-aliases/locale-like",
+    "---Functions---",
+    "functions/clear-formatter-cache",
+    "functions/create-command-config",
+    "functions/load-locales",
+    "functions/t",
+    "functions/tr",
+    "functions/with-locale",
+    "---Variables---",
+    "variables/locale"
+  ]
+}

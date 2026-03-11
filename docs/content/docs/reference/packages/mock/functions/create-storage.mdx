@@ -1,0 +1,36 @@
+---
+title: "createStorage()"
+---
+
+# Function: createStorage()
+
+```ts
+function createStorage(config): AttachmentStorage
+```
+
+Factory function to create a storage backend from configuration.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `config` | [`StorageConfig`](../interfaces/storage-config) | Storage configuration |
+
+## Returns
+
+[`AttachmentStorage`](../interfaces/attachment-storage)
+
+A storage backend instance
+
+## Example
+
+```typescript
+// Create in-memory storage (default)
+const storage = createStorage({ type: 'memory' })
+
+// Future: Create S3 storage
+const storage = createStorage({
+  type: 's3',
+  options: { bucket: 'my-bucket', region: 'us-east-1' }
+})
+```

@@ -1,0 +1,17 @@
+---
+title: "SyncMiddlewareRecord"
+---
+
+# Interface: SyncMiddlewareRecord
+
+Middleware record from manifest.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="exports"></a> `exports` | \{ `after`: `boolean`; `before`: `boolean`; \} | Named exports available |
+| `exports.after?` | `boolean` | - |
+| `exports.before?` | `boolean` | - |
+| <a id="handler"></a> `handler?` | [`SyncMiddlewareModule`](sync-middleware-module)\<`unknown`, `unknown`\> | Loaded middleware module (lazy loaded) |
+| <a id="path"></a> `path` | `string` | Directory path this middleware applies to |

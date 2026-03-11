@@ -1,0 +1,18 @@
+---
+title: "VoiceTranscriptSegment"
+---
+
+# Interface: VoiceTranscriptSegment
+
+Transcription segment produced during a voice session.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="isfinal"></a> `isFinal` | `boolean` | Indicates whether the transcript text is final. |
+| <a id="position"></a> `position` | \{ `end`: `number`; `start`: `number`; \} | Millisecond offsets covering the speech segment. |
+| `position.end` | `number` | Exclusive end timestamp in milliseconds. |
+| `position.start` | `number` | Inclusive start timestamp in milliseconds. |
+| <a id="speakerid"></a> `speakerId?` | `null` \| `string` | Optional speaker identifier, if diarization is enabled. |
+| <a id="text"></a> `text` | `string` | Recognized transcript text. |

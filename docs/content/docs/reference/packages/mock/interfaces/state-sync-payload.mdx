@@ -1,0 +1,44 @@
+---
+title: "StateSyncPayload"
+---
+
+# Interface: StateSyncPayload
+
+Full state sync payload sent on connection
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="activity"></a> `activity?` | \{ `application_id`: `string`; `auth_scopes`: `string`[]; `auth_state`: `"UNAUTHENTICATED"` \| `"AUTHENTICATED"`; `channel_id`: `null` \| `string`; `devtools_auth_mode`: `"auto_approve"` \| `"auto_deny"` \| `"manual"`; `frame_id`: `string`; `guild_id`: `null` \| `string`; `iframe_url`: `string`; `instance_id`: `string`; `launch_url`: `string`; `proxy_origin`: `string`; `query_params`: `Record`\<`string`, `string`\>; `ready_emitted`: `boolean`; `sdk_shim_enabled`: `boolean`; \} | Active Activity state (if any) |
+| `activity.application_id` | `string` | - |
+| `activity.auth_scopes?` | `string`[] | - |
+| `activity.auth_state` | `"UNAUTHENTICATED"` \| `"AUTHENTICATED"` | - |
+| `activity.channel_id` | `null` \| `string` | - |
+| `activity.devtools_auth_mode?` | `"auto_approve"` \| `"auto_deny"` \| `"manual"` | - |
+| `activity.frame_id` | `string` | - |
+| `activity.guild_id` | `null` \| `string` | - |
+| `activity.iframe_url?` | `string` | - |
+| `activity.instance_id` | `string` | - |
+| `activity.launch_url` | `string` | - |
+| `activity.proxy_origin?` | `string` | - |
+| `activity.query_params` | `Record`\<`string`, `string`\> | - |
+| `activity.ready_emitted` | `boolean` | - |
+| `activity.sdk_shim_enabled?` | `boolean` | - |
+| <a id="channels"></a> `channels` | [`StageChannel`](stage-channel)[] | - |
+| <a id="commands"></a> `commands` | `StageApplicationCommand`[] | - |
+| <a id="currentuser"></a> `currentUser?` | [`StageUser`](stage-user) | - |
+| <a id="guilds"></a> `guilds` | [`StageGuild`](stage-guild)[] | - |
+| <a id="members"></a> `members` | [`StageMember`](stage-member)[] | - |
+| <a id="messages"></a> `messages` | `Record`\<`string`, [`StageMessage`](stage-message)[]\> | - |
+| <a id="proxy"></a> `proxy?` | \{ `origin_template`: `string`; `port`: `number`; `running`: `boolean`; \} | Activity proxy status (if proxy server is running) |
+| `proxy.origin_template` | `string` | - |
+| `proxy.port` | `number` | - |
+| `proxy.running` | `boolean` | - |
+| <a id="roles"></a> `roles` | `StageRole`[] | - |
+| <a id="session"></a> `session` | \{ `bot`: `null` \| [`StageUser`](stage-user); `createdAt`: `number`; `id`: `string`; \} | - |
+| `session.bot` | `null` \| [`StageUser`](stage-user) | - |
+| `session.createdAt` | `number` | - |
+| `session.id` | `string` | - |
+| <a id="users"></a> `users` | [`StageUser`](stage-user)[] | - |
+| <a id="voice_states"></a> `voice_states` | `StageVoiceState`[] | - |

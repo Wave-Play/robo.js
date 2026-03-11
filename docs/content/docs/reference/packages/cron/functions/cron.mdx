@@ -1,6 +1,5 @@
 ---
-title: "Cron"
-description: "Schedule recurring tasks in Robo.js"
+title: "Cron()"
 ---
 
 # Function: Cron()
@@ -9,74 +8,13 @@ description: "Schedule recurring tasks in Robo.js"
 function Cron(cronExpression, jobFunction): CronJob
 ```
 
-Creates a scheduled job that runs based on the provided cron expression.
-
 ## Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `cronExpression` | `string` | A cron expression that defines when the job should run |
-| `jobFunction` | `string \| () => void` | Either a function to execute or a path to a module that exports a default function |
+| Parameter | Type |
+| ------ | ------ |
+| `cronExpression` | `string` |
+| `jobFunction` | `string` \| () =\> `void` |
 
 ## Returns
 
-`CronJob` - A job object that can be used to control the scheduled task
-
-## Example
-
-```ts
-import { Cron, Patterns } from '@robojs/cron'
-
-// Schedule a function to run every hour
-const hourlyJob = Cron(Patterns.EVERY_HOUR, () => {
-  console.log('This job runs every hour')
-})
-
-// Schedule a function to run at a specific time (3:30 AM daily)
-const specificTimeJob = Cron('30 3 * * *', () => {
-  console.log('This job runs at 3:30 AM every day')
-})
-
-// Schedule with a module path instead of a function
-const moduleJob = Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, './tasks/daily-cleanup.js')
-
-// Later, you can stop a scheduled job
-hourlyJob.stop()
-
-// Or restart it
-hourlyJob.start()
-```
-
-## CronJob Object
-
-The returned CronJob object has the following methods:
-
-| Method | Description |
-| ------ | ----------- |
-| `start()` | Starts the cron job if it's not already running |
-| `stop()` | Stops the cron job if it's running |
-| `isRunning()` | Returns a boolean indicating if the job is currently active |
-
-## Using with Patterns Helper
-
-The [`Patterns`](/ref/framework/variables/patterns) variable provides many pre-defined cron expressions:
-
-```ts
-import { Cron, Patterns } from '@robojs/cron'
-
-// Daily at midnight
-Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, dailyTask)
-
-// Every 5 minutes
-Cron(Patterns.EVERY_5_MINUTES, frequentTask)
-
-// Every Monday at 9 AM
-Cron(Patterns.everyWeekOn(Patterns.MONDAY, '09:00'), weeklyMeetingReminder)
-```
-
-## Notes
-
-- The cron expression follows the standard cron format: `* * * * * *` (second, minute, hour, day of month, month, day of week)
-- If you provide a string as the second parameter, it should be a path to a module that exports a default function
-- Cron jobs are automatically started when created, unless you explicitly stop them
-- Cron jobs persist for the lifetime of your application; they're not saved between restarts
+`CronJob`

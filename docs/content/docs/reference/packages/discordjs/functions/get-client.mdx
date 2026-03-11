@@ -1,0 +1,25 @@
+---
+title: "getClient()"
+---
+
+# Function: getClient()
+
+```ts
+function getClient(): Client
+```
+
+Get the Discord client instance.
+Returns the client if it has been initialized, otherwise throws.
+
+## Returns
+
+`Client`
+
+## Example
+
+```ts
+import { getClient } from '@robojs/discordjs'
+
+const client = getClient()
+client.user?.setPresence({ status: 'online' })
+```

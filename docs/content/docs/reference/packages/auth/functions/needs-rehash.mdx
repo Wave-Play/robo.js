@@ -1,0 +1,26 @@
+---
+title: "~~needsRehash()~~"
+---
+
+# Function: ~~needsRehash()~~
+
+```ts
+function needsRehash(hash, reference): boolean
+```
+
+Determines whether a stored Argon2id hash needs to be regenerated.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `hash` | `string` |
+| `reference` | `Partial`\<[`Argon2Params`](../interfaces/argon2-params)\> |
+
+## Returns
+
+`boolean`
+
+## Deprecated
+
+Use `Argon2Hasher` or a custom `PasswordHasher` instead.

@@ -1,0 +1,44 @@
+---
+title: "SyncResult"
+---
+
+# Type Alias: SyncResult
+
+```ts
+type SyncResult = {
+  cards: readonly RoadmapCard[];
+  columns: readonly RoadmapColumn[];
+  errors: readonly SyncError[];
+  stats: {
+     archived: number;
+     created: number;
+     errors: number;
+     total: number;
+     updated: number;
+    };
+  syncedAt: Date;
+};
+```
+
+Captures the result of a synchronization run between a provider and the roadmap surface.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="cards"></a> `cards` | readonly [`RoadmapCard`](roadmap-card)[] | Readonly snapshot of all cards retrieved during the sync. |
+| <a id="columns"></a> `columns` | readonly [`RoadmapColumn`](roadmap-column)[] | Readonly column definitions included in the sync. |
+| <a id="errors"></a> `errors` | readonly `SyncError`[] | Detailed list of errors that occurred during synchronization. |
+| <a id="stats"></a> `stats` | \{ `archived`: `number`; `created`: `number`; `errors`: `number`; `total`: `number`; `updated`: `number`; \} | Aggregated counters describing sync operations. |
+| `stats.archived` | `number` | Cards archived or transitioned to an archival column. |
+| `stats.created` | `number` | Cards created during the sync. |
+| `stats.errors` | `number` | Number of operations that resulted in errors. |
+| `stats.total` | `number` | Total number of cards processed. |
+| `stats.updated` | `number` | Cards updated during the sync. |
+| <a id="syncedat"></a> `syncedAt` | `Date` | Timestamp noting when the sync completed. |
+
+## Remarks
+
+Consumers can leverage this structure to determine whether cards need to be created, updated, or
+archived within Discord. The stats block enables runtime analytics and logging without inspecting
+the card arrays.

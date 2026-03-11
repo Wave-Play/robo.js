@@ -1,0 +1,23 @@
+---
+title: "DragOptions<T>"
+---
+
+# Interface: DragOptions\<T\>
+
+Options for useSyncDrag hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="bounds"></a> `bounds?` | [`DragBounds`](drag-bounds) | Constrain position within bounds |
+| <a id="interpolate"></a> `interpolate?` | [`InterpolateConfig`](../type-aliases/interpolate-config)\<`T`\> | Smooth remote updates with linear interpolation (field -\> lerp factor 0-1) |
+| <a id="lockondrag"></a> `lockOnDrag?` | `boolean` | Automatically lock when dragging starts (default: true) |
+| <a id="normalize"></a> `normalize?` | `boolean` | Convert to 0-1 viewport coordinates (default: true) |
+| <a id="throttle"></a> `throttle?` | `number` | Milliseconds between updates (default: 16) |

@@ -1,0 +1,15 @@
+---
+title: "VoiceChatMetadata"
+---
+
+# Interface: VoiceChatMetadata
+
+Supplemental metadata describing a voice interaction.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="segments"></a> `segments?` | [`VoiceTranscriptSegment`](voice-transcript-segment)[] | Transcript segments accumulated thus far. |
+| <a id="strategy"></a> `strategy?` | [`VoiceEndpointingStrategy`](../type-aliases/voice-endpointing-strategy) | Voice endpointing strategy used in the session. |
+| <a id="wascommitted"></a> `wasCommitted?` | `boolean` | Indicates whether the input stream was committed. |

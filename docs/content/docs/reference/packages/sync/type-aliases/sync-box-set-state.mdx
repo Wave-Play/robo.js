@@ -1,0 +1,28 @@
+---
+title: "SyncBoxSetState()<T>"
+---
+
+# Type Alias: SyncBoxSetState()\<T\>
+
+```ts
+type SyncBoxSetState<T> = (newState, options?) => void;
+```
+
+setState function signature with options support.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `newState` | `Partial`\<`T`\> \| (`prev`) =\> `T` |
+| `options`? | [`SetStateOptions`](../interfaces/set-state-options) |
+
+## Returns
+
+`void`

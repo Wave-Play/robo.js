@@ -1,0 +1,104 @@
+---
+title: "TunnelProvider"
+---
+
+# Interface: TunnelProvider
+
+Interface for tunnel providers.
+Implement this to add support for new tunnel services.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="name"></a> `name` | `string` | Provider name (e.g., 'cloudflare', 'ngrok') |
+
+## Methods
+
+### initialize()?
+
+```ts
+optional initialize(config): Promise<boolean>
+```
+
+Initialize tunnel configuration (optional, for static tunnels)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`TunnelProviderConfig`](tunnel-provider-config) |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### install()
+
+```ts
+install(): Promise<void>
+```
+
+Install the tunnel binary
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### isInstalled()
+
+```ts
+isInstalled(): boolean | Promise<boolean>
+```
+
+Check if the tunnel binary is installed
+
+#### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+***
+
+### start()
+
+```ts
+start(url, config?): Promise<TunnelInstance>
+```
+
+Start the tunnel and return the instance
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `url` | `string` |
+| `config`? | [`TunnelProviderConfig`](tunnel-provider-config) |
+
+#### Returns
+
+`Promise`\<[`TunnelInstance`](tunnel-instance)\>
+
+***
+
+### stop()
+
+```ts
+stop(instance, signal?): Promise<void>
+```
+
+Stop a running tunnel instance
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `instance` | [`TunnelInstance`](tunnel-instance) |
+| `signal`? | `Signals` |
+
+#### Returns
+
+`Promise`\<`void`\>

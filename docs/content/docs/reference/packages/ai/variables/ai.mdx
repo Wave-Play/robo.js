@@ -1,129 +1,133 @@
 ---
 title: "AI"
-description: "Core AI interface for Robo.js"
 ---
 
 # Variable: AI
 
 ```ts
-const AI: object;
+const AI: {
+  addRestrictChannel: (channelId) => void;
+  addWhitelistChannel: (channelId) => void;
+  chat: (messages, options) => Promise<void>;
+  chatSync: (messages, options) => Promise<ChatReply>;
+  generateImage: (options) => Promise<GenerateImageResult>;
+  getActiveTasks: (channelId?) => BackgroundTaskSnapshot[];
+  getLifetimeUsage: (model?) => Promise<Record<string, TokenWindowTotals>>;
+  getMCPServers: () => MCPTool[];
+  getRestrictChannels: () => string[];
+  getUsageSummary: (query?) => Promise<TokenSummaryResult>;
+  getVoiceMetrics: () => VoiceMetricsSnapshot;
+  getVoiceStatus: (guildId?) => Promise<{
+     baseConfig: VoiceRuntimeConfig;
+     guildConfigs: Record<string, VoiceRuntimeConfig>;
+     sessions: {
+        channelId: string;
+        config: VoiceRuntimeConfig;
+        guildId: string;
+        sessionId: string;
+        startedAt: number;
+        textChannelId: null | string;
+       }[];
+    }>;
+  getWhitelistChannels: () => string[];
+  isReady: () => boolean;
+  offUsageEvent: <T>(event, listener) => void;
+  offVoiceEvent: <T>(event, listener) => void;
+  onceUsageEvent: <T>(event, listener) => void;
+  onUsageEvent: <T>(event, listener) => void;
+  onVoiceEvent: <T>(event, listener) => void;
+  removeRestrictChannel: (channelId) => void;
+  removeWhitelistChannel: (channelId) => void;
+  setVoiceConfig: (options) => Promise<void>;
+  startVoice: (options) => Promise<void>;
+  stopVoice: (options) => Promise<void>;
+};
 ```
 
-The core AI interface. Use this to call AI features programatically.
+Primary runtime facade for the Robo AI plugin. Provides chat completions, voice orchestration,
+image generation, and detailed usage tracking through a single cohesive interface. Import this
+singleton when integrating AI features inside commands, web handlers, or other Robo plugins.
 
-## Methods
+## Type declaration
 
-### chat()
+| Name | Type |
+| ------ | ------ |
+| <a id="addrestrictchannel"></a> `addRestrictChannel` | (`channelId`) =\> `void` |
+| <a id="addwhitelistchannel"></a> `addWhitelistChannel` | (`channelId`) =\> `void` |
+| <a id="chat"></a> `chat` | (`messages`, `options`) =\> `Promise`\<`void`\> |
+| <a id="chatsync"></a> `chatSync` | (`messages`, `options`) =\> `Promise`\<[`ChatReply`](../interfaces/chat-reply)\> |
+| <a id="generateimage"></a> `generateImage` | (`options`) =\> `Promise`\<[`GenerateImageResult`](../interfaces/generate-image-result)\> |
+| <a id="getactivetasks"></a> `getActiveTasks` | (`channelId`?) =\> `BackgroundTaskSnapshot`[] |
+| <a id="getlifetimeusage"></a> `getLifetimeUsage` | (`model`?) =\> `Promise`\<`Record`\<`string`, [`TokenWindowTotals`](../interfaces/token-window-totals)\>\> |
+| <a id="getmcpservers"></a> `getMCPServers` | () =\> [`MCPTool`](../interfaces/mcp-tool)[] |
+| <a id="getrestrictchannels"></a> `getRestrictChannels` | () =\> `string`[] |
+| <a id="getusagesummary"></a> `getUsageSummary` | (`query`?) =\> `Promise`\<[`TokenSummaryResult`](../interfaces/token-summary-result)\> |
+| <a id="getvoicemetrics"></a> `getVoiceMetrics` | () =\> `VoiceMetricsSnapshot` |
+| <a id="getvoicestatus"></a> `getVoiceStatus` | (`guildId`?) =\> `Promise`\<\{ `baseConfig`: `VoiceRuntimeConfig`; `guildConfigs`: `Record`\<`string`, `VoiceRuntimeConfig`\>; `sessions`: \{ `channelId`: `string`; `config`: `VoiceRuntimeConfig`; `guildId`: `string`; `sessionId`: `string`; `startedAt`: `number`; `textChannelId`: `null` \| `string`; \}[]; \}\> |
+| <a id="getwhitelistchannels"></a> `getWhitelistChannels` | () =\> `string`[] |
+| <a id="isready"></a> `isReady` | () =\> `boolean` |
+| <a id="offusageevent"></a> `offUsageEvent` | \<`T`\>(`event`, `listener`) =\> `void` |
+| <a id="offvoiceevent"></a> `offVoiceEvent` | \<`T`\>(`event`, `listener`) =\> `void` |
+| <a id="onceusageevent"></a> `onceUsageEvent` | \<`T`\>(`event`, `listener`) =\> `void` |
+| <a id="onusageevent"></a> `onUsageEvent` | \<`T`\>(`event`, `listener`) =\> `void` |
+| <a id="onvoiceevent"></a> `onVoiceEvent` | \<`T`\>(`event`, `listener`) =\> `void` |
+| <a id="removerestrictchannel"></a> `removeRestrictChannel` | (`channelId`) =\> `void` |
+| <a id="removewhitelistchannel"></a> `removeWhitelistChannel` | (`channelId`) =\> `void` |
+| <a id="setvoiceconfig"></a> `setVoiceConfig` | (`options`) =\> `Promise`\<`void`\> |
+| <a id="startvoice"></a> `startVoice` | (`options`) =\> `Promise`\<`void`\> |
+| <a id="stopvoice"></a> `stopVoice` | (`options`) =\> `Promise`\<`void`\> |
 
-```ts
-chat: (messages, options) => Promise<void>;
-```
-
-Start an AI chat session with streaming responses.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `messages` | `ChatMessage[]` | Array of chat messages to send to the AI |
-| `options` | `ChatOptions` | Configuration for the chat session |
-
-#### Returns
-
-`Promise<void>`
-
-### chatSync()
-
-```ts
-chatSync: (messages, options) => Promise<ChatReply>;
-```
-
-Start an AI chat session but wait for the complete response.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `messages` | `ChatMessage[]` | Array of chat messages to send to the AI |
-| `options` | `Omit<ChatOptions, "onReply">` | Configuration for the chat session (without onReply handler) |
-
-#### Returns
-
-`Promise<ChatReply>` - The complete response from the AI
-
-### generateImage()
-
-```ts
-generateImage: (options) => Promise<GenerateImageResult>;
-```
-
-Generate an image using AI.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `options` | `GenerateImageOptions` | Configuration for image generation |
-
-#### Returns
-
-`Promise<GenerateImageResult>` - The result containing the generated image
-
-### isReady()
-
-```ts
-isReady: () => boolean;
-```
-
-Check if the AI service is ready to use.
-
-#### Returns
-
-`boolean` - True if the AI service is initialized and ready to use
-
-## Example
+## Examples
 
 ```ts
 import { AI } from '@robojs/ai'
 
-// Check if AI is ready to use
-if (AI.isReady()) {
-  // Generate a chat response
-  await AI.chat([
-    { role: 'user', content: 'Hello, how are you?' }
-  ], {
-    onReply: (reply) => {
-      console.log(reply.content)
-    }
-  })
-  
-  // Generate an image
-  const imageResult = await AI.generateImage({
-    prompt: 'A cute robot in a garden',
-    size: '1024x1024'
-  })
-  
-  console.log('Image URL:', imageResult.url)
-}
+await AI.chat({
+  messages: [
+    { role: 'system', content: 'Provide concise answers.' },
+    { role: 'user', content: 'Summarize the changelog.' }
+  ],
+  channel,
+  member,
+  onReply: ({ text }) => channel.send(text)
+})
 ```
 
-## ChatMessage Type
+```ts
+import { AI } from '@robojs/ai'
 
-| Property | Type | Description |
-| -------- | ---- | ----------- |
-| `role` | `'user' \| 'assistant' \| 'system'` | The role of the message sender |
-| `content` | `string` | The content of the message |
+await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
 
-## ChatOptions Type
+AI.onVoiceEvent('playback', ({ delta }) => {
+  console.log('Streaming voice chunk', delta.timestamp)
+})
 
-| Property | Type | Description |
-| -------- | ---- | ----------- |
-| `onReply` | `(reply: ChatReply) => void` | Callback function for handling replies |
-| `model` | `string` | Optional model to use for the chat |
-| `temperature` | `number` | Optional temperature setting (0-1) |
+await AI.stopVoice({ guildId: guild.id })
+```
 
-## Notes
+```ts
+import { AI } from '@robojs/ai'
 
-- The AI variable is a singleton - the same instance is used throughout your application
-- The AI capabilities require proper configuration in your Robo.js project
-- Image generation may not be available in all environments or configurations
+const summary = await AI.getUsageSummary({ window: 'day' })
+console.log('Prompt tokens today', summary.windowTotals.prompt)
+
+AI.onUsageEvent('usage.limitReached', (event) => {
+  console.warn('Token limit exceeded for', event.breach.model)
+})
+
+AI.onUsageEvent('usage.recorded', (event) => {
+  console.log('Token usage recorded:', event.usage.tokens)
+})
+```
+
+## Remarks
+
+Engines lazily initialize. Call [AI.isReady()](ai#isready) before executing
+intensive workloads or await project startup hooks to guarantee availability.
+
+## See
+
+ - BaseEngine
+ - tokenLedger
+ - ChatOptions
+ - VoiceSessionStartOptions

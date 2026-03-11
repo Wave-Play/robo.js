@@ -1,0 +1,432 @@
+---
+title: "JiraProvider"
+---
+
+# Class: JiraProvider
+
+Jira provider that connects to Jira Cloud instances via REST API v3.
+
+Authenticates using email and API token, executes JQL queries to fetch issues,
+and maps them to roadmap cards.
+
+## Example
+
+```ts
+const provider = new JiraProvider({
+  type: 'jira',
+  options: {
+    url: process.env.JIRA_URL,
+    email: process.env.JIRA_EMAIL,
+    apiToken: process.env.JIRA_API_TOKEN,
+  },
+});
+```
+
+## Extends
+
+- [`RoadmapProvider`](roadmap-provider)\<[`JiraProviderConfig`](../interfaces/jira-provider-config)\>
+
+## Constructors
+
+### new JiraProvider()
+
+```ts
+new JiraProvider(config): JiraProvider
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`JiraProviderConfig`](../interfaces/jira-provider-config) |
+
+#### Returns
+
+[`JiraProvider`](jira-provider)
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`constructor`](roadmap-provider#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="config-1"></a> `config` | `readonly` | [`JiraProviderConfig`](../interfaces/jira-provider-config) | Provider specific configuration object. | [`RoadmapProvider`](roadmap-provider).[`config`](roadmap-provider#config-1) |
+
+## Methods
+
+### createCard()
+
+```ts
+createCard(input): Promise<CreateCardResult>
+```
+
+Creates a new Jira issue.
+
+Converts plain text description to ADF. If column is not 'Backlog', transitions the issue
+to the appropriate status. Only the first assignee is used (Jira limitation).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `input` | [`CreateCardInput`](../type-aliases/create-card-input) | Card data (title, description, column, labels, assignees, issueType). |
+
+#### Returns
+
+`Promise`\<[`CreateCardResult`](../type-aliases/create-card-result)\>
+
+CreateCardResult with success status and created card.
+
+#### Example
+
+```ts
+const result = await provider.createCard({
+  title: 'New Feature',
+  description: 'Add user authentication',
+  column: 'In Progress',
+  labels: ['feature']
+});
+```
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`createCard`](roadmap-provider#createcard)
+
+***
+
+### fetchCards()
+
+```ts
+fetchCards(): Promise<readonly RoadmapCard[]>
+```
+
+Fetches all Jira issues matching the configured JQL query.
+
+#### Returns
+
+`Promise`\<readonly [`RoadmapCard`](../type-aliases/roadmap-card)[]\>
+
+Array of roadmap cards mapped from Jira issues.
+
+#### Throws
+
+Error if authentication fails or query is invalid.
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`fetchCards`](roadmap-provider#fetchcards)
+
+***
+
+### fetchCardsByDateRange()
+
+```ts
+fetchCardsByDateRange(filter): Promise<readonly RoadmapCard[]>
+```
+
+Fetches Jira issues filtered by date range.
+
+Supports filtering by 'created' or 'updated' fields (defaults to 'updated').
+Accepts Date objects or ISO 8601 strings. Results are cached for 5 minutes.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `filter` | [`DateRangeFilter`](../type-aliases/date-range-filter) | Date range criteria (startDate, endDate, dateField). |
+
+#### Returns
+
+`Promise`\<readonly [`RoadmapCard`](../type-aliases/roadmap-card)[]\>
+
+Array of matching cards, or empty array on error.
+
+#### Example
+
+```ts
+const cards = await provider.fetchCardsByDateRange({
+  startDate: '2025-01-01',
+  endDate: '2025-01-31',
+  dateField: 'updated'
+});
+```
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`fetchCardsByDateRange`](roadmap-provider#fetchcardsbydaterange)
+
+***
+
+### getCard()
+
+```ts
+getCard(cardId): Promise<null | RoadmapCard>
+```
+
+Retrieves a single Jira issue by its key.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `cardId` | `string` | Jira issue key (e.g., 'PROJ-123'). |
+
+#### Returns
+
+`Promise`\<`null` \| [`RoadmapCard`](../type-aliases/roadmap-card)\>
+
+RoadmapCard if found, null if not found.
+
+#### Throws
+
+Error if authentication fails or network errors occur.
+
+#### Example
+
+```ts
+const card = await provider.getCard('PROJ-123');
+if (card) console.log(card.title);
+```
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`getCard`](roadmap-provider#getcard)
+
+***
+
+### getColumns()
+
+```ts
+getColumns(): Promise<readonly RoadmapColumn[]>
+```
+
+Returns standard Jira workflow columns (Backlog, In Progress, Done).
+
+#### Returns
+
+`Promise`\<readonly [`RoadmapColumn`](../type-aliases/roadmap-column)[]\>
+
+Array of column definitions.
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`getColumns`](roadmap-provider#getcolumns)
+
+***
+
+### getIssueTypes()
+
+```ts
+getIssueTypes(): Promise<readonly string[]>
+```
+
+Retrieves available issue types from Jira (excludes subtasks).
+
+Results are cached for 5 minutes. Returns standard types on failure.
+
+#### Returns
+
+`Promise`\<readonly `string`[]\>
+
+Array of issue type names (e.g., ['Task', 'Story', 'Bug', 'Epic']).
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`getIssueTypes`](roadmap-provider#getissuetypes)
+
+***
+
+### getLabels()
+
+```ts
+getLabels(): Promise<readonly string[]>
+```
+
+Retrieves available labels from Jira.
+
+Results are cached for 5 minutes. Returns empty array on failure.
+
+#### Returns
+
+`Promise`\<readonly `string`[]\>
+
+Array of label names.
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`getLabels`](roadmap-provider#getlabels)
+
+***
+
+### getProviderInfo()
+
+```ts
+getProviderInfo(): Promise<ProviderInfo>
+```
+
+Returns provider metadata and capabilities.
+
+#### Returns
+
+`Promise`\<[`ProviderInfo`](../type-aliases/provider-info)\>
+
+Provider information including name, version, and capabilities.
+
+#### Example
+
+```ts
+const info = await provider.getProviderInfo();
+console.log(info.name); // 'Jira'
+```
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`getProviderInfo`](roadmap-provider#getproviderinfo)
+
+***
+
+### getStatusMapping()
+
+```ts
+getStatusMapping(): undefined | Record<string, null | string>
+```
+
+Returns the configured status-to-column mapping, if any.
+
+#### Returns
+
+`undefined` \| `Record`\<`string`, `null` \| `string`\>
+
+Status mapping record or undefined if using defaults.
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`getStatusMapping`](roadmap-provider#getstatusmapping)
+
+***
+
+### init()
+
+```ts
+init(): Promise<void>
+```
+
+Initializes the provider and verifies Jira connectivity.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
+
+Error if configuration is invalid or authentication fails.
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`init`](roadmap-provider#init)
+
+***
+
+### resolveColumn()
+
+```ts
+resolveColumn(status, guildMapping?): undefined | null | string
+```
+
+Resolves the target column for a given provider status, checking guild overrides first.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `status` | `string` | The provider status name to map. |
+| `guildMapping`? | `Record`\<`string`, `null` \| `string`\> | Optional guild-specific column mapping overrides. |
+
+#### Returns
+
+`undefined` \| `null` \| `string`
+
+The column name to map to, or null if the status should be tracked without a forum, or undefined if no mapping found (use default).
+
+#### Remarks
+
+This helper checks guild-specific column mappings first (runtime overrides),
+then falls back to provider-level mappings. Returns undefined if no mapping is found,
+indicating the provider should use its default mapping logic.
+
+#### Example
+
+```ts
+const guildMapping = getColumnMapping(guildId);
+const column = this.resolveColumn('In Progress', guildMapping);
+// Returns 'In Progress', null, or undefined
+```
+
+#### Inherited from
+
+[`RoadmapProvider`](roadmap-provider).[`resolveColumn`](roadmap-provider#resolvecolumn)
+
+***
+
+### updateCard()
+
+```ts
+updateCard(cardId, input): Promise<UpdateCardResult>
+```
+
+Updates an existing Jira issue (partial update).
+
+Only provided fields are updated. If column changes, transitions the issue to the new status.
+Only the first assignee is used (Jira limitation).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `cardId` | `string` | Jira issue key (e.g., 'PROJ-123'). |
+| `input` | [`UpdateCardInput`](../type-aliases/update-card-input) | Partial card data to update. |
+
+#### Returns
+
+`Promise`\<[`UpdateCardResult`](../type-aliases/update-card-result)\>
+
+UpdateCardResult with success status and updated card.
+
+#### Example
+
+```ts
+const result = await provider.updateCard('PROJ-123', { column: 'Done' });
+console.log(result.success);
+```
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`updateCard`](roadmap-provider#updatecard)
+
+***
+
+### validateConfig()
+
+```ts
+validateConfig(config): boolean
+```
+
+Validates the resolved Jira configuration, emitting structured log output for any failures.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `config` | [`JiraProviderConfig`](../interfaces/jira-provider-config) | Optional override used mainly for testing. |
+
+#### Returns
+
+`boolean`
+
+`true` when the configuration satisfies the minimum requirements.
+
+#### Overrides
+
+[`RoadmapProvider`](roadmap-provider).[`validateConfig`](roadmap-provider#validateconfig)

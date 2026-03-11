@@ -1,0 +1,81 @@
+---
+title: "EventController"
+---
+
+# Interface: EventController
+
+Event controller for portal.discord.event()
+
+## Methods
+
+### isEnabled()
+
+```ts
+isEnabled(): boolean
+```
+
+Check if event handler is enabled
+
+#### Returns
+
+`boolean`
+
+***
+
+### isEnabledForServer()
+
+```ts
+isEnabledForServer(serverId): boolean
+```
+
+Check if event handler is enabled for a specific server
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `serverId` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### setEnabled()
+
+```ts
+setEnabled(value): void
+```
+
+Enable or disable the event handler
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `boolean` |
+
+#### Returns
+
+`void`
+
+***
+
+### setServerOnly()
+
+```ts
+setServerOnly(serverIds): void
+```
+
+Restrict event handler to specific servers
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `serverIds` | `string` \| `string`[] |
+
+#### Returns
+
+`void`

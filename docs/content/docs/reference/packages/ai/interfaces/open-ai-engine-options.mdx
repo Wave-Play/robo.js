@@ -1,0 +1,19 @@
+---
+title: "OpenAiEngineOptions"
+---
+
+# Interface: OpenAiEngineOptions
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="chat"></a> `chat?` | `OpenAiChatDefaults` | Default chat behaviour spanning model choice, limits, and temperature. |
+| <a id="clientoptions"></a> `clientOptions?` | `ClientOptions` | Overrides forwarded to the OpenAI SDK client constructor. |
+| <a id="mcp"></a> `mcp?` | \{ `baseDelayMs`: `number`; `extraRetries`: `number`; `gracefulDegradation`: `boolean`; `maxDelayMs`: `number`; \} | MCP error handling configuration. |
+| `mcp.baseDelayMs?` | `number` | Base delay in milliseconds for exponential backoff. Default: 500 |
+| `mcp.extraRetries?` | `number` | Number of extra retry attempts before degrading. Default: 1 |
+| `mcp.gracefulDegradation?` | `boolean` | Enable graceful degradation by removing MCP tools on persistent failures. Default: true |
+| `mcp.maxDelayMs?` | `number` | Maximum delay in milliseconds for exponential backoff. Default: 2000 |
+| <a id="voice"></a> `voice?` | `OpenAiVoiceDefaults` | Default realtime voice behaviours including model and transcription hints. |
+| <a id="websearch"></a> `webSearch?` | `boolean` | Enables optional web search tool exposure to the Responses API. |

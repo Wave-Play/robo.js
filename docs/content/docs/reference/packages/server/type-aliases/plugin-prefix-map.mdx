@@ -1,0 +1,22 @@
+---
+title: "PluginPrefixMap"
+---
+
+# Type Alias: PluginPrefixMap
+
+```ts
+type PluginPrefixMap = Record<string, PluginPrefixConfig>;
+```
+
+Centralized plugin prefix configuration in @robojs/server config.
+
+Example:
+```typescript
+// config/plugins/robojs/server.ts
+export default {
+  pluginPrefixes: {
+    '@robojs/mock': '/mock',
+    '@robojs/other': { api: '/api-prefix', static: false }
+  }
+}
+```

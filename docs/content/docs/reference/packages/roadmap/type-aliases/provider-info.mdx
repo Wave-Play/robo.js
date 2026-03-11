@@ -1,0 +1,30 @@
+---
+title: "ProviderInfo"
+---
+
+# Type Alias: ProviderInfo
+
+```ts
+type ProviderInfo = {
+  capabilities: readonly string[];
+  metadata: Record<string, unknown>;
+  name: string;
+  version: string;
+};
+```
+
+Metadata describing a roadmap provider implementation.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="capabilities"></a> `capabilities` | readonly `string`[] | List of capabilities supported by this provider (e.g., `cards`, `columns`, `attachments`). |
+| <a id="metadata"></a> `metadata`? | `Record`\<`string`, `unknown`\> | Optional provider specific metadata for diagnostics or configuration details. |
+| <a id="name"></a> `name` | `string` | Human readable provider name (e.g., `Jira`, `GitHub Projects`). |
+| <a id="version"></a> `version` | `string` | Semantic version of the provider implementation. |
+
+## Remarks
+
+Used for diagnostics, logging, and telemetry. Providers should surface meaningful
+information that helps operators debug issues, such as API versions or enabled features.

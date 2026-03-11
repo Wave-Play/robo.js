@@ -1,0 +1,29 @@
+---
+title: "getSessions()"
+---
+
+# Function: getSessions()
+
+```ts
+function getSessions(options?): Promise<DeviceSession[] | null>
+```
+
+Lists all sessions stored on this device, including expired ones.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `ClientOptions` | Overrides for base path, headers, or a custom fetch implementation. |
+
+## Returns
+
+`Promise`\<[`DeviceSession`](../interfaces/device-session)[] \| `null`\>
+
+An array of device sessions, or `null` if the request fails.
+
+## Example
+
+```ts
+const sessions = await getSessions()
+```

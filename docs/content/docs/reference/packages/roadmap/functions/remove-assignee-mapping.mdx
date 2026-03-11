@@ -1,0 +1,31 @@
+---
+title: "removeAssigneeMapping()"
+---
+
+# Function: removeAssigneeMapping()
+
+```ts
+function removeAssigneeMapping(guildId, jiraName): void
+```
+
+Removes a mapping for a Jira assignee name.
+
+This helper removes an existing assignee mapping. After removal, the
+Jira assignee will be hidden from Discord messages (no mapping exists).
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+| `jiraName` | `string` | The Jira assignee display name to unmap |
+
+## Returns
+
+`void`
+
+## Example
+
+```ts
+removeAssigneeMapping(guildId, 'Alice Jira');
+```

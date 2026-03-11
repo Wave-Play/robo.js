@@ -1,0 +1,45 @@
+---
+title: "testRoute()"
+---
+
+# Function: testRoute()
+
+```ts
+function testRoute(module, options): Promise<TestRouteResult>
+```
+
+Tests an API route module by dispatching to the appropriate handler.
+Handles method routing, OPTIONS auto-handling, HEAD fallback, and response conversion.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `module` | [`ApiHandlerModule`](../../../../index/interfaces/api-handler-module) |
+| `options` | [`TestRouteOptions`](../interfaces/test-route-options) |
+
+## Returns
+
+`Promise`\<[`TestRouteResult`](../interfaces/test-route-result)\>
+
+## Example
+
+```typescript
+import { testRoute } from '@robojs/server/testing'
+import * as usersRoute from '../src/api/users/[id]'
+
+// Test GET request
+const result = await testRoute(usersRoute, {
+  method: 'GET',
+  params: { id: '123' }
+})
+expect(result.status).toBe(200)
+expect(await result.json()).toEqual({ id: '123' })
+
+// Test POST request with body
+const postResult = await testRoute(usersRoute, {
+  method: 'POST',
+  body: { name: 'John' }
+})
+expect(postResult.status).toBe(201)
+```

@@ -1,0 +1,27 @@
+---
+title: "MockPluginConfig"
+---
+
+# Interface: MockPluginConfig
+
+Configuration options for the @robojs/mock plugin.
+
+These options can be set in your project's plugin configuration:
+```typescript
+// config/plugins/robojs/mock.ts
+export default {
+  autoOpenStage: true,
+  defaultSessionConfig: {
+    guilds: [{ name: 'Test Server' }]
+  }
+}
+```
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="autoopenstage"></a> `autoOpenStage?` | `boolean` | Automatically open the Stage UI in the browser when running `robo mock start`. Can be overridden with the `--no-browser` CLI flag. **Default** `true` |
+| <a id="datadirectory"></a> `dataDirectory?` | `string` | Directory path for storing mock session data. Relative to the .robo directory. **Default** `'mock'` |
+| <a id="defaultsessionconfig"></a> `defaultSessionConfig?` | [`SessionConfig`](session-config) | Default session configuration used when running `robo mock start`. Provides initial state for guilds, users, channels, etc. |
+| <a id="standaloneport"></a> `standalonePort?` | `number` | Port for standalone mock server mode (`robo mock start` command). Uses a unique default to avoid clashing with user's server. **Default** `6625` |

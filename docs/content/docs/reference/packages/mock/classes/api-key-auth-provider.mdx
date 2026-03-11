@@ -1,0 +1,99 @@
+---
+title: "ApiKeyAuthProvider"
+---
+
+# Class: ApiKeyAuthProvider
+
+API key-based auth provider stub
+To be implemented for hosted deployment
+
+## Implements
+
+- [`AuthProvider`](../interfaces/auth-provider)
+
+## Constructors
+
+### new ApiKeyAuthProvider()
+
+```ts
+new ApiKeyAuthProvider(options?): ApiKeyAuthProvider
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | \{ `apiKeyHeader`: `string`; \} |
+| `options.apiKeyHeader`? | `string` |
+
+#### Returns
+
+[`ApiKeyAuthProvider`](api-key-auth-provider)
+
+## Methods
+
+### onSessionCreated()
+
+```ts
+onSessionCreated(_session, _auth): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `_session` | [`ISession`](../interfaces/i-session) |
+| `_auth` | [`AuthResult`](../interfaces/auth-result) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`AuthProvider`](../interfaces/auth-provider).[`onSessionCreated`](../interfaces/auth-provider#onsessioncreated)
+
+***
+
+### onSessionEnded()
+
+```ts
+onSessionEnded(_session, _auth): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `_session` | [`ISession`](../interfaces/i-session) |
+| `_auth` | [`AuthResult`](../interfaces/auth-result) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`AuthProvider`](../interfaces/auth-provider).[`onSessionEnded`](../interfaces/auth-provider#onsessionended)
+
+***
+
+### validateRequest()
+
+```ts
+validateRequest(req): Promise<AuthResult>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `req` | `Request` |
+
+#### Returns
+
+`Promise`\<[`AuthResult`](../interfaces/auth-result)\>
+
+#### Implementation of
+
+[`AuthProvider`](../interfaces/auth-provider).[`validateRequest`](../interfaces/auth-provider#validaterequest)

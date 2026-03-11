@@ -1,0 +1,36 @@
+---
+title: "createTestClient()"
+---
+
+# Function: createTestClient()
+
+```ts
+function createTestClient(): TestClient
+```
+
+Creates a fluent test client for testing multiple routes.
+Routes are registered with patterns that support dynamic segments.
+
+## Returns
+
+[`TestClient`](../interfaces/test-client)
+
+## Example
+
+```typescript
+import { createTestClient } from '@robojs/server/testing'
+import * as usersRoute from '../src/api/users/[id]'
+import * as postsRoute from '../src/api/posts'
+
+const client = createTestClient()
+  .route('users/[id]', usersRoute)
+  .route('posts', postsRoute)
+
+// Make requests - params are automatically extracted from the URL
+const user = await client.get('/users/123')
+expect(user.status).toBe(200)
+expect(await user.json()).toEqual({ id: '123' })
+
+const posts = await client.post('/posts', { body: { title: 'Hello' } })
+expect(posts.status).toBe(201)
+```

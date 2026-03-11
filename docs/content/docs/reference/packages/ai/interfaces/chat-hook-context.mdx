@@ -1,0 +1,17 @@
+---
+title: "ChatHookContext"
+---
+
+# Interface: ChatHookContext
+
+Hook function invoked during message orchestration. Hooks can adjust the message array before each
+attempt, enabling preprocessing, safety filters, or analytics.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="channel"></a> `channel` | `null` \| `TextBasedChannel` |
+| <a id="member"></a> `member` | `null` \| `GuildMember` |
+| <a id="messages"></a> `messages` | [`ChatMessage`](chat-message)[] |
+| <a id="user"></a> `user` | `null` \| `User` |

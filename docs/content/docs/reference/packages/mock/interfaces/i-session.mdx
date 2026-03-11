@@ -1,0 +1,380 @@
+---
+title: "ISession"
+---
+
+# Interface: ISession
+
+Represents an isolated test session with its own state
+
+## Properties
+
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="config"></a> `config?` | `public` | [`SessionConfig`](session-config) |
+| <a id="connections"></a> `connections` | `public` | `Map`\<`string`, [`ConnectionState`](connection-state)\> |
+| <a id="createdat"></a> `createdAt` | `public` | `number` |
+| <a id="expiresat"></a> `expiresAt` | `public` | `number` |
+| <a id="id"></a> `id` | `public` | `string` |
+| <a id="isending"></a> `isEnding` | `readonly` | `boolean` |
+| <a id="isexpired"></a> `isExpired` | `readonly` | `boolean` |
+| <a id="name"></a> `name?` | `public` | `string` |
+| <a id="recorder"></a> `recorder` | `readonly` | `IActionRecorder` |
+| <a id="scenariomanager"></a> `scenarioManager` | `readonly` | `IScenarioManager` |
+| <a id="state"></a> `state` | `public` | [`SessionState`](session-state) |
+| <a id="token"></a> `token` | `public` | `string` |
+
+## Methods
+
+### checkRateLimit()
+
+```ts
+checkRateLimit(): 
+  | null
+  | {
+  retryAfter: number;
+}
+```
+
+#### Returns
+
+  \| `null`
+  \| \{
+  `retryAfter`: `number`;
+ \}
+
+***
+
+### clearActionContext()
+
+```ts
+clearActionContext(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### clearActions()
+
+```ts
+clearActions(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### clearLogs()
+
+```ts
+clearLogs(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### dispatch()
+
+```ts
+dispatch(event, data): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `event` | `string` |
+| `data` | `unknown` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### exportRecording()
+
+```ts
+exportRecording(): SessionRecording
+```
+
+#### Returns
+
+[`SessionRecording`](session-recording)
+
+***
+
+### getActionContext()
+
+```ts
+getActionContext(): null | ActionContext
+```
+
+#### Returns
+
+`null` \| `ActionContext`
+
+***
+
+### getActions()
+
+```ts
+getActions(): RecordedAction[]
+```
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getActionsByType()
+
+```ts
+getActionsByType(type): RecordedAction[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`ActionType`](../type-aliases/action-type) |
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getActionsSince()
+
+```ts
+getActionsSince(timestamp): RecordedAction[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `timestamp` | `number` |
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getDispatches()
+
+```ts
+getDispatches(): RecordedAction[]
+```
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getGatewayMessages()
+
+```ts
+getGatewayMessages(): RecordedAction[]
+```
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getInteractionResponses()
+
+```ts
+getInteractionResponses(): RecordedAction[]
+```
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getLogs()
+
+```ts
+getLogs(): SessionLogEntry[]
+```
+
+#### Returns
+
+`SessionLogEntry`[]
+
+***
+
+### getLogsSince()
+
+```ts
+getLogsSince(timestamp): SessionLogEntry[]
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `timestamp` | `number` |
+
+#### Returns
+
+`SessionLogEntry`[]
+
+***
+
+### getMessagesSent()
+
+```ts
+getMessagesSent(): RecordedAction[]
+```
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### getRestRequests()
+
+```ts
+getRestRequests(): RecordedAction[]
+```
+
+#### Returns
+
+[`RecordedAction`](recorded-action)[]
+
+***
+
+### recordAction()
+
+```ts
+recordAction(
+   type, 
+   data, 
+   options?): RecordedAction
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`ActionType`](../type-aliases/action-type) |
+| `data` | `unknown` |
+| `options`? | [`RecordActionOptions`](record-action-options) |
+
+#### Returns
+
+[`RecordedAction`](recorded-action)
+
+***
+
+### recordLog()
+
+```ts
+recordLog(entry): SessionLogEntry
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `entry` | `Omit`\<`SessionLogEntry`, `"id"`\> |
+
+#### Returns
+
+`SessionLogEntry`
+
+***
+
+### reset()
+
+```ts
+reset(): void
+```
+
+#### Returns
+
+`void`
+
+***
+
+### setActionContext()
+
+```ts
+setActionContext(context): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | `null` \| `ActionContext` |
+
+#### Returns
+
+`void`
+
+***
+
+### setRateLimitSimulation()
+
+```ts
+setRateLimitSimulation(enabled, retryAfter?): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `enabled` | `boolean` |
+| `retryAfter`? | `number` |
+
+#### Returns
+
+`void`
+
+***
+
+### startAutoArchive()
+
+```ts
+startAutoArchive(intervalMs?): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `intervalMs`? | `number` |
+
+#### Returns
+
+`void`
+
+***
+
+### stopAutoArchive()
+
+```ts
+stopAutoArchive(): void
+```
+
+#### Returns
+
+`void`

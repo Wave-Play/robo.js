@@ -1,0 +1,17 @@
+---
+title: "getMockConfig()"
+---
+
+# Function: getMockConfig()
+
+```ts
+function getMockConfig(): MockConfig
+```
+
+Get current mock configuration
+Automatically uses ROBO_MOCK_PORT environment variable if set
+and reads server info for correct URLs (standalone vs embedded mode)
+
+## Returns
+
+[`MockConfig`](../interfaces/mock-config)

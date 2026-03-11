@@ -1,0 +1,15 @@
+{
+  "title": "@robojs/dev",
+  "pages": [
+    "index",
+    "---Interfaces---",
+    "interfaces/dev-plugin-config",
+    "---Functions---",
+    "functions/handle-debug-button",
+    "functions/print-error-response",
+    "functions/send-debug-error",
+    "---Variables---",
+    "variables/debug_mode",
+    "variables/dev-logger"
+  ]
+}

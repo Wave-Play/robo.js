@@ -1,0 +1,63 @@
+---
+title: "AuthProvider"
+---
+
+# Interface: AuthProvider
+
+Authentication provider interface for hosted deployments
+
+## Methods
+
+### onSessionCreated()?
+
+```ts
+optional onSessionCreated(session, auth): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `session` | [`ISession`](i-session) |
+| `auth` | [`AuthResult`](auth-result) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### onSessionEnded()?
+
+```ts
+optional onSessionEnded(session, auth): Promise<void>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `session` | [`ISession`](i-session) |
+| `auth` | [`AuthResult`](auth-result) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### validateRequest()
+
+```ts
+validateRequest(req): Promise<AuthResult>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `req` | `Request` |
+
+#### Returns
+
+`Promise`\<[`AuthResult`](auth-result)\>

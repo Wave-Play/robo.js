@@ -1,0 +1,28 @@
+---
+title: "EventConfig"
+---
+
+# Interface: EventConfig
+
+Event configuration options.
+
+## Extends
+
+- [`BaseConfig`](base-config)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="__auto"></a> `__auto?` | `true` | Internal: auto-generated handler marker | [`BaseConfig`](base-config).[`__auto`](base-config#__auto) |
+| <a id="__module"></a> `__module?` | `string` | Internal: module name | [`BaseConfig`](base-config).[`__module`](base-config#__module) |
+| <a id="__path"></a> `__path?` | `string` | Internal: file path | [`BaseConfig`](base-config).[`__path`](base-config#__path) |
+| <a id="__plugin"></a> `__plugin?` | \{ `name`: `string`; `path`: `string`; \} | Internal: plugin info | [`BaseConfig`](base-config).[`__plugin`](base-config#__plugin) |
+| `__plugin.name` | `string` | - | - |
+| `__plugin.path` | `string` | - | - |
+| <a id="description"></a> `description?` | `string` | Handler description | [`BaseConfig`](base-config).[`description`](base-config#description) |
+| <a id="disabled"></a> `disabled?` | `boolean` | Whether the handler is disabled | [`BaseConfig`](base-config).[`disabled`](base-config#disabled) |
+| <a id="frequency"></a> `frequency?` | `"always"` \| `"once"` | Event frequency: - 'always': Handler runs on every event (default) - 'once': Handler runs only on first occurrence | - |
+| <a id="priority"></a> `priority?` | `number` | Execution priority (lower runs first). Default is 0. | - |
+| <a id="serveronly"></a> `serverOnly?` | `string` \| `string`[] | Restrict to specific server IDs | [`BaseConfig`](base-config).[`serverOnly`](base-config#serveronly) |
+| <a id="timeout"></a> `timeout?` | `number` | Execution timeout in milliseconds | [`BaseConfig`](base-config).[`timeout`](base-config#timeout) |

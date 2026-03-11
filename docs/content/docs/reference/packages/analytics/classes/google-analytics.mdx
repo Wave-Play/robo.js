@@ -1,37 +1,36 @@
 ---
 title: "GoogleAnalytics"
-description: "Google Analytics implementation for Robo.js"
 ---
 
 # Class: GoogleAnalytics
-
-Google Analytics engine implementation for Robo.js analytics.
-
-```ts
-new GoogleAnalytics(options?): GoogleAnalytics
-```
 
 ## Extends
 
 - `BaseEngine`
 
-## Constructor
+## Constructors
+
+### new GoogleAnalytics()
 
 ```ts
 new GoogleAnalytics(options?): GoogleAnalytics
 ```
 
-Creates a new Google Analytics tracking instance.
+#### Parameters
 
-### Parameters
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | `GoogleAnalyticsOptions` |
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `options` | `GoogleAnalyticsOptions` | Configuration options for Google Analytics |
+#### Returns
 
-### Returns
+[`GoogleAnalytics`](google-analytics)
 
-`GoogleAnalytics` - A new Google Analytics instance
+#### Overrides
+
+```ts
+BaseEngine.constructor
+```
 
 ## Methods
 
@@ -41,22 +40,24 @@ Creates a new Google Analytics tracking instance.
 event(name, options?): Promise<void>
 ```
 
-Tracks an event with Google Analytics.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `name` | `string` | The name of the event to track |
-| `options` | `EventOptions` | Optional configuration for the event |
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `options`? | `EventOptions` |
 
 #### Returns
 
-`Promise<void>`
+`Promise`\<`void`\>
 
 #### Overrides
 
-`BaseEngine.event`
+```ts
+BaseEngine.event
+```
+
+***
 
 ### view()
 
@@ -64,78 +65,19 @@ Tracks an event with Google Analytics.
 view(page, options?): Promise<void>
 ```
 
-Tracks a page view with Google Analytics.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `page` | `string` | The page path to track |
-| `options` | `ViewOptions` | Optional configuration for the page view |
+| Parameter | Type |
+| ------ | ------ |
+| `page` | `string` |
+| `options`? | `ViewOptions` |
 
 #### Returns
 
-`Promise<void>`
+`Promise`\<`void`\>
 
 #### Overrides
 
-`BaseEngine.view`
-
-## GoogleAnalyticsOptions Type
-
-| Property | Type | Description |
-| -------- | ---- | ----------- |
-| `measurementId` | `string` | Google Analytics measurement ID (e.g., "G-XXXXXXXXXX") |
-| `apiSecret` | `string` | Optional Google Analytics API secret for server-side tracking |
-| `userIdKey` | `string` | Optional key to use for user identification |
-
-## Example
-
 ```ts
-import { GoogleAnalytics } from '@robojs/analytics'
-
-// Create a Google Analytics instance
-const ga = new GoogleAnalytics({
-  measurementId: 'G-XXXXXXXXXX',
-  apiSecret: 'YOUR_API_SECRET' // For server-side tracking
-})
-
-// Track a page view
-await ga.view('/dashboard', {
-  title: 'User Dashboard'
-})
-
-// Track an event
-await ga.event('button_click', {
-  properties: {
-    button_id: 'login-button',
-    page: 'home'
-  }
-})
+BaseEngine.view
 ```
-
-## Usage with ManyEngines
-
-```ts
-import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
-
-// Create multiple analytics engines
-const ga = new GoogleAnalytics({
-  measurementId: 'G-XXXXXXXXXX'
-})
-
-const plausible = new PlausibleAnalytics('yourdomain.com')
-
-// Combine them into a single engine
-const analytics = new ManyEngines(ga, plausible)
-
-// Now all tracking calls will go to both engines
-await analytics.event('signup_completed')
-```
-
-## Notes
-
-- This class implements server-side Google Analytics tracking
-- For client-side tracking, consider using Google's client-side scripts directly
-- Requires proper configuration with your Google Analytics property
-- All tracking is asynchronous and returns Promises

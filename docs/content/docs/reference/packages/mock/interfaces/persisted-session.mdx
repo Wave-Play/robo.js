@@ -1,0 +1,20 @@
+---
+title: "PersistedSession"
+---
+
+# Interface: PersistedSession
+
+Persisted session data structure.
+Contains all information needed for replay and analysis.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="actions"></a> `actions` | [`RecordedAction`](recorded-action)[] | All recorded actions (chronological order) |
+| <a id="createdat"></a> `createdAt` | `number` | - |
+| <a id="endedat"></a> `endedAt` | `number` | - |
+| <a id="id"></a> `id` | `string` | Session metadata |
+| <a id="name"></a> `name?` | `string` | - |
+| <a id="state"></a> `state` | [`SerializedSessionState`](serialized-session-state) | Final session state snapshot |
+| <a id="summary"></a> `summary` | [`SessionSummary`](session-summary) | Session summary statistics |

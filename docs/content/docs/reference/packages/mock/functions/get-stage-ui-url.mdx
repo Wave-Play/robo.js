@@ -1,0 +1,34 @@
+---
+title: "getStageUIUrl()"
+---
+
+# Function: getStageUIUrl()
+
+```ts
+function getStageUIUrl(sessionToken): string
+```
+
+Gets the Stage UI URL for a given session token.
+Automatically handles plugin prefix configuration.
+
+Note: Uses trailing slash on /stage/ so relative asset paths resolve correctly.
+Without trailing slash: /mock/stage + ./assets/foo.js = /mock/assets/foo.js (wrong)
+With trailing slash: /mock/stage/ + ./assets/foo.js = /mock/stage/assets/foo.js (correct)
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sessionToken` | `string` | The session token (e.g., 'mock:sess_xxx') |
+
+## Returns
+
+`string`
+
+The full Stage UI URL
+
+## Example
+
+```ts
+'http://localhost:3000/stage/?token=mock%3Asess_xxx'
+```

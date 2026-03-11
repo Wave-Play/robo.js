@@ -1,0 +1,21 @@
+---
+title: "PresenceOptions<T>"
+---
+
+# Interface: PresenceOptions\<T\>
+
+Options for useSyncPresence hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="heartbeatinterval"></a> `heartbeatInterval?` | `number` | Interval for sending heartbeat updates (default: 2000ms) |
+| <a id="initialpresence"></a> `initialPresence?` | `T` | Initial presence data for this client |
+| <a id="staletimeout"></a> `staleTimeout?` | `number` | Milliseconds before marking a user as stale (default: 5000) |

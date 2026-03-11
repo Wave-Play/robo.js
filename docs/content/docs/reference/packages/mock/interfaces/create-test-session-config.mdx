@@ -1,0 +1,27 @@
+---
+title: "CreateTestSessionConfig"
+---
+
+# Interface: CreateTestSessionConfig
+
+Configuration for creating a test session
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="config"></a> `config?` | \{ `applicationId`: `string`; `approvedPrivilegedIntents`: `bigint`; `botUser`: \{ `id`: `string`; `username`: `string`; \}; `commands`: \{ `description`: `string`; `name`: `string`; `options`: `unknown`[]; `type`: `number`; \}[]; `enforceIntents`: `boolean`; `guilds`: \{ `channels`: \{ `name`: `string`; `type`: `number`; \}[]; `id`: `string`; `name`: `string`; \}[]; `maxActions`: `number`; `maxLogs`: `number`; `permissionEnforcement`: `"none"` \| `"basic"` \| `"strict"`; `users`: \{ `bot`: `boolean`; `id`: `string`; `username`: `string`; \}[]; \} | Session configuration |
+| `config.applicationId?` | `string` | Application ID for the bot |
+| `config.approvedPrivilegedIntents?` | `bigint` | Approved privileged intents as bigint |
+| `config.botUser?` | \{ `id`: `string`; `username`: `string`; \} | Bot user configuration |
+| `config.botUser.id?` | `string` | - |
+| `config.botUser.username?` | `string` | - |
+| `config.commands?` | \{ `description`: `string`; `name`: `string`; `options`: `unknown`[]; `type`: `number`; \}[] | Commands to seed in session (for Stage UI testing) |
+| `config.enforceIntents?` | `boolean` | Enforce intents |
+| `config.guilds?` | \{ `channels`: \{ `name`: `string`; `type`: `number`; \}[]; `id`: `string`; `name`: `string`; \}[] | Pre-configured guilds |
+| `config.maxActions?` | `number` | Maximum number of recorded actions before LRU eviction (default: 10000) |
+| `config.maxLogs?` | `number` | Maximum number of recorded logs before LRU eviction (default: 10000) |
+| `config.permissionEnforcement?` | `"none"` \| `"basic"` \| `"strict"` | Permission enforcement level |
+| `config.users?` | \{ `bot`: `boolean`; `id`: `string`; `username`: `string`; \}[] | Pre-configured users |
+| <a id="name"></a> `name?` | `string` | Optional session name |
+| <a id="ttl"></a> `ttl?` | `number` | Session TTL in milliseconds |

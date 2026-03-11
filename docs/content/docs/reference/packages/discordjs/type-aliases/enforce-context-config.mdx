@@ -1,0 +1,18 @@
+---
+title: "EnforceContextConfig<C>"
+---
+
+# Type Alias: EnforceContextConfig\<C\>
+
+```ts
+type EnforceContextConfig<C> = Exclude<keyof C, keyof ContextConfig> extends never ? C : "Extra properties are not allowed in ContextConfig";
+```
+
+Enforces that no extra properties exist beyond ContextConfig.
+Returns an error message type if extra properties are found.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`ContextConfig`](../interfaces/context-config) |

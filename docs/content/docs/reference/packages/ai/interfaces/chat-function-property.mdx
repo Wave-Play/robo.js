@@ -1,0 +1,18 @@
+---
+title: "ChatFunctionProperty"
+---
+
+# Interface: ChatFunctionProperty
+
+Schema fragment representing a property definition within [ChatFunctionParameters](chat-function-parameters).
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description?` | `string` | Human-readable description exposed to the model. |
+| <a id="enum"></a> `enum?` | (`string` \| `number` \| `boolean`)[] | Enumerated accepted values, if applicable. |
+| <a id="items"></a> `items?` | [`ChatFunctionProperty`](chat-function-property) | Nested schema for array item validation. |
+| <a id="maximum"></a> `maximum?` | `number` | Maximum numeric value when `type` is numeric. |
+| <a id="minimum"></a> `minimum?` | `number` | Minimum numeric value when `type` is numeric. |
+| <a id="type"></a> `type` | `"string"` \| `"number"` \| `"boolean"` \| `"array"` \| `"integer"` | Primitive JSON schema type. |

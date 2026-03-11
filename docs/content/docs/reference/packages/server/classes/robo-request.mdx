@@ -1,6 +1,5 @@
 ---
 title: "RoboRequest"
-description: "Enhanced Request API for Robo.js servers"
 ---
 
 # Class: RoboRequest
@@ -13,26 +12,11 @@ Extends the [Web Request API](https://developer.mozilla.org/docs/Web/API/Request
 
 ## Properties
 
-| Property | Modifier | Type | Description | Inherited from |
-| ------ | ------ | ------ | ------ | ------ |
-| `[INTERNALS]` | `public` | `object` | Internal storage for request data | - |
-| `[INTERNALS].params` | `public` | `Record<string, string>` | Route parameters | - |
-| `[INTERNALS].raw` | `public` | `IncomingMessage` | Raw Node.js request object | - |
-| `body` | `readonly` | `ReadableStream<Uint8Array>` | [MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/body) | `Request.body` |
-| `bodyUsed` | `readonly` | `boolean` | [MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/bodyUsed) | `Request.bodyUsed` |
-| `cache` | `readonly` | `RequestCache` | Returns the cache mode associated with request | `Request.cache` |
-| `credentials` | `readonly` | `RequestCredentials` | Returns the credentials mode associated with request | `Request.credentials` |
-| `destination` | `readonly` | `RequestDestination` | Returns the kind of resource requested | `Request.destination` |
-| `headers` | `readonly` | `Headers` | Returns a Headers object consisting of the headers associated with request | `Request.headers` |
-| `integrity` | `readonly` | `string` | Returns request's subresource integrity metadata | `Request.integrity` |
-| `keepalive` | `readonly` | `boolean` | Returns a boolean indicating whether or not request can outlive the global | `Request.keepalive` |
-| `method` | `readonly` | `string` | Returns request's HTTP method | `Request.method` |
-| `mode` | `readonly` | `RequestMode` | Returns the mode associated with request | `Request.mode` |
-| `redirect` | `readonly` | `RequestRedirect` | Returns the redirect mode associated with request | `Request.redirect` |
-| `referrer` | `readonly` | `string` | Returns the referrer of request | `Request.referrer` |
-| `referrerPolicy` | `readonly` | `ReferrerPolicy` | Returns the referrer policy associated with request | `Request.referrerPolicy` |
-| `signal` | `readonly` | `AbortSignal` | Returns the signal associated with request | `Request.signal` |
-| `url` | `readonly` | `string` | Returns the URL of request as a string | `Request.url` |
+| Property | Type |
+| ------ | ------ |
+| <a id="internals"></a> `[INTERNALS]` | \{ `params`: `Record`\<`string`, `string`\>; `raw`: `IncomingMessage`; \} |
+| `[INTERNALS].params` | `Record`\<`string`, `string`\> |
+| `[INTERNALS].raw` | `IncomingMessage` |
 
 ## Accessors
 
@@ -44,11 +28,11 @@ Extends the [Web Request API](https://developer.mozilla.org/docs/Web/API/Request
 get params(): Record<string, string>
 ```
 
-Provides access to route parameters (e.g., for `/users/:id`, `params.id` would contain the extracted value).
-
 ##### Returns
 
-`Record<string, string>` - Object containing route parameters
+`Record`\<`string`, `string`\>
+
+***
 
 ### query
 
@@ -58,11 +42,11 @@ Provides access to route parameters (e.g., for `/users/:id`, `params.id` would c
 get query(): Record<string, string | string[]>
 ```
 
-Provides access to query parameters from the URL.
-
 ##### Returns
 
-`Record<string, string | string[]>` - Object containing query parameters
+`Record`\<`string`, `string` \| `string`[]\>
+
+***
 
 ### raw
 
@@ -72,109 +56,46 @@ Provides access to query parameters from the URL.
 get raw(): IncomingMessage
 ```
 
-Provides access to the underlying Node.js request object.
-
 ##### Returns
 
-`IncomingMessage` - Raw Node.js request object
+`IncomingMessage`
 
 ## Methods
 
-### arrayBuffer()
+### forTesting()
 
 ```ts
-arrayBuffer(): Promise<ArrayBuffer>
+static forTesting(options): RoboRequest
 ```
 
-[MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/arrayBuffer)
+Creates a RoboRequest for testing purposes without requiring an IncomingMessage.
+This factory method allows creating fully-functional RoboRequest instances
+with params, query, headers, and body for unit testing API handlers.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`ForTestingOptions`](../interfaces/for-testing-options) |
 
 #### Returns
 
-`Promise<ArrayBuffer>`
+[`RoboRequest`](robo-request)
 
-#### Inherited from
+#### Example
 
-`Request.arrayBuffer`
-
-### blob()
-
-```ts
-blob(): Promise<Blob>
+```typescript
+const request = RoboRequest.forTesting({
+  method: 'POST',
+  path: '/users',
+  params: { id: '123' },
+  query: { include: 'profile' },
+  body: { name: 'John' }
+})
+const response = await handler(request)
 ```
 
-[MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/blob)
-
-#### Returns
-
-`Promise<Blob>`
-
-#### Inherited from
-
-`Request.blob`
-
-### clone()
-
-```ts
-clone(): Request
-```
-
-[MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/clone)
-
-#### Returns
-
-`Request`
-
-#### Inherited from
-
-`Request.clone`
-
-### formData()
-
-```ts
-formData(): Promise<FormData>
-```
-
-[MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/formData)
-
-#### Returns
-
-`Promise<FormData>`
-
-#### Inherited from
-
-`Request.formData`
-
-### json()
-
-```ts
-json(): Promise<any>
-```
-
-[MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/json)
-
-#### Returns
-
-`Promise<any>`
-
-#### Inherited from
-
-`Request.json`
-
-### text()
-
-```ts
-text(): Promise<string>
-```
-
-[MDN Reference](https://developer.mozilla.org/docs/Web/API/Request/text)
-
-#### Returns
-
-`Promise<string>`
-
-#### Inherited from
-
-`Request.text`
+***
 
 ### from()
 
@@ -182,39 +103,13 @@ text(): Promise<string>
 static from(req, options?): Promise<RoboRequest>
 ```
 
-Creates a RoboRequest from a Node.js IncomingMessage.
-
 #### Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `req` | `IncomingMessage` | Node.js request object |
-| `options` | `FromOptions` | Additional options for request creation |
+| Parameter | Type |
+| ------ | ------ |
+| `req` | `IncomingMessage` |
+| `options`? | `FromOptions` |
 
 #### Returns
 
-`Promise<RoboRequest>` - A Promise resolving to a new RoboRequest instance
-
-## Example
-
-```ts
-// In an API route handler
-export default async function(request, reply) {
-  // Get route parameters
-  const userId = request.params.id
-  
-  // Get query parameters
-  const { sort, filter } = request.query
-  
-  // Parse JSON body
-  const body = await request.json()
-  
-  // Send a response
-  return reply.json({ 
-    userId, 
-    sort, 
-    filter,
-    receivedData: body
-  })
-}
-```
+`Promise`\<[`RoboRequest`](robo-request)\>

@@ -1,132 +1,16 @@
 ---
 title: "RoboReply"
-description: "Response helper for Robo.js server routes"
 ---
 
 # Interface: RoboReply
 
-The RoboReply interface provides methods for sending responses from route handlers in a Robo.js server.
-
 ## Properties
 
-### hasSent
-
-```ts
-hasSent: boolean;
-```
-
-Indicates whether a response has already been sent.
-
-### raw
-
-```ts
-raw: ServerResponse<IncomingMessage>;
-```
-
-The underlying Node.js server response object.
-
-## Methods
-
-### code()
-
-```ts
-code: (statusCode) => RoboReply;
-```
-
-Sets the HTTP status code for the response.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `statusCode` | `number` | The HTTP status code to set |
-
-#### Returns
-
-[`RoboReply`](#interface-roboreply) - The reply instance for chaining
-
-### header()
-
-```ts
-header: (name, value) => RoboReply;
-```
-
-Sets an HTTP header on the response.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `name` | `string` | The header name |
-| `value` | `string` | The header value |
-
-#### Returns
-
-[`RoboReply`](#interface-roboreply) - The reply instance for chaining
-
-### json()
-
-```ts
-json: (data) => RoboReply;
-```
-
-Sends a JSON response with the provided data.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `data` | `unknown` | The data to serialize as JSON |
-
-#### Returns
-
-[`RoboReply`](#interface-roboreply) - The reply instance for chaining
-
-### send()
-
-```ts
-send: (response) => RoboReply;
-```
-
-Sends a response to the client.
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `response` | `Response \| BodyInit` | The response to send |
-
-#### Returns
-
-[`RoboReply`](#interface-roboreply) - The reply instance for chaining
-
-## Example
-
-```ts
-// In a route handler
-export default function(req, reply) {
-  // Send a basic response
-  return reply.send('Hello World')
-  
-  // Or send a JSON response with a status code
-  return reply
-    .code(200)
-    .header('X-Custom-Header', 'custom-value')
-    .json({ 
-      message: 'Success',
-      data: { id: 123, name: 'Example' }
-    })
-    
-  // Or check if a response has been sent
-  if (!reply.hasSent) {
-    return reply.code(404).json({ error: 'Not Found' })
-  }
-}
-```
-
-## Notes
-
-- The methods return the reply instance itself, allowing for method chaining
-- Once a response is sent, the `hasSent` property will be `true`
-- Attempting to send multiple responses will not result in errors, but only the first one will be sent
-- For advanced use cases, you can access the raw Node.js response object via the `raw` property
+| Property | Type |
+| ------ | ------ |
+| <a id="code"></a> `code` | (`statusCode`: `number`) =\> [`RoboReply`](robo-reply) |
+| <a id="hassent"></a> `hasSent` | `boolean` |
+| <a id="header"></a> `header` | (`name`: `string`, `value`: `string`) =\> [`RoboReply`](robo-reply) |
+| <a id="json"></a> `json` | (`data`: `unknown`) =\> [`RoboReply`](robo-reply) |
+| <a id="raw"></a> `raw` | `ServerResponse`\<`IncomingMessage`\> |
+| <a id="send"></a> `send` | (`response`: `Response` \| `BodyInit`) =\> [`RoboReply`](robo-reply) |

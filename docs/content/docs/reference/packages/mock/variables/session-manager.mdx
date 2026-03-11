@@ -1,0 +1,34 @@
+---
+title: "sessionManager"
+---
+
+# Variable: sessionManager
+
+```ts
+const sessionManager: {
+  create: (...args) => Promise<Session>;
+  delete: (...args) => Promise<boolean>;
+  destroy: () => Promise<void>;
+  findSessionByInteractionToken: (token) => undefined | Session;
+  get: (...args) => undefined | Session;
+  getAll: () => Session[];
+  getByToken: (...args) => undefined | Session;
+  get size: number;
+};
+```
+
+Convenience accessor for the session manager singleton
+Used by the Control API and other components
+
+## Type declaration
+
+| Name | Type |
+| ------ | ------ |
+| <a id="create"></a> `create` | (...`args`) =\> `Promise`\<[`Session`](../classes/session)\> |
+| <a id="delete"></a> `delete` | (...`args`) =\> `Promise`\<`boolean`\> |
+| <a id="destroy"></a> `destroy` | () =\> `Promise`\<`void`\> |
+| <a id="findsessionbyinteractiontoken"></a> `findSessionByInteractionToken` | (`token`) =\> `undefined` \| [`Session`](../classes/session) |
+| <a id="get"></a> `get` | (...`args`) =\> `undefined` \| [`Session`](../classes/session) |
+| <a id="getall"></a> `getAll` | () =\> [`Session`](../classes/session)[] |
+| <a id="getbytoken"></a> `getByToken` | (...`args`) =\> `undefined` \| [`Session`](../classes/session) |
+| <a id="size"></a> `get size` | `number` |

@@ -1,0 +1,97 @@
+---
+title: "DIRECTORY"
+description: "API reference for @robojs/sync"
+---
+
+# @robojs/sync
+
+API reference documentation for `@robojs/sync`.
+
+## Interfaces
+
+- [`CallResult`](interfaces/call-result) - Result of an RPC call.
+- [`Client`](interfaces/client) - Represents a connected client in a sync context.
+- [`CursorOptions`](interfaces/cursor-options) - Options for useSyncCursor hook.
+- [`CursorPosition`](interfaces/cursor-position) - Cursor position data.
+- [`CursorResult`](interfaces/cursor-result) - Result returned by useSyncCursor hook.
+- [`DragBounds`](interfaces/drag-bounds) - Bounds configuration for draggable elements.
+- [`DragOptions`](interfaces/drag-options) - Options for useSyncDrag hook.
+- [`DragResult`](interfaces/drag-result) - Result returned by useSyncDrag hook.
+- [`DragState`](interfaces/drag-state) - Base state shape for draggable elements.
+- [`HandlerClient`](interfaces/handler-client) - Client info available in handler contexts.
+- [`LockContext`](interfaces/lock-context) - Lock context for lockable SyncBox.
+- [`MessagePayload`](interfaces/message-payload)
+- [`Participant`](interfaces/participant) - Represents a participant in the presence system.
+- [`PresenceOptions`](interfaces/presence-options) - Options for useSyncPresence hook.
+- [`PresenceResult`](interfaces/presence-result) - Result returned by useSyncPresence hook.
+- [`RemoteCursor`](interfaces/remote-cursor) - Represents a remote cursor with client info.
+- [`SchemaField`](interfaces/schema-field) - Built-in schema field definition.
+- [`SchemaValidationResult`](interfaces/schema-validation-result) - Schema validation result.
+- [`ServerZone`](interfaces/server-zone) - Server-side zone handle for direct state manipulation.
+- [`SetStateOptions`](interfaces/set-state-options) - Options for setState calls.
+- [`SyncBoxHandle`](interfaces/sync-box-handle) - Imperative handle for SyncBox ref.
+- [`SyncBoxProps`](interfaces/sync-box-props) - Props for SyncBox component.
+- [`SyncBroadcastResult`](interfaces/sync-broadcast-result) - Result object returned by useSyncBroadcast hook.
+- [`SyncCallContext`](interfaces/sync-call-context) - Context passed to RPC call handlers.
+- [`SyncContextOptions`](interfaces/sync-context-options) - Options for useSyncContext hook callbacks.
+- [`SyncContext`](interfaces/sync-context) - Context object returned by useSyncState, useSyncContext, and useSyncBroadcast.
+- [`SyncCursorsProps`](interfaces/sync-cursors-props) - Props for SyncCursors component.
+- [`SyncDraggableProps`](interfaces/sync-draggable-props) - Props for SyncDraggable component.
+- [`SyncDraggableRenderProps`](interfaces/sync-draggable-render-props) - Render props for SyncDraggable children.
+- [`SyncHandlerModule`](interfaces/sync-handler-module) - A sync handler module can export any combination of these.
+- [`SyncHandlerRecord`](interfaces/sync-handler-record) - Resolved handler record from manifest.
+- [`SyncMiddlewareContext`](interfaces/sync-middleware-context) - Context passed to middleware handlers.
+- [`SyncMiddlewareModule`](interfaces/sync-middleware-module) - A middleware module exports before and/or after hooks.
+- [`SyncMiddlewareRecord`](interfaces/sync-middleware-record) - Middleware record from manifest.
+- [`SyncStatus`](interfaces/sync-status) - Sync status for SyncBox components.
+- [`SyncUpdateContext`](interfaces/sync-update-context) - Context passed to validation and transform handlers.
+- [`SyncZoneProps`](interfaces/sync-zone-props) - Props for SyncZone component.
+- [`ZoneContextValue`](interfaces/zone-context-value) - Context value provided by SyncZone to its children.
+
+## Type Aliases
+
+- [`BroadcastCallback`](type-aliases/broadcast-callback)
+- [`BuiltInSchema`](type-aliases/built-in-schema) - Built-in schema definition (alternative to Zod).
+- [`CallHandler`](type-aliases/call-handler) - RPC call handler function.
+- [`ConnectionStatus`](type-aliases/connection-status) - Connection status for zones and sync components.
+- [`ContextCallback`](type-aliases/context-callback)
+- [`ContextEvent`](type-aliases/context-event) - Internal callback types for context management.
+- [`InterpolateConfig`](type-aliases/interpolate-config) - Interpolation config for smooth remote state updates.
+- [`MessageType`](type-aliases/message-type)
+- [`MiddlewareAfterHandler`](type-aliases/middleware-after-handler) - Middleware 'after' handler.
+- [`MiddlewareBeforeHandler`](type-aliases/middleware-before-handler) - Middleware 'before' handler.
+- [`MiddlewareResult`](type-aliases/middleware-result) - Result from middleware 'before' handler.
+- [`OnUpdateHandler`](type-aliases/on-update-handler) - Post-update callback.
+- [`SyncBoxRenderFunction`](type-aliases/sync-box-render-function) - Render function signature for SyncBox children.
+- [`SyncBoxSetState`](type-aliases/sync-box-set-state) - setState function signature with options support.
+- [`SyncCallFunction`](type-aliases/sync-call-function) - The call function type returned by useSyncCall.
+- [`ThrottleConfig`](type-aliases/throttle-config) - Throttle config - either a single number or per-field config.
+- [`TransformHandler`](type-aliases/transform-handler) - Transform function - modify state before broadcasting.
+- [`ValidateHandler`](type-aliases/validate-handler) - Validation function - return true to accept, false or string to reject.
+
+## Functions
+
+- [`ClearHandlers`](functions/clear-handlers) - Clear all registered handlers (for testing).
+- [`GetHandlerCount`](functions/get-handler-count) - Get handler count (for debugging).
+- [`GetMiddlewareCount`](functions/get-middleware-count) - Get middleware count (for debugging).
+- [`RegisterHandler`](functions/register-handler) - Register a sync handler from manifest.
+- [`RegisterMiddleware`](functions/register-middleware) - Register middleware from manifest.
+- [`SyncBox`](functions/sync-box) - A synced container component that synchronizes arbitrary state across clients.
+- [`SyncContextProvider`](functions/sync-context-provider)
+- [`SyncCursors`](functions/sync-cursors) - Pre-built component that renders all participant cursors automatically.
+- [`SyncDraggable`](functions/sync-draggable) - Declarative component wrapper for making any element draggable and synchronized.
+- [`SyncZone`](functions/sync-zone) - A context provider that establishes a sync zone with key prefix inheritance.
+- [`UseSyncBroadcast`](functions/use-sync-broadcast) - Hook for sending and receiving ephemeral broadcasts in a sync room.
+- [`UseSyncCall`](functions/use-sync-call) - Hook for making RPC calls to server-side sync handlers.
+- [`UseSyncContext`](functions/use-sync-context) - Hook to access the sync context for a given key/room.
+- [`UseSyncCursor`](functions/use-sync-cursor) - Hook for tracking and broadcasting cursor positions in real-time.
+- [`UseSyncDrag`](functions/use-sync-drag) - Hook for creating draggable elements with synchronized positions.
+- [`UseSyncPresence`](functions/use-sync-presence) - Hook for tracking participant presence with arbitrary metadata.
+- [`UseSyncState`](functions/use-sync-state) - Hook for synchronized state across clients.
+- [`UseZoneContext`](functions/use-zone-context) - Hook to access the current zone context.
+- [`UseZoneKey`](functions/use-zone-key) - Hook to compute the full key by combining zone prefix with a local id.
+
+## Variables
+
+- [`SyncServer`](variables/sync-server)
+- [`ZoneContext`](variables/zone-context) - Context for zone prefix inheritance.

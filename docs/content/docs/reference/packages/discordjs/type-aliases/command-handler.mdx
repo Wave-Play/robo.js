@@ -1,0 +1,25 @@
+---
+title: "CommandHandler()"
+---
+
+# Type Alias: CommandHandler()
+
+```ts
+type CommandHandler = (interaction, options) => 
+  | CommandResult
+| Promise<CommandResult>;
+```
+
+Command handler function type.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interaction` | `ChatInputCommandInteraction` |
+| `options` | `Record`\<`string`, `unknown`\> |
+
+## Returns
+
+  \| [`CommandResult`](command-result)
+  \| `Promise`\<[`CommandResult`](command-result)\>

@@ -1,0 +1,22 @@
+---
+title: "extractCommandOptions()"
+---
+
+# Function: extractCommandOptions()
+
+```ts
+function extractCommandOptions(interaction, commandOptions): Record<string, unknown>
+```
+
+Extract command options from a Discord interaction
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `interaction` | `ChatInputCommandInteraction`\<`CacheType`\> |
+| `commandOptions` | \| `undefined` \| readonly [`CommandOption`](../type-aliases/command-option)[] |
+
+## Returns
+
+`Record`\<`string`, `unknown`\>

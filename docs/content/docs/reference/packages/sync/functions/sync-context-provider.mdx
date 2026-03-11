@@ -1,105 +1,25 @@
 ---
-title: "SyncContextProvider"
-description: "Context provider for synchronized state in Robo.js"
+title: "SyncContextProvider()"
 ---
 
 # Function: SyncContextProvider()
 
 ```ts
-function SyncContextProvider(props): Element
+function SyncContextProvider<ClientData>(props): Element
 ```
 
-A React context provider component that enables state synchronization across components and instances.
-This provider must wrap any components that use the `useSyncState` hook.
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
 
 ## Parameters
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `props` | `SyncContextProviderProps` | Props including children and optional configuration |
+| Parameter | Type |
+| ------ | ------ |
+| `props` | `SyncContextProviderProps`\<`ClientData`\> |
 
 ## Returns
 
-`Element` - A React element that provides sync context to its children
-
-## SyncContextProviderProps
-
-| Property | Type | Description |
-| -------- | ---- | ----------- |
-| `children` | `ReactNode` | Child components that will have access to synchronized state |
-| `initialState?` | `Record<string, any>` | Optional initial state values |
-| `onSync?` | `(key: string[], value: any) => void` | Optional callback when state changes |
-
-## Example
-
-```tsx
-import { SyncContextProvider, useSyncState } from '@robojs/sync'
-
-function App() {
-  return (
-    <SyncContextProvider>
-      <Counter />
-      <CounterDisplay />
-    </SyncContextProvider>
-  )
-}
-
-function Counter() {
-  // Create a synchronized counter state
-  const [count, setCount] = useSyncState(0, ['counter'])
-  
-  return (
-    <div>
-      <p>Count: {count}</p>
-      <button onClick={() => setCount(count + 1)}>
-        Increment
-      </button>
-    </div>
-  )
-}
-
-function CounterDisplay() {
-  // This will sync with the same counter state
-  const [count] = useSyncState(0, ['counter'])
-  
-  return (
-    <div>
-      <p>Counter value: {count}</p>
-    </div>
-  )
-}
-```
-
-## With Initial State
-
-```tsx
-import { SyncContextProvider } from '@robojs/sync'
-
-function App() {
-  // Pre-populate synchronized state
-  const initialState = {
-    'counter': 5,
-    'settings': { darkMode: true }
-  }
-  
-  return (
-    <SyncContextProvider initialState={initialState}>
-      {/* Children will have access to pre-populated state */}
-      <AppContent />
-    </SyncContextProvider>
-  )
-}
-```
-
-## Notes
-
-- The provider should be placed high in the component tree, typically near the root
-- All components that use `useSyncState` must be descendants of this provider
-- State is synchronized across all components using the same keys
-- You can provide initial state values through the `initialState` prop
-- The `onSync` callback can be used to perform side effects when state changes
-
-## Related
-
-- [useSyncState](/ref/packages/sync/functions/use-sync-state) - Hook for using synchronized state
-- [MessagePayload](/ref/packages/sync/interfaces/message-payload) - Interface for sync messages
+`Element`

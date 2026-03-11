@@ -1,0 +1,97 @@
+---
+title: "DiscordPortalNamespace"
+---
+
+# Interface: DiscordPortalNamespace
+
+Discord namespace on the portal.
+Provides typed access to all Discord handlers and controllers.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="commands"></a> `commands` | `Record`\<`string`, `HandlerRecord`\<[`CommandHandler`](../../index/type-aliases/command-handler), `Record`\<`string`, `unknown`\>\>\> | Access command data (Record of handler records) |
+| <a id="context"></a> `context` | `Record`\<`string`, `HandlerRecord`\<[`ContextHandler`](../../index/type-aliases/context-handler), `Record`\<`string`, `unknown`\>\>\> | Access context menu data (Record of handler records) |
+| <a id="events"></a> `events` | `Record`\<`string`, `HandlerRecord`\<[`EventHandler`](../../index/type-aliases/event-handler), `Record`\<`string`, `unknown`\>\>[]\> | Access event data (Record of handler record arrays) |
+| <a id="middleware"></a> `middleware` | `Record`\<`string`, `HandlerRecord`\<[`MiddlewareHandler`](../../index/type-aliases/middleware-handler), `Record`\<`string`, `unknown`\>\>\> | Access middleware data (Record of handler records) |
+
+## Methods
+
+### command()
+
+```ts
+command(name): CommandController
+```
+
+Get controller for a specific command
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`CommandController`](../../index/interfaces/command-controller)
+
+***
+
+### contextMenu()
+
+```ts
+contextMenu(name): ContextController
+```
+
+Get controller for a specific context menu (singular accessor)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`ContextController`](../../index/interfaces/context-controller)
+
+***
+
+### event()
+
+```ts
+event(name): EventController
+```
+
+Get controller for a specific event
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`EventController`](../../index/interfaces/event-controller)
+
+***
+
+### middlewareItem()
+
+```ts
+middlewareItem(name): MiddlewareController
+```
+
+Get controller for a specific middleware
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`MiddlewareController`](../../index/interfaces/middleware-controller)

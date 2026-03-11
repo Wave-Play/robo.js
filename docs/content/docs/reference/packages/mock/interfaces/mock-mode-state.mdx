@@ -1,0 +1,19 @@
+---
+title: "MockModeState"
+---
+
+# Interface: MockModeState
+
+Global state for mock mode.
+Set by CLI command, read by start hook.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="connectingtoexisting"></a> `connectingToExisting` | `boolean` | True if connecting to external mock server (via --mock-session) |
+| <a id="enabled"></a> `enabled` | `boolean` | Whether running in mock mode |
+| <a id="externalserverport"></a> `externalServerPort` | `null` \| `number` | Port of external mock server (if connecting to existing) |
+| <a id="sessionid"></a> `sessionId` | `null` \| `string` | Pre-generated session ID |
+| <a id="sessionname"></a> `sessionName` | `null` \| `string` | Session name (usually project folder name) |
+| <a id="shouldopenbrowser"></a> `shouldOpenBrowser` | `boolean` | Should open browser after start (true for --mock, false for --mock-session) |

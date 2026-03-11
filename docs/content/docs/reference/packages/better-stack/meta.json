@@ -1,0 +1,8 @@
+{
+  "title": "@robojs/better-stack",
+  "pages": [
+    "index",
+    "---Functions---",
+    "functions/create-logtail-drain"
+  ]
+}

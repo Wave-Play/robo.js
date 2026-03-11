@@ -1,0 +1,27 @@
+---
+title: "ProviderConfig"
+---
+
+# Type Alias: ProviderConfig
+
+```ts
+type ProviderConfig = {
+  options: Record<string, unknown>;
+  type: string;
+};
+```
+
+Identifies the provider implementation and its raw configuration.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="options"></a> `options` | `Record`\<`string`, `unknown`\> | Implementation specific configuration options. |
+| <a id="type"></a> `type` | `string` | Provider type identifier (e.g., `jira`, `github`). |
+
+## Remarks
+
+The `options` bag is intentionally untyped to allow provider packages to define their own
+schema. Providers should validate and coerce values during
+import('./providers/base.js').RoadmapProvider.validateConfig.

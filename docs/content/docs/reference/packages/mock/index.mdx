@@ -1,0 +1,274 @@
+---
+title: "DIRECTORY"
+description: "API reference for @robojs/mock"
+---
+
+# @robojs/mock
+
+API reference documentation for `@robojs/mock`.
+
+## Classes
+
+- [`ActionRecorder`](classes/action-recorder) - ActionRecorder manages recorded actions for a session with memory management.
+- [`ApiKeyAuthProvider`](classes/api-key-auth-provider) - API key-based auth provider stub.
+- [`GatewayServer`](classes/gateway-server) - Discord Gateway WebSocket server.
+- [`InMemoryStorage`](classes/in-memory-storage) - In-memory session storage implementation.
+- [`MemoryAttachmentStorage`](classes/memory-attachment-storage) - In-memory attachment storage implementation.
+- [`MockServerState`](classes/mock-server-state) - Centralized state management for a mock session.
+- [`NoOpAuthProvider`](classes/no-op-auth-provider) - No-op auth provider that allows all requests.
+- [`RecordingPlayer`](classes/recording-player) - RecordingPlayer - Replays recorded sessions with timing and validation.
+- [`SessionManager`](classes/session-manager) - Manages session lifecycle and storage.
+- [`Session`](classes/session) - Represents an isolated test session with its own state.
+- [`TestInteractions`](classes/test-interactions) - Test helper for user interactions.
+- [`TestUsers`](classes/test-users) - Test helper for managing multiple users in a session.
+
+## Interfaces
+
+- [`AssertionResult`](interfaces/assertion-result) - Result of a single assertion (for UI persistence).
+- [`AttachmentPayload`](interfaces/attachment-payload) - Attachment metadata from payload_json (used during upload).
+- [`AttachmentStorage`](interfaces/attachment-storage) - Abstract interface for attachment storage backends.
+- [`AuthProvider`](interfaces/auth-provider) - Authentication provider interface for hosted deployments.
+- [`AuthResult`](interfaces/auth-result) - Result of authentication validation.
+- [`AutocompleteInteractionPayloadOptions`](interfaces/autocomplete-interaction-payload-options) - Options for building an autocomplete INTERACTION_CREATE payload.
+- [`BufferedStageEvent`](interfaces/buffered-stage-event) - Buffered event for reconnection replay.
+- [`ButtonInteractionPayloadOptions`](interfaces/button-interaction-payload-options) - Options for building a button INTERACTION_CREATE payload.
+- [`ConnectionState`](interfaces/connection-state) - WebSocket connection state.
+- [`ContextMenuInteractionPayloadOptions`](interfaces/context-menu-interaction-payload-options) - Options for building a context menu INTERACTION_CREATE payload.
+- [`CreateSessionOptions`](interfaces/create-session-options) - Options for creating a new session.
+- [`CreateTestSessionConfig`](interfaces/create-test-session-config) - Configuration for creating a test session.
+- [`DispatchAutocompleteOptions`](interfaces/dispatch-autocomplete-options) - Options for dispatching an autocomplete interaction.
+- [`DispatchButtonClickOptions`](interfaces/dispatch-button-click-options) - Options for dispatching a button click.
+- [`DispatchContextMenuOptions`](interfaces/dispatch-context-menu-options) - Options for dispatching a context menu interaction.
+- [`DispatchEventData`](interfaces/dispatch-event-data) - Discord event data for dispatch.
+- [`DispatchGuildMemberAddOptions`](interfaces/dispatch-guild-member-add-options) - Options for dispatching guild member add event.
+- [`DispatchGuildMemberRemoveOptions`](interfaces/dispatch-guild-member-remove-options) - Options for dispatching guild member remove event.
+- [`DispatchGuildMemberUpdateOptions`](interfaces/dispatch-guild-member-update-options) - Options for dispatching guild member update event.
+- [`DispatchModalSubmitOptions`](interfaces/dispatch-modal-submit-options) - Options for dispatching a modal submit interaction.
+- [`DispatchRoleCreateOptions`](interfaces/dispatch-role-create-options) - Options for dispatching role create event.
+- [`DispatchRoleDeleteOptions`](interfaces/dispatch-role-delete-options) - Options for dispatching role delete event.
+- [`DispatchRoleUpdateOptions`](interfaces/dispatch-role-update-options) - Options for dispatching role update event.
+- [`DispatchSelectMenuOptions`](interfaces/dispatch-select-menu-options) - Options for dispatching a select menu interaction.
+- [`DispatchSlashCommandOptions`](interfaces/dispatch-slash-command-options) - Options for dispatching a slash command.
+- [`DispatchThreadCreateOptions`](interfaces/dispatch-thread-create-options) - Options for dispatching a thread create event.
+- [`EnforcePermissionsOptions`](interfaces/enforce-permissions-options) - Options for enforcing permissions on an endpoint.
+- [`EnforcementContext`](interfaces/enforcement-context) - Extended context for enforcement checks.
+- [`EnforcementOptions`](interfaces/enforcement-options) - Options for permission enforcement.
+- [`ExpectActionOptions`](interfaces/expect-action-options) - Options for expectAction helper.
+- [`GatewayPayload`](interfaces/gateway-payload) - Gateway payload structure.
+- [`GuildMemberAddPayloadOptions`](interfaces/guild-member-add-payload-options) - Options for building a GUILD_MEMBER_ADD payload.
+- [`GuildMemberRemovePayloadOptions`](interfaces/guild-member-remove-payload-options) - Options for building a GUILD_MEMBER_REMOVE payload.
+- [`GuildMemberUpdatePayloadOptions`](interfaces/guild-member-update-payload-options) - Options for building a GUILD_MEMBER_UPDATE payload.
+- [`GuildRoleCreatePayloadOptions`](interfaces/guild-role-create-payload-options) - Options for building a GUILD_ROLE_CREATE payload.
+- [`GuildRoleDeletePayloadOptions`](interfaces/guild-role-delete-payload-options) - Options for building a GUILD_ROLE_DELETE payload.
+- [`GuildRoleUpdatePayloadOptions`](interfaces/guild-role-update-payload-options) - Options for building a GUILD_ROLE_UPDATE payload.
+- [`HelloPayloadData`](interfaces/hello-payload-data) - HELLO payload data.
+- [`ISession`](interfaces/i-session) - Represents an isolated test session with its own state.
+- [`IdentifyPayloadData`](interfaces/identify-payload-data) - IDENTIFY payload data (op 2).
+- [`InteractionCreatePayloadOptions`](interfaces/interaction-create-payload-options) - Options for building an INTERACTION_CREATE payload.
+- [`InteractionData`](interfaces/interaction-data) - Interaction dispatch data.
+- [`MockAttachment`](interfaces/mock-attachment) - Attachment metadata as returned in API responses.
+- [`MockChannelConfig`](interfaces/mock-channel-config) - Configuration for creating a mock channel.
+- [`MockChannelOverwrite`](interfaces/mock-channel-overwrite) - Channel permission overwrite.
+- [`MockChannel`](interfaces/mock-channel) - Mock channel data.
+- [`MockConfig`](interfaces/mock-config) - Mock server configuration.
+- [`MockDefaultReaction`](interfaces/mock-default-reaction) - Default reaction emoji for forum posts.
+- [`MockForumChannelConfig`](interfaces/mock-forum-channel-config) - Configuration for creating a mock forum channel.
+- [`MockForumChannel`](interfaces/mock-forum-channel) - Forum channel data (type 15) or Media channel data (type 16).
+- [`MockForumPostConfig`](interfaces/mock-forum-post-config) - Configuration for creating a forum post (thread with initial message).
+- [`MockForumTag`](interfaces/mock-forum-tag) - Forum tag definition (available_tags on forum channels).
+- [`MockForumThread`](interfaces/mock-forum-thread) - Forum thread (post) - extends thread with applied_tags.
+- [`MockGuildConfig`](interfaces/mock-guild-config) - Configuration for creating a mock guild.
+- [`MockGuildMemberConfig`](interfaces/mock-guild-member-config) - Configuration for creating/updating a guild member.
+- [`MockGuildMember`](interfaces/mock-guild-member) - Guild member data.
+- [`MockGuild`](interfaces/mock-guild) - Mock guild data.
+- [`MockInteractionOption`](interfaces/mock-interaction-option) - Interaction option value.
+- [`MockInteraction`](interfaces/mock-interaction) - Mock interaction data (slash commands, buttons, modals, etc.).
+- [`MockMessageConfig`](interfaces/mock-message-config) - Configuration for creating a mock message.
+- [`MockMessage`](interfaces/mock-message) - Mock message data.
+- [`MockModeState`](interfaces/mock-mode-state) - Global state for mock mode.
+- [`MockPluginConfig`](interfaces/mock-plugin-config) - Configuration options for the @robojs/mock plugin.
+- [`MockRoboHandle`](interfaces/mock-robo-handle) - Result of starting a mock Robo.
+- [`MockRoleConfig`](interfaces/mock-role-config) - Configuration for creating a role.
+- [`MockRoleTags`](interfaces/mock-role-tags) - Role tags for special roles.
+- [`MockRole`](interfaces/mock-role) - Full role object.
+- [`MockThreadConfig`](interfaces/mock-thread-config) - Configuration for creating a mock thread.
+- [`MockThreadMember`](interfaces/mock-thread-member) - Thread member representation.
+- [`MockThreadMetadata`](interfaces/mock-thread-metadata) - Thread metadata (nested in thread channel).
+- [`MockThread`](interfaces/mock-thread) - Thread channel data (extends MockChannel).
+- [`MockUserConfig`](interfaces/mock-user-config) - Configuration for creating a mock user.
+- [`MockUser`](interfaces/mock-user) - Mock user data.
+- [`MockWebhookConfig`](interfaces/mock-webhook-config) - Configuration for creating a webhook.
+- [`MockWebhook`](interfaces/mock-webhook) - Full webhook object.
+- [`ModalSubmitInteractionPayloadOptions`](interfaces/modal-submit-interaction-payload-options) - Options for building a modal submit INTERACTION_CREATE payload.
+- [`PermissionCheckResult`](interfaces/permission-check-result) - Result of a permission check.
+- [`PermissionContext`](interfaces/permission-context) - Context for permission checking.
+- [`PersistedSession`](interfaces/persisted-session) - Persisted session data structure.
+- [`RecordActionOptions`](interfaces/record-action-options) - Options for recording an action.
+- [`RecordedAction`](interfaces/recorded-action) - Recorded action from bot (for test assertions).
+- [`RecordingMetadata`](interfaces/recording-metadata) - Metadata for a session recording.
+- [`ReplayOptions`](interfaces/replay-options) - Options for replaying a recorded session.
+- [`ReplayResult`](interfaces/replay-result) - Result of a replay operation.
+- [`ReplayState`](interfaces/replay-state) - Real-time playback state for UI binding.
+- [`SeedMessageConfig`](interfaces/seed-message-config) - Configuration for seed messages.
+- [`SelectMenuInteractionPayloadOptions`](interfaces/select-menu-interaction-payload-options) - Options for building a select menu INTERACTION_CREATE payload.
+- [`SerializedMockChannel`](interfaces/serialized-mock-channel)
+- [`SerializedMockForumChannel`](interfaces/serialized-mock-forum-channel) - Serialized forum/media channel.
+- [`SerializedMockForumTag`](interfaces/serialized-mock-forum-tag) - Serialized forum tag.
+- [`SerializedMockForumThread`](interfaces/serialized-mock-forum-thread) - Serialized forum thread/post.
+- [`SerializedMockGuildMember`](interfaces/serialized-mock-guild-member) - Serialized guild member for API responses.
+- [`SerializedMockGuild`](interfaces/serialized-mock-guild)
+- [`SerializedMockInteraction`](interfaces/serialized-mock-interaction)
+- [`SerializedMockMessage`](interfaces/serialized-mock-message)
+- [`SerializedMockRole`](interfaces/serialized-mock-role) - Serialized role for API responses.
+- [`SerializedMockThread`](interfaces/serialized-mock-thread)
+- [`SerializedMockUser`](interfaces/serialized-mock-user)
+- [`SerializedMockWebhook`](interfaces/serialized-mock-webhook) - Serialized webhook for API responses.
+- [`SerializedSessionState`](interfaces/serialized-session-state) - Serialized session state for API responses.
+- [`SessionConfig`](interfaces/session-config) - Configuration for session initial state.
+- [`SessionManagerOptions`](interfaces/session-manager-options) - Options for SessionManager.
+- [`SessionRecording`](interfaces/session-recording) - Complete session recording with metadata for replay.
+- [`SessionResponse`](interfaces/session-response) - Response from creating a session via Control API.
+- [`SessionState`](interfaces/session-state) - Isolated state for a session.
+- [`SessionStorage`](interfaces/session-storage) - Storage interface for session persistence.
+- [`SessionSummary`](interfaces/session-summary) - Summary statistics for a mock session.
+- [`StageAddReactionData`](interfaces/stage-add-reaction-data) - Data for add_reaction command.
+- [`StageBotDisconnectedData`](interfaces/stage-bot-disconnected-data) - Data payload for bot_disconnected events.
+- [`StageBotErrorData`](interfaces/stage-bot-error-data) - Data payload for bot_error events.
+- [`StageBotReadyData`](interfaces/stage-bot-ready-data) - Data payload for bot_ready events.
+- [`StageChannel`](interfaces/stage-channel) - Simplified channel data for stage clients.
+- [`StageClickButtonData`](interfaces/stage-click-button-data) - Data for click_button command.
+- [`StageCommandResponseData`](interfaces/stage-command-response-data) - Data payload for command_response events.
+- [`StageCommand`](interfaces/stage-command) - Command envelope sent from stage client to server.
+- [`StageConnectionState`](interfaces/stage-connection-state) - State for a connected stage client.
+- [`StageEvent`](interfaces/stage-event) - Event envelope sent from server to stage client.
+- [`StageGuild`](interfaces/stage-guild) - Simplified guild data for stage clients.
+- [`StageInteractionResponseData`](interfaces/stage-interaction-response-data) - Data payload for interaction_response events.
+- [`StageInvokeCommandData`](interfaces/stage-invoke-command-data) - Data for invoke_command command.
+- [`StageMember`](interfaces/stage-member) - Simplified member data for stage clients.
+- [`StageMessageCreateData`](interfaces/stage-message-create-data) - Data payload for message_create events.
+- [`StageMessage`](interfaces/stage-message) - Simplified message data for stage clients.
+- [`StageRestCallData`](interfaces/stage-rest-call-data) - Data payload for rest_call events.
+- [`StageSelectOptionData`](interfaces/stage-select-option-data) - Data for select_option command.
+- [`StageSendMessageData`](interfaces/stage-send-message-data) - Data for send_message command.
+- [`StageServerConfig`](interfaces/stage-server-config) - Configuration for the Stage WebSocket server.
+- [`StageStartTypingData`](interfaces/stage-start-typing-data) - Data for start_typing command.
+- [`StageSubmitModalData`](interfaces/stage-submit-modal-data) - Data for submit_modal command.
+- [`StageSubscribeChannelData`](interfaces/stage-subscribe-channel-data) - Data for subscribe_channel command.
+- [`StageUser`](interfaces/stage-user) - Simplified user data for stage clients.
+- [`StartMockRoboOptions`](interfaces/start-mock-robo-options) - Options for starting a mock Robo.
+- [`StateOptions`](interfaces/state-options) - Options for creating a MockServerState.
+- [`StateSyncPayload`](interfaces/state-sync-payload) - Full state sync payload sent on connection.
+- [`StorageConfig`](interfaces/storage-config) - Configuration for creating storage backends.
+- [`StorageStats`](interfaces/storage-stats) - Storage statistics for monitoring and debugging.
+- [`StoredAttachment`](interfaces/stored-attachment) - Attachment data stored in session state (includes binary data).
+- [`TestFileEntry`](interfaces/test-file-entry) - Entry for a single test file.
+- [`TestResult`](interfaces/test-result) - Result for a single test case.
+- [`TestSessionRegistry`](interfaces/test-session-registry) - Registry for a single test run.
+- [`TestSession`](interfaces/test-session) - Test session wrapper with convenience methods.
+- [`TestUtils`](interfaces/test-utils) - Combined test utilities for a session.
+- [`ThreadCreatePayloadOptions`](interfaces/thread-create-payload-options) - Options for building a THREAD_CREATE payload.
+- [`ThreadDeletePayloadOptions`](interfaces/thread-delete-payload-options) - Options for building a THREAD_DELETE payload.
+- [`ThreadListSyncPayloadOptions`](interfaces/thread-list-sync-payload-options) - Options for building a THREAD_LIST_SYNC payload.
+- [`ThreadMemberUpdatePayloadOptions`](interfaces/thread-member-update-payload-options) - Options for building a THREAD_MEMBER_UPDATE payload.
+- [`ThreadMembersUpdatePayloadOptions`](interfaces/thread-members-update-payload-options) - Options for building a THREAD_MEMBERS_UPDATE payload.
+- [`ThreadUpdatePayloadOptions`](interfaces/thread-update-payload-options) - Options for building a THREAD_UPDATE payload.
+- [`ValidationMismatch`](interfaces/validation-mismatch) - Details of a single validation mismatch.
+- [`ValidationResult`](interfaces/validation-result) - Results of validating bot responses during replay.
+- [`WaitForActionOptions`](interfaces/wait-for-action-options) - Options for waiting for an action.
+- [`WebhooksUpdatePayloadOptions`](interfaces/webhooks-update-payload-options) - Options for building a WEBHOOKS_UPDATE payload.
+
+## Type Aliases
+
+- [`ActionType`](type-aliases/action-type) - Action type classification for recorded actions.
+- [`PermissionEnforcementLevel`](type-aliases/permission-enforcement-level) - Permission enforcement level.
+- [`StageCommandType`](type-aliases/stage-command-type) - Command types sent from stage clients to server.
+- [`StageEventType`](type-aliases/stage-event-type) - Event types sent from server to stage clients.
+- [`StageMessageSource`](type-aliases/stage-message-source) - Message source indicator for stage events.
+- [`ValidationMode`](type-aliases/validation-mode) - Validation mode for comparing bot responses during replay.
+
+## Enumerations
+
+- [`ForumLayoutType`](enumerations/forum-layout-type) - Forum layout types.
+- [`ForumSortOrderType`](enumerations/forum-sort-order-type) - Forum sort order types.
+- [`OverwriteType`](enumerations/overwrite-type) - Overwrite type enum.
+- [`WebhookType`](enumerations/webhook-type) - Webhook type enum.
+
+## Functions
+
+- [`BuildContextMenuInteractionPayload`](functions/build-context-menu-interaction-payload) - Build an INTERACTION_CREATE payload for context menu commands (op 0, t: "INTERACTION_CREATE").
+- [`ClearSessionActions`](functions/clear-session-actions) - Clear recorded actions for a session.
+- [`CloseGatewayServer`](functions/close-gateway-server) - Close and reset the gateway server singleton.
+- [`ComputePermissions`](functions/compute-permissions) - Compute permissions for a member in a specific channel.
+- [`ConfigureMock`](functions/configure-mock) - Configure the mock server URLs.
+- [`ControlApi`](functions/control-api) - Make a request to the control API.
+- [`CreateAuthMiddleware`](functions/create-auth-middleware) - Create an authentication middleware for the control API.
+- [`CreateDefaultGuildWithChannel`](functions/create-default-guild-with-channel) - Create a default guild with a general channel and add it to the session state.
+- [`CreateMockChannel`](functions/create-mock-channel) - Create a mock channel from config.
+- [`CreateMockForumChannel`](functions/create-mock-forum-channel) - Create a mock forum/media channel from config.
+- [`CreateMockGuildMember`](functions/create-mock-guild-member) - Create a mock guild member from config.
+- [`CreateMockGuild`](functions/create-mock-guild) - Create a mock guild from config.
+- [`CreateMockMessage`](functions/create-mock-message) - Create a mock message from config.
+- [`CreateMockRole`](functions/create-mock-role) - Create a mock role from config.
+- [`CreateMockThread`](functions/create-mock-thread) - Create a mock thread from config.
+- [`CreateMockUser`](functions/create-mock-user) - Create a mock user from config.
+- [`CreateSessionState`](functions/create-session-state) - Create an empty session state.
+- [`CreateSession`](functions/create-session) - Create a new test session.
+- [`CreateStorage`](functions/create-storage) - Factory function to create a storage backend from configuration.
+- [`CreateTestSession`](functions/create-test-session) - Create a test session with automatic registry tracking.
+- [`CreateTestUtils`](functions/create-test-utils)
+- [`DeepEquals`](functions/deep-equals) - Deep equality check for assertion comparison.
+- [`DeleteSession`](functions/delete-session) - Delete a session.
+- [`DispatchEvent`](functions/dispatch-event) - Dispatch a Discord event to a session.
+- [`DispatchInteraction`](functions/dispatch-interaction) - Dispatch an interaction to a session.
+- [`ExpectAction`](functions/expect-action) - Wait for an action and assert it matches expected data.
+- [`ExpectNoAction`](functions/expect-no-action) - Assert that no action of a type was recorded.
+- [`GenerateDiff`](functions/generate-diff) - Generate a diff string for UI display.
+- [`GenerateSnowflake`](functions/generate-snowflake) - Generate a Discord-compatible snowflake ID.
+- [`GetChannelMessages`](functions/get-channel-messages) - Get messages from a channel.
+- [`GetGatewayServer`](functions/get-gateway-server) - Get or create the gateway server singleton.
+- [`GetHistoricalActions`](functions/get-historical-actions) - Get all historical actions from a session (including those from before test started).
+- [`GetMockConfig`](functions/get-mock-config) - Get current mock configuration.
+- [`GetMockModeSession`](functions/get-mock-mode-session) - Gets the current mock mode session (if any).
+- [`GetMockModeState`](functions/get-mock-mode-state) - Gets the current mock mode state.
+- [`GetMockRestApiUrl`](functions/get-mock-rest-api-url) - Gets the REST API URL for the mock server.
+- [`GetMockServerUrl`](functions/get-mock-server-url) - Gets the base URL for the mock server (without any path).
+- [`GetPermissionNames`](functions/get-permission-names) - Get human-readable permission names from a bitfield.
+- [`GetSessionActions`](functions/get-session-actions) - Get recorded actions for a session.
+- [`GetSessionState`](functions/get-session-state) - Get session state.
+- [`GetStageUiUrl`](functions/get-stage-ui-url) - Gets the Stage UI URL for a given session token.
+- [`HasAllPermissions`](functions/has-all-permissions) - Check if a permission bitfield has all of the specified permissions.
+- [`HasAnyPermission`](functions/has-any-permission) - Check if a permission bitfield has any of the specified permissions.
+- [`HasPermission`](functions/has-permission) - Check if a permission bitfield has a specific permission.
+- [`MockRestApi`](functions/mock-rest-api) - Make a request to the mock server REST API.
+- [`RecordAssertion`](functions/record-assertion) - Record an assertion for UI persistence.
+- [`ResetMockConfig`](functions/reset-mock-config) - Reset mock configuration to defaults.
+- [`ResetSession`](functions/reset-session) - Reset a session to its initial state.
+- [`SerializeMockChannel`](functions/serialize-mock-channel) - Serialize a mock channel.
+- [`SerializeMockGuild`](functions/serialize-mock-guild) - Serialize a mock guild.
+- [`SerializeMockInteraction`](functions/serialize-mock-interaction) - Serialize a mock interaction.
+- [`SerializeMockMessage`](functions/serialize-mock-message) - Serialize a mock message.
+- [`SerializeMockUser`](functions/serialize-mock-user) - Serialize a mock user.
+- [`SerializeSessionState`](functions/serialize-session-state) - Serialize session state for API responses.
+- [`Sleep`](functions/sleep) - Sleep for a number of milliseconds.
+- [`SnowflakeToTimestamp`](functions/snowflake-to-timestamp) - Extract timestamp from a snowflake ID.
+- [`StartMockRobo`](functions/start-mock-robo) - Start a Robo connected to the mock server.
+- [`TimestampToSnowflake`](functions/timestamp-to-snowflake) - Create a snowflake from a specific timestamp.
+- [`WaitForAction`](functions/wait-for-action) - Wait for a specific action to be recorded.
+- [`WaitForAnyAction`](functions/wait-for-any-action) - Wait for any action matching a filter.
+- [`WaitForInteractionResponse`](functions/wait-for-interaction-response) - Wait for an interaction response.
+- [`WaitForMessage`](functions/wait-for-message) - Wait for a message to be sent by the bot.
+- [`WaitForMockServer`](functions/wait-for-mock-server) - Wait for the mock server to be ready.
+
+## Variables
+
+- [`AttachmentFlags`](variables/attachment-flags) - Discord attachment flags (bitfield).
+- [`AttachmentLimits`](variables/attachment-limits) - Validation constants for attachments.
+- [`Default_heartbeat_interval`](variables/default_heartbeat_interval) - Default heartbeat interval in milliseconds (same as Discord).
+- [`Default_mock_config`](variables/default_mock_config) - Default mock server configuration.
+- [`Default_mock_plugin_config`](variables/default_mock_plugin_config) - Default plugin configuration values.
+- [`DiscordErrorCodes`](variables/discord-error-codes) - Discord error codes for permission-related issues.
+- [`Gateway_version`](variables/gateway_version) - Supported Gateway API version.
+- [`MockLogger`](variables/mock-logger) - Shared logger for @robojs/mock plugin.
+- [`RoleLimits`](variables/role-limits) - Validation constants for roles.
+- [`SessionManager`](variables/session-manager) - Convenience accessor for the session manager singleton.
+- [`WebhookLimits`](variables/webhook-limits) - Validation constants for webhooks.

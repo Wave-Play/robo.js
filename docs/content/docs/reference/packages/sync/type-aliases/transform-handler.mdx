@@ -1,0 +1,28 @@
+---
+title: "TransformHandler()<T, ClientData>"
+---
+
+# Type Alias: TransformHandler()\<T, ClientData\>
+
+```ts
+type TransformHandler<T, ClientData> = (context) => T | Promise<T>;
+```
+
+Transform function - modify state before broadcasting.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`SyncUpdateContext`](../interfaces/sync-update-context)\<`T`, `ClientData`\> |
+
+## Returns
+
+`T` \| `Promise`\<`T`\>

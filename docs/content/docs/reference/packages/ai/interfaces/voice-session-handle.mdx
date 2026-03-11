@@ -1,0 +1,19 @@
+---
+title: "VoiceSessionHandle"
+---
+
+# Interface: VoiceSessionHandle
+
+Handle returned by [BaseEngine.startVoiceSession](../classes/base-engine#startvoicesession) to control an active session.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="channelid"></a> `channelId` | `string` | Voice channel identifier associated with the session. |
+| <a id="commitinput"></a> `commitInput?` | () =\> `Promise`\<`void`\> | Requests that buffered audio be committed for processing. |
+| <a id="guildid"></a> `guildId` | `string` | Guild identifier for the session. |
+| <a id="id"></a> `id` | `string` | Unique identifier assigned to the session. |
+| <a id="pump"></a> `pump?` | (`frame`: [`VoiceInputFrame`](voice-input-frame)) =\> `Promise`\<`void`\> | Pump additional audio frames into the session. |
+| <a id="stop"></a> `stop?` | (`reason`?: `string`) =\> `Promise`\<`void`\> | Stop the session and optionally provide a reason. |
+| <a id="textchannelid"></a> `textChannelId?` | `null` \| `string` | Related text channel identifier, when applicable. |

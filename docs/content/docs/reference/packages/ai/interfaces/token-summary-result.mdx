@@ -1,0 +1,15 @@
+---
+title: "TokenSummaryResult"
+---
+
+# Interface: TokenSummaryResult
+
+Result structure produced by [getSummary](../variables/token-ledger).
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="nextcursor"></a> `nextCursor?` | `string` | Pagination cursor for fetching subsequent results. |
+| <a id="results"></a> `results` | \{ `model`: `string`; `totals`: [`TokenWindowTotals`](token-window-totals); `windowKey`: `string`; \}[] | Aggregated rows grouped by model and window key. |
+| <a id="window"></a> `window` | [`TokenWindow`](../type-aliases/token-window) | Window that was aggregated. |

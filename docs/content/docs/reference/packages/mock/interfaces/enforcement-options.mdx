@@ -1,0 +1,18 @@
+---
+title: "EnforcementOptions"
+---
+
+# Interface: EnforcementOptions
+
+Options for permission enforcement
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="body"></a> `body?` | `unknown` | Request body (for contextual checks) |
+| <a id="level"></a> `level` | [`PermissionEnforcementLevel`](../type-aliases/permission-enforcement-level) | Enforcement level |
+| <a id="messageauthorid"></a> `messageAuthorId?` | `string` | Message author ID (for edit/delete checks - who wrote the message) |
+| <a id="messageid"></a> `messageId?` | `string` | Message ID (for edit/delete message checks) |
+| <a id="targetroleid"></a> `targetRoleId?` | `string` | Target role ID (for role management) |
+| <a id="targetuserid"></a> `targetUserId?` | `string` | Target user ID (for moderation actions) |

@@ -1,0 +1,26 @@
+---
+title: "MiddlewareHandler()"
+---
+
+# Type Alias: MiddlewareHandler()
+
+```ts
+type MiddlewareHandler = (data) => 
+  | void
+  | MiddlewareResult
+| Promise<MiddlewareResult | void>;
+```
+
+Middleware handler function type.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `data` | [`MiddlewareData`](../interfaces/middleware-data) |
+
+## Returns
+
+  \| `void`
+  \| [`MiddlewareResult`](../interfaces/middleware-result)
+  \| `Promise`\<[`MiddlewareResult`](../interfaces/middleware-result) \| `void`\>

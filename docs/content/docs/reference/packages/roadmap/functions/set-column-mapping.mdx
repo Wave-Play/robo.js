@@ -1,0 +1,36 @@
+---
+title: "setColumnMapping()"
+---
+
+# Function: setColumnMapping()
+
+```ts
+function setColumnMapping(
+   guildId, 
+   status, 
+   column): void
+```
+
+Sets a mapping between a provider status name and a column name (or null for no forum).
+
+This helper updates the column mapping for a specific status.
+The mapping is case-insensitive and matches status names.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `guildId` | `string` | The Discord guild ID |
+| `status` | `string` | The provider status name (case-insensitive) |
+| `column` | `null` \| `string` | The column name to map to, or null to track without forum |
+
+## Returns
+
+`void`
+
+## Example
+
+```ts
+setColumnMapping(guildId, 'QA', 'Development');  // Map QA to Development
+setColumnMapping(guildId, 'Blocked', null);       // Track Blocked without forum
+```

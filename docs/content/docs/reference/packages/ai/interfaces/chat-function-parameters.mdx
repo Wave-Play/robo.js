@@ -1,0 +1,15 @@
+---
+title: "ChatFunctionParameters"
+---
+
+# Interface: ChatFunctionParameters
+
+JSON schema snippet describing function parameters accepted by a chat tool.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="properties"></a> `properties` | `Record`\<`string`, [`ChatFunctionProperty`](chat-function-property)\> | Dictionary of property names to schema definitions. |
+| <a id="required"></a> `required?` | `string`[] | Required property names that must be supplied. |
+| <a id="type"></a> `type?` | `"object"` \| `"array"` | Top-level schema type, defaults to `object`. |

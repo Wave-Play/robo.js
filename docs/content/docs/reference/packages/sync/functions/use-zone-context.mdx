@@ -1,0 +1,41 @@
+---
+title: "useZoneContext()"
+---
+
+# Function: useZoneContext()
+
+```ts
+function useZoneContext<ClientData>(): 
+  | ZoneContextValue<ClientData>
+  | null
+```
+
+Hook to access the current zone context.
+Returns null if not within a SyncZone.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `ClientData` | `unknown` |
+
+## Returns
+
+  \| [`ZoneContextValue`](../interfaces/zone-context-value)\<`ClientData`\>
+  \| `null`
+
+## Example
+
+```ts
+function GameComponent() {
+  const zone = useZoneContext()
+  if (!zone) return <div>Not in a zone</div>
+
+  return (
+    <div>
+      Host: {zone.isHost ? 'You' : zone.hostId}
+      Players: {zone.clients.length}
+    </div>
+  )
+}
+```

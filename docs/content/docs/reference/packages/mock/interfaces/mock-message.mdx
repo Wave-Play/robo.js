@@ -1,0 +1,48 @@
+---
+title: "MockMessage"
+---
+
+# Interface: MockMessage
+
+Mock message data
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="attachments"></a> `attachments` | [`MockAttachment`](mock-attachment)[] |
+| <a id="authorid"></a> `authorId` | `string` |
+| <a id="call"></a> `call?` | `MockMessageCall` |
+| <a id="channelid"></a> `channelId` | `string` |
+| <a id="components"></a> `components?` | `unknown`[] |
+| <a id="content"></a> `content` | `string` |
+| <a id="editedtimestamp"></a> `editedTimestamp` | `null` \| `string` |
+| <a id="embeds"></a> `embeds` | `unknown`[] |
+| <a id="flags"></a> `flags?` | `number` |
+| <a id="guildid"></a> `guildId?` | `string` |
+| <a id="id"></a> `id` | `string` |
+| <a id="interaction"></a> `interaction?` | `MockMessageInteraction` |
+| <a id="interaction_metadata"></a> `interaction_metadata?` | `MockMessageInteractionMetadata` |
+| <a id="mentioneveryone"></a> `mentionEveryone` | `boolean` |
+| <a id="mentionroles"></a> `mentionRoles` | `string`[] |
+| <a id="mentions"></a> `mentions` | `string`[] |
+| <a id="message_reference"></a> `message_reference?` | \{ `channel_id`: `string`; `guild_id`: `string`; `message_id`: `string`; \} |
+| `message_reference.channel_id?` | `string` |
+| `message_reference.guild_id?` | `string` |
+| `message_reference.message_id?` | `string` |
+| <a id="message_snapshots"></a> `message_snapshots?` | `MockMessageSnapshot`[] |
+| <a id="nonce"></a> `nonce?` | `null` \| `string` \| `number` |
+| <a id="pinned"></a> `pinned` | `boolean` |
+| <a id="poll"></a> `poll?` | `MockPoll` |
+| <a id="position"></a> `position?` | `number` |
+| <a id="reactions"></a> `reactions?` | `MockReaction`[] |
+| <a id="resolved"></a> `resolved?` | `unknown` |
+| <a id="rolesubscriptiondata"></a> `roleSubscriptionData?` | \{ `isRenewal`: `boolean`; `roleSubscriptionListingId`: `string`; `tierName`: `string`; `totalMonthsSubscribed`: `number`; \} |
+| `roleSubscriptionData.isRenewal` | `boolean` |
+| `roleSubscriptionData.roleSubscriptionListingId` | `string` |
+| `roleSubscriptionData.tierName` | `string` |
+| `roleSubscriptionData.totalMonthsSubscribed` | `number` |
+| <a id="sticker_items"></a> `sticker_items?` | `MockStickerItem`[] |
+| <a id="timestamp"></a> `timestamp` | `string` |
+| <a id="tts"></a> `tts` | `boolean` |
+| <a id="type"></a> `type` | `number` |

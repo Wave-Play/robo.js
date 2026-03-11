@@ -1,0 +1,200 @@
+---
+title: "TestClient"
+---
+
+# Interface: TestClient
+
+Test client instance for testing multiple routes
+
+## Methods
+
+### delete()
+
+```ts
+delete(path, options?): Promise<TestRouteResult>
+```
+
+Execute a DELETE request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### get()
+
+```ts
+get(path, options?): Promise<TestRouteResult>
+```
+
+Execute a GET request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### head()
+
+```ts
+head(path, options?): Promise<TestRouteResult>
+```
+
+Execute a HEAD request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### options()
+
+```ts
+options(path, options?): Promise<TestRouteResult>
+```
+
+Execute an OPTIONS request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### patch()
+
+```ts
+patch(path, options?): Promise<TestRouteResult>
+```
+
+Execute a PATCH request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### post()
+
+```ts
+post(path, options?): Promise<TestRouteResult>
+```
+
+Execute a POST request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### put()
+
+```ts
+put(path, options?): Promise<TestRouteResult>
+```
+
+Execute a PUT request
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### request()
+
+```ts
+request(
+   method, 
+   path, 
+options?): Promise<TestRouteResult>
+```
+
+Execute a request with any method
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `method` | `"GET"` \| `"POST"` \| `"PUT"` \| `"PATCH"` \| `"DELETE"` \| `"OPTIONS"` \| `"HEAD"` |
+| `path` | `string` |
+| `options`? | `Omit`\<[`TestRequestOptions`](test-request-options), `"method"`\> |
+
+#### Returns
+
+`Promise`\<[`TestRouteResult`](test-route-result)\>
+
+***
+
+### route()
+
+```ts
+route(pattern, module): TestClient
+```
+
+Register a route module
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `pattern` | `string` |
+| `module` | [`ApiHandlerModule`](../../../../index/interfaces/api-handler-module) |
+
+#### Returns
+
+[`TestClient`](test-client)

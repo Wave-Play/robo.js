@@ -1,0 +1,18 @@
+---
+title: "InterpolateConfig<T>"
+---
+
+# Type Alias: InterpolateConfig\<T\>
+
+```ts
+type InterpolateConfig<T> = { [K in keyof T]?: number };
+```
+
+Interpolation config for smooth remote state updates.
+Keys are field names, values are lerp factors (0-1, lower = smoother).
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |

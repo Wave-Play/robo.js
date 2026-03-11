@@ -1,0 +1,16 @@
+---
+title: "ConversationState"
+---
+
+# Interface: ConversationState
+
+Snapshot describing an active or previous conversation.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="id"></a> `id` | `string` | Identifier assigned by the engine for subsequent interactions. |
+| <a id="metadata"></a> `metadata?` | `Record`\<`string`, `unknown`\> | Metadata persisted across turns for custom engines. |
+| <a id="previousresponseid"></a> `previousResponseId?` | `null` \| `string` | Identifier of the last response returned to the caller. |
+| <a id="provider"></a> `provider?` | `string` | Provider key describing the backing engine implementation. |

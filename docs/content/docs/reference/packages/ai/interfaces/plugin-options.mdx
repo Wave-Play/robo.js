@@ -1,0 +1,32 @@
+---
+title: "PluginOptions"
+---
+
+# Interface: PluginOptions
+
+Plugin configuration structure resolved during initialization.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="commands"></a> `commands?` | `boolean` \| `string`[] | Command allow/deny list configuration. |
+| <a id="context"></a> `context?` | \{ `depth`: `number`; `enabled`: `boolean`; \} | Surrounding context configuration for understanding ongoing conversations. |
+| `context.depth?` | `number` | Number of recent messages to fetch for context. Default: 8 |
+| `context.enabled?` | `boolean` | Enable surrounding channel context when mentioned. Default: true |
+| <a id="engine"></a> `engine?` | [`BaseEngine`](../classes/base-engine) | Custom AI engine instance to override defaults. |
+| <a id="hooks"></a> `hooks?` | `Partial`\<`Record`\<[`HookEvent`](../type-aliases/hook-event), [`Hook`](../type-aliases/hook)\>\> | Hooks to run during engine orchestration events. |
+| <a id="insight"></a> `insight?` | `boolean` | Enables vector store insights synchronisation. |
+| <a id="instructions"></a> `instructions?` | `string` | System instructions injected into AI prompts. |
+| <a id="mcp"></a> `mcp?` | \{ `baseDelayMs`: `number`; `extraRetries`: `number`; `gracefulDegradation`: `boolean`; `maxDelayMs`: `number`; \} | MCP error handling configuration. |
+| `mcp.baseDelayMs?` | `number` | Base delay in milliseconds for exponential backoff. Default: 500 |
+| `mcp.extraRetries?` | `number` | Number of extra retry attempts before degrading. Default: 1 |
+| `mcp.gracefulDegradation?` | `boolean` | Enable graceful degradation by removing MCP tools on persistent failures. Default: true |
+| `mcp.maxDelayMs?` | `number` | Maximum delay in milliseconds for exponential backoff. Default: 2000 |
+| <a id="mcpservers"></a> `mcpServers?` | [`MCPTool`](mcp-tool)[] | MCP (Model Context Protocol) server configurations for tool integration. |
+| <a id="restrict"></a> `restrict?` | \{ `channelIds`: `string`[]; \} | Channel restriction settings limiting where the bot responds. |
+| `restrict.channelIds` | `string`[] | - |
+| <a id="usage"></a> `usage?` | [`PluginUsageOptions`](plugin-usage-options) | Token usage tracking configuration. |
+| <a id="voice"></a> `voice?` | `VoicePluginVoiceOptions` | Voice feature configuration delegated to the voice manager. |
+| <a id="whitelist"></a> `whitelist?` | \{ `channelIds`: `string`[]; \} | Whitelist of channels where the bot can respond freely. |
+| `whitelist.channelIds` | `string`[] | - |

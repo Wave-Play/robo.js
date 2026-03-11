@@ -1,0 +1,21 @@
+---
+title: "ApiEntry"
+---
+
+# Interface: ApiEntry
+
+## Extends
+
+- `BaseConfig`
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="__plugin"></a> `__plugin?` | \{ `name`: `string`; `path`: `string`; \} | Plugin that provides this handler (set during plugin manifest merge) | `BaseConfig.__plugin` |
+| `__plugin.name` | `string` | - | - |
+| `__plugin.path` | `string` | - | - |
+| <a id="description"></a> `description?` | `string` | - | `BaseConfig.description` |
+| <a id="disabled"></a> `disabled?` | `boolean` | - | `BaseConfig.disabled` |
+| <a id="subroutes"></a> `subroutes?` | `Record`\<`string`, [`ApiEntry`](api-entry)\> | - | - |
+| <a id="timeout"></a> `timeout?` | `number` | - | `BaseConfig.timeout` |

@@ -1,0 +1,57 @@
+---
+title: "createSession()"
+---
+
+# Function: createSession()
+
+```ts
+function createSession(config): Promise<{
+  botUser: {
+     id: string;
+     username: string;
+    };
+  channels: {
+     guildId: string;
+     id: string;
+     name: string;
+     type: number;
+    }[];
+  guildId: string;
+  guilds: {
+     id: string;
+     name: string;
+    }[];
+  id: string;
+  token: string;
+}>
+```
+
+Create a new test session
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config` | [`CreateTestSessionConfig`](../interfaces/create-test-session-config) |
+
+## Returns
+
+`Promise`\<\{
+  `botUser`: \{
+     `id`: `string`;
+     `username`: `string`;
+    \};
+  `channels`: \{
+     `guildId`: `string`;
+     `id`: `string`;
+     `name`: `string`;
+     `type`: `number`;
+    \}[];
+  `guildId`: `string`;
+  `guilds`: \{
+     `id`: `string`;
+     `name`: `string`;
+    \}[];
+  `id`: `string`;
+  `token`: `string`;
+ \}\>

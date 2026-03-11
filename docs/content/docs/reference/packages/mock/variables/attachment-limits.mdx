@@ -1,0 +1,25 @@
+---
+title: "AttachmentLimits"
+---
+
+# Variable: AttachmentLimits
+
+```ts
+const AttachmentLimits: {
+  MAX_DESCRIPTION_LENGTH: 1024;
+  MAX_FILES_PER_MESSAGE: 10;
+  MAX_TOTAL_SIZE: number;
+  SPOILER_PREFIX: "SPOILER_";
+};
+```
+
+Validation constants for attachments
+
+## Type declaration
+
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="max_description_length"></a> `MAX_DESCRIPTION_LENGTH` | `1024` | 1024 | Maximum description (alt text) length in characters |
+| <a id="max_files_per_message"></a> `MAX_FILES_PER_MESSAGE` | `10` | 10 | Maximum files per message |
+| <a id="max_total_size"></a> `MAX_TOTAL_SIZE` | `number` | - | Maximum total file size per message in bytes (25MB) |
+| <a id="spoiler_prefix"></a> `SPOILER_PREFIX` | `"SPOILER_"` | 'SPOILER\_' | Spoiler filename prefix |

@@ -1,0 +1,33 @@
+---
+title: "SyncDraggableProps<T, ClientData>"
+---
+
+# Interface: SyncDraggableProps\<T, ClientData\>
+
+Props for SyncDraggable component.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`DragState`](drag-state) | [`DragState`](drag-state) |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="as"></a> `as?` | `null` \| keyof IntrinsicElements | Element type to render (default: 'div', null for no wrapper) |
+| <a id="bounds"></a> `bounds?` | [`DragBounds`](drag-bounds) | Position bounds |
+| <a id="children"></a> `children` | `ReactNode` \| (`props`) =\> `ReactNode` | Children to render - can be ReactNode or render function |
+| <a id="classname"></a> `className?` | `string` | CSS class name for wrapper element |
+| <a id="id"></a> `id` | (`null` \| `string`)[] | Key suffix for state synchronization |
+| <a id="initial"></a> `initial` | `T` | Initial state (must include x, y) |
+| <a id="interpolate"></a> `interpolate?` | [`InterpolateConfig`](../type-aliases/interpolate-config)\<`T`\> | Interpolation config for smooth remote updates |
+| <a id="normalize"></a> `normalize?` | `boolean` | Use 0-1 viewport coordinates (default: true) |
+| <a id="ondrag"></a> `onDrag?` | (`state`: `T`) =\> `void` | Called on each drag update |
+| <a id="ondragend"></a> `onDragEnd?` | (`state`: `T`) =\> `void` | Called when drag ends |
+| <a id="ondragstart"></a> `onDragStart?` | (`state`: `T`) =\> `void` | Called when drag starts |
+| <a id="onstatechange"></a> `onStateChange?` | (`state`: `T`, `prevState`: `T`) =\> `void` | Called when state changes (from any source) |
+| <a id="style"></a> `style?` | `CSSProperties` | CSS styles for wrapper element |
+| <a id="throttle"></a> `throttle?` | `number` | Milliseconds between updates |

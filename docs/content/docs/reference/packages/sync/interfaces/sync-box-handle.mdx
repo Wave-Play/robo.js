@@ -1,0 +1,22 @@
+---
+title: "SyncBoxHandle<T>"
+---
+
+# Interface: SyncBoxHandle\<T\>
+
+Imperative handle for SyncBox ref.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="getstate"></a> `getState` | () =\> `undefined` \| `T` | Get current state |
+| <a id="getsyncstatus"></a> `getSyncStatus` | () =\> [`SyncStatus`](sync-status) | Get current sync status |
+| <a id="lock"></a> `lock?` | [`LockContext`](lock-context) | Lock context (only available when lockable=true) |
+| <a id="setstate"></a> `setState` | [`SyncBoxSetState`](../type-aliases/sync-box-set-state)\<`T`\> | Update state (partial or updater function) |

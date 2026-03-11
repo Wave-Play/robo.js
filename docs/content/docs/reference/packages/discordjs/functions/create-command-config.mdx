@@ -1,0 +1,75 @@
+---
+title: "createCommandConfig()"
+---
+
+# Function: createCommandConfig()
+
+```ts
+function createCommandConfig<C>(config): C
+```
+
+Creates a command configuration with proper type inference.
+This is a type-safe identity function that helps TypeScript infer option types.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`CommandConfig`](../interfaces/command-config) |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `config` | [`SmartCommandConfig`](../type-aliases/smart-command-config)\<`C`\> | The command configuration object |
+
+## Returns
+
+`C`
+
+The same configuration with inferred types
+
+## Examples
+
+```ts
+import { createCommandConfig } from '@robojs/discordjs'
+
+export const config = createCommandConfig({
+  description: 'Greet someone',
+  options: [
+    { name: 'user', type: 'user', required: true },
+    { name: 'message', type: 'string' }
+  ]
+})
+
+// TypeScript knows: options.user is User, options.message is string | undefined
+export default (interaction, options) => {
+  return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+}
+```
+
+```ts
+// With choices - TypeScript infers literal types
+export const config = createCommandConfig({
+  description: 'Pick a color',
+  options: [
+    {
+      name: 'color',
+      type: 'string',
+      required: true,
+      choices: [
+        { name: 'Red', value: 'red' },
+        { name: 'Blue', value: 'blue' }
+      ]
+    }
+  ]
+})
+
+// TypeScript knows: options.color is 'red' | 'blue'
+export default (interaction, options) => {
+  if (options.color === 'red') {
+    return 'You picked red!'
+  }
+  return 'You picked blue!'
+}
+```

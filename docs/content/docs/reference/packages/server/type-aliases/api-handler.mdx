@@ -1,0 +1,22 @@
+---
+title: "ApiHandler()"
+---
+
+# Type Alias: ApiHandler()
+
+```ts
+type ApiHandler = (request) => Response | Promise<Response> | unknown | Promise<unknown>;
+```
+
+API handler function type.
+Receives request and can return response data or use RoboResponse.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `request` | `Request` |
+
+## Returns
+
+`Response` \| `Promise`\<`Response`\> \| `unknown` \| `Promise`\<`unknown`\>

@@ -1,0 +1,18 @@
+---
+title: "SmartCommandConfig<C>"
+---
+
+# Type Alias: SmartCommandConfig\<C\>
+
+```ts
+type SmartCommandConfig<C> = ExactConfig<C> & EnforceConfig<C>;
+```
+
+Smart command config type that enables TypeScript to infer option types.
+Used with `createCommandConfig()` for full type inference.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`CommandConfig`](../interfaces/command-config) |

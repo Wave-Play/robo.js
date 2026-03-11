@@ -1,0 +1,29 @@
+---
+title: "SyncCallContext<T, ClientData>"
+---
+
+# Interface: SyncCallContext\<T, ClientData\>
+
+Context passed to RPC call handlers.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+| `ClientData` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="broadcast"></a> `broadcast` | (`payload`: `unknown`) =\> `void` | Broadcast ephemeral message to all clients |
+| <a id="cleankey"></a> `cleanKey` | `string` | The normalized key string |
+| <a id="client"></a> `client` | [`HandlerClient`](handler-client)\<`ClientData`\> | The client making the call |
+| <a id="getclients"></a> `getClients` | () =\> [`Client`](../../index/interfaces/client)\<`ClientData`\>[] | Get all clients subscribed to this key |
+| <a id="gethost"></a> `getHost` | () =\> `undefined` \| `string` | Get current host client ID |
+| <a id="getstate"></a> `getState` | () =\> `undefined` \| `T` | Get current state for this key |
+| <a id="key"></a> `key` | `string`[] | The full key array |
+| <a id="params"></a> `params` | `Record`\<`string`, `string`\> | Dynamic route parameters |
+| <a id="send"></a> `send` | (`clientId`: `string`, `payload`: `unknown`) =\> `void` | Send ephemeral message to specific client |
+| <a id="setstate"></a> `setState` | (`data`: `T`) =\> `void` | Set state (broadcasts automatically) |
