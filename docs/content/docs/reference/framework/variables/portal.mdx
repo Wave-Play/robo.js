@@ -1,0 +1,12 @@
+---
+title: "portal"
+---
+
+# Variable: portal
+
+```ts
+const portal: PortalImpl & PortalNamespaces;
+```
+
+The portal singleton with typed namespace access.
+Uses Proxy to intercept property access and route to namespaces.

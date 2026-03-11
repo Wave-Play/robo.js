@@ -1,0 +1,11 @@
+---
+title: "MIGRATION\_TEMPLATE"
+---
+
+# Variable: MIGRATION\_TEMPLATE
+
+```ts
+const MIGRATION_TEMPLATE: "import { defineMigration } from 'robo.js/flashcore'\n\nexport default defineMigration({\n  name: '{{name}}',\n\n  async up(ctx) {\n    // Forward migration\n    // ctx.model('modelName').updateMany({ where: {...}, data: {...} })\n    // ctx.progress('Processing...')\n  },\n\n  async down(ctx) {\n    // Rollback migration (optional)\n    // ctx.model('modelName').deleteMany({ where: {...} })\n  }\n})\n";
+```
+
+Migration template for code generation.

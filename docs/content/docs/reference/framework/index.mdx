@@ -1,0 +1,639 @@
+---
+title: "DIRECTORY"
+description: "API reference for robo.js"
+---
+
+# Framework
+
+API reference documentation for `robo.js`.
+
+## Classes
+
+- [`AdapterBuilder`](classes/adapter-builder) - Builder for composing adapter wrappers.
+- [`AdapterError`](classes/adapter-error) - Thrown when an adapter operation fails.
+- [`AdapterWrapper`](classes/adapter-wrapper) - Base class for adapter wrappers.
+- [`AsyncMutex`](classes/async-mutex) - Simple async mutex for serializing operations.
+- [`CacheAdapter`](classes/cache-adapter) - LRU cache wrapper for adapters.
+- [`CatalogLockManager`](classes/catalog-lock-manager) - Lock manager for catalog operations.
+- [`Catalog`](classes/catalog) - Catalog class for managing ID -> chunk mappings.
+- [`ChunkLockManager`](classes/chunk-lock-manager) - Lock manager for chunk operations.
+- [`ChunkManager`](classes/chunk-manager) - Chunk manager for a single model.
+- [`CompressionAdapter`](classes/compression-adapter) - Compression wrapper for adapters.
+- [`ConnectionError`](classes/connection-error) - Thrown when connection to the storage backend fails after retries are exhausted.
+- [`CuckooFilter`](classes/cuckoo-filter) - Cuckoo Filter implementation with 16-bit fingerprints.
+- [`DataCorruptionError`](classes/data-corruption-error) - Thrown when data corruption is detected (malformed chunk, catalog mismatch).
+- [`EncryptionAdapter`](classes/encryption-adapter) - Encryption wrapper for adapters.
+- [`Env`](classes/env) - Sometimes you need to store sensitive information, like API keys, database URLs, or other credentials.
+- [`FeatureNotSupportedError`](classes/feature-not-supported-error) - Thrown when a feature is not supported by the current adapter configuration.
+- [`Field`](classes/field) - Field builder class with fluent modifiers.
+- [`FileAdapter`](classes/file-adapter) - File-based storage adapter using the filesystem.
+- [`FlashcoreError`](classes/flashcore-error) - Base error class for all Flashcore errors.
+- [`FlashcoreModel`](classes/flashcore-model) - FlashcoreModel class.
+- [`FlashcoreSchemaError`](classes/flashcore-schema-error) - Thrown when schema validation fails on startup (breaking schema drift).
+- [`IndexPersistenceManager`](classes/index-persistence-manager)
+- [`IntegrityChecker`](classes/integrity-checker) - Integrity Checker.
+- [`JunctionTableManager`](classes/junction-table-manager) - Junction table manager for many-to-many relationships.
+- [`KeyvAdapter`](classes/keyv-adapter) - Keyv adapter for Flashcore.
+- [`LegacyFileAdapter`](classes/legacy-file-adapter) - Legacy file adapter for backward compatibility with existing .robo/data stores.
+- [`Logger`](classes/logger) - The logger class provides a simple and flexible logging system.
+- [`MemoryAdapter`](classes/memory-adapter) - In-memory storage adapter using Map.
+- [`MigrationError`](classes/migration-error) - Thrown when a migration fails.
+- [`MigrationLockManager`](classes/migration-lock-manager) - Manager for migration lock acquisition and release.
+- [`MigrationRegistry`](classes/migration-registry) - Migration registry for discovered migrations.
+- [`MigrationRunner`](classes/migration-runner) - Migration runner class.
+- [`NotFoundError`](classes/not-found-error) - Thrown when a record is not found (e.g., update/delete on non-existent record).
+- [`PluginManager`](classes/plugin-manager) - Plugin Manager - handles plugin lifecycle, middleware, and extensions.
+- [`QueryPlanner`](classes/query-planner) - Query Planner.
+- [`RecordValidator`](classes/record-validator) - Record validator for schema-based validation.
+- [`RelationField`](classes/relation-field) - Relation field builder for model relationships.
+- [`RepairEngine`](classes/repair-engine) - Repair Engine.
+- [`ResilienceAdapter`](classes/resilience-adapter) - Resilience wrapper for adapters.
+- [`SafeKeyEncoder`](classes/safe-key-encoder) - SafeKeyEncoder class for stateful encoding operations.
+- [`SafetyError`](classes/safety-error) - Thrown when a safety limit is violated (reserved prefixes, result size limits).
+- [`SchemaHistoryManager`](classes/schema-history-manager) - Manager for schema version history.
+- [`SchemaMetadataManager`](classes/schema-metadata-manager) - Manager for schema metadata persistence.
+- [`SerialTransactionQueue`](classes/serial-transaction-queue) - Serial mode queue for serializing transactions within the process.
+- [`SortedIndex`](classes/sorted-index) - SortedIndex implementation using a B+Tree.
+- [`State`](classes/state) - States are your Robo's personal memory bank.
+- [`StorageExhaustedError`](classes/storage-exhausted-error) - Thrown when storage is exhausted (ENOSPC, quota exceeded).
+- [`TransactionConflictError`](classes/transaction-conflict-error) - Thrown when a transaction conflict is detected (optimistic locking failure).
+- [`TransactionContext`](classes/transaction-context) - Transaction context implementation.
+- [`TypeSerializer`](classes/type-serializer) - Type serializer for storing and retrieving records.
+- [`UniqueConstraintError`](classes/unique-constraint-error) - Thrown when a unique constraint is violated.
+- [`UniqueIndexManager`](classes/unique-index-manager) - Manages unique constraints for a model.
+- [`ValidationError`](classes/validation-error) - Thrown when input validation fails (schema validation, type checking, required fields).
+- [`WriteAheadLog`](classes/write-ahead-log) - Write-Ahead Log manager.
+
+## Interfaces
+
+- [`AdapterCapabilitiesReport`](interfaces/adapter-capabilities-report) - Extended capabilities that an adapter can self-report.
+- [`AdapterCapabilities`](interfaces/adapter-capabilities) - Normalized adapter capabilities.
+- [`AdapterTransaction`](interfaces/adapter-transaction) - Transaction context provided by native adapter transactions.
+- [`AggregatedMetadata`](interfaces/aggregated-metadata) - Base interface for aggregated namespace metadata.
+- [`ApiEntry`](interfaces/api-entry)
+- [`Api`](interfaces/api)
+- [`AutoRepairConfig`](interfaces/auto-repair-config) - Configuration for automatic repair on startup.
+- [`AvailableIndexes`](interfaces/available-indexes) - Available indexes for query planning.
+- [`BaseConfig`](interfaces/base-config)
+- [`BatchResult`](interfaces/batch-result) - Batch operation result for createMany/updateMany/deleteMany.
+- [`BatchedIncludeResult`](interfaces/batched-include-result) - Batched include result for N+1 prevention.
+- [`BuildCompleteContext`](interfaces/build-complete-context) - Context provided to build/complete.ts hooks.
+- [`BuildContext`](interfaces/build-context) - Context provided to build hooks.
+- [`BuildStore`](interfaces/build-store) - Key-value store for passing data between build hooks.
+- [`BuildTransformContext`](interfaces/build-transform-context) - Context provided to build/transform.ts hooks.
+- [`CacheOptions`](interfaces/cache-options) - Options for the LRU cache wrapper.
+- [`CacheStats`](interfaces/cache-stats) - Cache statistics.
+- [`CascadeContext`](interfaces/cascade-context) - Context for cascade operations.
+- [`CascadeOp`](interfaces/cascade-op) - Cascade operation collected during delete traversal.
+- [`CatalogData`](interfaces/catalog-data) - Catalog data for serialization (v2 format).
+- [`CatalogDeleteDelta`](interfaces/catalog-delete-delta) - Delete catalog mapping for an id.
+- [`CatalogEntry`](interfaces/catalog-entry) - Catalog entry for a single record.
+- [`CatalogRebuildOptions`](interfaces/catalog-rebuild-options) - Options for catalog rebuild.
+- [`CatalogRebuildProgress`](interfaces/catalog-rebuild-progress) - Progress update during catalog rebuild.
+- [`CatalogRebuildResult`](interfaces/catalog-rebuild-result) - Result of a catalog rebuild operation.
+- [`CatalogSetDelta`](interfaces/catalog-set-delta) - Set catalog mapping: id → chunkId.
+- [`CatalogSetSegmentsDelta`](interfaces/catalog-set-segments-delta) - Set catalog mapping for a segmented record: id → segmentIds[].
+- [`CatalogVerificationResult`](interfaces/catalog-verification-result) - Result of catalog verification.
+- [`ChangeAnalysisResult`](interfaces/change-analysis-result) - Result of analyzing schema changes.
+- [`ChunkDeleteDelta`](interfaces/chunk-delete-delta) - Delete a record from a chunk.
+- [`ChunkPatchDelta`](interfaces/chunk-patch-delta) - Apply a partial patch to a record in a chunk (update).
+- [`ChunkPutDelta`](interfaces/chunk-put-delta) - Put a full record into a chunk (create / upsert).
+- [`ChunkStats`](interfaces/chunk-stats) - Chunk statistics.
+- [`CliCommandConfig`](interfaces/cli-command-config) - Configuration for a CLI command.
+- [`CliCommandEntry`](interfaces/cli-command-entry) - CLI command entry in the manifest.
+- [`CliCommandModule`](interfaces/cli-command-module) - Complete CLI command module exports.
+- [`CliContext`](interfaces/cli-context) - Context passed to CLI command handlers.
+- [`CliExtendConfig`](interfaces/cli-extend-config) - Configuration for extending an existing CLI command.
+- [`CliExtendModule`](interfaces/cli-extend-module) - Complete CLI extension module exports.
+- [`CliExtensionEntry`](interfaces/cli-extension-entry) - CLI extension entry in the manifest.
+- [`CliManifest`](interfaces/cli-manifest) - CLI manifest structure.
+- [`CliOptionConfig`](interfaces/cli-option-config) - Configuration for a CLI option (flag).
+- [`CompoundUniqueConstraint`](interfaces/compound-unique-constraint) - Compound unique constraint definition.
+- [`CompressionOptions`](interfaces/compression-options) - Options for the compression wrapper.
+- [`Config`](interfaces/config)
+- [`CountArgs`](interfaces/count-args) - Count arguments.
+- [`CreateArgs`](interfaces/create-args)
+- [`CreateManyArgs`](interfaces/create-many-args) - CreateMany arguments.
+- [`CuckooFilterData`](interfaces/cuckoo-filter-data) - Serialized filter data for persistence.
+- [`CuckooFilterOptions`](interfaces/cuckoo-filter-options) - Options for creating a Cuckoo filter.
+- [`DeleteArgs`](interfaces/delete-args) - Delete arguments.
+- [`DeleteManyArgs`](interfaces/delete-many-args) - DeleteMany arguments.
+- [`DeltaBuildResult`](interfaces/delta-build-result) - Result from building deltas.
+- [`DiscoveredRoute`](interfaces/discovered-route) - Discovered route definition from a plugin or project.
+- [`DrainHandle`](interfaces/drain-handle) - Handle returned when adding a drain to the logger.
+- [`EncodedKeyData`](interfaces/encoded-key-data) - Encoded key structure for v1 format.
+- [`EncryptionOptions`](interfaces/encryption-options) - Options for the encryption wrapper.
+- [`EntriesAccessor`](interfaces/entries-accessor) - Accessor interface for route entries during build.
+- [`EnvMetadata`](interfaces/env-metadata) - Environment variable metadata stored in env.json.
+- [`EnvPattern`](interfaces/env-pattern) - Pattern definition for validating environment variables.
+- [`EnvVariableStatus`](interfaces/env-variable-status) - Status of a single environment variable.
+- [`EpochData`](interfaces/epoch-data) - Persisted epoch data for stale detection.
+- [`ErrorContext`](interfaces/error-context) - Context provided to error hooks.
+- [`EventConfig`](interfaces/event-config)
+- [`Event`](interfaces/event)
+- [`ExportsConfig`](interfaces/exports-config) - Configuration for which exports to capture from handler files.
+- [`FieldDef`](interfaces/field-def) - Internal field definition structure.
+- [`FieldDiffEntry`](interfaces/field-diff-entry) - A single field modification entry.
+- [`FieldMetadata`](interfaces/field-metadata) - Field metadata stored for schema history tracking.
+- [`FieldQueryResolver`](interfaces/field-query-resolver) - Field-level query resolver for specific operators.
+- [`FileAdapterOptions`](interfaces/file-adapter-options) - Options for the FileAdapter.
+- [`FileDrainOptions`](interfaces/file-drain-options) - Options for creating a file drain imperatively.
+- [`FileOutputConfig`](interfaces/file-output-config) - Configuration for a file-based log output.
+- [`FilterAddDelta`](interfaces/filter-add-delta) - Add an ID to the Cuckoo filter.
+- [`FilterIntegrityResult`](interfaces/filter-integrity-result) - Result of a filter integrity check.
+- [`FilterRemoveDelta`](interfaces/filter-remove-delta) - Remove an ID from the Cuckoo filter.
+- [`FindFirstArgs`](interfaces/find-first-args) - FindFirst arguments (same as FindMany).
+- [`FindManyArgs`](interfaces/find-many-args) - FindMany arguments.
+- [`FindUniqueArgs`](interfaces/find-unique-args) - Find unique arguments.
+- [`FlashcoreAdapter`](interfaces/flashcore-adapter)
+- [`FlashcoreConfig`](interfaces/flashcore-config) - Configuration for the Flashcore v1 client.
+- [`FlashcoreGetOptions`](interfaces/flashcore-get-options) - Options for KV get operation.
+- [`FlashcoreIntrospection`](interfaces/flashcore-introspection) - Introspection data returned by Flashcore.$.introspect().
+- [`FlashcoreKvOptions`](interfaces/flashcore-kv-options) - Options for KV operations.
+- [`FlashcoreMetrics`](interfaces/flashcore-metrics) - Metrics counters for performance tracking.
+- [`FlashcoreModelOptions`](interfaces/flashcore-model-options) - Model options for registration.
+- [`FlashcorePluginDefinition`](interfaces/flashcore-plugin-definition) - Flashcore plugin definition.
+- [`FlashcorePlugin`](interfaces/flashcore-plugin) - Flashcore plugin interface (Phase 10).
+- [`FlashcoreSchema`](interfaces/flashcore-schema) - Schema namespace wrapper for plugin model registration.
+- [`FlushResult`](interfaces/flush-result) - Result of a flush operation.
+- [`FullRepairResult`](interfaces/full-repair-result) - Combined repair result for all index types.
+- [`HandlerEntry`](interfaces/handler-entry) - A handler entry in the manifest.
+- [`HandlerModule`](interfaces/handler-module) - Handler object returned after lazy import.
+- [`HandlerRecord`](interfaces/handler-record) - Handler record representing a registered handler in the portal.
+- [`HmrContext`](interfaces/hmr-context) - Context provided to HMR hooks.
+- [`HmrEventContext`](interfaces/hmr-event-context) - Context passed to HMR event subscribers.
+- [`HmrEventRouteInfo`](interfaces/hmr-event-route-info) - Route info included in HMR event context.
+- [`HmrHandlerInfo`](interfaces/hmr-handler-info) - Handler info for routes affected by HMR.
+- [`HmrHookConfig`](interfaces/hmr-hook-config) - HMR hook configuration for filtering events.
+- [`HmrReloadHandlerPayload`](interfaces/hmr-reload-handler-payload) - Payload for HMR handler reload events.
+- [`HmrReloadRoutePayload`](interfaces/hmr-reload-route-payload) - Payload for HMR route reload events.
+- [`HmrRouteInfo`](interfaces/hmr-route-info) - Route info for HMR events.
+- [`HmrSubscribeOptions`](interfaces/hmr-subscribe-options) - Options for filtering HMR events when subscribing.
+- [`HmrSubscription`](interfaces/hmr-subscription) - Subscription handle returned by `hmr.subscribe()`.
+- [`Hmr`](interfaces/hmr) - HMR API interface.
+- [`HookContext`](interfaces/hook-context) - Hook execution context.
+- [`HookEntry`](interfaces/hook-entry) - A lifecycle hook entry.
+- [`HotModule`](interfaces/hot-module) - Interface returned by `hmr.module()` for registering cleanup callbacks.
+- [`ITransactionContext`](interfaces/i-transaction-context) - Transaction context interface exposed to user code.
+- [`IncludeContext`](interfaces/include-context) - Context for resolving includes.
+- [`IncludeOptions`](interfaces/include-options) - Options for include clause parsing.
+- [`IndexIntegrityResult`](interfaces/index-integrity-result) - Result of a sorted index integrity check.
+- [`IndexOptions`](interfaces/index-options) - Options for creating a custom index.
+- [`IndexPersistenceOptions`](interfaces/index-persistence-options) - Options for the IndexPersistenceManager.
+- [`IndexProvider`](interfaces/index-provider) - Custom index provider - creates and manages indexes.
+- [`IndexRemoveDelta`](interfaces/index-remove-delta) - Remove a value from a sorted index.
+- [`IndexUpsertDelta`](interfaces/index-upsert-delta) - Upsert a value into a sorted index.
+- [`Index`](interfaces/index) - Custom index instance - manages indexed data.
+- [`InitContext`](interfaces/init-context) - Context provided to init hooks.
+- [`InitOptions`](interfaces/init-options) - Options for Flashcore.$.init().
+- [`IntegrityCheckOptions`](interfaces/integrity-check-options) - Options for integrity checking.
+- [`IntegrityCheckProgress`](interfaces/integrity-check-progress) - Progress update during integrity check.
+- [`IntegrityReport`](interfaces/integrity-report) - Complete integrity report for a model.
+- [`IpcEmitOptions`](interfaces/ipc-emit-options) - Options for emit().
+- [`IpcEvent`](interfaces/ipc-event) - IPC Event that flows between app and host.
+- [`IpcState`](interfaces/ipc-state) - Host state and capabilities.
+- [`JsonPatch`](interfaces/json-patch) - JSON Patch operation (RFC 6902).
+- [`JunctionTableDef`](interfaces/junction-table-def) - Junction table schema definition.
+- [`KeyConfig`](interfaces/key-config) - Configuration for key generation from file paths.
+- [`KeyvAdapterOptions`](interfaces/keyv-adapter-options)
+- [`KeyvLike`](interfaces/keyv-like) - Keyv instance interface.
+- [`LegacyFileAdapterOptions`](interfaces/legacy-file-adapter-options)
+- [`LoadedCliCommand`](interfaces/loaded-cli-command) - Loaded CLI command with resolved handler.
+- [`LoadedCliExtension`](interfaces/loaded-cli-extension) - Loaded CLI extension with resolved handlers.
+- [`LockAcquisitionResult`](interfaces/lock-acquisition-result) - Result of a lock acquisition attempt.
+- [`LockStatus`](interfaces/lock-status) - Current lock status.
+- [`LoggerOptions`](interfaces/logger-options)
+- [`ManifestApi`](interfaces/manifest-api) - The Manifest API singleton interface.
+- [`ManifestConfigMap`](interfaces/manifest-config-map) - Map of plugin config types.
+- [`ManifestHookMap`](interfaces/manifest-hook-map) - Map of hook types.
+- [`ManifestMetadataMap`](interfaces/manifest-metadata-map) - Map of namespace metadata types.
+- [`ManifestOptions`](interfaces/manifest-options) - Options for manifest operations.
+- [`ManifestRouteMap`](interfaces/manifest-route-map) - Map of namespace to available route names.
+- [`ManifestSeedEnv`](interfaces/manifest-seed-env) - Seed environment configuration.
+- [`ManifestSeed`](interfaces/manifest-seed) - Seed configuration for a plugin.
+- [`ManyToManyConnect`](interfaces/many-to-many-connect) - Connect/disconnect operations for manyToMany.
+- [`MetadataIndex`](interfaces/metadata-index) - Metadata aggregation index stored in metadata/@.json.
+- [`MigrationContext`](interfaces/migration-context) - Context passed to migration up/down functions.
+- [`MigrationDefinition`](interfaces/migration-definition) - Migration definition provided by user.
+- [`MigrationLockOptions`](interfaces/migration-lock-options) - Migration lock manager options.
+- [`MigrationLock`](interfaces/migration-lock) - Migration lock data.
+- [`MigrationMetadata`](interfaces/migration-metadata) - Migration metadata stored in adapter.
+- [`MigrationModelAccessor`](interfaces/migration-model-accessor) - Model accessor for migrations (subset of full model API).
+- [`MigrationResult`](interfaces/migration-result) - Result of running a single migration.
+- [`MigrationRunOptions`](interfaces/migration-run-options) - Options for running migrations.
+- [`MigrationRunnerOptions`](interfaces/migration-runner-options) - Options for the migration runner.
+- [`MigrationStatusReport`](interfaces/migration-status-report) - Migration status report for CLI.
+- [`ModelDiff`](interfaces/model-diff) - Diff for a single model between versions.
+- [`ModelHooks`](interfaces/model-hooks) - Model hooks for lifecycle events.
+- [`ModelInfo`](interfaces/model-info) - Model information available in setup context.
+- [`ModelOptions`](interfaces/model-options) - Model options for registration.
+- [`ModelQueryResolver`](interfaces/model-query-resolver) - Model-level query resolver for complete control over queries.
+- [`ModelTransactionContext`](interfaces/model-transaction-context) - Model-level transaction context for bulk operations.
+- [`ModuleController`](interfaces/module-controller) - Controller for module-level enable/disable operations.
+- [`ModuleState`](interfaces/module-state) - Internal module state tracking.
+- [`NamespaceRouteDefinitions`](interfaces/namespace-route-definitions) - Route definitions for a namespace.
+- [`NestingConfig`](interfaces/nesting-config) - Configuration for nested directory handling.
+- [`NormalizedField`](interfaces/normalized-field) - Normalized field for internal use.
+- [`NormalizedSchema`](interfaces/normalized-schema) - Normalized schema for internal use.
+- [`OperationParams`](interfaces/operation-params) - Parameters passed to middleware functions.
+- [`OrderByInput`](interfaces/order-by-input) - Order by input.
+- [`PackageJson`](interfaces/package-json)
+- [`ParsedIncludeEntry`](interfaces/parsed-include-entry) - Parsed include entry with resolved options.
+- [`PluginContext`](interfaces/plugin-context) - Plugin context available in middleware and extensions.
+- [`PluginCountArgs`](interfaces/plugin-count-args)
+- [`PluginCreateManyArgs`](interfaces/plugin-create-many-args)
+- [`PluginData`](interfaces/plugin-data)
+- [`PluginDeleteArgs`](interfaces/plugin-delete-args)
+- [`PluginDeleteManyArgs`](interfaces/plugin-delete-many-args)
+- [`PluginFindUniqueArgs`](interfaces/plugin-find-unique-args)
+- [`PluginInfo`](interfaces/plugin-info) - Information about an installed plugin.
+- [`PluginManifestInfo`](interfaces/plugin-manifest-info) - Minimal plugin manifest info for seed operations.
+- [`PluginMetaOptions`](interfaces/plugin-meta-options)
+- [`PluginMiddleware`](interfaces/plugin-middleware) - Middleware hooks for each operation type.
+- [`PluginSetupContext`](interfaces/plugin-setup-context) - Context passed to plugin setup() function.
+- [`PluginState`](interfaces/plugin-state) - Plugin-scoped state storage.
+- [`PluginUpdateArgs`](interfaces/plugin-update-args)
+- [`PluginUpdateManyArgs`](interfaces/plugin-update-many-args)
+- [`PluginUpsertArgs`](interfaces/plugin-upsert-args)
+- [`PortalApi`](interfaces/portal-api) - The Portal API interface.
+- [`PortalNamespaceConfig`](interfaces/portal-namespace-config) - Namespace configuration from manifest.
+- [`PortalNamespaces`](interfaces/portal-namespaces) - Portal namespace definitions.
+- [`PortalRouteConfig`](interfaces/portal-route-config) - Route configuration from manifest.
+- [`PrepareContext`](interfaces/prepare-context) - Context provided to prepare hooks.
+- [`ProcessedEntry`](interfaces/processed-entry) - A scanned entry after processing by the route processor.
+- [`ProjectMetadata`](interfaces/project-metadata) - Project metadata stored in robo.json.
+- [`PromptQuestion`](interfaces/prompt-question)
+- [`QueryArgs`](interfaces/query-args) - Query arguments for planning.
+- [`QueryContext`](interfaces/query-context) - Context passed to custom query operators.
+- [`QueryPlan`](interfaces/query-plan) - Query execution plan.
+- [`RangeOptions`](interfaces/range-options) - Range query options.
+- [`ReadSetEntry`](interfaces/read-set-entry) - Read set entry for version tracking.
+- [`RecoveryContext`](interfaces/recovery-context) - Extended recovery context that can be used when models are loaded.
+- [`RecoveryResult`](interfaces/recovery-result) - Result of WAL recovery.
+- [`RegisteredMigration`](interfaces/registered-migration) - Registered migration with computed checksum.
+- [`RelationDef`](interfaces/relation-def) - Internal relation field definition.
+- [`RelationFieldValue`](interfaces/relation-field-value) - Relation field value in create/update data.
+- [`RelationInfo`](interfaces/relation-info) - Relation metadata for a model.
+- [`RelationMetadata`](interfaces/relation-metadata) - Relation metadata for schema tracking.
+- [`RelationValidationError`](interfaces/relation-validation-error) - Result of relation schema validation.
+- [`RepairOptions`](interfaces/repair-options) - Options for repair operations.
+- [`RepairProgress`](interfaces/repair-progress) - Progress update during repair.
+- [`RepairResult`](interfaces/repair-result) - Result of a repair operation.
+- [`ResilienceOptions`](interfaces/resilience-options) - Options for the resilience wrapper.
+- [`RoboMessage`](interfaces/robo-message)
+- [`RoboReply`](interfaces/robo-reply)
+- [`RoboRequest`](interfaces/robo-request)
+- [`RoboStateMessage`](interfaces/robo-state-message)
+- [`RouteConfig`](interfaces/route-config) - Configuration for a route definition.
+- [`RouteDefinitionConfig`](interfaces/route-definition-config) - Serialized route configuration for the manifest.
+- [`RouteDefinition`](interfaces/route-definition) - Route definition with handler and controller info.
+- [`RouteEntries`](interfaces/route-entries) - Aggregated route entries organized by namespace and route name.
+- [`ScannedEntry`](interfaces/scanned-entry) - Represents a file discovered during directory scanning.
+- [`SchemaChange`](interfaces/schema-change) - Schema change descriptor.
+- [`SchemaField`](interfaces/schema-field) - Schema field (either a Field or RelationField).
+- [`SchemaHistoryEntry`](interfaces/schema-history-entry) - Schema history entry for visual diff support.
+- [`SchemaMetadata`](interfaces/schema-metadata) - Schema metadata persisted per model.
+- [`SchemaSnapshot`](interfaces/schema-snapshot) - Namespace-level schema snapshot.
+- [`SchemaValidationError`](interfaces/schema-validation-error) - Individual validation error.
+- [`ScopedPortal`](interfaces/scoped-portal) - Scoped portal for plugins.
+- [`SeedConfig`](interfaces/seed-config) - Seed configuration for a plugin.
+- [`SeedEnvConfig`](interfaces/seed-env-config)
+- [`SeedEnvVariableConfig`](interfaces/seed-env-variable-config)
+- [`SeedHookConfig`](interfaces/seed-hook-config)
+- [`SeedHookGenerators`](interfaces/seed-hook-generators)
+- [`SeedHookHelpers`](interfaces/seed-hook-helpers)
+- [`SegmentDeleteDelta`](interfaces/segment-delete-delta) - Delete a segment for a large record.
+- [`SegmentPutDelta`](interfaces/segment-put-delta) - Put a segment for a large record.
+- [`SegmentWrite`](interfaces/segment-write)
+- [`SerialQueueItem`](interfaces/serial-queue-item) - Serial mode queue item.
+- [`SetupContext`](interfaces/setup-context) - Context provided to setup hooks.
+- [`SortedIndexData`](interfaces/sorted-index-data) - Serialized index data for persistence.
+- [`SpiritMessage`](interfaces/spirit-message)
+- [`StartContext`](interfaces/start-context) - Context provided to start hooks.
+- [`StopContext`](interfaces/stop-context) - Context provided to stop hooks.
+- [`TransactionContextState`](interfaces/transaction-context-state) - Internal transaction context state.
+- [`TransactionExecutionOptions`](interfaces/transaction-execution-options) - Internal options for transaction execution.
+- [`TransactionOptions`](interfaces/transaction-options) - Transaction options for Flashcore.$.transaction().
+- [`TransactionResult`](interfaces/transaction-result) - Transaction execution result.
+- [`UniqueAcquireDelta`](interfaces/unique-acquire-delta) - Acquire a unique constraint key.
+- [`UniqueChange`](interfaces/unique-change) - Unique constraint change descriptor.
+- [`UniqueConstraintOptions`](interfaces/unique-constraint-options) - Options for unique constraint operations.
+- [`UniqueIndexEntry`](interfaces/unique-index-entry) - Unique index entry stored in the adapter.
+- [`UniqueIntegrityResult`](interfaces/unique-integrity-result) - Result of unique index integrity check.
+- [`UniqueReleaseDelta`](interfaces/unique-release-delta) - Release a unique constraint key.
+- [`UniqueUpdate`](interfaces/unique-update) - Unique constraint update descriptor.
+- [`UpdateArgs`](interfaces/update-args) - Update arguments.
+- [`UpdateManyArgs`](interfaces/update-many-args) - UpdateMany arguments.
+- [`UpsertArgs`](interfaces/upsert-args) - Upsert arguments.
+- [`ValidationResult`](interfaces/validation-result) - Validation result from schema validation.
+- [`VersionDiff`](interfaces/version-diff) - Diff between two schema versions.
+- [`WalConfig`](interfaces/wal-config) - WAL configuration options.
+- [`WalEntryHeader`](interfaces/wal-entry-header) - WAL entry header (stored when segmented).
+- [`WalEntry`](interfaces/wal-entry) - Complete WAL entry structure.
+- [`WalSegmentInfo`](interfaces/wal-segment-info) - Segmentation info for large WAL entries.
+- [`WhereInput`](interfaces/where-input) - Where clause input.
+
+## Type Aliases
+
+- [`BatchOperation`](type-aliases/batch-operation) - Operation types for atomic batch operations.
+- [`ChunkData`](type-aliases/chunk-data) - Chunk data format.
+- [`CliAfterHook`](type-aliases/cli-after-hook) - Hook that runs after the original command handler completes.
+- [`CliBeforeHook`](type-aliases/cli-before-hook) - Hook that runs before the original command handler.
+- [`CliHandler`](type-aliases/cli-handler) - CLI command handler function signature.
+- [`CliOptionTypeMap`](type-aliases/cli-option-type-map) - Maps CLI option type strings to their TypeScript types.
+- [`CliOptionsFromConfig`](type-aliases/cli-options-from-config) - Infers the complete typed options object from a CLI command config.
+- [`ControllerFactory`](type-aliases/controller-factory) - Controller factory function type.
+- [`CreateInput`](type-aliases/create-input) - Create input type - omit id (auto-generated), required without defaults are required.
+- [`CreateScopedPortal`](type-aliases/create-scoped-portal) - Create a scoped portal for a plugin.
+- [`DisposeCallback`](type-aliases/dispose-callback) - Callback function registered for cleanup when a module is reloaded.
+- [`ExtractOptionName`](type-aliases/extract-option-name) - Extracts the option name from the --name format.
+- [`FieldType`](type-aliases/field-type) - Supported field types.
+- [`FlashcoreClient`](type-aliases/flashcore-client) - Type helper for the Flashcore client.
+- [`HmrCallback`](type-aliases/hmr-callback) - Callback function for HMR event subscriptions.
+- [`HooksManifest`](type-aliases/hooks-manifest) - All hooks organized by hook type.
+- [`HttpMethod`](type-aliases/http-method)
+- [`IncludeClause`](type-aliases/include-clause) - Include clause for relations.
+- [`InferFieldType`](type-aliases/infer-field-type) - Infer the TypeScript type for a field type.
+- [`InferModelType`](type-aliases/infer-model-type) - Infer the TypeScript type for a complete model schema.
+- [`LifecycleHookType`](type-aliases/lifecycle-hook-type) - Lifecycle hook types that support priority-based execution.
+- [`LogDrain`](type-aliases/log-drain)
+- [`LogLevel`](type-aliases/log-level)
+- [`ManifestSeedEnvVariables`](type-aliases/manifest-seed-env-variables) - Seed environment variable configuration.
+- [`MetadataAggregatorRegistry`](type-aliases/metadata-aggregator-registry) - Registry of metadata aggregators by namespace.
+- [`MetadataAggregator`](type-aliases/metadata-aggregator) - Function that aggregates metadata from handler entries.
+- [`MiddlewareFn`](type-aliases/middleware-fn) - Middleware function signature - Express/Koa style.
+- [`MigrationStatus`](type-aliases/migration-status) - Migration status values.
+- [`OnDeleteAction`](type-aliases/on-delete-action) - Delete behavior for relations.
+- [`OperationArgs`](type-aliases/operation-args) - Operation arguments by type.
+- [`OperationResult`](type-aliases/operation-result) - Operation result by type.
+- [`OperationType`](type-aliases/operation-type) - Operation types that can be intercepted by middleware.
+- [`OrderBy`](type-aliases/order-by) - Order by clause for sorting.
+- [`OrderDirection`](type-aliases/order-direction) - Order direction.
+- [`PluginRegistry`](type-aliases/plugin-registry) - Plugin registry stored in plugins.json.
+- [`Plugin`](type-aliases/plugin)
+- [`QueryOperatorFn`](type-aliases/query-operator-fn) - Custom query operator function.
+- [`RelationType`](type-aliases/relation-type) - Relation types for model relationships.
+- [`ResolvedTransactionMode`](type-aliases/resolved-transaction-mode) - Effective transaction mode after resolving 'auto'.
+- [`RouteDefinitions`](type-aliases/route-definitions) - All route definitions stored in routes/@.json.
+- [`RouteHandler`](type-aliases/route-handler)
+- [`RouteType`](type-aliases/route-type) - Route type identifier combining namespace and route name.
+- [`SchemaChangeType`](type-aliases/schema-change-type) - Types of schema changes that can be detected.
+- [`SchemaFields`](type-aliases/schema-fields) - Schema fields object (model schema definition).
+- [`SeedHookHandler`](type-aliases/seed-hook-handler)
+- [`SeedsIndex`](type-aliases/seeds-index) - Seeds index stored in seeds/@.json.
+- [`SelectClause`](type-aliases/select-clause) - Select clause for projection.
+- [`SmartCliCommandConfig`](type-aliases/smart-cli-command-config) - Smart CLI command config for use with createCliCommandConfig().
+- [`StagedOperation`](type-aliases/staged-operation) - Staged operation type for transaction context.
+- [`TimestampFormat`](type-aliases/timestamp-format) - Timestamp format for log entries.
+- [`TransactionCommitHandler`](type-aliases/transaction-commit-handler) - Transaction commit handler type.
+- [`TransactionMode`](type-aliases/transaction-mode) - Transaction modes supported by Flashcore.
+- [`UniqueWhere`](type-aliases/unique-where) - Unique where clause - by id or unique fields.
+- [`UpdateInput`](type-aliases/update-input) - Update input type - all fields optional except id which is not allowed.
+- [`ValueOfCliOption`](type-aliases/value-of-cli-option) - Computes the final value type for a CLI option:.
+- [`WalAuthoritativeDelta`](type-aliases/wal-authoritative-delta) - Union of all authoritative delta types.
+- [`WalDerivedDelta`](type-aliases/wal-derived-delta) - Union of all derived delta types.
+- [`WalEntryInput`](type-aliases/wal-entry-input) - Input for beginning a new WAL entry.
+- [`WalInverseDelta`](type-aliases/wal-inverse-delta) - Inverse deltas use the same types (for rollback).
+- [`WalOp`](type-aliases/wal-op) - WAL operation type.
+- [`WalPhase`](type-aliases/wal-phase) - WAL phase markers for tracking operation progress.
+- [`WatcherCallback`](type-aliases/watcher-callback) - Watcher callback signature.
+- [`WhereClause`](type-aliases/where-clause) - Where clause for filtering records.
+- [`WhereOperators`](type-aliases/where-operators) - Where clause operators for filtering.
+- [`WithClientExtensions`](type-aliases/with-client-extensions) - Client extension type helper.
+- [`WithPluginExtensions`](type-aliases/with-plugin-extensions) - Plugin extension type helper.
+
+## Functions
+
+- [`AcquireUniqueConstraints`](functions/acquire-unique-constraints) - Acquire multiple unique constraints atomically (best effort).
+- [`AnalyzeNamespaceChanges`](functions/analyze-namespace-changes) - Analyze namespace-level changes (model additions/removals).
+- [`AnalyzeSchemaChanges`](functions/analyze-schema-changes) - Analyze schema changes between stored metadata and current schema.
+- [`ApplyCatalogDeleteDelta`](functions/apply-catalog-delete-delta) - Recovery-aware catalog delete.
+- [`ApplyCatalogSetDelta`](functions/apply-catalog-set-delta) - Recovery-aware catalog set.
+- [`ApplyCatalogSetSegmentsDelta`](functions/apply-catalog-set-segments-delta) - Recovery-aware catalog set for segmented records.
+- [`ApplyDefaults`](functions/apply-defaults) - Apply default values to a record.
+- [`ApplyModelExtensions`](functions/apply-model-extensions) - Apply model extensions from all plugins to a model instance.
+- [`ApplyPatch`](functions/apply-patch) - Merge a patch into an existing record.
+- [`ApplyPatches`](functions/apply-patches) - Apply JSON Patch operations to an object.
+- [`BuildAdapter`](functions/build-adapter) - Create a new AdapterBuilder with the given base adapter.
+- [`BuildCreateDeltas`](functions/build-create-deltas) - Build deltas for a create operation.
+- [`BuildCreateSegmentedDeltas`](functions/build-create-segmented-deltas)
+- [`BuildDeleteDeltas`](functions/build-delete-deltas) - Build deltas for a delete operation.
+- [`BuildDeleteSegmentedDeltas`](functions/build-delete-segmented-deltas)
+- [`BuildIndexKey`](functions/build-index-key) - Build a sorted index key.
+- [`BuildModelKey`](functions/build-model-key) - Build a model key for internal storage.
+- [`BuildPluginKey`](functions/build-plugin-key) - Build a plugin storage key.
+- [`BuildSchemaHistoryKey`](functions/build-schema-history-key) - Build a schema history key.
+- [`BuildSchemaKey`](functions/build-schema-key) - Build a schema metadata key.
+- [`BuildTransactionOptions`](functions/build-transaction-options) - Build effective transaction options with defaults.
+- [`BuildUniqueKey`](functions/build-unique-key) - Build a unique index key.
+- [`BuildUpdateChunkToSegmentsDeltas`](functions/build-update-chunk-to-segments-deltas)
+- [`BuildUpdateDeltas`](functions/build-update-deltas) - Build deltas for an update operation.
+- [`BuildUpdateSegmentedDeltas`](functions/build-update-segmented-deltas)
+- [`BuildUpdateSegmentsToChunkDeltas`](functions/build-update-segments-to-chunk-deltas)
+- [`BuildWalEntryKey`](functions/build-wal-entry-key) - Build a WAL entry key.
+- [`BuildWalSegmentKey`](functions/build-wal-segment-key) - Build a WAL segment key.
+- [`CalculateRetryDelay`](functions/calculate-retry-delay) - Calculate retry delay with optional jitter.
+- [`CheckRestrictConstraints`](functions/check-restrict-constraints) - Check if delete should be blocked due to restrict policy.
+- [`ClearSerialQueue`](functions/clear-serial-queue) - Clear the serial queue (for testing).
+- [`CollectCascadeOperations`](functions/collect-cascade-operations) - Collect all cascade operations for a delete.
+- [`CompareChecksums`](functions/compare-checksums) - Compare two schema checksums.
+- [`ComposeColors`](functions/compose-colors)
+- [`ComposeLegacyKey`](functions/compose-legacy-key) - Compose a key using the legacy format.
+- [`ComposeMiddleware`](functions/compose-middleware) - Compose multiple middleware functions into one.
+- [`ComposeV1Key`](functions/compose-v1-key) - Compose a key using the safe (v1) format.
+- [`CompoundUnique`](functions/compound-unique) - Create a compound unique constraint across multiple fields.
+- [`ComputePatch`](functions/compute-patch) - Compute a minimal patch from old and new record.
+- [`ComputePatches`](functions/compute-patches) - Compute JSON Patch (RFC 6902) between two objects.
+- [`ComputeSchemaChecksum`](functions/compute-schema-checksum) - Compute a deterministic checksum for a schema.
+- [`ConsoleDrain`](functions/console-drain) - A drain function that writes logs either to stdout/stderr (in Node.js).
+- [`CreateBoundContext`](functions/create-bound-context) - Create a bound context for a plugin that can be used in middleware.
+- [`CreateCacheAdapter`](functions/create-cache-adapter) - Create a new CacheAdapter wrapping another adapter.
+- [`CreateChunkManager`](functions/create-chunk-manager) - Create a chunk manager for a model.
+- [`CreateCliCommandConfig`](functions/create-cli-command-config) - Creates a CLI command configuration with proper type inference.
+- [`CreateClientExtensions`](functions/create-client-extensions) - Create client extensions object for Flashcore.$.
+- [`CreateCompressionAdapter`](functions/create-compression-adapter) - Create a new CompressionAdapter wrapping another adapter.
+- [`CreateConditionalMiddleware`](functions/create-conditional-middleware) - Create a middleware that conditionally executes based on model name.
+- [`CreateEncryptionAdapter`](functions/create-encryption-adapter) - Create a new EncryptionAdapter wrapping another adapter.
+- [`CreateErrorHandlerMiddleware`](functions/create-error-handler-middleware) - Create a middleware that wraps the operation in a try-catch.
+- [`CreateFileAdapter`](functions/create-file-adapter) - Create a new FileAdapter instance.
+- [`CreateFileDrain`](functions/create-file-drain) - Creates a file-based log drain.
+- [`CreateFullTextIndex`](functions/create-full-text-index) - Create an inverted index for full-text search.
+- [`CreateJunctionSchema`](functions/create-junction-schema) - Create the schema definition for a junction table.
+- [`CreateKeyvAdapterFromOptions`](functions/create-keyv-adapter-from-options) - Dynamically import Keyv and create an adapter.
+- [`CreateKeyvAdapter`](functions/create-keyv-adapter) - Create a KeyvAdapter from a Keyv instance.
+- [`CreateLegacyFileAdapter`](functions/create-legacy-file-adapter) - Create a new LegacyFileAdapter instance.
+- [`CreateLevelFilteredDrain`](functions/create-level-filtered-drain) - Wraps a drain with level filtering.
+- [`CreateLoggingMiddleware`](functions/create-logging-middleware) - Create a simple middleware that logs operations.
+- [`CreateMemoryAdapter`](functions/create-memory-adapter) - Create a new MemoryAdapter instance.
+- [`CreateMigrationRunner`](functions/create-migration-runner) - Create a migration runner with model access.
+- [`CreateModel`](functions/create-model) - Create a FlashcoreModel instance.
+- [`CreateMultiDrain`](functions/create-multi-drain) - Composes multiple drains into a single drain that calls all of them.
+- [`CreatePluginManager`](functions/create-plugin-manager) - Create a new plugin manager.
+- [`CreatePluginState`](functions/create-plugin-state) - Create a plugin-scoped state instance.
+- [`CreateResilienceAdapter`](functions/create-resilience-adapter) - Create a new ResilienceAdapter wrapping another adapter.
+- [`CreateSimpleIndex`](functions/create-simple-index) - Create a simple in-memory index for testing.
+- [`CreateTrieIndex`](functions/create-trie-index) - Create a trie-based index for prefix matching and autocomplete.
+- [`CreateValidationMiddleware`](functions/create-validation-middleware) - Create a middleware that validates args before passing to next.
+- [`DecodeKey`](functions/decode-key) - Decode a storage key back to (namespace, key) pair.
+- [`DecodeUniqueValue`](functions/decode-unique-value) - Decode a unique index value back to its original form.
+- [`DefineIndex`](functions/define-index) - Define a custom index provider.
+- [`DefineMigration`](functions/define-migration) - Define a migration script.
+- [`DefinePlugin`](functions/define-plugin) - Define a Flashcore plugin with full type safety.
+- [`Delay`](functions/delay) - Delay helper for retry logic.
+- [`Emit`](functions/emit) - Emits an IPC event to the outbox for the host to process.
+- [`EncodeKey`](functions/encode-key) - Encode a (namespace, key) pair into a safe storage key.
+- [`EncodeUniqueValue`](functions/encode-unique-value) - Encode a value for use in unique index keys.
+- [`EvaluatePluginWhere`](functions/evaluate-plugin-where) - Evaluate a where clause against a record.
+- [`EvaluateWhere`](functions/evaluate-where) - Evaluate a where clause against a record.
+- [`ExecuteAfterCreate`](functions/execute-after-create) - Execute after-create hook.
+- [`ExecuteAfterDelete`](functions/execute-after-delete) - Execute after-delete hook.
+- [`ExecuteAfterUpdate`](functions/execute-after-update) - Execute after-update hook.
+- [`ExecuteBeforeCreate`](functions/execute-before-create) - Execute before-create hook.
+- [`ExecuteBeforeDelete`](functions/execute-before-delete) - Execute before-delete hook.
+- [`ExecuteBeforeUpdate`](functions/execute-before-update) - Execute before-update hook.
+- [`ExecuteCascadeOperations`](functions/execute-cascade-operations) - Execute collected cascade operations.
+- [`ExecuteIndexPlan`](functions/execute-index-plan) - Execute a query plan against sorted index.
+- [`ExecuteWithMiddleware`](functions/execute-with-middleware) - Execute operation through middleware pipeline.
+- [`ExtractTimestamp`](functions/extract-timestamp) - Extract timestamp from a generated ID (if possible).
+- [`FilterMightContain`](functions/filter-might-contain) - Check if a record might exist using filter.
+- [`ForModels`](functions/for-models) - Create a middleware that only runs for specific models.
+- [`ForOperations`](functions/for-operations) - Create a middleware that only runs for specific operations.
+- [`FormatSchemaChanges`](functions/format-schema-changes) - Format schema changes for display.
+- [`FormatTimestamp`](functions/format-timestamp) - Formats a timestamp according to the specified format.
+- [`GenerateId`](functions/generate-id) - Generate a collision-resistant ID.
+- [`GenerateMigrationContent`](functions/generate-migration-content) - Generate migration file content.
+- [`GenerateMigrationFilename`](functions/generate-migration-filename) - Helper to generate a migration filename.
+- [`GenerateRandomId`](functions/generate-random-id) - Generate a random ID (no timestamp component).
+- [`GetConfig`](functions/get-config) - Returns the currently loaded configuration.
+- [`GetIndexPersistenceManager`](functions/get-index-persistence-manager) - Get the global IndexPersistenceManager instance.
+- [`GetJunctionModelName`](functions/get-junction-model-name) - Get deterministic junction model name for two models.
+- [`GetJunctionTableDef`](functions/get-junction-table-def) - Get junction table definition for a many-to-many relation.
+- [`GetMissingRequiredFields`](functions/get-missing-required-fields) - Get missing required fields.
+- [`GetModeName`](functions/get-mode-name) - Get a descriptive name for a transaction mode.
+- [`GetPluginContext`](functions/get-plugin-context) - Get plugin context for a model.
+- [`GetPluginManager`](functions/get-plugin-manager) - Get the global plugin manager.
+- [`GetPluginNames`](functions/get-plugin-names) - Get all registered plugin names.
+- [`GetPluginOptions`](functions/get-plugin-options) - Gets the config options for a specific plugin package.
+- [`GetSerialQueue`](functions/get-serial-queue) - Get the serial transaction queue.
+- [`GetState`](functions/get-state) - Gets the current IPC state from state.json written by the host.
+- [`GetUnknownFields`](functions/get-unknown-fields) - Get field names that are unknown (not in schema).
+- [`GetWalManager`](functions/get-wal-manager) - Get the global WAL manager instance.
+- [`HasAcidSupport`](functions/has-acid-support) - Check if ACID transactions are available.
+- [`HasIncludes`](functions/has-includes) - Check if an include clause has any entries.
+- [`HasPlugin`](functions/has-plugin) - Check if a plugin is registered.
+- [`HasScanCapability`](functions/has-scan-capability) - Check if an adapter supports scanning.
+- [`HasSchemaChanged`](functions/has-schema-changed) - Check if a schema has any changes from stored metadata.
+- [`InferNamespace`](functions/infer-namespace) - Infer namespace from package name.
+- [`IsCapable`](functions/is-capable) - Checks if a capability/event type is supported by the host.
+- [`IsJunctionModel`](functions/is-junction-model) - Check if a model name is a junction table.
+- [`IsReservedPrefix`](functions/is-reserved-prefix) - Check if a key starts with a reserved prefix.
+- [`IsSerializedBigInt`](functions/is-serialized-big-int) - Check if a value is a serialized BigInt.
+- [`IsSerializedDate`](functions/is-serialized-date) - Check if a value is a serialized date.
+- [`IsValidId`](functions/is-valid-id) - Validate an ID string.
+- [`IsWalEnabled`](functions/is-wal-enabled) - Check if WAL is globally enabled.
+- [`Logger`](functions/logger)
+- [`MergeHooks`](functions/merge-hooks) - Merge hook objects.
+- [`MetadataToNormalizedField`](functions/metadata-to-normalized-field) - Convert FieldMetadata back to a partial NormalizedField structure.
+- [`NeedsEncoding`](functions/needs-encoding) - Check if a key needs encoding (contains unsafe characters).
+- [`NormalizeCapabilities`](functions/normalize-capabilities) - Normalize adapter capabilities.
+- [`NormalizeNamespace`](functions/normalize-namespace) - Normalize namespace input to an array of strings.
+- [`NormalizeRecordShape`](functions/normalize-record-shape) - Normalize a record shape by:.
+- [`NormalizeSchema`](functions/normalize-schema) - Normalize a schema definition into internal format.
+- [`NormalizedFieldToMetadata`](functions/normalized-field-to-metadata) - Convert a NormalizedField to FieldMetadata for storage.
+- [`ParseJunctionModelName`](functions/parse-junction-model-name) - Parse junction model name to extract the two related models.
+- [`ParseLegacyKey`](functions/parse-legacy-key) - Parse a legacy composed key back to namespace and key.
+- [`PrioritizeHookAfter`](functions/prioritize-hook-after) - Set a plugin's hook to run after another plugin's hook.
+- [`PrioritizeHookBefore`](functions/prioritize-hook-before) - Set a plugin's hook to run before another plugin's hook.
+- [`RebuildCatalogFromChunks`](functions/rebuild-catalog-from-chunks) - Rebuild a catalog from chunks and segments stored in the adapter.
+- [`RecoverWal`](functions/recover-wal) - Recover from any orphaned WAL entries.
+- [`RegisterEnvPattern`](functions/register-env-pattern) - Register a custom pattern for validating environment variables.
+- [`ReleaseUniqueConstraints`](functions/release-unique-constraints) - Release multiple unique constraints.
+- [`ReplayEntryWithContext`](functions/replay-entry-with-context) - Replay a WAL entry with full model context.
+- [`RequireCapability`](functions/require-capability) - Check if an adapter meets minimum requirements for a feature.
+- [`RequiresAcid`](functions/requires-acid) - Check if multi-key atomic operations are supported.
+- [`RequiresVersionTracking`](functions/requires-version-tracking) - Determine if a mode requires version tracking for conflict detection.
+- [`ResolveAutoMode`](functions/resolve-auto-mode) - Resolve 'auto' mode to a concrete mode based on adapter capabilities.
+- [`ResolveInclude`](functions/resolve-include) - Resolve includes for a single record.
+- [`ResolveIncludesBatched`](functions/resolve-includes-batched) - Resolve includes for multiple records with batching (N+1 prevention).
+- [`RollbackEntryWithContext`](functions/rollback-entry-with-context) - Rollback a WAL entry with full model context.
+- [`ScanKeysToArray`](functions/scan-keys-to-array) - Collect all scan results into an array.
+- [`ScanKeys`](functions/scan-keys) - Normalize adapter scan results into an async iterable.
+- [`SetHookPriority`](functions/set-hook-priority) - Set the execution priority for a specific plugin's hook.
+- [`SetIndexPersistenceManager`](functions/set-index-persistence-manager) - Set the global IndexPersistenceManager instance.
+- [`SetPluginManager`](functions/set-plugin-manager) - Set the global plugin manager.
+- [`SetState`](functions/set-state) - Set a value in the state.
+- [`SetWalManager`](functions/set-wal-manager) - Set the global WAL manager instance.
+- [`SortRecords`](functions/sort-records) - Sort records by orderBy clause.
+- [`SummarizeChanges`](functions/summarize-changes) - Summarize changes for logging.
+- [`ThrowIfInvalid`](functions/throw-if-invalid) - Throw validation error if result has errors.
+- [`ValidateForeignKey`](functions/validate-foreign-key) - Validate that a foreign key points to an existing record.
+- [`ValidateForeignKeys`](functions/validate-foreign-keys) - Validate all foreign keys in a record's data.
+- [`ValidateHooks`](functions/validate-hooks) - Validate hooks object structure.
+- [`ValidateMode`](functions/validate-mode) - Validate that a transaction mode is supported by the adapter.
+- [`ValidateNotReserved`](functions/validate-not-reserved) - Validate that a key does not use reserved prefixes.
+- [`ValidateRelationsSchema`](functions/validate-relations-schema) - Validate relation schema definitions at build/registration time.
+- [`VerifyCatalogIntegrity`](functions/verify-catalog-integrity) - Verify catalog integrity against stored chunks and segments.
+- [`WarnMissingCapabilities`](functions/warn-missing-capabilities) - Log warnings for missing recommended capabilities.
+- [`WrapModelWithPluginAccess`](functions/wrap-model-with-plugin-access) - Wrap a model proxy to include plugin context access.
+
+## Variables
+
+- [`AdapterPresets`](variables/adapter-presets) - Recommended wrapper stacks for common use cases.
+- [`Ansi_regex`](variables/ansi_regex)
+- [`CatalogLockManager`](variables/catalog-lock-manager) - Global catalog lock manager instance.
+- [`Catalog_version`](variables/catalog_version) - Version number for catalog format.
+- [`ChunkLockManager`](variables/chunk-lock-manager) - Global chunk lock manager instance.
+- [`Color`](variables/color)
+- [`Debug_mode`](variables/debug_mode)
+- [`Default`](variables/default)
+- [`Default_auto_repair_config`](variables/default_auto_repair_config) - Default auto-repair configuration.
+- [`Default_connection_settings`](variables/default_connection_settings) - Default connection/retry settings.
+- [`Default_hook_priority`](variables/default_hook_priority) - Default hook priority.
+- [`Default_index_persistence_settings`](variables/default_index_persistence_settings) - Default index persistence settings.
+- [`Default_max_chunk_size`](variables/default_max_chunk_size) - Default chunk size limits.
+- [`Default_max_records_per_chunk`](variables/default_max_records_per_chunk) - Default maximum records per chunk.
+- [`Default_namespace_separator`](variables/default_namespace_separator) - Default namespace separator for joining array namespaces.
+- [`Default_on_delete`](variables/default_on_delete) - Default onDelete action for relations.
+- [`Default_records_per_chunk`](variables/default_records_per_chunk) - Default number of records per chunk.
+- [`Default_safety_config`](variables/default_safety_config) - Alias for safety config (used by query operations).
+- [`Default_safety_limits`](variables/default_safety_limits) - Default safety limits for queries.
+- [`Default_transaction_settings`](variables/default_transaction_settings) - Default transaction settings.
+- [`Encoded_key_prefix`](variables/encoded_key_prefix) - Prefix for encoded keys that contain special characters.
+- [`Env`](variables/env)
+- [`F`](variables/f) - Field builder factory object.
+- [`FlashcoreSystem`](variables/flashcore-system) - Flashcore.$ system API with Proxy wrapper.
+- [`Flashcore`](variables/flashcore) - Built-in KV database for long-term storage.
+- [`FullTextIndexProvider`](variables/full-text-index-provider) - Full-text index provider for search.
+- [`Hmr`](variables/hmr) - HMR cleanup API for hot module replacement.
+- [`Id_constraints`](variables/id_constraints) - ID validation constraints.
+- [`Ipc`](variables/ipc) - Robo IPC Protocol for host-app communication.
+- [`Junction_prefix`](variables/junction_prefix) - Prefix for junction table model names.
+- [`Legacy_key_separator`](variables/legacy_key_separator) - Separator between namespace and key in the legacy composed key format.
+- [`Manifest`](variables/manifest) - The Manifest API singleton.
+- [`Max_cascade_depth`](variables/max_cascade_depth) - Maximum cascade depth to prevent infinite recursion.
+- [`Max_include_depth`](variables/max_include_depth) - Maximum include depth for relation loading.
+- [`Max_lengths`](variables/max_lengths) - Maximum lengths for validation.
+- [`Max_schema_history_entries`](variables/max_schema_history_entries) - Maximum number of schema history entries to keep.
+- [`Max_version_value`](variables/max_version_value) - Maximum safe version value (2^53 - 1).
+- [`MigrationRegistry`](variables/migration-registry) - Global migration registry instance.
+- [`Migration_lock_key`](variables/migration_lock_key) - Key for the migration lock.
+- [`Migration_lock_timeout_ms`](variables/migration_lock_timeout_ms) - Default migration lock timeout (5 minutes).
+- [`Migration_status_prefix`](variables/migration_status_prefix) - Key prefix for migration metadata.
+- [`Migration_template`](variables/migration_template) - Migration template for code generation.
+- [`Mode`](variables/mode) - Modes are a way to define "profiles" for your Robo session.
+- [`Portal`](variables/portal) - The portal singleton with typed namespace access.
+- [`Reserved_prefixes`](variables/reserved_prefixes) - Reserved key prefixes for internal Flashcore data.
+- [`Robo`](variables/robo) - Robo is the main entry point for your app.
+- [`SafeKeyEncoder`](variables/safe-key-encoder) - Default encoder instance.
+- [`Safe_id_pattern`](variables/safe_id_pattern) - Valid characters for record IDs (no encoding needed).
+- [`Safe_key_chars`](variables/safe_key_chars) - Characters that are safe in storage keys (no encoding needed).
+- [`Schema_meta_suffix`](variables/schema_meta_suffix) - Key suffix for model schema metadata.
+- [`TrieIndexProvider`](variables/trie-index-provider) - Trie index provider for autocomplete/prefix search.
+- [`Version_field_name`](variables/version_field_name) - Name of the auto-injected version field for optimistic locking.
+- [`Version_overflow_warn_threshold`](variables/version_overflow_warn_threshold) - Threshold for version overflow warning.
+- [`Wal_clock_skew_tolerance_ms`](variables/wal_clock_skew_tolerance_ms) - Clock skew tolerance for WAL staleness detection (5 seconds).
+- [`Wal_default_segment_size`](variables/wal_default_segment_size) - Default maximum size for a single WAL entry value (100KB).
+- [`Wal_entry_key_prefix`](variables/wal_entry_key_prefix) - Key prefix for WAL entry headers.
+- [`Wal_entry_prefix`](variables/wal_entry_prefix) - Extract the WAL entry prefix for scanning.
+- [`Wal_segment_prefix`](variables/wal_segment_prefix) - Key prefix for WAL entry segments (for large entries).
+- [`Wal_stale_threshold_ms`](variables/wal_stale_threshold_ms) - Default threshold for considering a WAL entry "stale" (5 minutes).

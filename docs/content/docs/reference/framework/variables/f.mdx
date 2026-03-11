@@ -1,0 +1,50 @@
+---
+title: "f"
+---
+
+# Variable: f
+
+```ts
+const f: {
+  boolean: () => Field<"boolean", false, unknown>;
+  date: () => Field<"date", false, unknown>;
+  enum: <T>(values) => Field<"enum", false, unknown>;
+  hasMany: (model, opts) => RelationField;
+  hasOne: (model, opts) => RelationField;
+  id: () => Field<"string", false, unknown>;
+  json: <T>() => Field<"json", false, T>;
+  manyToMany: (model) => RelationField;
+  number: () => Field<"number", false, unknown>;
+  relation: (model, foreignKey) => RelationField;
+  string: () => Field<"string", false, unknown>;
+};
+```
+
+Field builder factory object.
+
+Usage:
+```typescript
+const schema = {
+  id: f.id(),
+  name: f.string(),
+  age: f.number().optional(),
+  email: f.string().unique(),
+  createdAt: f.date().default(() => new Date()),
+}
+```
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="boolean"></a> `boolean` | () =\> [`Field`](../classes/field)\<`"boolean"`, `false`, `unknown`\> | Create a boolean field. |
+| <a id="date"></a> `date` | () =\> [`Field`](../classes/field)\<`"date"`, `false`, `unknown`\> | Create a date field. |
+| <a id="enum"></a> `enum` | \<`T`\>(`values`) =\> [`Field`](../classes/field)\<`"enum"`, `false`, `unknown`\> | Create an enum field with allowed values. |
+| <a id="hasmany"></a> `hasMany` | (`model`, `opts`) =\> [`RelationField`](../classes/relation-field) | Create a has-many relation (one-to-many inverse). |
+| <a id="hasone"></a> `hasOne` | (`model`, `opts`) =\> [`RelationField`](../classes/relation-field) | Create a has-one relation (one-to-one inverse). |
+| <a id="id"></a> `id` | () =\> [`Field`](../classes/field)\<`"string"`, `false`, `unknown`\> | Create an ID field (string, primary key). |
+| <a id="json"></a> `json` | \<`T`\>() =\> [`Field`](../classes/field)\<`"json"`, `false`, `T`\> | Create a JSON field with optional type parameter. |
+| <a id="manytomany"></a> `manyToMany` | (`model`) =\> [`RelationField`](../classes/relation-field) | Create a many-to-many relation (implicit junction table). |
+| <a id="number"></a> `number` | () =\> [`Field`](../classes/field)\<`"number"`, `false`, `unknown`\> | Create a number field. |
+| <a id="relation"></a> `relation` | (`model`, `foreignKey`) =\> [`RelationField`](../classes/relation-field) | Create a belongs-to relation (many-to-one, stores FK locally). |
+| <a id="string"></a> `string` | () =\> [`Field`](../classes/field)\<`"string"`, `false`, `unknown`\> | Create a string field. |

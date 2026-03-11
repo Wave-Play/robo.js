@@ -1,156 +1,35 @@
 ---
 title: "Robo"
-description: "Main entry point for Robo.js"
 ---
 
-The `Robo` variable is the main entry point for your bot. It provides a simple API for starting, stopping, and restarting your Robo.js application programmatically.
+# Variable: Robo
 
-```typescript
+```ts
+const Robo: {
+  build: (options?) => Promise<void>;
+  restart: () => Promise<void>;
+  start: (options?) => Promise<void>;
+  stop: (exitCode, reason?) => Promise<void>;
+};
+```
+
+Robo is the main entry point for your app. It provides a simple API for starting, stopping, and restarting your Robo.
+
+```ts
 import { Robo } from 'robo.js'
 
 Robo.start()
 ```
 
-<Callout type="info" title="CLI Alternative">
-  You do not normally need to use this API directly, as the CLI will handle starting and stopping for you.
-</Callout>
+You do not normally need to use this API directly, as the CLI will handle starting and stopping for you.
 
-## Type Declaration
+[**Learn more:** Robo](https://robojs.dev/robojs/overview)
 
-```typescript
-const Robo: object;
-```
+## Type declaration
 
-## Methods
-
-### `build()`
-```typescript
-build(options?: BuildCommandOptions): Promise<void>
-```
-
-Builds your Robo instance. Similar to running `robo build` from the CLI.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        options: {
-          description: 'Options for building your Robo instance, similar to CLI options.',
-          type: 'BuildCommandOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<void>',
-        description: 'A promise that resolves when Robo has finished building.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `restart()`
-```typescript
-restart(): Promise<void>
-```
-
-Restarts your Robo instance gracefully. Similar to making changes with `robo dev` and restarting.
-
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<void>',
-        description: 'A promise that resolves when Robo has restarted.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `start()`
-```typescript
-start(options?: StartOptions): Promise<void>
-```
-
-Starts your Robo instance. Similar to running `robo start` from the CLI.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        options: {
-          description: 'Options for starting your Robo instance.',
-          type: 'StartOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<void>',
-        description: 'A promise that resolves when Robo has started.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `stop()`
-```typescript
-stop(exitCode?: number): Promise<void>
-```
-
-Stops your Robo instance gracefully. Similar to pressing `Ctrl+C` in the terminal.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        exitCode: {
-          description: 'The exit code to use when stopping Robo.',
-          type: 'number',
-          required: false,
-          default: '0'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<void>',
-        description: 'A promise that resolves when Robo has stopped.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-## Example
-
-```typescript
-import { Robo } from 'robo.js'
-
-// Start your Robo
-await Robo.start()
-
-// Later, restart your Robo programmatically
-await Robo.restart()
-
-// Stop your Robo with a custom exit code
-await Robo.stop(1)
-```
+| Name | Type |
+| ------ | ------ |
+| <a id="build"></a> `build` | (`options`?) =\> `Promise`\<`void`\> |
+| <a id="restart"></a> `restart` | () =\> `Promise`\<`void`\> |
+| <a id="start"></a> `start` | (`options`?) =\> `Promise`\<`void`\> |
+| <a id="stop"></a> `stop` | (`exitCode`, `reason`?) =\> `Promise`\<`void`\> |

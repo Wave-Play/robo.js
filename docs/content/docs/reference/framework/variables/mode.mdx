@@ -1,11 +1,21 @@
 ---
 title: "Mode"
-description: "Define profiles for your Robo.js session"
 ---
 
-The `Mode` variable allows you to define "profiles" for your Robo.js session. Each mode can have its own configuration, environment variables, and code behavior.
+# Variable: Mode
 
-```typescript
+```ts
+const Mode: Readonly<{
+  color: (text) => string;
+  get: {};
+  is: (mode) => boolean;
+  isDev: () => boolean;
+}>;
+```
+
+Modes are a way to define "profiles" for your Robo session. Each with its own config(s), envionment variables, and code.
+
+```ts
 import { Mode } from 'robo.js'
 
 // Get the current mode
@@ -16,126 +26,15 @@ if (Mode.is('dev')) {
  // Do something
 }
 
+// Check if running via `robo dev` CLI (regardless of --mode)
+if (Mode.isDev()) {
+ // Development tooling is available
+}
+
 // Colorize text based on the current mode
 console.log(Mode.color('Hello, world!'))
 ```
 
-<Callout type="info" title="Multiple Modes">
-  Everything is granular. You can even run multiple modes at the same time!
-</Callout>
+Everything is granular. You can even run multiple modes at the same time!
 
-## Type Declaration
-
-```typescript
-const Mode: Readonly<object>;
-```
-
-## Methods
-
-### `color()`
-```typescript
-color(text: string): string
-```
-
-Returns the color function for the current mode. This is used to colorize logs based on the mode when multiple exist.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        text: {
-          description: 'The text to colorize.',
-          type: 'string',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'string',
-        description: 'The colorized text.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `get()`
-```typescript
-get(): string
-```
-
-The current mode this Robo instance is running in. This is set by the `--mode` CLI flag.
-
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'string',
-        description: "The current mode. Defaults to 'production' for `robo start` and 'development' for `robo dev`."
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `is()`
-```typescript
-is(mode: string): boolean
-```
-
-Checks if the current mode matches the provided mode.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        mode: {
-          description: 'The mode to check against.',
-          type: 'string',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'boolean',
-        description: 'true if the current mode matches the provided mode, false otherwise.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-## Example
-
-```typescript
-import { Mode } from 'robo.js'
-
-// Get the current mode
-const currentMode = Mode.get()
-console.log(`Running in ${currentMode} mode`)
-
-// Check if we're in development mode
-if (Mode.is('development')) {
-  console.log('Development features enabled')
-}
-
-// Check if we're in production mode
-if (Mode.is('production')) {
-  console.log('Production optimizations enabled')
-}
-
-// Use different colors based on mode
-const logHeader = Mode.color('=== Robo Starting ===')
-console.log(logHeader) // Will be colored based on current mode
-```
+[**Learn more:** Mode](https://robojs.dev/robojs/mode)

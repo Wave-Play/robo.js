@@ -1,0 +1,89 @@
+---
+title: "FlashcoreSystem"
+---
+
+# Variable: FlashcoreSystem
+
+```ts
+const FlashcoreSystem: {
+  get config: Readonly<FlashcoreConfig>;
+  get isInitialized: boolean;
+  get schemasValidated: boolean;
+  capabilities: AdapterCapabilities;
+  checkIntegrity: Promise<{
+     durationMs: number;
+     isValid: boolean;
+     models: IntegrityReport[];
+    }>;
+  createMigrationRunner: Promise<MigrationRunner>;
+  extend: Promise<void>;
+  flushIndexes: Promise<void>;
+  getClientExtensions: Record<string, Record<string, unknown>>;
+  getModel: FlashcoreModel<T>;
+  getPluginContext: PluginContext;
+  getRegisteredModels: Map<string, FlashcoreModel<{
+     id: string;
+    }>>;
+  init: Promise<void>;
+  introspect: FlashcoreIntrospection;
+  metrics: FlashcoreMetrics;
+  preload: Promise<void>;
+  rebuildIndexes: Promise<void>;
+  rebuildIndexesBackground: Promise<void>;
+  registerModel: FlashcoreModel<T>;
+  repair: Promise<FullRepairResult>;
+  resetMetrics: void;
+  runAutoRepair: Promise<{
+     errors: string[];
+     repaired: number;
+    }>;
+  schema: FlashcoreSchema;
+  transaction: Promise<TransactionResult<T>>;
+  validateSchemas: Promise<{
+     changedModels: {
+        name: string;
+        safeChanges: SchemaChange[];
+       }[];
+     modelsValidated: number;
+     newModels: string[];
+    }>;
+  verify: Promise<IntegrityReport>;
+};
+```
+
+Flashcore.$ system API with Proxy wrapper.
+
+The Proxy enables direct plugin client extension access:
+- `Flashcore.$.realtime.getSubscriptionCount()` instead of
+- `Flashcore.$.getClientExtensions()['realtime'].getSubscriptionCount()`
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="config"></a> `get config` | `Readonly`\<[`FlashcoreConfig`](../interfaces/flashcore-config)\> | Get the current configuration (read-only). **Throws** FlashcoreError if not initialized |
+| <a id="isinitialized"></a> `get isInitialized` | `boolean` | Check if Flashcore is initialized. |
+| <a id="schemasvalidated"></a> `get schemasValidated` | `boolean` | Check if schemas have been validated. |
+| <a id="capabilities"></a> `capabilities()` | [`AdapterCapabilities`](../interfaces/adapter-capabilities) | Get the current adapter capabilities. **Throws** FlashcoreError if not initialized |
+| <a id="checkintegrity"></a> `checkIntegrity()` | `Promise`\<\{ `durationMs`: `number`; `isValid`: `boolean`; `models`: [`IntegrityReport`](../interfaces/integrity-report)[]; \}\> | Check integrity of all registered models. Validates derived index structures (filter, sorted indexes, unique indexes) against authoritative data (catalog, chunks). |
+| <a id="createmigrationrunner"></a> `createMigrationRunner()` | `Promise`\<[`MigrationRunner`](../classes/migration-runner)\> | Create a migration runner for CLI operations. |
+| <a id="extend"></a> `extend()` | `Promise`\<`void`\> | Register a plugin at runtime. This enables runtime plugin composition after initialization. The plugin's setup() hook will be called immediately. |
+| <a id="flushindexes"></a> `flushIndexes()` | `Promise`\<`void`\> | Flush all pending index changes to storage. Forces immediate persistence of all dirty indexes. |
+| <a id="getclientextensions"></a> `getClientExtensions()` | `Record`\<`string`, `Record`\<`string`, `unknown`\>\> | Get client extensions for all plugins. Returns an object where each key is a plugin name and the value is that plugin's client extensions. |
+| <a id="getmodel"></a> `getModel()` | [`FlashcoreModel`](../classes/flashcore-model)\<`T`\> | Get a registered model by name. |
+| <a id="getplugincontext"></a> `getPluginContext()` | [`PluginContext`](../interfaces/plugin-context) | Get plugin context by name. |
+| <a id="getregisteredmodels"></a> `getRegisteredModels()` | `Map`\<`string`, [`FlashcoreModel`](../classes/flashcore-model)\<\{ `id`: `string`; \}\>\> | Get all registered models. Returns a Map of model key to model instance. |
+| <a id="init"></a> `init()` | `Promise`\<`void`\> | Initialize Flashcore with the provided options. Must be called before using any Flashcore features. Idempotent: calling multiple times with the same options is safe. |
+| <a id="introspect"></a> `introspect()` | [`FlashcoreIntrospection`](../interfaces/flashcore-introspection) | Get introspection data about the current Flashcore state. Returns information about models, storage, plugins, and WAL status. |
+| <a id="metrics"></a> `metrics()` | [`FlashcoreMetrics`](../interfaces/flashcore-metrics) | Get current metrics. |
+| <a id="preload"></a> `preload()` | `Promise`\<`void`\> | Preload specified models into memory. Loads catalog, filter, and sorted indexes for the specified models. Useful when lazyLoading is enabled but you want to warm up specific models. |
+| <a id="rebuildindexes"></a> `rebuildIndexes()` | `Promise`\<`void`\> | Rebuild all indexes for a model (or all models). This completely rebuilds filter and sorted indexes from authoritative data. |
+| <a id="rebuildindexesbackground"></a> `rebuildIndexesBackground()` | `Promise`\<`void`\> | Rebuild indexes for a model in the background. Builds new indexes without blocking queries, then atomically swaps the new indexes in place of the old ones. |
+| <a id="registermodel"></a> `registerModel()` | [`FlashcoreModel`](../classes/flashcore-model)\<`T`\> | Register a model with the given schema. |
+| <a id="repair"></a> `repair()` | `Promise`\<[`FullRepairResult`](../interfaces/full-repair-result)\> | Repair a specific model based on integrity check. |
+| <a id="resetmetrics"></a> `resetMetrics()` | `void` | Reset all metrics counters. |
+| <a id="runautorepair"></a> `runAutoRepair()` | `Promise`\<\{ `errors`: `string`[]; `repaired`: `number`; \}\> | Run auto-repair based on configuration. Called after schema validation if autoRepair is enabled. |
+| <a id="schema-1"></a> `schema()` | [`FlashcoreSchema`](../interfaces/flashcore-schema) | Get a namespaced schema helper. Used by plugins to register models in isolated namespaces. |
+| <a id="transaction"></a> `transaction()` | `Promise`\<[`TransactionResult`](../interfaces/transaction-result)\<`T`\>\> | Execute a function within a transaction. **Example** `const result = await Flashcore.$.transaction(async (ctx) => { const user = await ctx.read('user:123') ctx.set('user:123', { ...user, name: 'Updated' }) return user })` |
+| <a id="validateschemas"></a> `validateSchemas()` | `Promise`\<\{ `changedModels`: \{ `name`: `string`; `safeChanges`: [`SchemaChange`](../interfaces/schema-change)[]; \}[]; `modelsValidated`: `number`; `newModels`: `string`[]; \}\> | Validate schemas of all registered models. Compares stored schema metadata checksums against current code checksums. - Safe changes are auto-applied - Breaking changes throw FlashcoreSchemaError Should be called after all models are registered (typically during app startup). |
+| <a id="verify"></a> `verify()` | `Promise`\<[`IntegrityReport`](../interfaces/integrity-report)\> | Verify integrity of a specific model. |

@@ -1,0 +1,25 @@
+---
+title: "AdapterPresets"
+---
+
+# Variable: AdapterPresets
+
+```ts
+const AdapterPresets: {
+  development: FlashcoreAdapter<K, V>;
+  production: FlashcoreAdapter<K, V>;
+  resilient: FlashcoreAdapter<K, V>;
+  testing: FlashcoreAdapter<K, V>;
+};
+```
+
+Recommended wrapper stacks for common use cases.
+
+## Type declaration
+
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="development"></a> `development()` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | Development stack without encryption. Order: Cache → Compression → Adapter |
+| <a id="production"></a> `production()` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | Production stack with all features. Order: Cache → Encryption → Compression → Resilience → Adapter |
+| <a id="resilient"></a> `resilient()` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | Resilient stack for unreliable backends. Order: Cache → Resilience → Adapter |
+| <a id="testing"></a> `testing()` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | Minimal stack for testing (just cache). |

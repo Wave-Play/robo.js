@@ -1,0 +1,36 @@
+---
+title: "Ipc"
+---
+
+# Variable: Ipc
+
+```ts
+const Ipc: {
+  emit: (type, data, options?) => string;
+  getState: () => IpcState | null;
+  isCapable: (type) => boolean;
+};
+```
+
+Robo IPC Protocol for host-app communication.
+
+## Type declaration
+
+| Name | Type |
+| ------ | ------ |
+| <a id="emit"></a> `emit` | (`type`, `data`, `options`?) =\> `string` |
+| <a id="getstate"></a> `getState` | () =\> [`IpcState`](../interfaces/ipc-state) \| `null` |
+| <a id="iscapable"></a> `isCapable` | (`type`) =\> `boolean` |
+
+## Example
+
+```ts
+import { Ipc } from 'robo.js/ipc'
+
+if (Ipc.isCapable('open:url')) {
+  Ipc.emit('open:url', { url: 'https://example.com' })
+}
+
+const state = Ipc.getState()
+console.log(state?.env.type)
+```

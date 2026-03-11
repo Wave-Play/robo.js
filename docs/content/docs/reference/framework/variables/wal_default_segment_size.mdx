@@ -1,0 +1,12 @@
+---
+title: "WAL\_DEFAULT\_SEGMENT\_SIZE"
+---
+
+# Variable: WAL\_DEFAULT\_SEGMENT\_SIZE
+
+```ts
+const WAL_DEFAULT_SEGMENT_SIZE: 100000 = 100_000;
+```
+
+Default maximum size for a single WAL entry value (100KB).
+Entries exceeding this are segmented across multiple keys.

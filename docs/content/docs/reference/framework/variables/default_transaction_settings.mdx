@@ -1,0 +1,23 @@
+---
+title: "DEFAULT\_TRANSACTION\_SETTINGS"
+---
+
+# Variable: DEFAULT\_TRANSACTION\_SETTINGS
+
+```ts
+const DEFAULT_TRANSACTION_SETTINGS: {
+  maxRetries: 3;
+  retryDelay: 100;
+  timeout: 30000;
+};
+```
+
+Default transaction settings.
+
+## Type declaration
+
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="maxretries"></a> `maxRetries` | `3` | 3 | Maximum retries for optimistic transactions. |
+| <a id="retrydelay"></a> `retryDelay` | `100` | 100 | Delay between optimistic transaction retries (ms). |
+| <a id="timeout"></a> `timeout` | `30000` | 30\_000 | Default transaction timeout (ms). |

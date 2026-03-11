@@ -1,0 +1,13 @@
+---
+title: "RESERVED\_PREFIXES"
+---
+
+# Variable: RESERVED\_PREFIXES
+
+```ts
+const RESERVED_PREFIXES: readonly ["_model:", "_flashcore:", "_wal:", "_junction_"];
+```
+
+Reserved key prefixes for internal Flashcore data.
+User KV set/delete operations must reject keys starting with these prefixes.
+User get/has operations are allowed (for debugging/introspection).

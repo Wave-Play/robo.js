@@ -1,0 +1,23 @@
+---
+title: "DEFAULT\_SAFETY\_CONFIG"
+---
+
+# Variable: DEFAULT\_SAFETY\_CONFIG
+
+```ts
+const DEFAULT_SAFETY_CONFIG: {
+  maxBulkOperationWithoutWhere: 100;
+  maxDefaultResults: 1000;
+  warnResultsThreshold: 1000;
+ } = DEFAULT_SAFETY_LIMITS;
+```
+
+Alias for safety config (used by query operations).
+
+## Type declaration
+
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="maxbulkoperationwithoutwhere"></a> `maxBulkOperationWithoutWhere` | `100` | 100 | Maximum bulk operations allowed without a where clause. |
+| <a id="maxdefaultresults"></a> `maxDefaultResults` | `1000` | 1\_000 | Maximum records returned by findMany without explicit take. |
+| <a id="warnresultsthreshold"></a> `warnResultsThreshold` | `1000` | 1\_000 | Threshold at which to warn about large result sets. |

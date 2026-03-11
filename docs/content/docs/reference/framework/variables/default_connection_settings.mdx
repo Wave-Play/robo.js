@@ -1,0 +1,23 @@
+---
+title: "DEFAULT\_CONNECTION\_SETTINGS"
+---
+
+# Variable: DEFAULT\_CONNECTION\_SETTINGS
+
+```ts
+const DEFAULT_CONNECTION_SETTINGS: {
+  maxRetries: 3;
+  retryBaseDelay: 100;
+  retryMaxDelay: 5000;
+};
+```
+
+Default connection/retry settings.
+
+## Type declaration
+
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="maxretries"></a> `maxRetries` | `3` | 3 | Maximum retry attempts for transient errors. |
+| <a id="retrybasedelay"></a> `retryBaseDelay` | `100` | 100 | Base delay for exponential backoff (ms). |
+| <a id="retrymaxdelay"></a> `retryMaxDelay` | `5000` | 5\_000 | Maximum delay between retries (ms). |

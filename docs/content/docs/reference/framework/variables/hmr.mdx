@@ -1,0 +1,31 @@
+---
+title: "hmr"
+---
+
+# Variable: hmr
+
+```ts
+const hmr: HMR;
+```
+
+HMR cleanup API for hot module replacement.
+
+Use this to register cleanup callbacks that run when your module
+is hot-reloaded during development. This prevents memory leaks
+from timers, event listeners, singletons, etc.
+
+Example:
+```ts
+import { hmr } from 'robo.js/hmr'
+
+const hot = hmr.module(import.meta.url)
+
+// Register cleanup for timers
+const timer = setInterval(() => console.log('tick'), 1000)
+hot.dispose(() => clearInterval(timer))
+
+// Persist data across reloads
+hot.data.counter = (hot.data.counter as number ?? 0) + 1
+```
+
+In production, all methods are no-ops for zero runtime overhead.

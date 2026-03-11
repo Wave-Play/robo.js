@@ -1,11 +1,25 @@
 ---
 title: "Flashcore"
-description: "Key-value database for long-term storage in Robo.js"
 ---
 
-The `Flashcore` variable provides a built-in key-value database for long-term storage in your Robo.js applications. It allows you to store, retrieve, and watch data that persists across sessions and restarts.
+# Variable: Flashcore
 
-```typescript
+```ts
+const Flashcore: {
+  $init: (options) => Promise<void>;
+  clear: () => boolean | void | Promise<void> | Promise<boolean>;
+  delete: (key, options?) => boolean | Promise<boolean>;
+  get: <V>(key, options?) => V | Promise<V>;
+  has: (key, options?) => boolean | Promise<boolean>;
+  off: (key, callback?, options?) => void;
+  on: (key, callback, options?) => void;
+  set: <V>(key, value, options?) => boolean | Promise<boolean>;
+};
+```
+
+Built-in KV database for long-term storage.
+
+```ts
 import { Flashcore } from 'robo.js'
 
 await Flashcore.set('key', 'value')
@@ -13,368 +27,20 @@ const value = await Flashcore.get('key')
 await Flashcore.delete('key')
 ```
 
-<Callout type="info" title="Asynchronous API">
-  All Flashcore APIs are asynchronous. Use this to store and retrieve data across sessions. Defaults to file-based storage, but can be configured to use other engines using Keyv adapters.
-</Callout>
+Use this to store and retrieve data across sessions. All APIs are asynchronous.
+Defaults to file-based storage, but can be configured to use other engines using Keyv adapters.
 
-## Type Declaration
+[**Learn more:** Flashcore Database](https://robojs.dev/robojs/flashcore)
 
-```typescript
-const Flashcore: object;
-```
+## Type declaration
 
-## Methods
-
-### `$init()`
-```typescript
-$init(options: InitFlashcoreOptions): Promise<void>
-```
-
-Prepares Flashcore for usage. This must be called before using any other Flashcore functions.
-
-<Callout type="warn" title="Initialize Once">
-  This function can only be called once per process.
-</Callout>
-
-<Steps>
-  <Step>
-    **Parameters**
-
-    <TypeTable
-      type={{
-        options: {
-          description: 'Options for initializing Flashcore, such as custom adapters.',
-          type: 'InitFlashcoreOptions',
-          required: true
-        }
-      }}
-    />
-  </Step>
-
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<void>',
-        description: 'A promise that resolves when Flashcore has been initialized.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `clear()`
-```typescript
-clear(): Promise<boolean | void>
-```
-
-Clears all key-value pairs from the store.
-
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<boolean | void>',
-        description: 'Resolves to a boolean indicating whether the operation was successful, or void.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `delete()`
-```typescript
-delete(key: string, options?: FlashcoreOptions): Promise<boolean>
-```
-
-Deletes the value associated with a key from the store.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key associated with the value to delete.',
-          type: 'string',
-          required: true
-        },
-        options: {
-          description: 'Optional configuration for the operation.',
-          type: 'FlashcoreOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<boolean>',
-        description: 'Resolves to a boolean indicating whether the operation was successful.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `get()`
-```typescript
-get<V>(key: string, options?: FlashcoreOptions & object): Promise<V>
-```
-
-Gets the value associated with a key.
-
-<Steps>
-  <Step>
-    **Type Parameters**
-    <TypeTable
-      type={{
-        V: {
-          description: 'The type of the value.',
-          type: 'generic'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key associated with the value.',
-          type: 'string',
-          required: true
-        },
-        options: {
-          description: 'Optional configuration for the operation.',
-          type: 'FlashcoreOptions & object',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<V>',
-        description: 'Resolves to the value associated with the key, or undefined if not found.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `has()`
-```typescript
-has(key: string, options?: FlashcoreOptions): Promise<boolean>
-```
-
-Checks if a key exists in the store.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key to check.',
-          type: 'string',
-          required: true
-        },
-        options: {
-          description: 'Options for the operation.',
-          type: 'FlashcoreOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<boolean>',
-        description: 'A boolean indicating whether the key exists.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `off()`
-```typescript
-off(key: string, callback?: WatcherCallback<unknown>, options?: FlashcoreOptions): void
-```
-
-Unregisters a callback from a key, so it will no longer be executed when the key's value changes.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key to stop watching.',
-          type: 'string',
-          required: true
-        },
-        callback: {
-          description: "The callback function to remove from the key's watch list. If no callback is provided, all callbacks associated with the key are removed.",
-          type: 'WatcherCallback<unknown>',
-          required: false
-        },
-        options: {
-          description: 'Optional configuration.',
-          type: 'FlashcoreOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `on()`
-```typescript
-on(key: string, callback: WatcherCallback<unknown>, options?: FlashcoreOptions): void
-```
-
-Registers a callback to be executed when a specific key's value changes in the store.
-
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key to watch for changes.',
-          type: 'string',
-          required: true
-        },
-        callback: {
-          description: "The callback function to execute when the key's value changes. The callback receives the new and old values as arguments.",
-          type: 'WatcherCallback<unknown>',
-          required: true
-        },
-        options: {
-          description: 'Optional configuration.',
-          type: 'FlashcoreOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-### `set()`
-```typescript
-set<V>(key: string, value: V, options?: FlashcoreOptions): Promise<boolean>
-```
-
-Sets a key-value pair in the store.
-
-<Steps>
-  <Step>
-    **Type Parameters**
-    <TypeTable
-      type={{
-        V: {
-          description: 'The type of the value.',
-          type: 'generic'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key to associate with the value.',
-          type: 'string',
-          required: true
-        },
-        value: {
-          description: 'The value to set.',
-          type: 'V',
-          required: true
-        },
-        options: {
-          description: 'Optional configuration.',
-          type: 'FlashcoreOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<boolean>',
-        description: 'Resolves to a boolean indicating whether the operation was successful.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
-
-## Example
-
-```typescript
-import { Flashcore } from 'robo.js'
-
-// Initialize Flashcore with custom options
-await Flashcore.$init({
-  adapter: new CustomStorageAdapter()
-})
-
-// Basic operations
-await Flashcore.set('user:1234', { name: 'RoboUser', level: 5 })
-const user = await Flashcore.get('user:1234')
-console.log(user.name) // 'RoboUser'
-
-// Check if a key exists
-const exists = await Flashcore.has('user:1234') // true
-
-// Watch for changes
-Flashcore.on('user:1234', (newValue, oldValue) => {
-  console.log(`User changed from ${oldValue.level} to ${newValue.level}`)
-})
-
-// Update the value
-await Flashcore.set('user:1234', { name: 'RoboUser', level: 6 })
-// Console: "User changed from 5 to 6"
-
-// Stop watching
-Flashcore.off('user:1234')
-
-// Delete the key
-await Flashcore.delete('user:1234')
-
-// Clear all data
-await Flashcore.clear()
-```
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| <a id="$init"></a> `$init` | (`options`) =\> `Promise`\<`void`\> | Prepares Flashcore for usage. This must be called before using any other Flashcore functions. Can only be called once per process. |
+| <a id="clear"></a> `clear` | () =\> `boolean` \| `void` \| `Promise`\<`void`\> \| `Promise`\<`boolean`\> | Clears all key-value pairs from the store. |
+| <a id="delete"></a> `delete` | (`key`, `options`?) =\> `boolean` \| `Promise`\<`boolean`\> | Deletes the value associated with a key from the store. |
+| <a id="get"></a> `get` | \<`V`\>(`key`, `options`?) =\> `V` \| `Promise`\<`V`\> | Gets the value associated with a key. |
+| <a id="has"></a> `has` | (`key`, `options`?) =\> `boolean` \| `Promise`\<`boolean`\> | Checks if a key exists in the store. |
+| <a id="off"></a> `off` | (`key`, `callback`?, `options`?) =\> `void` | Unregisters a callback from a key, so it will no longer be executed when the key's value changes. |
+| <a id="on"></a> `on` | (`key`, `callback`, `options`?) =\> `void` | Registers a callback to be executed when a specific key's value changes in the store. |
+| <a id="set"></a> `set` | \<`V`\>(`key`, `value`, `options`?) =\> `boolean` \| `Promise`\<`boolean`\> | Sets a key-value pair in the store. |

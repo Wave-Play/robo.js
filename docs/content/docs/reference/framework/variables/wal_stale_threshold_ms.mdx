@@ -1,0 +1,12 @@
+---
+title: "WAL\_STALE\_THRESHOLD\_MS"
+---
+
+# Variable: WAL\_STALE\_THRESHOLD\_MS
+
+```ts
+const WAL_STALE_THRESHOLD_MS: number;
+```
+
+Default threshold for considering a WAL entry "stale" (5 minutes).
+Stale entries in 'pending' phase are rolled back instead of replayed.

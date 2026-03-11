@@ -1,0 +1,23 @@
+---
+title: "DEFAULT\_INDEX\_PERSISTENCE\_SETTINGS"
+---
+
+# Variable: DEFAULT\_INDEX\_PERSISTENCE\_SETTINGS
+
+```ts
+const DEFAULT_INDEX_PERSISTENCE_SETTINGS: {
+  flushOnShutdown: true;
+  intervalMs: 0;
+  shutdownTimeout: 5000;
+};
+```
+
+Default index persistence settings.
+
+## Type declaration
+
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="flushonshutdown"></a> `flushOnShutdown` | `true` | true | Whether to flush indexes on process shutdown. |
+| <a id="intervalms"></a> `intervalMs` | `0` | 0 | Interval for periodic index persistence (ms). 0 = disabled. |
+| <a id="shutdowntimeout"></a> `shutdownTimeout` | `5000` | 5\_000 | Maximum time to wait for index flush on shutdown (ms). |
