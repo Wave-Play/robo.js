@@ -1,0 +1,261 @@
+---
+title: Quick Start
+description: Create and run your first Discord bot
+---
+
+Get a Discord bot running in minutes with **Robo.js** and the `@robojs/discordjs` plugin.
+
+## Prerequisites
+
+- **Node.js** 18 or later.
+- A code editor such as VS Code.
+- A **Discord account**.
+- A **Discord server** where you can test your bot (create one for free if needed).
+
+## Create a Project
+
+Run the scaffolding command and select the bot kit:
+
+```package-install
+npx create-robo my-bot
+```
+
+Follow the prompts to configure TypeScript and select starter features. The CLI generates a ready-to-run project.
+
+<ScreenshotPlaceholder
+  alt="Terminal showing the create-robo CLI wizard with prompts for project name, kit selection highlighting the Bot kit option, TypeScript preference, and feature selection"
+  focus="The interactive CLI prompts with the Bot kit option highlighted"
+  zoom="100%"
+  aspect="16/9"
+  notes="Run npx create-robo my-bot and capture the interactive wizard. Show the kit selection step with 'Bot' highlighted. Include the project name prompt and a few feature checkboxes. Use a dark terminal theme."
+/>
+
+## Project Structure
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="ready.ts" />
+    </Folder>
+    <Folder name="context">
+      <Folder name="user">
+        <File name="info.ts" />
+      </Folder>
+      <Folder name="message">
+        <File name="bookmark.ts" />
+      </Folder>
+    </Folder>
+    <Folder name="middleware">
+      <File name="_start.ts" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="discordjs.ts" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+- **`src/commands/`** — Slash commands. Each file becomes a command named after the file.
+- **`src/events/`** — Gateway event handlers. File names map to Discord event names.
+- **`src/context/`** — Context menu commands. Subfolders `user/` and `message/` determine the target type.
+- **`src/middleware/`** — Middleware that runs before commands and events.
+- **`config/plugins/robojs/discordjs.ts`** — Plugin configuration.
+
+## First Command
+
+Create `src/commands/ping.ts`. Return a string and Robo.js sends it as the bot's reply automatically (this is called **Sage mode**):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    export default () => {
+      return 'Pong!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    export default () => {
+      return 'Pong!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+For explicit typing:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    import type { CommandResult } from '@robojs/discordjs'
+
+    export default (): CommandResult => {
+      return 'Pong!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    export default () => {
+      return 'Pong!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The plugin registers this as the `/ping` slash command automatically.
+
+<Callout type="info">
+**Sage mode** (returning a value) is the recommended approach for most commands. Use explicit `interaction.reply()` when you need fine-grained control over timing, deferrals, or multiple responses.
+</Callout>
+
+<ScreenshotPlaceholder
+  alt="Discord showing the /ping slash command being used in a text channel, with the bot replying 'Pong!' as a message below the command invocation"
+  focus="The /ping command invocation and the bot's 'Pong!' reply"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a Discord text channel where the user has run /ping and the bot replied with 'Pong!'. The command should appear as a slash command interaction, not a regular message."
+/>
+
+## First Event
+
+Create `src/events/ready.ts`. The `ready` event fires when your bot has successfully connected to Discord:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/ready.ts"
+    import { getClient } from '@robojs/discordjs'
+
+    export default () => {
+      const client = getClient()
+      console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/ready.js"
+    import { getClient } from '@robojs/discordjs'
+
+    export default () => {
+      const client = getClient()
+      console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Set Up Credentials
+
+Before running your bot, you need a bot token and client ID from the Discord Developer Portal.
+
+1. Open [discord.com/developers/applications](https://discord.com/developers/applications) and sign in.
+2. Click **New Application**, give it a name, and confirm.
+3. Navigate to the **Bot** tab and click **Reset Token**. Copy the token.
+4. Go to **General Information** and copy the **Application ID**.
+5. Create a `.env` file in your project root:
+
+```bash
+# .env
+DISCORD_TOKEN="your_bot_token"
+DISCORD_CLIENT_ID="your_application_id"
+```
+
+<Callout type="warn">
+The bot token is shown only once. Store it immediately. Never commit your `.env` file to version control.
+</Callout>
+
+For faster command updates during development, add your test server ID:
+
+```bash
+# .env
+DISCORD_GUILD_ID="your_test_server_id"
+```
+
+See [Credentials](./credentials) for more details.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal Bot tab showing the Reset Token button and the token field with a partially hidden token value, with the Bot section sidebar navigation visible"
+  focus="The Bot tab with the Reset Token button and token field"
+  zoom="100%"
+  aspect="16/9"
+  notes="Open the Discord Developer Portal, navigate to an application's Bot tab. Show the Reset Token button and the token area. Blur or redact the actual token value. Include the left sidebar showing the Bot tab is selected."
+/>
+
+## Run in Development
+
+Start the development server:
+
+```bash
+npx robo dev
+```
+
+<Callout type="info">
+**What you should see:** The terminal prints build output followed by your bot's tag (e.g., `Logged in as MyBot#1234`). If you set `DISCORD_GUILD_ID`, commands register instantly in your test server.
+</Callout>
+
+Changes to commands and events trigger hot reload. The bot reconnects automatically with updated handlers.
+
+<ScreenshotPlaceholder
+  alt="Terminal running npx robo dev showing build output, command registration for /ping, and the bot successfully logging in with its Discord tag, followed by a 'ready' message"
+  focus="The terminal output confirming successful dev server startup"
+  zoom="100%"
+  aspect="16/9"
+  notes="Run npx robo dev on a fresh project with a /ping command. Capture the full terminal output from build through login. Show the command registration line and the 'Logged in as' message. Use a dark terminal theme."
+/>
+
+## Troubleshooting
+
+Common issues when running your bot for the first time.
+
+### Bot does not start
+
+If you see `TOKEN_INVALID` or `An invalid token was provided`, check that your `.env` file contains a valid `DISCORD_TOKEN`. The token must be copied from the **Bot** tab in the Discord Developer Portal, not the client secret or application ID.
+
+```bash
+# .env
+DISCORD_TOKEN="your_bot_token_here"
+DISCORD_CLIENT_ID="your_application_id_here"
+```
+
+### Commands not showing in Discord
+
+Slash commands can take up to an hour to propagate globally. To see them immediately during development, set `DISCORD_GUILD_ID` in your `.env` to scope commands to a single server:
+
+```bash
+# .env
+DISCORD_GUILD_ID="your_test_server_id"
+```
+
+Then restart with `npx robo dev`. Guild-scoped commands update instantly.
+
+### Bot is online but not responding
+
+1. Verify the bot has the `applications.commands` scope in its invite link. Without it, slash commands cannot be registered.
+2. Check that the bot has permission to read and send messages in the channel you are testing in.
+3. Make sure you are running `npx robo dev` and the process has not exited with errors.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./invite"
+    title="Invite Your Bot"
+    description="Add your bot to a Discord server."
+  />
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Define slash commands with options and subcommands."
+  />
+  <Card
+    href="./events"
+    title="Events"
+    description="Handle gateway events from Discord."
+  />
+</Cards>

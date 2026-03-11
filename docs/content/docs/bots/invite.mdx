@@ -1,90 +1,132 @@
 ---
-title: Inviting to Servers
+title: Inviting Your Bot
+description: Add your bot to Discord servers
 ---
 
-# Inviting to Servers
+Generate an invite link and add your bot to a server. The invite URL includes **scopes** (permission categories that define what the bot can do) and specific permissions.
 
-You've crafted an amazing Robo, and now it's time to bring it to life on your Discord Servers! To add your Robo, you'll need special invite links with the necessary permissions and scopes.
+## Developer Portal
 
-Don't worry, we've got you covered with two ways to generate these links: the Robo.js CLI and the Discord Developer Portal.
+The simplest way to generate an invite link:
 
-<Callout type="info">
-You can always re-generate invite links and add your Robo again to update the permissions given.
-</Callout>
+1. Open [discord.com/developers/applications](https://discord.com/developers/applications).
+2. Select your application.
+3. Navigate to **OAuth2** in the sidebar.
+4. Under **URL Generator**, select the `bot` scope (allows joining servers) and `applications.commands` scope (allows registering slash commands).
+5. Select the permissions your bot requires.
+6. Copy the generated URL at the bottom.
 
-## Robo.js CLI: The Cool Way
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal OAuth2 URL Generator page showing the bot and applications.commands scopes checked, a permissions section with several permission checkboxes selected, and the generated URL at the bottom of the page"
+  focus="The scopes checkboxes with bot and applications.commands selected, and the generated URL"
+  zoom="100%"
+  aspect="16/9"
+  notes="Navigate to OAuth2 > URL Generator. Check 'bot' and 'applications.commands' scopes. Select common permissions like Send Messages. Show the generated URL at the bottom."
+/>
 
-Robo.js has a rad feature that lets you generate invite links in a snap. Just run the command below, and you'll get an invite link to share or use to add your Robo to Discord servers:
+## CLI Invite
 
-```package-install
-robo invite
+Alternatively, run the invite command:
+
+```bash
+npx robo invite
 ```
 
-<Callout type="info">
-The `robo invite` command is currently in beta, so it might not detect all the permissions necessary, or it could ask for extra ones you don't need.
-</Callout>
+This reads your project configuration, aggregates required permissions from command configs, and outputs a ready-to-use invite URL.
 
-## Discord Developer Portal: The Classic Way
+<ScreenshotPlaceholder
+  alt="Terminal output from running npx robo invite, showing the generated invite URL with encoded permission bits and scopes, ready to be copied"
+  focus="The terminal output with the generated invite URL"
+  zoom="100%"
+  aspect="16/9"
+  notes="Run npx robo invite in a configured bot project. Capture the terminal output showing the generated URL. Use a dark terminal theme."
+/>
 
-If you're a fan of the Discord Developer Portal, you can generate your invite link by following these steps:
+## Permissions and Scopes
 
-1. Head over to the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Pick your application (Robo) from the list.
-3. Go to the "OAuth2" section in the left sidebar.
-4. In the "Scopes" section, check the "bot" box.
-5. In the "Bot Permissions" section, select the permissions your Robo requires.
-6. Grab the generated invite link at the very bottom.
+The `npx robo invite` command reads your project's build metadata to determine which permissions your bot needs. During builds, the plugin aggregates permission flags declared in your command configs and stores them in the manifest. The invite CLI then uses that metadata to construct the invite URL with the correct permission bits and scopes (`bot` and `applications.commands` by default).
 
-You're all set! Your invite link is ready to share or use to add your Robo to Discord servers.
+To declare permissions for a command, use `createCommandConfig`:
 
-## Customizing Permissions in the Config File
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/clean.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
 
-Wanna personalize permissions and scopes for `robo invite`? Add an `invite` section to your config file like this:
+    export const config = createCommandConfig({
+      defaultMemberPermissions: PermissionFlagsBits.ManageMessages
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/clean.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
 
-```javascript title="config/robo.mjs" showLineNumbers {6-10}
-/**
- * @type {import('robo.js').Config}
- **/
-export default {
-	// ...rest of config
-	invite: {
-		autoPermissions: false,
-		permissions: ['SendMessages', 'ReadMessageHistory', 'AddReactions'],
-		scopes: ['applications.commands']
-	}
-}
-```
+    export const config = createCommandConfig({
+      defaultMemberPermissions: PermissionFlagsBits.ManageMessages
+    })
+    ```
+  </Tab>
+</Tabs>
 
-By setting `autoPermissions` to `false`, Robo.js won't automatically add extra permissions it thinks you might need.
+If you need to customize the invite URL beyond what the CLI generates, use the Developer Portal method described above.
 
-## Intents: Tuning in to Discord Events
+## Privileged Intents
 
-Intents let Robo.js know which permissions to add automatically. Set 'em up in the `clientOptions` field of your config. Keep in mind that some features, like message content, need Privileged Gateway Intents. You'll find these in the Discord Developer Portal under the "Bot" section.
+Some events require privileged intents that must be enabled in the Discord Developer Portal before your bot can receive them:
 
-Here's an example of setting up intents in your config file:
+1. Open your application in the portal.
+2. Navigate to the **Bot** tab.
+3. Scroll to **Privileged Gateway Intents**.
+4. Enable the intents your bot needs (Guild Members, Message Content, Presence).
 
-```javascript title="config/robo.mjs" showLineNumbers
-/**
- * @type {import('robo.js').Config}
- **/
-export default {
-	// ...rest of config
-	clientOptions: {
-		intents: ['GUILD_MESSAGES', 'GUILD_PRESENCES']
-	}
-}
-```
+For more detail on how intents work and how the plugin infers them, see the [Intents](./intents) documentation.
 
-## Dive Deeper
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal Bot tab scrolled to the Privileged Gateway Intents section, showing toggle switches for Presence Intent, Server Members Intent, and Message Content Intent"
+  focus="The three privileged intent toggle switches with their labels"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Privileged Gateway Intents section with all three toggles OFF. This represents the default state before any intents are enabled. Crop tightly to just the toggles and section heading."
+/>
 
-Curious about permissions, scopes, and intents? Check out these reference links to learn when they're needed and what they mean:
+## Troubleshooting
 
-- [Discord Developer Docs: Gateway Intents](https://discord.com/developers/docs/topics/gateway#gateway-intents)
-- [Discord Developer Docs: Permissions](https://discord.com/developers/docs/topics/permissions)
-- [Discord Developer Docs: OAuth2 Scopes](https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes)
+### Bot does not appear in the server after inviting
 
-It's especially important to understand intents, as they help Robo.js know which permissions to add automatically.
+1. Check that you selected both the `bot` and `applications.commands` scopes in the invite URL.
+2. Verify that you have **Manage Server** permission on the server you are inviting the bot to.
+3. If the invite link shows "Invalid OAuth2 redirect_uri", regenerate the invite using `npx robo invite` or through the Developer Portal.
 
-<Callout type="info" title="Permissions and Scopes">
-Permissions and scopes are usually handled for you, but knowing the ins and outs of intents can be super helpful!
-</Callout>
+### Bot is offline after invite
+
+The invite only adds the bot to the server. You still need to run `npx robo dev` (or `npx robo start` in production) to bring the bot online. If the bot process is running but appears offline, check that the `DISCORD_TOKEN` in your `.env` is correct.
+
+### Missing permissions after invite
+
+If the bot cannot perform actions (sending messages, managing roles, etc.), the invite URL may not have included the required permissions. You can either:
+
+- Re-invite the bot with updated permissions using `npx robo invite` (the CLI aggregates permissions from your command configs).
+- Manually adjust the bot's role permissions in **Server Settings > Roles**.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Define slash commands with file-based routing."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Configure plugin behavior."
+  />
+  <Card
+    href="./intents"
+    title="Intents"
+    description="Control which gateway events your bot receives."
+  />
+</Cards>

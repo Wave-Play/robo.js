@@ -1,137 +1,293 @@
 ---
 title: Middleware
-description: Intercept and modify commands and events before they execute
+description: Intercept and control command execution
 ---
 
-In the heart of your Robo, there lies a potent feature known as Middleware. These are functions that are executed before each and every command or event, granting you the ability to manipulate data, introduce conditional flows, and even halt execution of events or commands based on custom criteria.
+**Middleware** acts as a checkpoint that every command and event passes through before it executes. Use it for logging, access control, or payload modification.
 
-They are like the night's watch, ever-vigilant before every event and command, including those nested inside modules and plugins!
+<ScreenshotPlaceholder
+	alt="Conceptual flow diagram showing middleware execution: user interaction passes through '01-logger', '02-auth', '03-cooldown' middleware before reaching the command handler, with an abort path from auth"
+	focus="The linear middleware chain with numbered execution order"
+	zoom="100%"
+	aspect="16/9"
+	notes="Create a horizontal flow diagram with labeled boxes: 'User Interaction' → '01-logger' → '02-auth' → '03-cooldown' → 'Command Handler'. Draw a dashed arrow from '02-auth' downward to an 'Abort' label. Use a clean, minimal style with rounded rectangles. This is a conceptual diagram, not a screenshot of actual UI."
+/>
 
-<Callout type="warn" title="Experimental">
-Middleware is still an experimental feature, and the API might change before we hit v1. Presently, it operates for all events, but future updates could let you specify target events. Stay tuned for updates!
+<Callout type="info">
+For middleware config fields (`order`, `enabled`), execution order behavior, error handling, and the `enabled` vs `disabled` distinction, see the [@robojs/discordjs Middleware reference](/docs/discordjs/middleware).
 </Callout>
 
-## Crafting Middleware
+## Creating Middleware
 
-Crafting middleware for your Robo is simple and straightforward. Create files inside the `/src/middleware` directory. The filenames don't really matter but remember they run alphabetically. Number prefixes can control the order (like `01-preliminary.js`). Even if placed inside modules, middleware files still impact your entire Robo!
+Create files in `src/middleware/`. Middleware runs in alphabetical order by filename. Use number prefixes to control execution order.
 
 <Files>
-  <Folder name="src" defaultOpen disabled>
-    <Folder name="middleware" defaultOpen>
-      <File name="01-check-roles.js" />
-      <File name="02-set-timestamp.js" />
-      <File name="03-example-logger.js" />
-    </Folder>
-  </Folder>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="middleware" defaultOpen>
+			<File name="01-logger.ts" />
+			<File name="02-auth.ts" />
+		</Folder>
+	</Folder>
 </Files>
 
-## The MiddlewareData Parcel
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/01-logger.ts"
+    import type { MiddlewareData } from '@robojs/discordjs'
 
-Each middleware function gets a `MiddlewareData{:ts}` object which contains a `payload{:ts}` array and a `record{:ts}` object. The `payload{:ts}` carries interaction objects that are passed to the event or command, while `record{:ts}` provides insights about what's being intercepted.
-
-The `record{:ts}` object has key information:
-
-- `auto{:ts}` shows if the record was automatically generated.
-- `handler{:ts}` is a reference to the file handling the interaction. It usually contains a `default{:ts}` function and might have a `config{:ts}` object.
-- `key{:ts}` is a unique string representing a command or event. Subcommands appear as `'parent/child'{:ts}`.
-- `module{:ts}` points to the module of the record. Nested modules appear as `'parent/child'{:ts}`.
-- `path{:ts}` locates the handler file.
-- `plugin{:ts}` contains name and path if the record is part of a plugin.
-- `type{:ts}` indicates if the record is a 'command', 'context', or 'event'.
-
-## Manipulating Payloads
-
-Middleware is empowered to mutate the interaction objects, thus impacting the way events and commands behave:
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-```javascript title="/src/middleware/01-example.middleware.js" showLineNumbers
-export default function (data) {
-	const [interaction] = data.payload
-	interaction.middlewareTimestamp = Date.now()
-}
-```
+    export default (data: MiddlewareData) => {
+    	console.log(`Executing: ${data.record.key}`)
+    }
+    ```
   </Tab>
-  <Tab value="Typescript">
-```typescript title="/src/middleware/01-example.middleware.ts" showLineNumbers
-export default function (data: MiddlewareData) {
-	const [interaction] = data.payload
-	interaction.middlewareTimestamp = Date.now()
-}
-```
+  <Tab value="JavaScript">
+    ```js title="src/middleware/01-logger.js"
+    export default (data) => {
+    	console.log(`Executing: ${data.record.key}`)
+    }
+    ```
   </Tab>
 </Tabs>
 
-## Gatekeeping with Middleware
+## MiddlewareData
 
-Middleware can be a gatekeeper, deciding if an event or command should proceed. If a middleware function returns `{ abort: true }{:ts}`, the event or command execution is halted. Here's an example:
+The `data` parameter passed to each middleware function contains information about the handler being intercepted and its arguments.
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-```javascript title="/src/middleware/02-example.middleware.js" showLineNumbers
-import { isModuleEnabled } from './utils.js'
+| Field | Type | Description |
+|-------|------|-------------|
+| `record.key` | `string` | Handler identifier (e.g., `commands/ping`) |
+| `record.type` | `string` | Handler type (`commands`, `events`, `context`) |
+| `record.metadata` | `object` | Handler metadata |
+| `payload` | `unknown[]` | Arguments passed to the handler (first element is usually the interaction) |
 
-export default async function (data) {
-	const moduleStatus = await isModuleEnabled(data.record.module)
+## Modifying Payloads
 
-	if (!moduleStatus) {
-		return { abort: true }
-	}
-}
-```
+Return a **MiddlewareResult** with a modified `payload` array to change the arguments passed to the handler.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/add-timestamp.ts"
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+
+    export default (data: MiddlewareData): MiddlewareResult => {
+    	// Add a timestamp to the payload
+    	data.payload.push(Date.now())
+    	return { payload: data.payload }
+    }
+    ```
   </Tab>
-  <Tab value="Typescript">
-```typescript title="/src/middleware/02-example.middleware.ts" showLineNumbers
-import { isModuleEnabled } from './utils.js'
-
-export default async function (data: MiddlewareData) {
-	const moduleStatus = await isModuleEnabled(data.record.module)
-
-	if (!moduleStatus) {
-		return { abort: true }
-	}
-}
-```
-  </Tab>
-</Tabs>
-
-## Command Control with Middleware
-
-This ability can be leveraged for user roles-based access control:
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-```javascript title="/src/middleware/03-admin.middleware.js" showLineNumbers
-export default function (data) {
-	const [interaction] = data.payload
-	const userRoles = interaction.member.roles.cache.map((role) => role.name)
-
-	if (data.record.key.startsWith('admin/') && !userRoles.includes('Admin')) {
-		interaction.reply('Sorry, this command is only for Admins!')
-		return { abort: true }
-	}
-}
-```
-  </Tab>
-  <Tab value="Typescript">
-```typescript title="/src/middleware/03-admin.middleware.ts" showLineNumbers
-export default function (data: MiddlewareData) {
-	const [interaction] = data.payload
-	const userRoles = interaction.member.roles.cache.map((role) => role.name)
-
-	if (data.record.key.startsWith('admin/') && !userRoles.includes('Admin')) {
-		interaction.reply('Sorry, this command is only for Admins!')
-		return { abort: true }
-	}
-}
-```
+  <Tab value="JavaScript">
+    ```js title="src/middleware/add-timestamp.js"
+    export default (data) => {
+    	// Add a timestamp to the payload
+    	data.payload.push(Date.now())
+    	return { payload: data.payload }
+    }
+    ```
   </Tab>
 </Tabs>
 
-## Efficient Middleware
+## Aborting Execution
 
-Remember to keep your middleware lean and efficient. The execution of events and commands is on hold until middleware finishes. Keep the bot responsive!
+Return `{ abort: true }` to prevent the handler from running. This is useful for access control or conditional logic.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/require-member.ts"
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (data: MiddlewareData): MiddlewareResult => {
+    	const interaction = data.payload[0] as ChatInputCommandInteraction
+    	const member = interaction.member
+
+    	if (!member) {
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/require-member.js"
+    export default (data) => {
+    	const interaction = data.payload[0]
+    	const member = interaction.member
+
+    	if (!member) {
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
 
 ## Error Handling
 
-A crucial thing to note is that any errors thrown within a middleware will halt the execution of the associated event or command. Therefore, it's essential to implement robust error handling within your middleware to prevent unwanted disruptions.
+Errors thrown in middleware halt execution of the associated handler. Implement proper error handling to avoid unintended disruptions.
+
+## Real-World Patterns
+
+### Command Cooldown
+
+Prevent users from spamming commands by tracking the last execution time per user.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/01-cooldown.ts"
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    const cooldowns = new Map<string, number>()
+    const COOLDOWN_MS = 5000
+
+    export default (data: MiddlewareData): MiddlewareResult => {
+    	if (data.record.type !== 'commands') return
+
+    	const interaction = data.payload[0] as ChatInputCommandInteraction
+    	const key = `${interaction.user.id}:${data.record.key}`
+    	const lastUsed = cooldowns.get(key) ?? 0
+    	const remaining = COOLDOWN_MS - (Date.now() - lastUsed)
+
+    	if (remaining > 0) {
+    		interaction.reply({
+    			content: `Please wait ${Math.ceil(remaining / 1000)}s before using this again.`,
+    			ephemeral: true
+    		})
+    		return { abort: true }
+    	}
+
+    	cooldowns.set(key, Date.now())
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/01-cooldown.js"
+    const cooldowns = new Map()
+    const COOLDOWN_MS = 5000
+
+    export default (data) => {
+    	if (data.record.type !== 'commands') return
+
+    	const interaction = data.payload[0]
+    	const key = `${interaction.user.id}:${data.record.key}`
+    	const lastUsed = cooldowns.get(key) ?? 0
+    	const remaining = COOLDOWN_MS - (Date.now() - lastUsed)
+
+    	if (remaining > 0) {
+    		interaction.reply({
+    			content: `Please wait ${Math.ceil(remaining / 1000)}s before using this again.`,
+    			ephemeral: true
+    		})
+    		return { abort: true }
+    	}
+
+    	cooldowns.set(key, Date.now())
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Discord showing a user attempting to run a command too quickly, receiving an ephemeral 'Please wait 3s before using this again.' message from cooldown middleware"
+	focus="The ephemeral cooldown error message"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a channel where a user has tried to run a command within the cooldown period. The bot displays an ephemeral cooldown message with the 'Only you can see this' label visible."
+/>
+
+### Logging with Timing
+
+Measure how long each command takes by logging before and after execution.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/01-timing.ts"
+    import { logger } from 'robo.js/logger.js'
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+
+    export default (data: MiddlewareData): MiddlewareResult => {
+    	const start = Date.now()
+    	logger.info(`[start] ${data.record.key}`)
+
+    	// Attach timing data to the payload for the handler to access if needed
+    	data.payload.push({ __middlewareStart: start })
+    	return { payload: data.payload }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/01-timing.js"
+    import { logger } from 'robo.js/logger.js'
+
+    export default (data) => {
+    	const start = Date.now()
+    	logger.info(`[start] ${data.record.key}`)
+
+    	// Attach timing data to the payload for the handler to access if needed
+    	data.payload.push({ __middlewareStart: start })
+    	return { payload: data.payload }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Since middleware only runs **before** the handler, end-to-end timing must be measured within the handler itself. Read the attached `__middlewareStart` timestamp from the payload and log the elapsed time at the end of your handler logic.
+
+### Feature Flag
+
+Check a feature flag before allowing a command to run. This is useful for rolling out new commands gradually or disabling commands without removing files.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/02-feature-flag.ts"
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    const disabledCommands = new Set(['experimental', 'beta-feature'])
+
+    export default (data: MiddlewareData): MiddlewareResult => {
+    	if (data.record.type !== 'commands') return
+
+    	const commandName = data.record.key.replace('commands/', '')
+
+    	if (disabledCommands.has(commandName)) {
+    		const interaction = data.payload[0] as ChatInputCommandInteraction
+    		interaction.reply({ content: 'This command is currently disabled.', ephemeral: true })
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/02-feature-flag.js"
+    const disabledCommands = new Set(['experimental', 'beta-feature'])
+
+    export default (data) => {
+    	if (data.record.type !== 'commands') return
+
+    	const commandName = data.record.key.replace('commands/', '')
+
+    	if (disabledCommands.has(commandName)) {
+    		const interaction = data.payload[0]
+    		interaction.reply({ content: 'This command is currently disabled.', ephemeral: true })
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./debugging"
+		title="Debugging"
+		description="Tools and techniques for debugging your bot."
+	/>
+	<Card
+		href="./permissions"
+		title="Permissions"
+		description="Command permissions and access control."
+	/>
+</Cards>

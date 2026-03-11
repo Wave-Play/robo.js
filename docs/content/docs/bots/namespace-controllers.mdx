@@ -1,0 +1,216 @@
+---
+title: Namespace Controllers
+description: Programmatic access to commands, events, and middleware
+---
+
+**Namespace controllers** provide programmatic access to your bot's commands, events, context menus, and middleware. They are ready-to-use objects exported directly from `@robojs/discordjs`.
+
+Most bots don't need these. They are useful when you need dynamic features like custom help commands, programmatic event emission, or runtime introspection of registered handlers.
+
+<Callout type="info">
+For per-handler controllers that enable/disable individual commands at runtime, server restrictions, and middleware ordering, see the [@robojs/discordjs Namespace Controllers reference](/docs/discordjs/namespace-controllers).
+</Callout>
+
+## Overview
+
+Import the controllers directly from the plugin package.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Any file in your project
+    import { commands, events, context, middleware } from '@robojs/discordjs'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Any file in your project
+    import { commands, events, context, middleware } from '@robojs/discordjs'
+    ```
+  </Tab>
+</Tabs>
+
+Each controller exposes methods for listing, retrieving, and executing handlers that Robo.js has registered from your file system.
+
+## Commands Controller
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `commands.list()` | `string[]` | All registered command keys |
+| `commands.get(name)` | `Promise<CommandHandler \| null>` | Get a command handler by name |
+| `commands.execute(name, interaction)` | `Promise<void>` | Execute a command programmatically |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { commands } from '@robojs/discordjs'
+
+    const allCommands = commands.list()
+    console.log('Available commands:', allCommands)
+
+    await commands.execute('ping', interaction)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { commands } from '@robojs/discordjs'
+
+    const allCommands = commands.list()
+    console.log('Available commands:', allCommands)
+
+    await commands.execute('ping', interaction)
+    ```
+  </Tab>
+</Tabs>
+
+## Events Controller
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `events.list()` | `string[]` | All event names with registered handlers |
+| `events.get(name)` | `Promise<EventHandler[]>` | Get all handlers for an event |
+| `events.emit(name, ...args)` | `Promise<void>` | Emit an event programmatically |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/discordjs'
+
+    const registeredEvents = events.list()
+    console.log('Registered events:', registeredEvents)
+
+    await events.emit('messageCreate', message)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/discordjs'
+
+    const registeredEvents = events.list()
+    console.log('Registered events:', registeredEvents)
+
+    await events.emit('messageCreate', message)
+    ```
+  </Tab>
+</Tabs>
+
+## Context Controller
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `context.list()` | `string[]` | All registered context menu keys |
+| `context.get(name)` | `Promise<ContextHandler \| null>` | Get a context menu handler by name |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { context } from '@robojs/discordjs'
+
+    const menus = context.list()
+    console.log('Context menus:', menus)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { context } from '@robojs/discordjs'
+
+    const menus = context.list()
+    console.log('Context menus:', menus)
+    ```
+  </Tab>
+</Tabs>
+
+## Middleware Controller
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `middleware.list()` | `string[]` | All registered middleware keys |
+| `middleware.chain()` | `Promise<MiddlewareChainEntry[]>` | Get the ordered, enabled middleware chain |
+
+Each `MiddlewareChainEntry` contains the following fields.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Middleware identifier |
+| `handler` | `function` | The middleware function |
+| `order` | `number` | Execution order |
+| `enabled` | `boolean` | Whether the middleware is active |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { middleware } from '@robojs/discordjs'
+
+    const chain = await middleware.chain()
+    console.log('Middleware chain:', chain.map((m) => m.key))
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { middleware } from '@robojs/discordjs'
+
+    const chain = await middleware.chain()
+    console.log('Middleware chain:', chain.map((m) => m.key))
+    ```
+  </Tab>
+</Tabs>
+
+## Use Cases
+
+- **Dynamic toggling**: Check if a command exists before executing it.
+- **Programmatic emission**: Trigger event handlers from code without waiting for Discord gateway events.
+- **Custom help commands**: List all registered commands dynamically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/help.ts"
+    import { commands } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	const allCommands = commands.list()
+    	const commandList = allCommands.map((cmd) => `\`/${cmd}\``).join(', ')
+    	return `Available commands: ${commandList}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/help.js"
+    import { commands } from '@robojs/discordjs'
+
+    export default (interaction) => {
+    	const allCommands = commands.list()
+    	const commandList = allCommands.map((cmd) => `\`/${cmd}\``).join(', ')
+    	return `Available commands: ${commandList}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Discord showing the output of a /help command built with namespace controllers, listing available commands formatted as /ping, /greet, /color"
+	focus="The dynamically generated command list"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a user running /help and the bot responding with a list of available commands. Commands formatted as code spans."
+/>
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./commands"
+		title="Commands"
+		description="Create and manage slash commands."
+	/>
+	<Card
+		href="./events"
+		title="Events"
+		description="Handle Discord gateway events."
+	/>
+	<Card
+		href="./middleware"
+		title="Middleware"
+		description="Intercept and control command execution."
+	/>
+</Cards>

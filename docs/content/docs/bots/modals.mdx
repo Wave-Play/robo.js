@@ -1,0 +1,233 @@
+---
+title: Modals
+description: Create text input forms
+---
+
+**Modals** are popup forms that collect text input from users. They can be triggered from any interaction — commands, buttons, or select menus. Each modal supports up to **5 text inputs**.
+
+<Callout type="info">
+For the complete reference including Sage mode interaction details, all text input methods, select menu triggers, and modal limitations, see the [@robojs/discordjs Modals reference](/docs/discordjs/modals).
+</Callout>
+
+## Creating Modals
+
+Build a modal with `ModalBuilder` and add text fields using `TextInputBuilder`. Each text input must be wrapped in its own `ActionRowBuilder`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/feedback.ts"
+    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default async (interaction: ChatInputCommandInteraction) => {
+    	const modal = new ModalBuilder()
+    		.setCustomId('feedback-modal')
+    		.setTitle('Submit Feedback')
+
+    	const input = new TextInputBuilder()
+    		.setCustomId('feedback-input')
+    		.setLabel('Your feedback')
+    		.setStyle(TextInputStyle.Paragraph)
+    		.setPlaceholder('Tell us what you think...')
+    		.setRequired(true)
+
+    	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
+    	await interaction.showModal(modal)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/feedback.js"
+    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+
+    export default async (interaction) => {
+    	const modal = new ModalBuilder()
+    		.setCustomId('feedback-modal')
+    		.setTitle('Submit Feedback')
+
+    	const input = new TextInputBuilder()
+    		.setCustomId('feedback-input')
+    		.setLabel('Your feedback')
+    		.setStyle(TextInputStyle.Paragraph)
+    		.setPlaceholder('Tell us what you think...')
+    		.setRequired(true)
+
+    	modal.addComponents(new ActionRowBuilder().addComponents(input))
+    	await interaction.showModal(modal)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Modals require a direct response to the interaction via `interaction.showModal()`. They cannot be returned from Sage mode because Sage sends a message reply, not a modal popup.
+</Callout>
+
+<ScreenshotPlaceholder
+	alt="Discord modal popup titled 'Submit Feedback' with a text input area labeled 'Your feedback' and placeholder text, plus Submit button at the bottom"
+	focus="The modal dialog with text input field and Submit button"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a Discord modal matching the feedback example: title 'Submit Feedback', Paragraph text input labeled 'Your feedback' with placeholder, and Submit/Cancel buttons. Dark overlay behind the modal."
+/>
+
+## Text Input Styles
+
+| Style | Constant | Description |
+|-------|----------|-------------|
+| Short | `TextInputStyle.Short` | Single-line input |
+| Paragraph | `TextInputStyle.Paragraph` | Multi-line textarea |
+
+Additional methods for text inputs:
+
+| Method | Description |
+|--------|-------------|
+| `setMinLength(n)` | Minimum character count |
+| `setMaxLength(n)` | Maximum character count |
+| `setPlaceholder(text)` | Greyed-out hint text |
+| `setRequired(bool)` | Whether the field must be filled |
+| `setValue(default)` | Pre-filled default value |
+
+## Handling Submissions
+
+Listen for modal submissions with an `interactionCreate` event handler using `isModalSubmit()`. Retrieve field values with `fields.getTextInputValue()`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/interactionCreate/feedback-submit.ts"
+    import type { Interaction } from 'discord.js'
+
+    export default async (interaction: Interaction) => {
+    	if (!interaction.isModalSubmit()) return
+    	if (interaction.customId !== 'feedback-modal') return
+
+    	const feedback = interaction.fields.getTextInputValue('feedback-input')
+    	await interaction.reply({ content: `Thanks for your feedback: "${feedback}"`, ephemeral: true })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/interactionCreate/feedback-submit.js"
+    export default async (interaction) => {
+    	if (!interaction.isModalSubmit()) return
+    	if (interaction.customId !== 'feedback-modal') return
+
+    	const feedback = interaction.fields.getTextInputValue('feedback-input')
+    	await interaction.reply({ content: `Thanks for your feedback: "${feedback}"`, ephemeral: true })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Modal from Button
+
+A common pattern is opening a modal when a user clicks a button. This requires two files: a command that sends the button, and an event handler that shows the modal on click.
+
+Command that sends the button:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/feedback.ts"
+    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+    export default () => {
+    	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    		new ButtonBuilder().setCustomId('open-feedback').setLabel('Give Feedback').setStyle(ButtonStyle.Primary)
+    	)
+
+    	return { content: 'We value your input!', components: [row] }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/feedback.js"
+    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+    export default () => {
+    	const row = new ActionRowBuilder().addComponents(
+    		new ButtonBuilder().setCustomId('open-feedback').setLabel('Give Feedback').setStyle(ButtonStyle.Primary)
+    	)
+
+    	return { content: 'We value your input!', components: [row] }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Event handler that shows the modal on click:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/interactionCreate/feedback-modal.ts"
+    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+    import type { Interaction } from 'discord.js'
+
+    export default async (interaction: Interaction) => {
+    	if (!interaction.isButton() || interaction.customId !== 'open-feedback') return
+
+    	const modal = new ModalBuilder()
+    		.setCustomId('feedback-modal')
+    		.setTitle('Submit Feedback')
+
+    	const input = new TextInputBuilder()
+    		.setCustomId('feedback-input')
+    		.setLabel('Your feedback')
+    		.setStyle(TextInputStyle.Paragraph)
+    		.setRequired(true)
+
+    	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
+    	await interaction.showModal(modal)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/interactionCreate/feedback-modal.js"
+    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+
+    export default async (interaction) => {
+    	if (!interaction.isButton() || interaction.customId !== 'open-feedback') return
+
+    	const modal = new ModalBuilder()
+    		.setCustomId('feedback-modal')
+    		.setTitle('Submit Feedback')
+
+    	const input = new TextInputBuilder()
+    		.setCustomId('feedback-input')
+    		.setLabel('Your feedback')
+    		.setStyle(TextInputStyle.Paragraph)
+    		.setRequired(true)
+
+    	modal.addComponents(new ActionRowBuilder().addComponents(input))
+    	await interaction.showModal(modal)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Discord showing a bot message with a 'Give Feedback' button and the modal popup that appears when clicked, with the form open and ready for input"
+	focus="The button that triggers the modal and the resulting modal popup"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show the button-to-modal flow: a message with 'Give Feedback' button, and the modal popup overlaying it. Prioritize showing the modal with the button message visible behind the overlay."
+/>
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./components"
+		title="Message Components"
+		description="Add buttons and select menus to messages."
+	/>
+	<Card
+		href="./embeds"
+		title="Embeds"
+		description="Build rich embedded messages with fields and images."
+	/>
+	<Card
+		href="./commands"
+		title="Commands"
+		description="Create and manage slash commands."
+	/>
+</Cards>

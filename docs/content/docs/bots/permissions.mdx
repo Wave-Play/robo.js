@@ -1,0 +1,254 @@
+---
+title: Permissions
+description: Command permissions and access control
+---
+
+**Permissions** control who can use your commands. Set default member permissions on individual commands or use middleware for custom access control.
+
+<Callout type="info">
+For additional utilities including guild-specific overrides (`setGuildPermissionOverride`), context menu permissions, and the `robo invite` command, see the [@robojs/discordjs Intents & Permissions reference](/docs/discordjs/intents-permissions).
+</Callout>
+
+## Default Member Permissions
+
+Use `defaultMemberPermissions` in your command config to restrict access based on Discord permission flags. Only members with the specified permissions will see the command.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ban.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Ban a user',
+    	defaultMemberPermissions: PermissionFlagsBits.BanMembers
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ban.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Ban a user',
+    	defaultMemberPermissions: PermissionFlagsBits.BanMembers
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Server administrators can override default permissions for their server.
+</Callout>
+
+<ScreenshotPlaceholder
+	alt="Discord server settings Integrations page showing the bot's command permissions, with /ban listed and default permissions set to require Ban Members"
+	focus="The command permission settings in the server integration panel"
+	zoom="100%"
+	aspect="16/9"
+	notes="Open Server Settings > Integrations, select the bot. Show command permissions where /ban requires Ban Members permission."
+/>
+
+Combine multiple permissions with the `|` operator.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/settings.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Manage server settings',
+    	defaultMemberPermissions: PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/settings.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Manage server settings',
+    	defaultMemberPermissions: PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Permission Aggregation
+
+The plugin aggregates `defaultMemberPermissions` from all registered commands to calculate the total permissions your bot needs. This aggregated value is used when generating invite links, ensuring the bot requests only the permissions its commands require.
+
+## Permission Utilities
+
+The plugin exports utility functions for working with permission bitfields programmatically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+    	aggregateCommandPermissions,
+    	getPermissionNames,
+    	hasRequiredPermissions,
+    	getMissingPermissions,
+    	combinePermissions,
+    	getEffectivePermissions,
+    	PERMISSION_FLAGS
+    } from '@robojs/discordjs'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+    	aggregateCommandPermissions,
+    	getPermissionNames,
+    	hasRequiredPermissions,
+    	getMissingPermissions,
+    	combinePermissions,
+    	getEffectivePermissions,
+    	PERMISSION_FLAGS
+    } from '@robojs/discordjs'
+    ```
+  </Tab>
+</Tabs>
+
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `getPermissionNames` | `permissions: bigint` | `string[]` | Get human-readable names from a bitfield |
+| `hasRequiredPermissions` | `userPerms, requiredPerms` | `boolean` | Check if a user has the required permissions |
+| `getMissingPermissions` | `userPerms, requiredPerms` | `string[]` | Get names of permissions the user lacks |
+| `combinePermissions` | `...permissions` | `bigint` | Combine multiple permission bitfields |
+| `getEffectivePermissions` | `map, key, guildId?` | `bigint \| null` | Get effective permissions with guild overrides |
+| `aggregateCommandPermissions` | `commands` | `Map` | Aggregate permissions from all commands |
+| `PERMISSION_FLAGS` | - | - | Alias for Discord.js's `PermissionFlagsBits` (they are the same object) |
+
+## Custom Permission Logic
+
+For access control beyond Discord's built-in permissions, use middleware. This example restricts commands to members with a specific role.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/admin-only.ts"
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
+
+    const ADMIN_ROLE_ID = '123456789012345678'
+
+    export default (data: MiddlewareData): MiddlewareResult => {
+    	if (data.record.type !== 'commands') return
+
+    	const interaction = data.payload[0] as ChatInputCommandInteraction
+    	const member = interaction.member as GuildMember
+
+    	if (!member?.roles.cache.has(ADMIN_ROLE_ID)) {
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/admin-only.js"
+    const ADMIN_ROLE_ID = '123456789012345678'
+
+    export default (data) => {
+    	if (data.record.type !== 'commands') return
+
+    	const interaction = data.payload[0]
+    	const member = interaction.member
+
+    	if (!member?.roles.cache.has(ADMIN_ROLE_ID)) {
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Discord showing an ephemeral error message when a non-admin attempts a command protected by middleware-based permission checking"
+	focus="The ephemeral permission denied message"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a user without the required role trying a protected command. The bot replies with an ephemeral permission denied message."
+/>
+
+You can also check permissions programmatically within a command handler.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/check-perms.ts"
+    import { hasRequiredPermissions, getMissingPermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	const member = interaction.member as GuildMember
+    	const required = PERMISSION_FLAGS.ManageGuild | PERMISSION_FLAGS.ManageRoles
+
+    	if (!hasRequiredPermissions(member.permissions.bitfield, required)) {
+    		const missing = getMissingPermissions(member.permissions.bitfield, required)
+    		return `You are missing permissions: ${missing.join(', ')}`
+    	}
+
+    	return 'You have the required permissions.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/check-perms.js"
+    import { hasRequiredPermissions, getMissingPermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
+
+    export default (interaction) => {
+    	const member = interaction.member
+    	const required = PERMISSION_FLAGS.ManageGuild | PERMISSION_FLAGS.ManageRoles
+
+    	if (!hasRequiredPermissions(member.permissions.bitfield, required)) {
+    		const missing = getMissingPermissions(member.permissions.bitfield, required)
+    		return `You are missing permissions: ${missing.join(', ')}`
+    	}
+
+    	return 'You have the required permissions.'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Permission Reference
+
+Common `PermissionFlagsBits` values used in bot development.
+
+| Permission | Constant | Description |
+|------------|----------|-------------|
+| Administrator | `PermissionFlagsBits.Administrator` | Full access to all permissions |
+| Manage Guild | `PermissionFlagsBits.ManageGuild` | Edit server settings |
+| Manage Channels | `PermissionFlagsBits.ManageChannels` | Create, edit, delete channels |
+| Manage Roles | `PermissionFlagsBits.ManageRoles` | Create and edit roles |
+| Kick Members | `PermissionFlagsBits.KickMembers` | Remove members from the server |
+| Ban Members | `PermissionFlagsBits.BanMembers` | Permanently ban members |
+| Manage Messages | `PermissionFlagsBits.ManageMessages` | Delete and pin messages |
+| Moderate Members | `PermissionFlagsBits.ModerateMembers` | Timeout members |
+| Send Messages | `PermissionFlagsBits.SendMessages` | Send messages in channels |
+| Embed Links | `PermissionFlagsBits.EmbedLinks` | Send embedded content |
+| Attach Files | `PermissionFlagsBits.AttachFiles` | Upload files to channels |
+| Mention Everyone | `PermissionFlagsBits.MentionEveryone` | Use @everyone and @here |
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./commands"
+		title="Commands"
+		description="Create and manage slash commands."
+	/>
+	<Card
+		href="./middleware"
+		title="Middleware"
+		description="Intercept and control command execution."
+	/>
+	<Card
+		href="./intents"
+		title="Intents"
+		description="Control which Discord events your bot receives."
+	/>
+</Cards>

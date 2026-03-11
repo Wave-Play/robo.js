@@ -1,0 +1,121 @@
+---
+title: Intents
+description: Configure gateway intents
+---
+
+**Gateway intents** (filters that tell Discord which events to send your bot) control which events your bot receives from Discord. The plugin infers required intents from your event handlers and warns about missing ones at startup.
+
+<Callout type="info">
+For intent validation utilities (`validateIntents`, `checkIntents`), the `REQUIRED_INTENTS` constant, and permission aggregation, see the [@robojs/discordjs Intents & Permissions reference](/docs/discordjs/intents-permissions).
+</Callout>
+
+## What Intents Do
+
+Discord uses intents to filter which events are sent to your bot over the gateway connection. Without the right intents enabled, event handlers for those events will not fire. This keeps bandwidth efficient by only sending data your bot actually needs.
+
+## Configuring Intents
+
+Set intents in your plugin configuration under `clientOptions.intents` using PascalCase strings.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages', 'MessageContent']
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages', 'MessageContent']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Terminal output from Robo.js startup showing intent validation: a list of configured intents and a warning about a missing intent required by an event handler"
+	focus="The intent validation log with configured intents and missing intent warning"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show terminal output from npx robo dev where the plugin logs configured intents and warns about a missing one. If hard to trigger, show the startup log listing resolved intents."
+/>
+
+## Automatic Inference
+
+The plugin analyzes your registered event handlers at build time and infers which intents are needed. At startup, it logs warnings for any missing intents. You can still override by explicitly setting intents in your configuration.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { inferIntents, validateIntents, getIntentNames } from '@robojs/discordjs'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { inferIntents, validateIntents, getIntentNames } from '@robojs/discordjs'
+    ```
+  </Tab>
+</Tabs>
+
+The `inferIntents` function returns the set of intents required by your event handlers. The `validateIntents` function checks your configured intents against the inferred set and reports gaps.
+
+## Common Patterns
+
+Most bots need only a few intents. Here are common configurations:
+
+| Use Case | Required Intents |
+|----------|-----------------|
+| Slash commands only | `Guilds` |
+| Message content reading | `Guilds`, `GuildMessages`, `MessageContent` |
+| Member join/leave tracking | `Guilds`, `GuildMembers` |
+| Reaction roles | `Guilds`, `GuildMessages`, `GuildMessageReactions` |
+| Voice state tracking | `Guilds`, `GuildVoiceStates` |
+| Presence updates | `Guilds`, `GuildPresences` |
+
+## Privileged Intents
+
+Three intents require explicit approval in the Discord Developer Portal before they can be used: `GuildPresences`, `GuildMembers`, and `MessageContent`. Enable these under **Applications > Bot > Privileged Gateway Intents**.
+
+<Callout type="warn">
+Bots in 100+ servers must be [verified by Discord](https://support.discord.com/hc/en-us/articles/360040720412) to use privileged intents.
+</Callout>
+
+<ScreenshotPlaceholder
+	alt="Discord Developer Portal Bot tab showing the Privileged Gateway Intents section with three toggle switches for Presence, Server Members, and Message Content intents"
+	focus="The three privileged intent toggles with mixed on/off states"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show the Privileged Gateway Intents section with Message Content turned ON and the other two OFF. Include the full toggle descriptions below each switch. Show more vertical context than the invite page screenshot."
+/>
+
+## Intent Reference
+
+For the complete mapping of every Discord gateway event to its required intent, see the [@robojs/discordjs Intents & Permissions reference](/docs/discordjs/intents-permissions).
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./configuration"
+		title="Configuration"
+		description="Full plugin configuration reference."
+	/>
+	<Card
+		href="./events"
+		title="Events"
+		description="Handle Discord gateway events."
+	/>
+	<Card
+		href="./permissions"
+		title="Permissions"
+		description="Command permissions and access control."
+	/>
+</Cards>

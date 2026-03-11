@@ -1,137 +1,147 @@
 ---
-title: Context Menu Commands
-description: Create and manage context menu commands
+title: Context Menus
+description: Add user and message context menu commands
 ---
 
-**Context Menu Commands** are quick interactions triggered when users right-click a message or a user. They provide a streamlined way to offer contextual actions within Discord.
+**Context menus** appear when users right-click a user's name or a message in Discord — your custom commands show up in the **Apps** section of the right-click menu. Place handler files in `src/context/user/` or `src/context/message/` to register them.
 
-## Creating Context Commands
+<ScreenshotPlaceholder
+  alt="Discord right-click context menu on a user's name showing the Apps submenu expanded, with a custom 'Info' context menu command visible in the list"
+  focus="The Apps section in the right-click menu showing the custom context command"
+  zoom="100%"
+  aspect="16/9"
+  notes="Right-click a user's name in a Discord server that has the example bot installed. Hover over or expand the Apps section. Show a custom command like 'Info' in the Apps list."
+/>
 
-To create a context menu command, add a file to the appropriate subdirectory within your project's `src/context` folder. The file name will be used as the command name (spaces and capitalization are allowed).
+<Callout type="info">
+For the full config reference including name localizations, server restrictions, and the `ContextConfig` type, see the [@robojs/discordjs Context Menus reference](/docs/discordjs/context-menus).
+</Callout>
 
-- **Message Commands**: Place files in `src/context/message`.
-- **User Commands**: Place files in `src/context/user`.
+## Creating Context Menus
+
+The file name becomes the command name. Spaces and capitalization in file names are preserved.
 
 <Files>
-  <Folder name="src" defaultOpen disabled>
-    <Folder name="context" defaultOpen>
-      <Folder name="message" defaultOpen>
-        <File name="Translate.js" />
-        <File name="Analyze Sentiment.js" />
-      </Folder>
-      <Folder name="user" defaultOpen>
-        <File name="Kick.js" />
-        <File name="Send Welcome Message.js" />
-      </Folder>
-    </Folder>
-  </Folder>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="context" defaultOpen>
+			<Folder name="user" defaultOpen>
+				<File name="Info.ts" />
+			</Folder>
+			<Folder name="message" defaultOpen>
+				<File name="Bookmark.ts" />
+			</Folder>
+		</Folder>
+	</Folder>
 </Files>
 
-## Examples
-### Message Command
+## User Context Commands
 
-When a message context menu command is invoked, your function will receive a `MessageContextMenuCommandInteraction{:ts}` object and the target `Message{:ts}`.
+User context commands receive a `UserContextMenuCommandInteraction` and the target `User` as parameters.
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/context/message/Translate.js"
-    import { translateMessage } from '../services/translator.js'
-
-    export default async (interaction, message) => {
-      const translatedContent = await translateMessage(message.content)
-      interaction.reply(`Translation: ${translatedContent}`)
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/context/message/Translate.ts"
-    import { translateMessage } from '../services/translator.js'
-    import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
-    import type { CommandResult } from 'robo.js'
-
-    export default async (interaction: MessageContextMenuCommandInteraction, message: Message): Promise<CommandResult> => {
-      const translatedContent = await translateMessage(message.content)
-      return `Translation: ${translatedContent}`
-    }
-    ```
-  </Tab>
-</Tabs>
-
-### User Command
-
-For user context menu commands, you'll receive a `UserContextMenuCommandInteraction{:ts}` object and the target `User{:ts}`.
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/context/user/Kick.js"
-    export default async (interaction, user) => {
-      const member = await interaction.guild.members.fetch(user.id)
-      if (member) {
-        await member.kick('Kicked via context menu command.')
-        interaction.reply(`Kicked ${user.username}.`)
-      } else {
-        interaction.reply({ content: 'Could not find member to kick.', ephemeral: true })
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/context/user/Kick.ts"
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/user/Info.ts"
     import type { UserContextMenuCommandInteraction, User } from 'discord.js'
-    import type { CommandResult } from 'robo.js'
 
-    export default async (interaction: UserContextMenuCommandInteraction, user: User): Promise<CommandResult> => {
-      const member = await interaction.guild.members.fetch(user.id)
-      if (member) {
-        await member.kick('Kicked via context menu command.')
-        return `Kicked ${user.username}.`
-      } else {
-        return { content: 'Could not find member to kick.', ephemeral: true }
-      }
+    export default (interaction: UserContextMenuCommandInteraction, user: User) => {
+    	return `${user.username} joined Discord on ${user.createdAt.toDateString()}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/user/Info.js"
+    export default (interaction, user) => {
+    	return `${user.username} joined Discord on ${user.createdAt.toDateString()}`
     }
     ```
   </Tab>
 </Tabs>
 
-## Customizing Context Menu Commands
+## Message Context Commands
 
-You can customize context menu commands by exporting a `config{:ts}` object from your command file. This allows you to set properties such as default member permissions and whether the command can be used in DMs.
+Message context commands receive a `MessageContextMenuCommandInteraction` and the target `Message`.
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/context/message/Translate.js"
-    import { createCommandConfig } from 'robo.js'
-    import { translateMessage } from '../services/translator.js'
-
-    export const config = createCommandConfig({
-      defaultMemberPermissions: 'ManageMessages', // Only users who can manage messages can use this
-      dmPermission: false // Cannot be used in DMs
-    })
-
-    export default async (interaction, message) => {
-      const translatedContent = await translateMessage(message.content)
-      interaction.reply(`Translation: ${translatedContent}`)
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/context/message/Translate.ts"
-    import { createCommandConfig } from 'robo.js'
-    import { translateMessage } from '../services/translator.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/message/Bookmark.ts"
     import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
-    import type { CommandConfig, CommandResult } from 'robo.js'
 
-    export const config: CommandConfig = createCommandConfig({
-      defaultMemberPermissions: 'ManageMessages', // Only users who can manage messages can use this
-      dmPermission: false // Cannot be used in DMs
-    })
-
-    export default async (interaction: MessageContextMenuCommandInteraction, message: Message): Promise<CommandResult> => {
-      const translatedContent = await translateMessage(message.content)
-      return `Translation: ${translatedContent}`
+    export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
+    	await interaction.user.send(`Bookmarked: ${message.content}`)
+    	return 'Message bookmarked!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/message/Bookmark.js"
+    export default async (interaction, message) => {
+    	await interaction.user.send(`Bookmarked: ${message.content}`)
+    	return 'Message bookmarked!'
     }
     ```
   </Tab>
 </Tabs>
 
-Context menu commands leverage the same underlying system as slash commands, including Sage for streamlined interaction replies. This ensures a consistent and powerful development experience.
+<ScreenshotPlaceholder
+  alt="Discord right-click context menu on a message showing the Apps submenu with a custom 'Bookmark' command, alongside the standard message context options"
+  focus="The Apps section in the message context menu showing the Bookmark command"
+  zoom="100%"
+  aspect="16/9"
+  notes="Right-click a message in a Discord channel with the example bot. Show the context menu with the Apps section containing the 'Bookmark' command."
+/>
+
+## Configuration
+
+Export a `config` object using `createContextConfig()` to set metadata and behavior.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/user/Info.ts"
+    import { createContextConfig } from '@robojs/discordjs'
+
+    export const config = createContextConfig({
+    	description: 'Get user information'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/user/Info.js"
+    import { createContextConfig } from '@robojs/discordjs'
+
+    export const config = createContextConfig({
+    	description: 'Get user information'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `description` | string | Command description |
+| `contexts` | CommandContext[] | Where the command is available |
+| `defaultMemberPermissions` | PermissionResolvable | Required permissions |
+| `integrationTypes` | CommandIntegrationType[] | Install types that can use this command |
+| `sage` | false \| SageOptions | Sage mode configuration |
+| `timeout` | number | Maximum execution time in milliseconds |
+
+Context menu commands use the same Sage mode as slash commands, so returning a value from the handler replies automatically.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./commands"
+		title="Commands"
+		description="Create slash commands with options and subcommands."
+	/>
+	<Card
+		href="./events"
+		title="Events"
+		description="Listen and respond to Discord events."
+	/>
+	<Card
+		href="./sage"
+		title="Sage Mode"
+		description="Automatic replies, deferrals, and error handling."
+	/>
+</Cards>

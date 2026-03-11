@@ -1,148 +1,101 @@
 ---
-title: Getting Started
+title: Discord Bots
+icon: Discord
 ---
 
-**Robo.js** makes building bots with **[Discord.js](https://discord.js.org)** as easy as placing files in the right place.
+A Discord bot is an automated program that runs inside Discord servers, responding to commands, reacting to events, and automating tasks. Robo.js handles command registration, event routing, and gateway connections so you can focus on your bot's logic.
 
-Create a **[Slash Command](./commands.mdx)** by making a file in `/src/commands`; the file name becomes the command. **[Context Commands](./context-menu.mdx)** and **[Events](./events.mdx)**? Just as easy! This is more than just a command handler - it's a full-fledged **[Framework](../framework/index.mdx)** and **[Ecosystem](/directory)**.
+The **`@robojs/discordjs`** plugin provides **file-based routing** (your file names and folder structure automatically become commands and event handlers) on top of Discord.js. Drop a file in `src/commands/` and it becomes a slash command. Add a file in `src/events/` and it handles a gateway event. No boilerplate setup required.
 
-**Got an existing bot?** See the **[Migration Guide](./migrate.mdx)**.
-
-<Callout type="info" title="Not a replacement">
-Robo.js does not replace Discord.js! Instead, it simplifies development by managing your project. You still have all of **Discord.js**!
+<Callout type="info">
+These guides cover common bot-building patterns. For the complete plugin API reference including all config fields, utility functions, and advanced features, see the [@robojs/discordjs plugin documentation](/docs/discordjs).
 </Callout>
+
+Here's a complete `/hello` command in one file:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/hello.ts"
+    export default () => {
+    	return 'Hello, world!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/hello.js"
+    export default () => {
+    	return 'Hello, world!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+That's it — Robo.js registers the command and handles the reply automatically.
+
+<ScreenshotPlaceholder
+  alt="A Discord server showing a user typing the /hello slash command and the bot replying with 'Hello, world!' in a text channel, demonstrating Robo.js file-based command routing"
+  focus="The slash command input and the bot's reply message"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a real Discord text channel. The user has typed /hello in the command picker and pressed Enter. The bot has replied with 'Hello, world!' directly below. Keep the interface clean with just one exchange visible."
+/>
 
 ## Quick Start
 
-Ready to start your adventure? Try **[Create Robo](../framework/cli/create-robo.mdx)** in your terminal:
+Create a new bot project:
 
 ```package-install
-npx create-robo <projectName>
+npx create-robo my-bot
 ```
 
-This will help spawn a new **Robo.js** project as a **Discord Bot**. We call these **Robos**.
-
-<Cards>
-	<Card
-		href="/directory"
-		title="Templates"
-		description="Kickstart your project with a template."
-	/>
-	<Card
-		href="https://blog.waveplay.com/how-to-make-a-discord-robo/"
-		title="Tutorial"
-		description="How to create a to-do Discord bot."
-	/>
-</Cards>
-
-## Documentation
-
-If you already know **Discord.js**, then you already know **Robo.js**... almost.
-
-You can develop using the same **Discord.js** you know and **[love](https://opencollective.com/discordjs)**, but you also get access to **[unique features](../framework/core/overview.mdx)**. This documentation covers everything you need to know about creating **Discord Bots** with **Robo.js**.
-
-<Cards>
-	<Card href="./bots/commands" title="Slash Commands" description="Your bot follows best practices by default." />
-	<Card href="./bots/context-menu" title="Context Commands" description="Extend right click and long press behavior." />
-	<Card href="./bots/credentials" title="Credentials" description="Secure your Discord Bot credentials." />
-	<Card href="./bots/debug" title="Debugging" description="Troubleshoot right within Discord." />
-	<Card href="./bots/events" title="Events" description="Know and respond to everything that happens." />
-	<Card href="./bots/file-structure" title="File Structure" description="Learn the purpose behind each folder." />
-	<Card href="./bots/invite" title="Invite" description="Add your bot to Discord servers." />
-	<Card href="./bots/middleware" title="Middleware" description="Run code before other commands and events." />
-	<Card href="./bots/migrate" title="Migration" description="Move your existing bot to Robo.js." />
-	<Card href="./bots/sage" title="Sage" description="Unlock the full power of Sage Mode." />
-</Cards>
-
-Not sure where to start? See the **[Beginner Guide](./beginner-guide)**.
-
-<Cards>
-	<Card
-		href="./beginner-guide.mdx"
-		title="Beginner Guide"
-		description="New to Discord Bots with Robo? Start here!"
-	/>
-</Cards>
-
-## Plugin Power Ups
-
-**[Robo Plugins](../framework/plugins/overview.mdx)** are special. They let you add features to your **Robo** with one command.
+Select the bot kit when prompted. Alternatively, add the plugin to an existing Robo project:
 
 ```package-install
-npx robo add @robojs/ai @robojs/moderation
+npx robo add @robojs/discordjs
 ```
 
-Plugins integrate seamlessly thanks to the **[Robo File Structure](../framework/core/files.mdx)**. What's more, anyone can **[create a plugin](../framework/plugins/create.mdx)**.
+## What the Plugin Provides
+
+| Feature | Description |
+|---------|-------------|
+| Slash commands | File-based routing in `/src/commands` |
+| Events | Gateway event handlers in `/src/events` |
+| Context menus | User and message commands in `/src/context` |
+| Middleware | Intercept command and event execution |
+| Sage mode | Automatic reply handling — return a value and Robo.js sends it as the reply |
+| Intent inference | Auto-detects which gateway events your bot needs based on registered handlers |
+| /dev command | Built-in debugging command for inspecting state |
+| Namespace controllers | Programmatic access to registered commands, events, and middleware |
+
+<ScreenshotPlaceholder
+  alt="Terminal output of a Robo.js bot starting in development mode, showing the build step completing, commands being registered, and the bot logging in with its Discord tag"
+  focus="The terminal output showing successful startup and login"
+  zoom="100%"
+  aspect="16/9"
+  notes="Run npx robo dev with a configured bot project. Capture the terminal showing the build output, command registration summary, and the 'Logged in as BotName#1234' line. Use a dark terminal theme."
+/>
+
+## Next Steps
 
 <Cards>
-	<Card href="./framework/plugins/" title="Robo Plugins" description="Add features to your Robo seamlessly." />
-	<Card href="./framework/plugins/" title="Plugin Directory" description="Browse plugins for your Robo." />
-</Cards>
-
-## Community
-
-Join our server to chat with other developers, ask questions, and share your projects.
-
-<Cards>
-	<Card href="https://roboplay.dev/discord" title="Discord Server" description="Join our Discord community!" />
-</Cards>
-
-Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord.js**, and more.
-
-<Callout type="info">
-Sage is powered by **[@robojs/ai](../framework/plugins/index.mdx)**
-</Callout>
-
-## Frequently Asked Questions
-
-<Accordions type="single">
-  <Accordion title="Can I use my existing code?">
-
-Yes! **Robo.js** is built on top of **Discord.js** and is fully compatible with existing bots. Check out the **[Migration Guide](./migrate.mdx)** for more info.
-
-  </Accordion>
-  <Accordion title="Can I use any database? Am I forced to use Flashcore?">
-
-**Robo.js** is database agnostic. You can use any database you like, including Flashcore, MongoDB, or even a simple JSON file.
-
-We recommend **Flashcore** for its simplicity, but more mature projects may benefit from a more robust database like MySQL or PostgreSQL. We have **[Templates](/templates?filter=discord-bots)** for those!
-
-  </Accordion>
-  <Accordion title="Do I have to use TypeScript?">
-
-Nope! **Robo.js** supports both JavaScript and TypeScript. You can use either or both in the same project.
-
-When creating a new project, uncheck the TypeScript option if you want to use JavaScript. You can always add it later.
-
-  </Accordion>
-  <Accordion title="How do I register my commands?">
-
-**You don't!**
-
-**Robo.js** automatically registers your commands when you create them in the `/src/commands` directory. It internally uses a manifest to keep track of changes and only register when necessary.
-
-  </Accordion>
-  <Accordion title="Should I still create my own client?">
-
-Nope, **Robo.js** handles the client for you. Configure it in `/config/robo.mjs` and import it via `import { client } from 'robo.js'`. Check the **[Configuration Guide](../framework/core/config.mdx)** for more info.
-
-  </Accordion>
-  <Accordion title="What is ESM? Why can't I use `require`?">
-
-ESM (ECMAScript Modules) is the new standard for JavaScript modules. **Robo.js** exclusively uses ESM.
-
-`import` is more powerful than `require` and allows for better tree-shaking and static analysis.
-
-  </Accordion>
-</Accordions>
-
-## Learn More
-
-**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
-
-<Cards>
-	<Card href="./framework/core" title="Core Package" description="See what makes Robo.js awesome." />
-	<Card href="/directory" title="Templates" description="Kickstart your project with a template." />
-	<Card href="./framework/core/modules" title="Modules" description="Stay organized with modules." />
-	<Card href="./framework/core/typescript" title="TypeScript" description="Write better code with type safety." />
+  <Card
+    href="./quick-start"
+    title="Quick Start"
+    description="Create and run your first bot."
+  />
+  <Card
+    href="./credentials"
+    title="Credentials"
+    description="Set up your bot token and client ID."
+  />
+  <Card
+    href="./invite"
+    title="Invite Your Bot"
+    description="Add your bot to a Discord server."
+  />
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Define slash commands with file-based routing."
+  />
 </Cards>

@@ -1,0 +1,236 @@
+---
+title: Debugging
+description: Debug and troubleshoot your bot
+---
+
+Robo.js provides built-in tools for debugging your bot, including test server scoping, a `/dev` command, and structured logging.
+
+<Callout type="info">
+For plugin-specific troubleshooting including common errors, registration issues, and interaction timing, see the [@robojs/discordjs Troubleshooting guide](/docs/discordjs/troubleshooting).
+</Callout>
+
+## Test Server
+
+Set `DISCORD_GUILD_ID` in your environment variables to scope command registration to a single server during development. Guild-scoped commands update instantly, while global commands can take up to an hour to propagate.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	testServers: [process.env.DISCORD_GUILD_ID]
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	testServers: [process.env.DISCORD_GUILD_ID]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This keeps development commands out of production servers and provides immediate feedback when iterating on command changes.
+
+## The /dev Command
+
+A built-in `/dev` command is available when running in development mode. It displays uptime, memory usage, registered commands, loaded plugins, and recent logs directly in Discord. This command does not appear in production.
+
+<Callout type="info">
+The `/dev` command only appears when running in development mode (`npx robo dev`).
+</Callout>
+
+<ScreenshotPlaceholder
+	alt="Discord showing the output of the /dev command displaying an embed with uptime, memory usage, registered commands count, loaded plugins, and recent log entries"
+	focus="The /dev command embed with runtime diagnostics"
+	zoom="100%"
+	aspect="16/9"
+	notes="Run /dev in a Discord channel while the bot is in dev mode. Capture the embed showing uptime, memory usage, registered commands, loaded plugins, and recent logs."
+/>
+
+## Logging
+
+Use the `logger` from `robo.js/logger.js` for structured log output. Log levels control verbosity and can be configured per environment.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/example.ts"
+    import { logger } from 'robo.js/logger.js'
+
+    export default () => {
+    	logger.info('Command executed')
+    	logger.debug('Processing data...')
+    	return 'Done!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/example.js"
+    import { logger } from 'robo.js/logger.js'
+
+    export default () => {
+    	logger.info('Command executed')
+    	logger.debug('Processing data...')
+    	return 'Done!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Level | Method | Description |
+|-------|--------|-------------|
+| trace | `logger.trace()` | Verbose tracing |
+| debug | `logger.debug()` | Debug information |
+| info | `logger.info()` | General information |
+| warn | `logger.warn()` | Warnings |
+| error | `logger.error()` | Errors |
+
+### Forked Loggers
+
+Create named logger instances with `logger.fork()`. This adds a prefix to all log output, making it easier to filter logs by source. Forked loggers are useful for both plugin authors and large bots where different parts of the application need to stand out in logs (e.g., `logger.fork('payments')`, `logger.fork('auth')`).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/core/logger.ts"
+    import { logger } from 'robo.js/logger.js'
+
+    export const paymentLogger = logger.fork('payments')
+    paymentLogger.info('Processing refund')
+    // Output: [payments] Processing refund
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/core/logger.js"
+    import { logger } from 'robo.js/logger.js'
+
+    export const paymentLogger = logger.fork('payments')
+    paymentLogger.info('Processing refund')
+    // Output: [payments] Processing refund
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Terminal output showing structured Robo.js logger output with different log levels in distinct colors, plus a forked logger message prefixed with [payments]"
+	focus="The color-coded log levels and the forked logger prefix"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show terminal output using different logger levels: info, debug, warn, error, and a forked logger with [payments] prefix. Each level should be visually distinct. Dark terminal theme."
+/>
+
+## Error Handling
+
+Always use `try/catch` with async operations inside handlers. Unhandled errors in event handlers can cause unexpected behavior or crash your bot.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/fetch.ts"
+    import { logger } from 'robo.js/logger.js'
+
+    export default async () => {
+    	try {
+    		const data = await fetchExternalApi()
+    		return `Result: ${data}`
+    	} catch (error) {
+    		logger.error('API call failed:', error)
+    		return 'Something went wrong.'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/fetch.js"
+    import { logger } from 'robo.js/logger.js'
+
+    export default async () => {
+    	try {
+    		const data = await fetchExternalApi()
+    		return `Result: ${data}`
+    	} catch (error) {
+    		logger.error('API call failed:', error)
+    		return 'Something went wrong.'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Unhandled promise rejections in event handlers can crash your bot. Always use try/catch with async operations.
+</Callout>
+
+## Debug Channel
+
+Set the `DISCORD_DEBUG_CHANNEL_ID` environment variable to forward background errors to a specific Discord channel. When configured, Sage sends error details including stack traces and context to this channel, making it easier to monitor issues in production without checking server logs.
+
+### Using the Debug Channel Effectively
+
+1. Create a private channel in your server (e.g., `#bot-errors`) visible only to developers.
+2. Copy the channel ID (enable Developer Mode in Discord settings, then right-click the channel).
+3. Add it to your `.env` file:
+
+```bash
+# .env
+DISCORD_DEBUG_CHANNEL_ID="your_channel_id"
+```
+
+Errors that occur outside of command or event handlers (background tasks, unhandled rejections) are forwarded here with full stack traces and a time-locked log snapshot showing what happened leading up to the error.
+
+<ScreenshotPlaceholder
+	alt="Discord channel #bot-errors showing a Sage error report embed with error details, stack trace, file path, and log snapshot section forwarded from a background error"
+	focus="The error report embed in the debug channel"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a private Discord channel with an error report embed from the bot: error message, file path, stack trace, and log snapshot. Demonstrates how background errors are forwarded."
+/>
+
+## Common Errors and Fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `TOKEN_INVALID` | Bot token is incorrect or expired | Regenerate the token in the Discord Developer Portal under **Bot > Reset Token** and update your `.env` |
+| `Missing Access` | Bot lacks permissions in the channel | Check that the bot role has the required permissions for the channel. Re-invite with correct permissions if needed |
+| `Unknown Command` | Command not registered with Discord | Run `npx robo build --force` to force re-registration. Check that the file exists in `src/commands/` |
+| `Missing Intent` | Required gateway intent not enabled | Enable the intent in the Developer Portal under **Bot > Privileged Gateway Intents** and add it to your plugin config |
+| `DISALLOWED_INTENTS` | Using a privileged intent without portal approval | Enable the specific intent in the Developer Portal. Bots in 100+ servers must be verified first |
+| `Used disallowed intents` | Same as above (Discord.js error variant) | Same fix as `DISALLOWED_INTENTS` |
+| `Interaction has already been acknowledged` | Calling `reply()` or `deferReply()` twice | When using Sage mode, do not call `interaction.reply()` manually. Either return a value (Sage) or use `interaction.reply()` exclusively |
+
+## Command Registration Issues
+
+When commands do not appear in Discord or appear outdated, the issue is usually related to registration caching.
+
+### Force Re-registration
+
+Robo.js uses hash caching to detect command changes and only re-registers when files have changed. If commands are not updating or you see stale commands that should have been removed, force a full re-registration:
+
+```bash
+npx robo build --force
+```
+
+The `--force` flag bypasses the hash cache, re-registers all commands with Discord, and cleans up commands that no longer exist in your `src/commands/` directory.
+
+### Guild vs Global Commands
+
+Guild-scoped commands (when `DISCORD_GUILD_ID` is set) update instantly. Global commands can take up to an hour to propagate across all servers. During development, always use guild-scoped registration for fast feedback.
+
+## Mock Server
+
+For automated testing, see [Mock Server](../mock/) which simulates Discord's API locally. This lets you test commands, events, and interactions without a live Discord connection.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./configuration"
+		title="Configuration"
+		description="Full plugin configuration reference."
+	/>
+	<Card
+		href="./intents"
+		title="Intents"
+		description="Control which gateway events your bot receives."
+	/>
+</Cards>

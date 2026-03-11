@@ -1,0 +1,168 @@
+---
+title: Configuration
+description: Configure the Discord plugin
+---
+
+Configure **`@robojs/discordjs`** through a plugin configuration file at `config/plugins/robojs/discordjs.ts`.
+
+<Callout type="info">
+For the complete reference including environment variables, client access helpers (`getClient`, `hasClient`), type re-exports, and the plugin logger, see the [@robojs/discordjs Configuration reference](/docs/discordjs/configuration).
+</Callout>
+
+<ScreenshotPlaceholder
+	alt="VS Code editor showing config/plugins/robojs/discordjs.ts with TypeScript autocomplete displaying available DiscordConfig properties like clientOptions, sage, testServers, and defaults"
+	focus="The TypeScript autocomplete showing available DiscordConfig properties"
+	zoom="100%"
+	aspect="16/9"
+	notes="Open config/plugins/robojs/discordjs.ts in VS Code. Trigger autocomplete on a property. Show IntelliSense listing clientOptions, sage, testServers, defaults, autoRegisterCommands."
+/>
+
+## Plugin Configuration
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages', 'GuildMembers']
+    	},
+    	sage: {
+    		defer: true,
+    		deferBuffer: 250,
+    		ephemeral: false
+    	},
+    	testServers: ['123456789012345678']
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages', 'GuildMembers']
+    	},
+    	sage: {
+    		defer: true,
+    		deferBuffer: 250,
+    		ephemeral: false
+    	},
+    	testServers: ['123456789012345678']
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `satisfies DiscordConfig` annotation gives you autocomplete and type checking without changing the inferred type of the export.
+
+### Client Options
+
+The `clientOptions` field passes directly through to the Discord.js `Client` constructor. Intents are specified as PascalCase strings such as `'Guilds'`, `'GuildMessages'`, and `'MessageContent'`.
+
+### Command Defaults
+
+The `defaults` field sets default values for all commands. These can be overridden per command in individual command configs.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	defaults: {
+    		contexts: ['Guild', 'BotDM'],
+    		integrationTypes: ['GuildInstall']
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	defaults: {
+    		contexts: ['Guild', 'BotDM'],
+    		integrationTypes: ['GuildInstall']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `contexts` | `('Guild' \| 'BotDM' \| 'PrivateChannel')[]` | Where commands are available |
+| `integrationTypes` | `('GuildInstall' \| 'UserInstall')[]` | Install types that can use commands |
+| `defaultMemberPermissions` | `string \| number \| bigint` | Required permissions for all commands |
+
+### Sage
+
+Global Sage mode options control automatic deferrals, ephemeral replies, and error handling. Set to `false` to disable Sage entirely. See the [Sage Mode](./sage) page for details on each option.
+
+### Test Servers
+
+The `testServers` array restricts command registration to specific server IDs during development. This speeds up iteration since guild commands update instantly, unlike global commands which can take up to an hour.
+
+### Auto Register Commands
+
+The `autoRegisterCommands` field controls when Robo.js registers slash commands with Discord.
+
+| Value | Behavior |
+|-------|----------|
+| `true` (default) | Register on every build (runs during `robo dev` and `robo build`) |
+| `false` | Never register automatically |
+| `['production']` | Register only in listed modes |
+
+### Timeouts
+
+The `timeouts` field configures time limits for various operations.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `timeouts.autocomplete` | 3000 | Autocomplete response timeout (ms) |
+| `timeouts.commandDeferral` | 250 | Time before auto-deferring (ms) |
+| `timeouts.commandRegistration` | 30000 | Command registration timeout (ms) |
+
+## Robo Configuration
+
+Framework-level settings such as logger configuration, heartbeat intervals, and environment variables go in `config/robo.ts`. This page covers only the Discord plugin configuration. See the [Robo.js core documentation](https://robojs.dev) for the full `config/robo.ts` reference.
+
+## Mode-Specific Configuration
+
+Create mode-specific overrides by appending the mode name to the filename. These files merge with the base config when running in the corresponding mode. Mode-specific files override matching fields; unspecified fields keep their base values.
+
+- **Development** — `config/plugins/robojs/discordjs.development.ts`
+- **Production** — `config/plugins/robojs/discordjs.production.ts`
+
+This is useful for setting `testServers` only in development or enabling `autoRegisterCommands` only in production.
+
+## Configuration Reference
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `autoRegisterCommands` | `boolean \| string[]` | `true` | When to register commands |
+| `clientOptions` | `ClientOptions` | - | Discord.js client options |
+| `defaults` | `CommandDefaults` | - | Default command settings |
+| `sage` | `false \| SageOptions` | `{}` | Sage mode configuration |
+| `testServers` | `string[]` | - | Dev server IDs |
+| `timeouts` | `TimeoutConfig` | - | Operation timeouts |
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./intents"
+		title="Intents"
+		description="Control which Discord events your bot receives."
+	/>
+	<Card
+		href="./sage"
+		title="Sage Mode"
+		description="Automatic replies, deferrals, and error handling."
+	/>
+	<Card
+		href="./commands"
+		title="Commands"
+		description="Create and manage slash commands."
+	/>
+</Cards>

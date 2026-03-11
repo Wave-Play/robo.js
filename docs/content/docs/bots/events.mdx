@@ -1,127 +1,200 @@
 ---
 title: Events
-description: Learn how to create and manage events
+description: Handle Discord gateway events
 ---
 
-## Setting Up Events
+**Events** let your bot respond to things happening on Discord — messages, member joins, reactions, and more. These are **gateway events** (real-time notifications Discord sends your bot over a WebSocket connection). Create handler files in `src/events/` named after the event.
 
-Setting up events is as easy as creating a file with the name of the event you want to listen to in the `events` directory. Let's say we want to respond when our bot is ready:
-
-<Files>
-  <Folder name="src" defaultOpen disabled>
-    <Folder name="events" defaultOpen>
-      <File name="ready.js" />
-    </Folder>
-  </Folder>
-</Files>
-
-```javascript title="/src/events/ready.js"
-export default () => {
-  console.log('Bot is ready!')
-}
-```
-
-Now, when your bot is ready, it will log `'Bot is ready!'{:ts}` in the console.
+<ScreenshotPlaceholder
+	alt="Terminal log output from a Robo.js bot showing multiple gateway events being handled, including a ready event with the bot tag and a messageCreate event processing a message"
+	focus="The terminal log lines showing different event types being handled"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show terminal output from a running bot that handles ready and messageCreate events. The logs should show the bot processing these events with timestamps. Dark terminal theme."
+/>
 
 <Callout type="info">
-**Btw, this is just for example purposes.** Your Robo will automatically log when ready by default!
+For details on the priority field, concurrent execution, plugin options argument, and all config fields, see the [@robojs/discordjs Events reference](/docs/discordjs/events).
 </Callout>
 
-## Stacked Events
+## Creating Event Handlers
 
-Need to listen to the same event with multiple files? No problem! Robo.js allows you to stack events. This is great for separating out different logic or features related to the same event. Let's say we want to do something else when the bot is ready:
+Create a file in `src/events/` with the name of the Discord event you want to handle. The default export runs when that event fires.
 
-<Files>
-  <Folder name="src" defaultOpen disabled>
-    <Folder name="events" defaultOpen>
-      <File name="ready.js" />
-      <Folder name="ready" defaultOpen>
-        <File name="playStatus.js" />
-      </Folder>
-    </Folder>
-  </Folder>
-</Files>
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/ready.ts"
+    import { getClient } from '@robojs/discordjs'
 
-### Examples
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-```javascript title="src/events/ready/playStatus.js"
-export default (client) => {
-  client.user.setActivity('with code')
-}
-```
+    export default () => {
+    	const client = getClient()
+    	console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
   </Tab>
-  <Tab value="Typescript">
-```typescript title="src/events/ready/playStatus.ts"
-import type { Client } from 'discord.js'
+  <Tab value="JavaScript">
+    ```js title="src/events/ready.js"
+    import { getClient } from '@robojs/discordjs'
 
-export default (client: Client) => {
-  client.user.setActivity('with code')
-}
-```
+    export default () => {
+    	const client = getClient()
+    	console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
   </Tab>
 </Tabs>
 
-Now, when the bot is ready, it will not only log `'Bot is ready!'{:ts}` in the console, but also set its status to `'Playing with code'{:ts}`!
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="events" defaultOpen>
+			<File name="ready.ts" />
+		</Folder>
+	</Folder>
+</Files>
 
-For larger bots with more complex use cases, check out our [Modules Documentation](../framework/core/modules.mdx) to group your events and commands.
+## Event Parameters
 
-## Use Cases
+Different events pass different arguments to the handler function.
 
-Listening to events opens up a world of possibilities! Here are a few examples:
+| Event | File | Parameters |
+|-------|------|------------|
+| `ready` | `src/events/ready.ts` | `client: Client` |
+| `messageCreate` | `src/events/messageCreate.ts` | `message: Message` |
+| `guildMemberAdd` | `src/events/guildMemberAdd.ts` | `member: GuildMember` |
+| `interactionCreate` | `src/events/interactionCreate.ts` | `interaction: Interaction` |
+| `messageReactionAdd` | `src/events/messageReactionAdd.ts` | `reaction: MessageReaction, user: User` |
 
-- **ready.js**: Sets up initial bot status, schedules tasks, or sends a message to a specific channel when the bot starts.
-- **guildMemberAdd.js**: Sends a welcome message or assigns a default role to a member when they join the guild.
-- **messageCreate.js**: Listens to messages and responds based on the content.
-- **interactionCreate.js**: Listens to button clicks and reactions. You can create a bot that responds to user interactions with your custom buttons or emoji reactions!
-- **messageReactionAdd.js**: Detects when a new reaction is added to a message. Useful for reaction roles or interactive messages!
+<Callout type="info">
+The `ready` event passes a `Client` as its first argument. You can accept it as a parameter or use `getClient()` — both approaches work identically.
+</Callout>
 
-Different events will pass different parameters. For example, the `messageCreate` event will pass the `Message{:ts}` object, and you can use it to reply, react, or do whatever you want! Some events, like `voiceStateUpdate{:ts}`, even pass down multiple parameters:
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/messageCreate.ts"
+    import type { Message } from 'discord.js'
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-```javascript title="/src/events/voiceStateUpdate.js"
-export default (oldState, newState) => {
-  // do something with oldState and newState
-}
-```
+    export default (message: Message) => {
+    	if (message.content === 'hello') {
+    		message.reply('Hello there!')
+    	}
+    }
+    ```
   </Tab>
-  <Tab value="Typescript">
-```typescript title="/src/events/voiceStateUpdate.ts"
-import type { VoiceState } from 'discord.js'
-
-export default (oldState: VoiceState, newState: VoiceState) => {
-  // do something with oldState and newState
-}
-```
+  <Tab value="JavaScript">
+    ```js title="src/events/messageCreate.js"
+    export default (message) => {
+    	if (message.content === 'hello') {
+    		message.reply('Hello there!')
+    	}
+    }
+    ```
   </Tab>
 </Tabs>
 
-## Intents & Privileged Intents
+<ScreenshotPlaceholder
+	alt="Discord text channel showing a user sending 'hello' and the bot automatically replying with 'Hello there!' demonstrating a messageCreate event handler"
+	focus="The user message and bot reply exchange"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a Discord text channel where a user sent 'hello' as a regular message and the bot replied with 'Hello there!'. This demonstrates the messageCreate event handler."
+/>
 
-Depending on the events you're trying to listen to, you might need to add more intents in your bot's [configuration](../framework/core/config.mdx). 
+## Stacked Handlers
 
-<Callout type="info">
-Some events like `messageContent` may require privileged intents to be toggled on in your bot's Discord application settings.
-</Callout>
+Handle the same event with multiple files by creating a folder named after the event. Each file in the folder exports a default handler, and all of them run when the event fires.
 
-Privileged intents include `GUILD_PRESENCES{:ts}` and `GUILD_MEMBERS{:ts}`, which cover events related to guild members' presence and activities. To enable these, you need to:
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="events" defaultOpen>
+			<Folder name="messageCreate" defaultOpen>
+				<File name="log.ts" />
+				<File name="greet.ts" />
+			</Folder>
+		</Folder>
+	</Folder>
+</Files>
 
-1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
-2. Select your application
-3. Navigate to the "Bot" section
-4. Scroll down to the "Privileged Gateway Intents" section
-5. Toggle on the intents you need
+## Event Configuration
 
-## Common Event Names
+Export a `config` object to control how an event handler behaves.
 
-For a complete list of event names, check out this handy [Event Names Cheat Sheet](https://gist.github.com/Iliannnn/f4985563833e2538b1b96a8cb89d72bb). Remember, you don't need to use `client.on{:ts}` like the examples in the sheet—just create a file named after the event!
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/ready.ts"
+    import type { EventConfig } from '@robojs/discordjs'
 
-## Robo Lifecycle
+    export const config: EventConfig = {
+    	frequency: 'once'
+    }
 
-In Robo.js, we've got some special events to give you an extra level of control over your bot's shenanigans: `_start{:ts}`, `_stop{:ts}`, and `_restart{:ts}`. Each one of these handy events receive the `Client{:ts}` object as a parameter.
+    export default () => {
+    	console.log('Bot is ready (runs once)')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/ready.js"
+    export const config = {
+    	frequency: 'once'
+    }
 
-Here's the lowdown: `_start{:ts}` gets called _before_ your bot has logged in. You can return a `Promise{:ts}` in these events and Robo.js will patiently wait for them to finish up, but don't leave it hanging too long – there's a 5-second time limit.
+    export default () => {
+    	console.log('Bot is ready (runs once)')
+    }
+    ```
+  </Tab>
+</Tabs>
 
-Use these lifecycle events to tidy up or get things ready for your Robo's grand entrance or exit. Perhaps you need to fire up an API server or disable buttons while your bot's snoozing.
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `frequency` | `'always' \| 'once'` | `'always'` | Run on every event or only the first |
+| `priority` | `number` | `0` | Execution order (lower runs first) |
+
+## Lifecycle Events
+
+Robo.js provides framework-level events that are not Discord events: `_start`, `_stop`, and `_restart`. Place these in `src/events/` like any other handler.
+
+- **`_start`** runs after Robo.js initialization (before the Discord connection is established). Use it for setup tasks like database connections.
+- **`ready`** fires after connecting to Discord's gateway. Use it for anything that needs the Discord client.
+- **`_stop`** runs on shutdown with a 5-second timeout. Use it for teardown tasks.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    export default () => {
+    	console.log('Bot is starting up')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    export default () => {
+    	console.log('Bot is starting up')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Intents
+
+Events require specific **intents** (filters that tell Discord which events to send your bot) to be enabled. The plugin automatically infers required intents from your registered event handlers and warns about missing ones at startup. See the [Intents](./intents) reference for configuration details.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./sage"
+		title="Sage Mode"
+		description="Automatic replies, deferrals, and error handling."
+	/>
+	<Card
+		href="./intents"
+		title="Intents"
+		description="Control which gateway events your bot receives."
+	/>
+	<Card
+		href="./middleware"
+		title="Middleware"
+		description="Intercept and control command execution."
+	/>
+</Cards>

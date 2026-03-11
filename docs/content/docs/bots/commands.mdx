@@ -3,474 +3,427 @@ title: Commands
 description: Create and manage slash commands
 ---
 
-**Slash Commands** are one of the primary ways to use your **Discord Bot**. They allow users to interact with your bot by typing `/` followed by the command name, maybe some options, and hitting enter.
-
-Building **Slash Commands** is streamlined with **Robo.js**, which also handles **[automatic registration](#command-registration)**.
-
-## Creating Slash Commands
-
-Create a file in your project's `src/commands` folder named after your **Slash Command**.
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/commands/ping.js"
-    export default (interaction) => {
-      interaction.reply('Pong!')
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/commands/ping.ts"
-    import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { CommandResult } from 'robo.js'
-
-    export default (interaction: ChatInputCommandInteraction): CommandResult => {
-      interaction.reply('Pong!')
-    }
-    ```
-  </Tab>
-</Tabs>
-
-That's it! Your `/ping` command is fully set up—give it a try!
+**Slash commands** let users interact with your bot through Discord's command interface. Robo.js routes commands from the file system and handles registration automatically.
 
 <Callout type="info">
-  Don't see your new command? Try restarting your **[Discord Client](https://support.discord.com/hc/en-us/articles/360035675191-Discord-Testing-Clients)** to refresh your cache.
+This guide covers the essentials. For the complete reference including all config fields, min/max constraints, channel type restrictions, option localizations, and the built-in `/help` command, see the [@robojs/discordjs Commands reference](/docs/discordjs/commands).
 </Callout>
 
-Alternatively, you can also return your reply directly.
+<ScreenshotPlaceholder
+  alt="Discord slash command picker showing a list of registered slash commands including /ping, /greet, and /color, with command descriptions visible next to each command name"
+  focus="The slash command autocomplete picker with multiple commands listed"
+  zoom="100%"
+  aspect="16/9"
+  notes="Open Discord in a server with a Robo.js bot that has several commands registered. Type / in the message input to open the command picker. Show at least 3-4 commands with their descriptions."
+/>
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/commands/ping.js"
-    export default async () => {
-      return 'Pong!'
+## Creating Commands
+
+Create a file in `src/commands` named after the command. The file's default export is the handler function.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    export default () => {
+    	return 'Pong!'
     }
     ```
   </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/commands/ping.ts"
-    import type { CommandResult } from 'robo.js'
-
-    export default async (): Promise<CommandResult> => {
-      return 'Pong!'
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    export default () => {
+    	return 'Pong!'
     }
     ```
   </Tab>
 </Tabs>
 
-This kicks in **[Sage Mode](./sage.mdx)**—a hidden power that handles interactions and defers slow async functions!
+Returning a value uses **Sage mode** (Robo.js automatically sends the return value as the reply). You can also use the interaction object directly.
 
-<Cards>
-  <Card href="./sage.mdx" title={<div className="flex items-center gap-2"><span>Sage</span></div>} description="Unlock the full power of Sage Mode." />
-</Cards>
-
-## Subcommands and Subcommand Groups
-
-Wanna go deeper? Make a folder inside `src/commands` with the parent command name and its own files.
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/commands/channel/lock.js"
-    export default async (interaction) => {
-      const everyoneRole = interaction.guild.roles.everyone
-      await interaction.channel.permissionOverwrites.edit(everyoneRole, {
-        SendMessages: false,
-        AddReactions: false
-      })
-
-      return 'This channel is now locked!'
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/commands/channel/lock.ts"
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
     import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { CommandResult } from 'robo.js'
 
-    export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
-      const everyoneRole = interaction.guild.roles.everyone
-      await interaction.channel.permissionOverwrites.edit(everyoneRole, {
-        SendMessages: false,
-        AddReactions: false
-      })
-
-      return 'This channel is now locked!'
+    export default (interaction: ChatInputCommandInteraction) => {
+    	interaction.reply('Pong!')
     }
     ```
   </Tab>
-</Tabs>
-
-We can go even deeper with **Subcommand Groups**. Just add another folder inside the parent command folder.
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="src/commands/bot/status/idle.js"
-    import { client } from 'robo.js'
-
-    export default async (interaction) => {
-      await client.user.setPresence({
-        status: 'idle'
-      })
-
-      return "I'm now idle!"
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="src/commands/bot/status/idle.ts"
-    import { client } from 'robo.js'
-    import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { CommandResult } from 'robo.js'
-
-    export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
-      await client.user.setPresence({
-        status: 'idle'
-      })
-
-      return "I'm now idle!"
-    }
-    ```
-  </Tab>
-</Tabs>
-
-Pretty cool, right? Literally just folders and files!
-
-<Files>
-  <Folder name="src" defaultOpen disabled> 
-    <Folder name="commands" defaultOpen>
-      <Folder name="channel" defaultOpen>
-        <File name="lock.js" />
-      </Folder>
-      <Folder name="bot" defaultOpen>
-        <Folder name="status" defaultOpen>
-          <File name="idle.js" />
-        </Folder>
-      </Folder>
-    </Folder>
-  </Folder>
-</Files>
-
-## Customizing Commands
-
-Give your commands some context with descriptions. You can do this by exporting a `config{:ts}` object from your command file.
-
-```javascript
-import { createCommandConfig } from 'robo.js'
-
-export const config = createCommandConfig({
-  description: 'Responds with Pong!'
-})
-```
-
-For TypeScript users, you can add typings for both the `config{:ts}` object and the command result.
-
-```typescript title="commands/ping.ts"
-import { createCommandConfig } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-
-export const config = createCommandConfig({
-  description: 'Responds with Pong!'
-})
-
-export default (): CommandResult => {
-  return 'Pong!'
-}
-```
-
-The `config{:ts}` object also lets you customize stuff like locale translations, Sage options, and command timeouts. To understand more about the available duration options, check out the [configuration section](../framework/core/config.mdx).
-
-## Command Options
-
-Robo.js allows you to further customize your commands with options. You can define these options in your `config{:ts}` object and then access their values in your command function.
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript title="commands/ping.js" showLineNumbers {5-11}
-    import { createCommandConfig } from 'robo.js'
-
-    export const config = createCommandConfig({
-      description: 'Responds with Pong!',
-      // [!code highlight:7]
-      options: [
-        {
-          name: 'loud',
-          description: 'Respond loudly?',
-          type: 'boolean'
-        }
-      ]
-    })
-
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
     export default (interaction) => {
-      const loud = interaction.options.get('loud')?.value as boolean
-      return loud ? 'PONG!!!' : 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="commands/ping.ts"
-    import { createCommandConfig } from 'robo.js'
-    import type { CommandResult } from 'robo.js'
-    import type { CommandInteraction } from 'discord.js'
-
-    export const config = createCommandConfig({
-      description: 'Responds with Pong!',
-      // [!code highlight:7]
-      options: [
-        {
-          name: 'loud',
-          description: 'Respond loudly?',
-          type: 'boolean'
-        }
-      ]
-    } as const)
-
-    export default (interaction: CommandInteraction): CommandResult => {
-      const loud = interaction.options.get('loud')?.value as boolean
-      return loud ? 'PONG!!!' : 'Pong!'
+    	interaction.reply('Pong!')
     }
     ```
   </Tab>
 </Tabs>
 
-You can also use a second parameter next to the interaction object to access the options directly. These are automatically parsed and passed to your command function, with full type support too!
+Both approaches register a `/ping` command when the file is named `ping.ts`.
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']} persist>
-  <Tab value="Javascript">
-    ```javascript
-    import { createCommandConfig } from 'robo.js'
+## Command Configuration
+
+Export a `config` object using `createCommandConfig()` to set metadata like descriptions, options, and permissions.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
 
     export const config = createCommandConfig({
-      description: 'Responds with Pong!',
-      options: [
-        {
-          name: 'loud',
-          description: 'Respond loudly?',
-          type: 'boolean'
-        }
-      ]
+    	description: 'Responds with Pong!'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+
+    export const config = createCommandConfig({
+    	description: 'Responds with Pong!'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `description` | string | Command description shown in Discord |
+| `contexts` | CommandContext[] | Where the command is available |
+| `defaultMemberPermissions` | PermissionResolvable | Required permissions |
+| `integrationTypes` | CommandIntegrationType[] | Install types that can use this command |
+| `nsfw` | boolean | Restrict to age-gated channels |
+| `options` | CommandOption[] | Command parameters |
+| `sage` | false \| SageOptions | Sage mode configuration |
+| `timeout` | number | Maximum execution time in milliseconds |
+
+## Options
+
+Define parameters with the `options` array in your config. Access parsed values through the second parameter using `CommandOptions<typeof config>`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/greet.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction, CommandOptions } from '@robojs/discordjs'
+
+    export const config = createCommandConfig({
+    	description: 'Greet someone',
+    	options: [
+    		{
+    			name: 'user',
+    			type: 'user',
+    			description: 'User to greet',
+    			required: true
+    		},
+    		{
+    			name: 'message',
+    			type: 'string',
+    			description: 'Custom greeting'
+    		}
+    	]
+    } as const)
+
+    export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/greet.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+
+    export const config = createCommandConfig({
+    	description: 'Greet someone',
+    	options: [
+    		{
+    			name: 'user',
+    			type: 'user',
+    			description: 'User to greet',
+    			required: true
+    		},
+    		{
+    			name: 'message',
+    			type: 'string',
+    			description: 'Custom greeting'
+    		}
+    	]
     })
 
-    export default (interaction) => { // [!code --]
-    export default (interaction, options) => { // [!code ++]
-      return options.loud ? 'PONG!!!' : 'Pong!'
+    export default (interaction, options) => {
+    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
     }
     ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript
-    import { createCommandConfig } from 'robo.js'
-    import type { CommandOptions, CommandResult } from 'robo.js'
-    import type { CommandInteraction } from 'discord.js'
-
-    export const config = createCommandConfig({
-      description: 'Responds with Pong!',
-      options: [
-        {
-          name: 'loud',
-          description: 'Respond loudly?',
-          type: 'boolean'
-        }
-      ]
-    } as const)
-
-    export default (interaction: CommandInteraction): CommandResult => { // [!code --]
-    export default (interaction: CommandInteraction, options: CommandOptions<typeof config>): CommandResult => { // [!code ++] 
-      return options.loud ? 'PONG!!!' : 'Pong!'
-    }
-    ```
-
-    <Callout type="info">
-      `createCommandConfig{:ts}` and `as const{:ts}` are important for TypeScript! `createCommandConfig{:ts}` creates a command configuration object with the correct type, which tells your editor which options are available for your command for better autocompletion and type checking.
-    </Callout>
   </Tab>
 </Tabs>
 
-Want to explore more options? Check the [configuration section](../framework/core/config.mdx).
+<Callout type="info">
+	The `as const` assertion tells TypeScript to infer exact option names and types from your config, so `CommandOptions` can provide correct autocomplete and type checking.
+</Callout>
+
+<ScreenshotPlaceholder
+  alt="Discord showing the /greet slash command being used with a user option autocomplete dropdown visible, listing server members to select from, and a message option field below"
+  focus="The command options fields with the user picker dropdown open"
+  zoom="100%"
+  aspect="16/9"
+  notes="Type /greet in a server with the example bot. Show the command option fields: the user picker should be open showing a dropdown of server members, and the message field should be visible below."
+/>
+
+### Option Types
+
+| Type | TypeScript Type |
+|------|----------------|
+| `string` | string |
+| `integer` | number |
+| `number` | number |
+| `boolean` | boolean |
+| `user` | User |
+| `channel` | GuildBasedChannel |
+| `member` | GuildMember \| null |
+| `role` | Role |
+| `attachment` | Attachment |
+| `mention` | GuildMember \| Role |
 
 ### Choices
 
-You can have predefined choices for your options. Just add a `choices{:ts}` array to your option object.
+Restrict an option to a fixed set of values with the `choices` array.
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-  <Tab value="Javascript">
-    ```javascript
-    import { createCommandConfig } from 'robo.js'
-
-    export const config = createCommandConfig({
-      description: 'Chooses a color',
-      options: [
-        {
-          name: 'color',
-          description: 'Your favorite color',
-          type: 'string',
-          choices: [
-            { name: 'Red', value: 'red' },
-            { name: 'Green', value: 'green' },
-            { name: 'Blue', value: 'blue' }
-          ]
-        }
-      ]
-    })
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript
-    import { createCommandConfig } from 'robo.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/color.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
 
     export const config = createCommandConfig({
-      description: 'Chooses a color',
-      options: [
-        {
-          name: 'color',
-          description: 'Your favorite color',
-          type: 'string',
-          choices: [
-            { name: 'Red', value: 'red' },
-            { name: 'Green', value: 'green' },
-            { name: 'Blue', value: 'blue' }
-          ]
-        }
-      ]
+    	description: 'Chooses a color',
+    	options: [
+    		{
+    			name: 'color',
+    			description: 'Your favorite color',
+    			type: 'string',
+    			choices: [
+    				{ name: 'Red', value: 'red' },
+    				{ name: 'Green', value: 'green' },
+    				{ name: 'Blue', value: 'blue' }
+    			]
+    		}
+    	]
     } as const)
     ```
   </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/color.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+
+    export const config = createCommandConfig({
+    	description: 'Chooses a color',
+    	options: [
+    		{
+    			name: 'color',
+    			description: 'Your favorite color',
+    			type: 'string',
+    			choices: [
+    				{ name: 'Red', value: 'red' },
+    				{ name: 'Green', value: 'green' },
+    				{ name: 'Blue', value: 'blue' }
+    			]
+    		}
+    	]
+    })
+    ```
+  </Tab>
 </Tabs>
 
-Make sure each choice has a `name{:ts}` and `value{:ts}`. The `name{:ts}` is what the user sees, while the `value{:ts}` is what your command receives.
+Each choice has a `name` displayed to the user and a `value` passed to your handler.
 
-To dynamically generate choices instead of hardcoding them in advance, see **[Autocomplete](#autocomplete)**.
+<ScreenshotPlaceholder
+  alt="Discord showing the /color slash command with a dropdown choice picker displaying Red, Green, and Blue as fixed options"
+  focus="The choice dropdown showing the three color options"
+  zoom="100%"
+  aspect="16/9"
+  notes="Type /color in the command picker, then click the color option field. Capture the moment the dropdown is open with Red, Green, Blue choices visible."
+/>
 
-### Direct Messages
+### Autocomplete
 
-Control whether your command is accessible in direct messages with `contexts`.
+For dynamic suggestions, set `autocomplete: true` on the option and export an `autocomplete` function.
 
-```javascript
-export const config = {
-  // ... other config
-  contexts: ['Guild', 'BotDM']
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/color.ts"
+    import type { AutocompleteInteraction } from 'discord.js'
 
-Adding `'BotDM'{:ts}` alongside `'Guild'{:ts}` allows the command to be used in direct messages. Remove `'Guild'{:ts}` if you want to restrict the command to direct messages only.
+    const colors = ['red', 'green', 'blue', 'yellow', 'purple']
 
-You can customize defaults in your **[Robo Config](../framework/core/config.mdx#defaults)**.
+    export const autocomplete = (interaction: AutocompleteInteraction) => {
+    	const focused = interaction.options.getFocused()
+    	const filtered = colors.filter((c) => c.startsWith(focused))
+    	return filtered.map((c) => ({ name: c, value: c }))
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/color.js"
+    const colors = ['red', 'green', 'blue', 'yellow', 'purple']
 
-### Default Member Permissions
+    export const autocomplete = (interaction) => {
+    	const focused = interaction.options.getFocused()
+    	const filtered = colors.filter((c) => c.startsWith(focused))
+    	return filtered.map((c) => ({ name: c, value: c }))
+    }
+    ```
+  </Tab>
+</Tabs>
 
-Use `defaultMemberPermissions{:ts}` to define server-based permissions for your command. This field accepts `PermissionFlagsBits{:ts}` from Discord.js, allowing you to specify which roles or permissions are needed to access the command in a server context.
+The function receives an `AutocompleteInteraction` and returns matching choices as the user types.
 
-```javascript
-import { PermissionFlagsBits } from 'discord.js'
+## Subcommands
 
-export const config = {
-  // ... other config
-  defaultMemberPermissions: PermissionFlagsBits.KickMembers // Only users who can kick members can use this command
-}
-```
+Nest files in folders to create subcommands. The folder name becomes the parent command and each file becomes a subcommand.
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="commands" defaultOpen>
+			<Folder name="channel" defaultOpen>
+				<File name="lock.ts" />
+				<File name="unlock.ts" />
+			</Folder>
+		</Folder>
+	</Folder>
+</Files>
+
+This creates `/channel lock` and `/channel unlock`.
+
+<ScreenshotPlaceholder
+  alt="Discord slash command picker showing the /channel command expanded into subcommands, with lock and unlock listed as subcommand options beneath the parent command"
+  focus="The subcommand picker showing /channel with lock and unlock sub-options"
+  zoom="100%"
+  aspect="16/9"
+  notes="Type /channel in the command picker. Discord should show the parent command with subcommands lock and unlock listed below it."
+/>
+
+### Subcommand Groups
+
+Add another folder level for subcommand groups, creating a three-level hierarchy.
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="commands" defaultOpen>
+			<Folder name="bot" defaultOpen>
+				<Folder name="status" defaultOpen>
+					<File name="idle.ts" />
+				</Folder>
+			</Folder>
+		</Folder>
+	</Folder>
+</Files>
+
+This creates `/bot status idle`.
+
+## Contexts and Integration Types
+
+Control where your command is available with `contexts` and who can use it with `integrationTypes`. Use these when you want commands to work in DMs or with user-installed bots (installed by individual users rather than server admins).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/hello.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+
+    export const config = createCommandConfig({
+    	description: 'Available everywhere',
+    	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
+    	integrationTypes: ['GuildInstall', 'UserInstall']
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/hello.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+
+    export const config = createCommandConfig({
+    	description: 'Available everywhere',
+    	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
+    	integrationTypes: ['GuildInstall', 'UserInstall']
+    })
+    ```
+  </Tab>
+</Tabs>
+
+| Context | Description |
+|---------|-------------|
+| `Guild` | Server channels |
+| `BotDM` | Direct messages with the bot |
+| `PrivateChannel` | Group DMs and other private channels |
+
+| Integration Type | Description |
+|-----------------|-------------|
+| `GuildInstall` | Available in servers where the bot is installed |
+| `UserInstall` | Available to users who installed the bot, in any server |
+
+## Permissions
+
+Use `defaultMemberPermissions` with Discord.js `PermissionFlagsBits` to restrict command access by server role.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/kick.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Kick a member',
+    	defaultMemberPermissions: PermissionFlagsBits.KickMembers
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/kick.js"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import { PermissionFlagsBits } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Kick a member',
+    	defaultMemberPermissions: PermissionFlagsBits.KickMembers
+    })
+    ```
+  </Tab>
+</Tabs>
 
 <Callout type="warn">
-  Remember, server admins can adjust these default permissions for their own servers. Also, due to a Discord quirk, default permissions might not apply as expected to subcommands.
+	Server admins can override default permissions for their own server. Default permissions may not apply as expected to subcommands due to a Discord limitation.
 </Callout>
-
-{/* For a more comprehensive overview of command permissions in Discord, check out our [Permissions Guide](/docs/advanced/permissions). */}
-
-### User Installs
-
-By default, commands are only available in guilds where your bot is installed. You can change this behavior with `integrationTypes{:ts}`.
-
-```javascript
-export const config = {
-  // ... other config
-  integrationTypes: ['GuildInstall', 'UserInstall']
-}
-```
-
-This allows your **Slash Commands** to be used in any server, even if your bot isn't installed there. Remove `'GuildInstall'{:ts}` if you want to allow commands only for users that have installed your bot.
-
-You can customize defaults in your **[Robo Config](../framework/core/config.mdx#defaults)**.
-
-<Callout type="info">
-  Make sure you **[update your install settings](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings)** in the **[Discord Developer Portal](https://discord.com/developers/applications)** to allow user installs.
-</Callout>
-
-## Autocomplete
-
-Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete{:ts}` function in your command file.
-
-<Tabs persist id="examples-script" items={['Javascript', 'Typescript']}>
-  <Tab value="Javascript">
-    ```javascript title="commands/choosa-a-color.js" showLineNumbers {21-25}
-    import { createCommandConfig } from 'robo.js'
-
-    export const config = createCommandConfig({
-      description: 'Chooses a color',
-      options: [
-        {
-          name: 'color',
-          description: 'Your favorite color',
-          type: 'string',
-          autocomplete: true
-        }
-      ]
-    })
-
-    const colors = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
-
-    export default (interaction) => {
-      return `You chose ${interaction.options.get('color')?.value}`
-    }
-
-    // [!code highlight:5]
-    export const autocomplete = (interaction) => {
-      const colorQuery = interaction.options.get('color')?.value
-      const filtered = colors.filter((color) => color.startsWith(colorQuery))
-      return filtered.map((colors) => ({ name: colors, value: colors }))
-    }
-    ```
-  </Tab>
-  <Tab value="Typescript">
-    ```typescript title="commands/choosa-a-color.ts"
-    import { createCommandConfig } from 'robo.js'
-    import type { CommandResult } from 'robo.js'
-    import type { CommandInteraction, AutocompleteInteraction } from 'discord.js'
-
-    export const config = createCommandConfig({
-      description: 'Chooses a color',
-      options: [
-        {
-          name: 'color',
-          description: 'Your favorite color',
-          type: 'string',
-          autocomplete: true
-        }
-      ]
-    })
-
-    const colors = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
-
-    export default (interaction: CommandInteraction): CommandResult => {
-      return `You chose ${interaction.options.get('color')?.value}`
-    }
-
-    // [!code highlight:5]
-    export const autocomplete = (interaction: AutocompleteInteraction) => {
-      const colorQuery = interaction.options.get('color')?.value as string
-      const filtered = colors.filter((color) => color.startsWith(colorQuery))
-      return filtered.map((colors) => ({ name: colors, value: colors }))
-    }
-    ```
-  </Tab>
-</Tabs>
-
-In this example, the `autocomplete{:ts}` function returns an array of colors that start with the user's input, providing a dynamic and responsive user experience.
-
-Note: the type of the Interaction is: `AutocompleteInteraction{:ts}`
 
 ## Command Registration
 
-The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev{:bash}` or `robo build{:bash}`, automatically! However, if things go sideways for some reason, you can use the `--force{:bash}` flag to force registration.
+Robo.js registers commands automatically when you run `robo dev` or `robo build`. It uses hash caching to detect changes and only re-registers when needed.
 
-```package-install
+To force re-registration, use the `--force` flag.
+
+```bash
 npx robo build --force
 ```
-This will also clean up any commands that are no longer in your `commands` directory. Pretty neat, right?
+
+This also cleans up commands that no longer exist in your `src/commands` directory.
+
+## Testing Commands
+
+Test your commands programmatically with [Mock Server](../mock/commands), which simulates Discord's API locally and lets you verify command behavior without a live bot connection.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./context-menu"
+		title="Context Menus"
+		description="Add right-click commands for users and messages."
+	/>
+	<Card
+		href="./sage"
+		title="Sage Mode"
+		description="Automatic replies, deferrals, and error handling."
+	/>
+	<Card
+		href="./events"
+		title="Events"
+		description="Listen and respond to Discord events."
+	/>
+</Cards>

@@ -1,0 +1,248 @@
+---
+title: Embeds
+description: Build and send rich embeds
+---
+
+**Embeds** are rich content blocks that appear as colored cards with a stripe on the left side, structured fields, images, and a footer. They display formatted text, images, and metadata in Discord messages. Build them with Discord.js's `EmbedBuilder`.
+
+<Callout type="info">
+For the complete embed reference including all builder methods, embed limits, inline field layout, editing embeds, and combining with components, see the [@robojs/discordjs Embeds reference](/docs/discordjs/embeds).
+</Callout>
+
+## Creating Embeds
+
+Return an object with an `embeds` array from a command handler to send rich embeds.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/info.ts"
+    import { EmbedBuilder } from 'discord.js'
+
+    export default () => {
+    	const embed = new EmbedBuilder()
+    		.setTitle('Server Info')
+    		.setDescription('Welcome to our server!')
+    		.setColor(0x5865f2) // Discord's blurple color
+
+    	return { embeds: [embed] }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/info.js"
+    import { EmbedBuilder } from 'discord.js'
+
+    export default () => {
+    	const embed = new EmbedBuilder()
+    		.setTitle('Server Info')
+    		.setDescription('Welcome to our server!')
+    		.setColor(0x5865f2) // Discord's blurple color
+
+    	return { embeds: [embed] }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+**Embed limits:** Titles can be up to 256 characters, descriptions up to 4096 characters, a maximum of 25 fields, 6000 characters total across all embed content, and up to 10 embeds per message.
+</Callout>
+
+<ScreenshotPlaceholder
+	alt="Discord message showing a rich embed with a blurple left stripe, title 'Server Info', description 'Welcome to our server!', and characteristic embed card styling"
+	focus="The embed card with colored left stripe, title, and description"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a bot message with a single embed: blurple (#5865F2) left stripe, 'Server Info' title, 'Welcome to our server!' description. Clean surrounding channel."
+/>
+
+## Embed Fields
+
+`EmbedBuilder` provides methods for each section of an embed.
+
+| Method | Description |
+|--------|-------------|
+| `setTitle(title)` | Embed title |
+| `setDescription(text)` | Main body text |
+| `setColor(color)` | Side stripe color (hex number) |
+| `setThumbnail(url)` | Small image top-right |
+| `setImage(url)` | Large image at bottom |
+| `setFooter({ text, iconURL? })` | Footer text and optional icon |
+| `setAuthor({ name, iconURL?, url? })` | Author section at top |
+| `setTimestamp(date?)` | Timestamp in footer |
+| `addFields(...fields)` | Add `{ name, value, inline? }` fields |
+| `setURL(url)` | Clickable title link |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/profile.ts"
+    import { EmbedBuilder } from 'discord.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	const embed = new EmbedBuilder()
+    		.setTitle('User Profile')
+    		.setDescription(`Information about ${interaction.user.username}`)
+    		.setColor(0x5865f2) // Discord's blurple color
+    		.setThumbnail(interaction.user.displayAvatarURL())
+    		.addFields(
+    			{ name: 'Joined Discord', value: interaction.user.createdAt.toDateString(), inline: true },
+    			{ name: 'ID', value: interaction.user.id, inline: true }
+    		)
+    		.setTimestamp()
+
+    	return { embeds: [embed] }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/profile.js"
+    import { EmbedBuilder } from 'discord.js'
+
+    export default (interaction) => {
+    	const embed = new EmbedBuilder()
+    		.setTitle('User Profile')
+    		.setDescription(`Information about ${interaction.user.username}`)
+    		.setColor(0x5865f2) // Discord's blurple color
+    		.setThumbnail(interaction.user.displayAvatarURL())
+    		.addFields(
+    			{ name: 'Joined Discord', value: interaction.user.createdAt.toDateString(), inline: true },
+    			{ name: 'ID', value: interaction.user.id, inline: true }
+    		)
+    		.setTimestamp()
+
+    	return { embeds: [embed] }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Discord embed showing a user profile card with title, avatar thumbnail in the top-right, two inline fields for 'Joined Discord' and 'ID', and a timestamp footer"
+	focus="The fully-featured embed with thumbnail, inline fields, and timestamp"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show an embed with all profile fields: title, description, blurple color, avatar thumbnail, two inline fields ('Joined Discord' date and 'ID'), and footer timestamp."
+/>
+
+## Multiple Embeds
+
+A single message can contain up to 10 embeds.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/multi.ts"
+    import { EmbedBuilder } from 'discord.js'
+
+    export default () => {
+    	const embeds = [
+    		new EmbedBuilder().setTitle('First').setDescription('First embed').setColor(0xff0000),
+    		new EmbedBuilder().setTitle('Second').setDescription('Second embed').setColor(0x00ff00)
+    	]
+
+    	return { embeds }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/multi.js"
+    import { EmbedBuilder } from 'discord.js'
+
+    export default () => {
+    	const embeds = [
+    		new EmbedBuilder().setTitle('First').setDescription('First embed').setColor(0xff0000),
+    		new EmbedBuilder().setTitle('Second').setDescription('Second embed').setColor(0x00ff00)
+    	]
+
+    	return { embeds }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Dynamic Embeds
+
+Build embeds from data by mapping values to fields.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/leaderboard.ts"
+    import { EmbedBuilder } from 'discord.js'
+
+    interface Player {
+    	name: string
+    	score: number
+    }
+
+    export default () => {
+    	const players: Player[] = [
+    		{ name: 'Alice', score: 1500 },
+    		{ name: 'Bob', score: 1200 },
+    		{ name: 'Charlie', score: 900 }
+    	]
+
+    	const embed = new EmbedBuilder()
+    		.setTitle('Leaderboard')
+    		.setColor(0xffd700)
+    		.addFields(
+    			players.map((p, i) => ({
+    				name: `#${i + 1} ${p.name}`,
+    				value: `${p.score} points`,
+    				inline: true
+    			}))
+    		)
+
+    	return { embeds: [embed] }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/leaderboard.js"
+    import { EmbedBuilder } from 'discord.js'
+
+    export default () => {
+    	const players = [
+    		{ name: 'Alice', score: 1500 },
+    		{ name: 'Bob', score: 1200 },
+    		{ name: 'Charlie', score: 900 }
+    	]
+
+    	const embed = new EmbedBuilder()
+    		.setTitle('Leaderboard')
+    		.setColor(0xffd700)
+    		.addFields(
+    			players.map((p, i) => ({
+    				name: `#${i + 1} ${p.name}`,
+    				value: `${p.score} points`,
+    				inline: true
+    			}))
+    		)
+
+    	return { embeds: [embed] }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+	alt="Discord embed showing a leaderboard with gold left stripe, title 'Leaderboard', and three inline fields: '#1 Alice - 1500', '#2 Bob - 1200', '#3 Charlie - 900'"
+	focus="The leaderboard embed with inline fields showing ranked players"
+	zoom="100%"
+	aspect="16/9"
+	notes="Show a leaderboard embed: gold (#FFD700) left stripe, 'Leaderboard' title, three inline fields with ranked players and scores side by side."
+/>
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./components"
+		title="Components"
+		description="Add buttons and select menus to messages."
+	/>
+	<Card
+		href="./modals"
+		title="Modals"
+		description="Create text input forms for collecting user data."
+	/>
+</Cards>
