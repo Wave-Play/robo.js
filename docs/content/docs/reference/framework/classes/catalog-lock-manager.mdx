@@ -1,0 +1,50 @@
+---
+title: "CatalogLockManager"
+---
+
+# Class: CatalogLockManager
+
+Lock manager for catalog operations.
+
+Provides per-model catalog locking to serialize catalog mutations.
+
+## Constructors
+
+### new CatalogLockManager()
+
+```ts
+new CatalogLockManager(): CatalogLockManager
+```
+
+#### Returns
+
+[`CatalogLockManager`](catalog-lock-manager)
+
+## Methods
+
+### withCatalogLock()
+
+```ts
+withCatalogLock<T>(modelKey, fn): Promise<T>
+```
+
+Execute a function while holding the catalog lock for a model.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelKey` | `string` | Model key |
+| `fn` | () =\> `Promise`\<`T`\> | Function to execute |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Result of the function

@@ -1,0 +1,61 @@
+---
+title: "FlashcoreError"
+---
+
+# Class: FlashcoreError
+
+Base error class for all Flashcore errors.
+
+## Extends
+
+- `Error`
+
+## Extended by
+
+- [`ValidationError`](validation-error)
+- [`NotFoundError`](not-found-error)
+- [`UniqueConstraintError`](unique-constraint-error)
+- [`FeatureNotSupportedError`](feature-not-supported-error)
+- [`AdapterError`](adapter-error)
+- [`DataCorruptionError`](data-corruption-error)
+- [`StorageExhaustedError`](storage-exhausted-error)
+- [`TransactionConflictError`](transaction-conflict-error)
+- [`ConnectionError`](connection-error)
+- [`FlashcoreSchemaError`](flashcore-schema-error)
+- [`MigrationError`](migration-error)
+- [`SafetyError`](safety-error)
+
+## Constructors
+
+### new FlashcoreError()
+
+```ts
+new FlashcoreError(
+   message, 
+   code, 
+   options?): FlashcoreError
+```
+
+#### Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `message` | `string` | `undefined` |
+| `code` | `string` | `'FLASHCORE_ERROR'` |
+| `options`? | `ErrorOptions` | `undefined` |
+
+#### Returns
+
+[`FlashcoreError`](flashcore-error)
+
+#### Overrides
+
+```ts
+Error.constructor
+```
+
+## Properties
+
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="code-1"></a> `code` | `readonly` | `string` |

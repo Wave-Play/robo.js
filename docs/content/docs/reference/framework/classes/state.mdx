@@ -1,380 +1,222 @@
 ---
 title: "State"
-description: "In-memory state management for Robo.js"
 ---
 
-The `State` class provides an in-memory key-value store for your Robo, acting as its personal memory bank. It's useful for managing temporary data that needs to be accessed across different parts of your application or between command executions.
+# Class: State
 
-```typescript
-// Set a value in the global state
-State.set('currentUser', 'RoboFan123');
+States are your Robo's personal memory bank.
 
-// Get a value from the global state
-const user = State.get('currentUser');
-console.log(user); // Output: RoboFan123
+```ts
+import { State } from 'robo.js'
+
+// Set a value in the state
+State.set('key', 'value')
+
+// Get a value from the state
+const value = State.get('key')
 ```
 
-<Callout type="info" title="Ephemeral Storage">
-  State data is stored in-memory. This means it will be lost if the Robo process stops completely. However, data persists through automated restarts.
-</Callout>
+States are ephemerally in-memory; data is lost when stopped but not when restarted.
 
-## Constructor
+[**Learn more:** State Management](https://robojs.dev/robojs/state)
 
-### `new State()`
-```typescript
-new State(prefix: string, options?: StateOptions): State
+## Constructors
+
+### new State()
+
+```ts
+new State(prefix, options?): State
 ```
 
-Creates a new, isolated `State` instance with a specific namespace (prefix). This is less common than using the static `State.fork()` method for creating namespaced states.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `string` |
+| `options`? | `StateOptions` |
 
-    <TypeTable
-      type={{
-        prefix: {
-          description: 'A namespace for this state instance, helping to avoid key collisions.',
-          type: 'string',
-          required: true,
-        },
-        options: {
-          description: 'Configuration options for this state instance.',
-          type: 'StateOptions',
-        }
-      }}
-    />
-  </Step>
+#### Returns
 
-  <Step>
-      **Returns**
-      <ReturnType
-        type={{
-          type: 'State',
-          description: 'A new instance of the State class.'
-        }}
-      />
-  </Step>
-  ---
-</Steps>
+[`State`](state)
 
-## Instance Methods
+## Methods
 
-These methods are available on an instance of `State` (e.g., one created via `new State(...)` or `State.fork(...)`).
+### fork()
 
-### `fork()`
-```typescript
-fork(prefix: string, options?: StateOptions): State
+```ts
+fork(prefix, options?): State
 ```
 
-Creates a new state fork (child namespace) from an existing state instance. This allows for hierarchical state management.
+Creates a new state fork.
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        prefix: {
-          description: "The prefix for the new fork (e.g., 'userSettings'). This will be appended to the parent instance's prefix.",
-          type: 'string',
-          required: true
-        },
-        options: {
-          description: 'Options for the new fork. By default, forks inherit persistence settings.',
-          type: 'StateOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'State',
-        description: "A new State instance representing the fork. You can destructure its methods."
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Parameters
 
-### `getState()`
-```typescript
-getState<T = string>(key: string): T | null
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `prefix` | `string` | Fork prefix (e.g. 'polls') |
+| `options`? | `StateOptions` | Options for the fork (persisting all state by default) |
+
+#### Returns
+
+[`State`](state)
+
+- A new state fork you can deconstruct (e.g. `const { getState, setState } = State.fork('polls')`
+
+***
+
+### getState()
+
+```ts
+getState<T>(key): T
 ```
 
-Retrieves a value from this specific (potentially forked) state instance.
+Get a value from the forked state.
+If the value does not exist, null is returned.
 
-<Steps>
-  <Step>
-    **Type Parameters**
-    <TypeTable
-      type={{
-        T: {
-          description: 'The expected type of the value.',
-          type: 'any',
-          default: 'string'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key of the value to retrieve.',
-          type: 'string',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'T',
-        description: 'The value associated with the key, or `null` if the key does not exist in this state instance.',
-        fallback: "null"
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Type Parameters
 
-### `setState()`
-```typescript
-setState<T>(key: string, value: T, options?: SetStateOptions): void
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `string` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `key` | `string` | The key to get the value for. |
+
+#### Returns
+
+`T`
+
+The value for the given key, or null if the key does not exist.
+
+***
+
+### setState()
+
+```ts
+setState<T>(
+   key, 
+   value, 
+   options?): void
 ```
 
-Sets a value within this specific (potentially forked) state instance.
+Set a value in the forked state.
+When the persist option is set to true, the state will be persisted to disk.
 
-<Steps>
-  <Step>
-    **Type Parameters**
-    <TypeTable
-      type={{
-        T: {
-          description: 'The type of the value being stored.',
-          type: 'generic'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key under which to store the value.',
-          type: 'string',
-          required: true
-        },
-        value: {
-          description: 'The value to store.',
-          type: 'T',
-          required: true
-        },
-        options: {
-          description: 'Options for this set operation.',
-          type: 'SetStateOptions',
-          required: false,
-          properties: {
-            persist: {
-              description: 'Whether to attempt to persist this specific key-value pair. Overrides instance-level persistence settings for this operation.',
-              type: 'boolean'
-            }
-          }
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Type Parameters
 
-## Static Methods
+| Type Parameter |
+| ------ |
+| `T` |
 
-These methods are called directly on the `State` class (e.g., `State.get(...)`).
+#### Parameters
 
-### `static fork()`
-```typescript
-static fork(prefix: string, options?: StateOptions): State
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `key` | `string` | The key to set the value for. |
+| `value` | `T` | The value to set. |
+| `options`? | `SetStateOptions` | Options for setting the state. (Persisting to disk) |
+
+#### Returns
+
+`void`
+
+***
+
+### fork()
+
+```ts
+static fork(prefix, options?): State
 ```
 
-Creates a new, top-level state fork (namespaced state). This is the recommended way to create isolated states for different features or modules to prevent key collisions in the global state.
+Creates a new state fork.
+This is useful for preventing state collisions between different parts of the Robo.
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        prefix: {
-          description: "The prefix for the new fork (e.g. 'polls', 'analytics').",
-          type: 'string',
-          required: true
-        },
-        options: {
-          description: 'Options for the new fork. By default, forks persist all their state if the global persistence is enabled.',
-          type: 'StateOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'State',
-        description: (
-        <>
-        A new State instance representing the fork. Its methods (getState, setState) will operate within this namespace.<br/><br/>
-        Example:<br/><br/>
-        <code>const pollState = State.fork('polls');<br/>pollState.setState('current', 'poll123')</code>
-        </>
-        )
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Parameters
 
-### `static get()`
-```typescript
-static get<T = string>(key: string, options?: GetStateOptions): T | null
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `prefix` | `string` | Fork prefix (e.g. 'polls') |
+| `options`? | `StateOptions` | Options for the fork (persisting all state by default) |
+
+#### Returns
+
+[`State`](state)
+
+A new state fork you can deconstruct (e.g. `const { getState, setState } = State.fork('polls')`
+
+***
+
+### get()
+
+```ts
+static get<T>(key, options?): T
 ```
 
-Retrieves a value from the global (default) state.
+Get a value from the forked state.
+If the value does not exist, null is returned.
 
-<Steps>
-  <Step>
-    **Type Parameters**
-    <TypeTable
-      type={{
-        T: {
-          description: 'The expected type of the value.',
-          type: 'any',
-          default: 'string'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key of the value to retrieve.',
-          type: 'string',
-          required: true
-        },
-        options: {
-          description: 'Additional options for this get operation.',
-          type: 'GetStateOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'T',
-        description: 'The value associated with the key in the global state, or null if the key does not exist.',
-        fallback: 'null'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Type Parameters
 
-### `static listForks()`
-```typescript
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `string` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `key` | `string` | The key to get the value for. |
+| `options`? | `GetStateOptions` | - |
+
+#### Returns
+
+`T`
+
+The value for the given key, or null if the key does not exist.
+
+***
+
+### listForks()
+
+```ts
 static listForks(): string[]
 ```
 
-Lists the prefixes of all active, top-level state forks that have been created.
+#### Returns
 
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'string[]',
-        description: 'An array of fork name prefixes.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+`string`[]
 
-### `static set()`
-```typescript
-static set<T>(key: string, value: T, options?: SetStateOptions): void
+***
+
+### set()
+
+```ts
+static set<T>(
+   key, 
+   value, 
+   options?): void
 ```
 
-Sets a value in the global (default) state.
+Set a value in the forked state.
+When the persist option is set to true, the state will be persisted to disk.
 
-<Steps>
-  <Step>
-    **Type Parameters**
-    <TypeTable
-      type={{
-        T: {
-          description: 'The type of the value being stored.',
-          type: 'any'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        key: {
-          description: 'The key under which to store the value.',
-          type: 'string',
-          required: true
-        },
-        value: {
-          description: 'The value to store.',
-          type: 'T',
-          required: true
-        },
-        options: {
-          description: 'Options for this set operation, such as persistence.',
-          type: 'SetStateOptions',
-          required: false,
-          properties: {
-            persist: {
-              description: 'Whether to attempt to persist this specific key-value pair to disk.',
-              type: 'boolean'
-            }
-          }
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `key` | `string` | The key to set the value for. |
+| `value` | `T` | The value to set. |
+| `options`? | `SetStateOptions` | Options for setting the state. (Persisting to disk) |
+
+#### Returns
+
+`void`

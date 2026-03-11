@@ -1,0 +1,47 @@
+---
+title: "UniqueConstraintError"
+---
+
+# Class: UniqueConstraintError
+
+Thrown when a unique constraint is violated.
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new UniqueConstraintError()
+
+```ts
+new UniqueConstraintError(message, options?): UniqueConstraintError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `field`: `string`; `model`: `string`; `value`: `unknown`; \} |
+| `options.cause`? | `Error` |
+| `options.field`? | `string` |
+| `options.model`? | `string` |
+| `options.value`? | `unknown` |
+
+#### Returns
+
+[`UniqueConstraintError`](unique-constraint-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="field-1"></a> `field?` | `readonly` | `string` | - |
+| <a id="model-1"></a> `model?` | `readonly` | `string` | - |
+| <a id="value-1"></a> `value?` | `readonly` | `unknown` | - |

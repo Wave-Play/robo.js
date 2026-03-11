@@ -1,0 +1,448 @@
+---
+title: "abstract AdapterWrapper<K, V>"
+---
+
+# Class: `abstract` AdapterWrapper\<K, V\>
+
+Base class for adapter wrappers.
+
+Implements the decorator pattern: wraps an underlying adapter
+and passes through all method calls by default. Subclasses
+override specific methods to add behavior.
+
+Correctly propagates optional capabilities from the wrapped adapter.
+
+## Extended by
+
+- [`CacheAdapter`](cache-adapter)
+- [`CompressionAdapter`](compression-adapter)
+- [`EncryptionAdapter`](encryption-adapter)
+- [`ResilienceAdapter`](resilience-adapter)
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Implements
+
+- [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+## Constructors
+
+### new AdapterWrapper()
+
+```ts
+new AdapterWrapper<K, V>(next): AdapterWrapper<K, V>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `next` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+
+#### Returns
+
+[`AdapterWrapper`](adapter-wrapper)\<`K`, `V`\>
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="name"></a> `name` | `readonly` | `string` | `'AdapterWrapper'` | Human-readable name for this wrapper. Subclasses should override this. |
+| <a id="next-1"></a> `next` | `readonly` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | `undefined` | - |
+
+## Accessors
+
+### atomicBatch
+
+#### Get Signature
+
+```ts
+get atomicBatch(): (ops) => void | Promise<void>
+```
+
+Atomic batch operations.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ops` | [`BatchOperation`](../type-aliases/batch-operation)\<`K`, `V`\>[] |
+
+###### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`atomicBatch`](../interfaces/flashcore-adapter#atomicbatch)
+
+***
+
+### compareAndSwap
+
+#### Get Signature
+
+```ts
+get compareAndSwap(): (key, expected, next) => boolean | Promise<boolean>
+```
+
+Compare and swap.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `expected` | `V` |
+| `next` | `V` |
+
+###### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`compareAndSwap`](../interfaces/flashcore-adapter#compareandswap)
+
+***
+
+### maxValueSize
+
+#### Get Signature
+
+```ts
+get maxValueSize(): number
+```
+
+Maximum value size.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`number`
+
+Maximum size in bytes for a single value.
+Used for chunk sizing and WAL segmentation.
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`maxValueSize`](../interfaces/flashcore-adapter#maxvaluesize)
+
+***
+
+### scan
+
+#### Get Signature
+
+```ts
+get scan(): (prefix) => 
+  | K[]
+  | Promise<K[]>
+  | AsyncIterable<K, any, any>
+| Promise<AsyncIterable<K, any, any>>
+```
+
+Scan for keys with a prefix.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `K` |
+
+###### Returns
+
+  \| `K`[]
+  \| `Promise`\<`K`[]\>
+  \| `AsyncIterable`\<`K`, `any`, `any`\>
+  \| `Promise`\<`AsyncIterable`\<`K`, `any`, `any`\>\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`scan`](../interfaces/flashcore-adapter#scan)
+
+***
+
+### setIfNotExists
+
+#### Get Signature
+
+```ts
+get setIfNotExists(): (key, value) => boolean | Promise<boolean>
+```
+
+Set if not exists.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+###### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`setIfNotExists`](../interfaces/flashcore-adapter#setifnotexists)
+
+***
+
+### transaction
+
+#### Get Signature
+
+```ts
+get transaction(): (fn) => Promise<void>
+```
+
+Native transaction API.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `fn` | (`tx`) =\> `Promise`\<`void`\> |
+
+###### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`transaction`](../interfaces/flashcore-adapter#transaction)
+
+## Methods
+
+### capabilities()?
+
+```ts
+optional capabilities(): Partial<AdapterCapabilitiesReport>
+```
+
+Extended capabilities.
+Propagates from underlying adapter if available.
+
+#### Returns
+
+`Partial`\<[`AdapterCapabilitiesReport`](../interfaces/adapter-capabilities-report)\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`capabilities`](../interfaces/flashcore-adapter#capabilities)
+
+***
+
+### clear()
+
+```ts
+clear(): boolean | void | Promise<void> | Promise<boolean>
+```
+
+Clear all data.
+
+#### Returns
+
+`boolean` \| `void` \| `Promise`\<`void`\> \| `Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`clear`](../interfaces/flashcore-adapter#clear)
+
+***
+
+### delete()
+
+```ts
+delete(key): boolean | Promise<boolean>
+```
+
+Delete a key.
+Returns true if the key existed and was deleted.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`delete`](../interfaces/flashcore-adapter#delete)
+
+***
+
+### get()
+
+```ts
+get(key): V | Promise<V>
+```
+
+Get a value by key.
+Returns undefined if the key does not exist.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`V` \| `Promise`\<`V`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`get`](../interfaces/flashcore-adapter#get)
+
+***
+
+### getInnermostAdapter()
+
+```ts
+protected getInnermostAdapter(): FlashcoreAdapter<K, V>
+```
+
+Get the innermost adapter by unwrapping all wrappers.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+***
+
+### getWrappedAdapter()
+
+```ts
+protected getWrappedAdapter(): FlashcoreAdapter<K, V>
+```
+
+Get the underlying (wrapped) adapter.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+***
+
+### has()
+
+```ts
+has(key): boolean | Promise<boolean>
+```
+
+Check if a key exists.
+Must return true for stored falsy values (0, false, '', null).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`has`](../interfaces/flashcore-adapter#has)
+
+***
+
+### init()?
+
+```ts
+optional init(): void | Promise<void>
+```
+
+Initialize the adapter (e.g., connect, create directories).
+Called once during Flashcore.$.init().
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`init`](../interfaces/flashcore-adapter#init)
+
+***
+
+### set()
+
+```ts
+set(key, value): boolean | Promise<boolean>
+```
+
+Set a key-value pair.
+Returns true if the operation succeeded.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+#### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`set`](../interfaces/flashcore-adapter#set)
+
+***
+
+### shutdown()?
+
+```ts
+optional shutdown(): void | Promise<void>
+```
+
+Shutdown the adapter (e.g., close connections).
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`shutdown`](../interfaces/flashcore-adapter#shutdown)

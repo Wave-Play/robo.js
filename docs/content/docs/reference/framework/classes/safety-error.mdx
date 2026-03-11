@@ -1,0 +1,47 @@
+---
+title: "SafetyError"
+---
+
+# Class: SafetyError
+
+Thrown when a safety limit is violated (reserved prefixes, result size limits).
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new SafetyError()
+
+```ts
+new SafetyError(message, options): SafetyError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options` | \{ `actual`: `number`; `cause`: `Error`; `limit`: `number`; `reason`: `string`; \} |
+| `options.actual`? | `number` |
+| `options.cause`? | `Error` |
+| `options.limit`? | `number` |
+| `options.reason` | `string` |
+
+#### Returns
+
+[`SafetyError`](safety-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="actual-1"></a> `actual?` | `readonly` | `number` | - |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="limit-1"></a> `limit?` | `readonly` | `number` | - |
+| <a id="reason-1"></a> `reason` | `readonly` | `string` | - |

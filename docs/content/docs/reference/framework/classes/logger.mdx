@@ -1,11 +1,12 @@
 ---
 title: "Logger"
-description: "Flexible logging system for Robo.js"
 ---
 
-The `Logger` class provides a simple and flexible logging system for your Robo.js applications. It allows you to log messages at different severity levels, customize prefixes, and manage output destinations.
+# Class: Logger
 
-```typescript
+The logger class provides a simple and flexible logging system.
+
+```ts
 import { logger } from 'robo.js'
 
 // Can be used instead of console.log
@@ -13,576 +14,424 @@ logger.info('Hello, world!')
 logger.debug('This is a debug message')
 logger.warn('Warning: something is not right')
 logger.error('An error occurred')
+
+// To make your own Logger instance
+import { Logger } from 'robo.js'
+
+const customLogger = new Logger({
+	level: 'debug'
+})
 ```
 
-<Callout type="info" title="Best Practice">
-  Use logger whenever possible instead of `console.log` to take advantage of Robo drains and log levels.
-</Callout>
+Use logger whenever possible instead of `console.log` to take advantage of Robo drains and log levels.
 
-## Constructor
+[**Learn more:** Logger](https://robojs.dev/robojs/logger)
 
-### `new Logger()`
-```typescript
-new Logger(options?: LoggerOptions): Logger
+## Constructors
+
+### new Logger()
+
+```ts
+new Logger(options?): Logger
 ```
 
-Creates a new logger instance with the specified options.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`LoggerOptions`](../interfaces/logger-options) |
 
-    <TypeTable
-      type={{
-        options: {
-          description: 'Configuration options for the logger.',
-          type: 'LoggerOptions',
-          required: false,
-          properties: {
-            level: {
-              description: 'The minimum log level to display.',
-              type: 'string'
-            },
-            enabled: {
-              description: 'Whether logging is enabled.',
-              type: 'boolean'
-            },
-            prefix: {
-              description: 'Prefix to add to all log messages.',
-              type: 'string'
-            }
-          }
-        }
-      }}
-    />
-  </Step>
+#### Returns
 
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Logger',
-        description: 'A new instance of the Logger class.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+[`Logger`](logger)
 
-## Instance Methods
+## Properties
 
-These methods are available on an instance of `Logger` (e.g., one created via `new Logger(...)` or via the `fork()` method).
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="_customlevels"></a> `_customLevels` | `protected` | `Record`\<`string`, `CustomLevel`\> |
+| <a id="_enabled"></a> `_enabled` | `protected` | `boolean` |
+| <a id="_level"></a> `_level` | `protected` | `string` |
+| <a id="_levelvalues"></a> `_levelValues` | `protected` | `Record`\<`string`, `number`\> |
+| <a id="_parent"></a> `_parent` | `protected` | [`Logger`](logger) |
+| <a id="_prefix"></a> `_prefix` | `protected` | `string` |
 
-### `debug()`
-```typescript
-debug(...data: unknown[]): void
+## Methods
+
+### \_log()
+
+```ts
+protected _log(
+   prefix, 
+   level, ...
+   data): void
 ```
 
-Log a debug message. Only displayed if log level is set to debug or lower.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `string` |
+| `level` | `string` |
+| ...`data` | `unknown`[] |
 
-### `error()`
-```typescript
-error(...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### addDrain()
+
+```ts
+addDrain(drain, id?): DrainHandle
 ```
 
-Log an error message. Displayed at all log levels.
+Adds a drain to the logger. Multiple drains can be active simultaneously.
+Returns a handle that can be used to remove the drain and flush pending writes.
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Parameters
 
-### `event()`
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `drain` | [`LogDrain`](../type-aliases/log-drain) | The drain function to add |
+| `id`? | `string` | Optional unique identifier for this drain. Auto-generated if not provided. |
+
+#### Returns
+
+[`DrainHandle`](../../../index/interfaces/drain-handle)
+
+A DrainHandle for managing this drain
+
+#### Example
+
 ```typescript
-event(...data: unknown[]): void
+import { logger } from 'robo.js/logger'
+import { createFileDrain } from 'robo.js/logger/drains'
+
+const drain = createFileDrain({ path: 'logs/test.log', blocking: true })
+const handle = logger().addDrain(drain, 'test-logger')
+
+// Later, remove the drain
+handle.remove()
 ```
 
-Log an event message.
+***
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+### custom()
 
-### `flush()`
-```typescript
+```ts
+custom(level, ...data): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `level` | `string` |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`void`
+
+***
+
+### debug()
+
+```ts
+debug(...data): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`void`
+
+***
+
+### error()
+
+```ts
+error(...data): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`void`
+
+***
+
+### event()
+
+```ts
+event(...data): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`void`
+
+***
+
+### flush()
+
+```ts
 flush(): Promise<void>
 ```
 
 Waits for all pending log writes to complete.
 
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Promise<void>',
-        description: 'A promise that resolves when all pending log writes have completed.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Returns
 
-### `fork()`
-```typescript
-fork(prefix: string): Logger
+`Promise`\<`void`\>
+
+***
+
+### fork()
+
+```ts
+fork(prefix): Logger
 ```
 
-Creates a new logger instance with the specified prefix. This is useful for creating a logger for a specific plugin, big features, or modules.
+Creates a new logger instance with the specified prefix.
+This is useful for creating a logger for a specific plugin, big features, or modules.
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        prefix: {
-          description: "The prefix to add to the logger (e.g. 'my-plugin').",
-          type: 'string',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Logger',
-        description: 'A new logger instance with the specified prefix. All writes and cached logs will be delegated to the parent logger.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+All writes and cached logs will be delegated to the parent logger, so debugging will still work.
 
-### `getLevel()`
-```typescript
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `prefix` | `string` | The prefix to add to the logger (e.g. 'my-plugin') |
+
+#### Returns
+
+[`Logger`](logger)
+
+A new logger instance with the specified prefix
+
+***
+
+### getLevel()
+
+```ts
 getLevel(): string
 ```
 
-Gets the current log level.
+#### Returns
 
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'string',
-        description: 'The current log level.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+`string`
 
-### `getLevelValues()`
-```typescript
+***
+
+### getLevelValues()
+
+```ts
 getLevelValues(): Record<string, number>
 ```
 
-Gets the level values map.
+#### Returns
 
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Record<string, number>',
-        description: 'Map of level names to their numeric values.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+`Record`\<`string`, `number`\>
 
-### `getRecentLogs()`
-```typescript
-getRecentLogs(count?: number): LogEntry[]
+***
+
+### getRecentLogs()
+
+```ts
+getRecentLogs(count): LogEntry[]
 ```
 
-Retrieves recent log entries from the cache.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        count: {
-          description: 'Number of log entries to retrieve.',
-          type: 'number',
-          required: false,
-          default: '50'
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'LogEntry[]',
-        description: 'Array of recent log entries.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `count` | `number` | `50` |
 
-### `info()`
-```typescript
-info(...data: unknown[]): void
+#### Returns
+
+`LogEntry`[]
+
+***
+
+### info()
+
+```ts
+info(...data): void
 ```
 
-Log an info message.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
 
-### `log()`
-```typescript
-log(...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### log()
+
+```ts
+log(...data): void
 ```
 
-Alias for info().
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
 
-### `ready()`
-```typescript
-ready(...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### ready()
+
+```ts
+ready(...data): void
 ```
 
-Log a ready message.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
 
-### `setDrain()`
-```typescript
-setDrain(drain: LogDrain): void
+#### Returns
+
+`void`
+
+***
+
+### removeDrain()
+
+```ts
+removeDrain(id): boolean
 ```
 
-Set a log drain to handle log output.
+Removes a drain from the logger by its ID.
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        drain: {
-          description: 'The drain function to handle logs.',
-          type: 'LogDrain',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+#### Parameters
 
-### `setup()`
-```typescript
-setup(options?: LoggerOptions): void
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The unique identifier of the drain to remove |
+
+#### Returns
+
+`boolean`
+
+true if the drain was found and removed, false otherwise
+
+***
+
+### setDrain()
+
+```ts
+setDrain(drain): void
 ```
 
-Configure the logger with options.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        options: {
-          description: 'Configuration options.',
-          type: 'LoggerOptions',
-          required: false
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| `drain` | [`LogDrain`](../type-aliases/log-drain) |
 
-### `trace()`
-```typescript
-trace(...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### setup()
+
+```ts
+setup(options?): void
 ```
 
-Log a trace message. Only displayed if log level is set to trace.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`LoggerOptions`](../interfaces/logger-options) |
 
-### `wait()`
-```typescript
-wait(...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### trace()
+
+```ts
+trace(...data): void
 ```
 
-Log a wait message.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
 
-### `warn()`
-```typescript
-warn(...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### wait()
+
+```ts
+wait(...data): void
 ```
 
-Log a warning message.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
 
-### `custom()`
-```typescript
-custom(level: string, ...data: unknown[]): void
+#### Returns
+
+`void`
+
+***
+
+### warn()
+
+```ts
+warn(...data): void
 ```
 
-Log a message with a custom level.
+#### Parameters
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        level: {
-          description: 'Custom log level.',
-          type: 'string',
-          required: true
-        },
-        data: {
-          description: 'Data to log.',
-          type: 'unknown[]',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'void',
-        description: 'This method does not return a value.'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+| Parameter | Type |
+| ------ | ------ |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`void`

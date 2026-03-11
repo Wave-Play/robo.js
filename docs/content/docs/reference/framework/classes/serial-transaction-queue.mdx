@@ -1,0 +1,73 @@
+---
+title: "SerialTransactionQueue"
+---
+
+# Class: SerialTransactionQueue
+
+Serial mode queue for serializing transactions within the process.
+
+## Constructors
+
+### new SerialTransactionQueue()
+
+```ts
+new SerialTransactionQueue(): SerialTransactionQueue
+```
+
+#### Returns
+
+[`SerialTransactionQueue`](serial-transaction-queue)
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear the queue (for testing/shutdown).
+
+#### Returns
+
+`void`
+
+***
+
+### enqueue()
+
+```ts
+enqueue<T>(fn): Promise<T>
+```
+
+Enqueue a transaction for serial execution.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `fn` | () =\> `Promise`\<`T`\> |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### isEmpty()
+
+```ts
+isEmpty(): boolean
+```
+
+Check if the queue is empty.
+
+#### Returns
+
+`boolean`

@@ -1,0 +1,43 @@
+---
+title: "ConnectionError"
+---
+
+# Class: ConnectionError
+
+Thrown when connection to the storage backend fails after retries are exhausted.
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new ConnectionError()
+
+```ts
+new ConnectionError(message, options?): ConnectionError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `retriesAttempted`: `number`; \} |
+| `options.cause`? | `Error` |
+| `options.retriesAttempted`? | `number` |
+
+#### Returns
+
+[`ConnectionError`](connection-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="retriesattempted-1"></a> `retriesAttempted?` | `readonly` | `number` | - |

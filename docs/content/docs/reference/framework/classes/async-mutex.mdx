@@ -1,0 +1,95 @@
+---
+title: "AsyncMutex"
+---
+
+# Class: AsyncMutex
+
+Simple async mutex for serializing operations.
+
+Provides mutual exclusion in single-process environments.
+Does NOT provide distributed locking across processes.
+
+## Constructors
+
+### new AsyncMutex()
+
+```ts
+new AsyncMutex(): AsyncMutex
+```
+
+#### Returns
+
+[`AsyncMutex`](async-mutex)
+
+## Methods
+
+### acquire()
+
+```ts
+acquire(): Promise<void>
+```
+
+Acquire the lock.
+Waits if the lock is already held.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### isLocked()
+
+```ts
+isLocked(): boolean
+```
+
+Check if the lock is currently held.
+
+#### Returns
+
+`boolean`
+
+***
+
+### release()
+
+```ts
+release(): void
+```
+
+Release the lock.
+Wakes up the next waiter if any.
+
+#### Returns
+
+`void`
+
+***
+
+### withLock()
+
+```ts
+withLock<T>(fn): Promise<T>
+```
+
+Execute a function while holding the lock.
+Ensures lock is released even if function throws.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `fn` | () =\> `Promise`\<`T`\> | Function to execute |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Result of the function

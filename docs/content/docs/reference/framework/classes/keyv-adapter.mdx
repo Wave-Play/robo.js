@@ -1,0 +1,199 @@
+---
+title: "KeyvAdapter<V>"
+---
+
+# Class: KeyvAdapter\<V\>
+
+Keyv adapter for Flashcore.
+
+Wraps any Keyv-compatible instance, including:
+- In-memory (default Keyv)
+- Redis (@keyv/redis)
+- MongoDB (@keyv/mongo)
+- PostgreSQL (@keyv/postgres)
+- MySQL (@keyv/mysql)
+- SQLite (@keyv/sqlite)
+- And many more...
+
+Limitations:
+- No scan capability (Keyv doesn't expose key listing)
+- No atomic batch operations
+- No setIfNotExists
+- WAL recovery is disabled
+- Bulk operations are disabled
+
+Use this adapter for simple KV storage when you need external storage
+but don't need advanced features.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+## Implements
+
+- [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `V`\>
+
+## Constructors
+
+### new KeyvAdapter()
+
+```ts
+new KeyvAdapter<V>(keyv, options): KeyvAdapter<V>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `keyv` | [`KeyvLike`](../interfaces/keyv-like)\<`V`\> |
+| `options` | [`KeyvAdapterOptions`](../interfaces/keyv-adapter-options) |
+
+#### Returns
+
+[`KeyvAdapter`](keyv-adapter)\<`V`\>
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="name"></a> `name` | `readonly` | `"KeyvAdapter"` | `'KeyvAdapter'` | Human-readable adapter name for logging and introspection. |
+
+## Methods
+
+### clear()
+
+```ts
+clear(): Promise<void>
+```
+
+Clear all data.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`clear`](../interfaces/flashcore-adapter#clear)
+
+***
+
+### delete()
+
+```ts
+delete(key): Promise<boolean>
+```
+
+Delete a key.
+Returns true if the key existed and was deleted.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`delete`](../interfaces/flashcore-adapter#delete)
+
+***
+
+### get()
+
+```ts
+get(key): Promise<V>
+```
+
+Get a value by key.
+Returns undefined if the key does not exist.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`get`](../interfaces/flashcore-adapter#get)
+
+***
+
+### has()
+
+```ts
+has(key): Promise<boolean>
+```
+
+Check if a key exists.
+Must return true for stored falsy values (0, false, '', null).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`has`](../interfaces/flashcore-adapter#has)
+
+***
+
+### init()
+
+```ts
+init(): void
+```
+
+Initialize the adapter (e.g., connect, create directories).
+Called once during Flashcore.$.init().
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`init`](../interfaces/flashcore-adapter#init)
+
+***
+
+### set()
+
+```ts
+set(key, value): Promise<boolean>
+```
+
+Set a key-value pair.
+Returns true if the operation succeeded.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `value` | `V` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`set`](../interfaces/flashcore-adapter#set)

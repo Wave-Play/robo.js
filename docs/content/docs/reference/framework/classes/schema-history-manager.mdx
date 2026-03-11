@@ -1,0 +1,295 @@
+---
+title: "SchemaHistoryManager"
+---
+
+# Class: SchemaHistoryManager
+
+Manager for schema version history.
+
+Provides:
+- Append-only history storage
+- Version retrieval and comparison
+- Visual diff generation between versions
+
+## Constructors
+
+### new SchemaHistoryManager()
+
+```ts
+new SchemaHistoryManager(adapter): SchemaHistoryManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+#### Returns
+
+[`SchemaHistoryManager`](schema-history-manager)
+
+## Methods
+
+### appendHistory()
+
+```ts
+appendHistory(entry, namespace?): Promise<void>
+```
+
+Append a new history entry.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `entry` | [`SchemaHistoryEntry`](../interfaces/schema-history-entry) | History entry to append |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### clearHistory()
+
+```ts
+clearHistory(namespace?): Promise<void>
+```
+
+Clear all history for a namespace.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### diffVersions()
+
+```ts
+diffVersions(
+   fromVersion, 
+   toVersion, 
+namespace?): Promise<VersionDiff>
+```
+
+Generate a diff between two versions.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `fromVersion` | `number` | Starting version number |
+| `toVersion` | `number` | Ending version number |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<[`VersionDiff`](../interfaces/version-diff)\>
+
+Version diff or null if versions not found
+
+***
+
+### getChangesBetween()
+
+```ts
+getChangesBetween(
+   fromVersion, 
+   toVersion, 
+namespace?): Promise<SchemaChange[]>
+```
+
+Get changes between two versions as a flat list.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `fromVersion` | `number` | Starting version number |
+| `toVersion` | `number` | Ending version number |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<[`SchemaChange`](../interfaces/schema-change)[]\>
+
+List of changes
+
+***
+
+### getHistory()
+
+```ts
+getHistory(namespace?): Promise<SchemaHistoryEntry[]>
+```
+
+Get the full schema history for a namespace.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<[`SchemaHistoryEntry`](../interfaces/schema-history-entry)[]\>
+
+Array of history entries, oldest first
+
+***
+
+### getVersion()
+
+```ts
+getVersion(namespace?): Promise<number>
+```
+
+Get the latest version number for a namespace.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Latest version number, or 0 if no history
+
+***
+
+### getVersionEntry()
+
+```ts
+getVersionEntry(version, namespace?): Promise<SchemaHistoryEntry>
+```
+
+Get a specific history entry by version.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `version` | `number` | Version number to retrieve |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<[`SchemaHistoryEntry`](../interfaces/schema-history-entry)\>
+
+History entry or null if not found
+
+***
+
+### createAutoEntry()
+
+```ts
+static createAutoEntry(
+   version, 
+   checksum, 
+   changes): SchemaHistoryEntry
+```
+
+Create a history entry for auto-applied changes.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `version` | `number` | New version number |
+| `checksum` | `string` | New combined checksum |
+| `changes` | [`SchemaChange`](../interfaces/schema-change)[] | Changes that were auto-applied |
+
+#### Returns
+
+[`SchemaHistoryEntry`](../interfaces/schema-history-entry)
+
+History entry
+
+***
+
+### createMigrationEntry()
+
+```ts
+static createMigrationEntry(
+   version, 
+   checksum, 
+   changes, 
+   migrationName): SchemaHistoryEntry
+```
+
+Create a history entry for migration-applied changes.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `version` | `number` | New version number |
+| `checksum` | `string` | New combined checksum |
+| `changes` | [`SchemaChange`](../interfaces/schema-change)[] | Changes that were applied |
+| `migrationName` | `string` | Name of the migration |
+
+#### Returns
+
+[`SchemaHistoryEntry`](../interfaces/schema-history-entry)
+
+History entry
+
+***
+
+### formatHistory()
+
+```ts
+static formatHistory(entries, options): string
+```
+
+Format history entries for display.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `entries` | [`SchemaHistoryEntry`](../interfaces/schema-history-entry)[] | History entries to format |
+| `options` | \{ `limit`: `number`; `showChanges`: `boolean`; \} | Formatting options |
+| `options.limit`? | `number` | - |
+| `options.showChanges`? | `boolean` | - |
+
+#### Returns
+
+`string`
+
+Formatted string
+
+***
+
+### formatVersionDiff()
+
+```ts
+static formatVersionDiff(diff): string
+```
+
+Format a version diff for display.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `diff` | [`VersionDiff`](../interfaces/version-diff) | Version diff to format |
+
+#### Returns
+
+`string`
+
+Formatted string

@@ -1,0 +1,117 @@
+---
+title: "TypeSerializer"
+---
+
+# Class: TypeSerializer
+
+Type serializer for storing and retrieving records.
+
+## Constructors
+
+### new TypeSerializer()
+
+```ts
+new TypeSerializer(schema): TypeSerializer
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) |
+
+#### Returns
+
+[`TypeSerializer`](type-serializer)
+
+## Methods
+
+### deserialize()
+
+```ts
+deserialize(value, fieldType): unknown
+```
+
+Deserialize a single value based on field type.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `value` | `unknown` | Value from storage |
+| `fieldType` | [`FieldType`](../type-aliases/field-type) | Type of the field |
+
+#### Returns
+
+`unknown`
+
+Deserialized value
+
+***
+
+### deserializeRecord()
+
+```ts
+deserializeRecord(record): Record<string, unknown>
+```
+
+Deserialize a record from storage.
+Converts ISO strings with markers back to Date objects.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `Record`\<`string`, `unknown`\> | Record from storage |
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+Deserialized record
+
+***
+
+### serialize()
+
+```ts
+serialize(value, fieldType): unknown
+```
+
+Serialize a single value based on field type.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `value` | `unknown` | Value to serialize |
+| `fieldType` | [`FieldType`](../type-aliases/field-type) | Type of the field |
+
+#### Returns
+
+`unknown`
+
+Serialized value
+
+***
+
+### serializeRecord()
+
+```ts
+serializeRecord(record): Record<string, unknown>
+```
+
+Serialize a record for storage.
+Converts Date objects to ISO strings with markers.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `Record`\<`string`, `unknown`\> | Record to serialize |
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+Serialized record

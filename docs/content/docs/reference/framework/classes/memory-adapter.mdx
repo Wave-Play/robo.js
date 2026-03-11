@@ -1,0 +1,407 @@
+---
+title: "MemoryAdapter<K, V>"
+---
+
+# Class: MemoryAdapter\<K, V\>
+
+In-memory storage adapter using Map.
+
+Implements all optional capabilities:
+- scan: prefix-based key listing
+- setIfNotExists: atomic conditional set
+- compareAndSwap: atomic update with version check
+- atomicBatch: atomic multi-key operations
+
+Useful for:
+- Unit testing
+- Development without external dependencies
+- Ephemeral data that doesn't need persistence
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Implements
+
+- [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+## Constructors
+
+### new MemoryAdapter()
+
+```ts
+new MemoryAdapter<K, V>(): MemoryAdapter<K, V>
+```
+
+#### Returns
+
+[`MemoryAdapter`](memory-adapter)\<`K`, `V`\>
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="name"></a> `name` | `readonly` | `"MemoryAdapter"` | `'MemoryAdapter'` | Human-readable adapter name for logging and introspection. |
+
+## Methods
+
+### atomicBatch()
+
+```ts
+atomicBatch(ops): void
+```
+
+Apply a batch of operations atomically.
+
+In memory, this is trivially atomic since JavaScript is single-threaded.
+Validates check operations before applying any changes.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ops` | [`BatchOperation`](../type-aliases/batch-operation)\<`K`, `V`\>[] |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`atomicBatch`](../interfaces/flashcore-adapter#atomicbatch)
+
+***
+
+### capabilities()
+
+```ts
+capabilities(): AdapterCapabilitiesReport
+```
+
+Report extended capabilities.
+
+#### Returns
+
+[`AdapterCapabilitiesReport`](../interfaces/adapter-capabilities-report)
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`capabilities`](../interfaces/flashcore-adapter#capabilities)
+
+***
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all data.
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`clear`](../interfaces/flashcore-adapter#clear)
+
+***
+
+### compareAndSwap()
+
+```ts
+compareAndSwap(
+   key, 
+   expected, 
+   next): boolean
+```
+
+Compare and swap: update only if current value equals expected.
+
+Uses JSON serialization for deep equality check.
+Returns true if swap succeeded, false if value differs.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `expected` | `V` |
+| `next` | `V` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`compareAndSwap`](../interfaces/flashcore-adapter#compareandswap)
+
+***
+
+### delete()
+
+```ts
+delete(key): boolean
+```
+
+Delete a key.
+Returns true if the key existed and was deleted.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`delete`](../interfaces/flashcore-adapter#delete)
+
+***
+
+### entries()
+
+```ts
+entries(): [K, V][]
+```
+
+Get all entries (for testing/debugging).
+
+#### Returns
+
+\[`K`, `V`\][]
+
+***
+
+### get()
+
+```ts
+get(key): V
+```
+
+Get a value by key.
+Returns undefined if the key does not exist.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`V`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`get`](../interfaces/flashcore-adapter#get)
+
+***
+
+### has()
+
+```ts
+has(key): boolean
+```
+
+Check if a key exists.
+Must return true for stored falsy values (0, false, '', null).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`has`](../interfaces/flashcore-adapter#has)
+
+***
+
+### init()
+
+```ts
+init(): void
+```
+
+Initialize the adapter (e.g., connect, create directories).
+Called once during Flashcore.$.init().
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`init`](../interfaces/flashcore-adapter#init)
+
+***
+
+### keys()
+
+```ts
+keys(): K[]
+```
+
+Get all keys (for testing/debugging).
+
+#### Returns
+
+`K`[]
+
+***
+
+### restore()
+
+```ts
+restore(snapshot): void
+```
+
+Restore from a snapshot (for testing).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `snapshot` | `Map`\<`K`, `V`\> |
+
+#### Returns
+
+`void`
+
+***
+
+### scan()
+
+```ts
+scan(prefix): K[]
+```
+
+Scan for keys with a given prefix.
+Returns an array for simplicity (small keysets in testing).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `K` |
+
+#### Returns
+
+`K`[]
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`scan`](../interfaces/flashcore-adapter#scan)
+
+***
+
+### set()
+
+```ts
+set(key, value): boolean
+```
+
+Set a key-value pair.
+Returns true if the operation succeeded.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`set`](../interfaces/flashcore-adapter#set)
+
+***
+
+### setIfNotExists()
+
+```ts
+setIfNotExists(key, value): boolean
+```
+
+Set a key only if it doesn't exist.
+Returns true if set, false if key already exists.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+#### Returns
+
+`boolean`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`setIfNotExists`](../interfaces/flashcore-adapter#setifnotexists)
+
+***
+
+### shutdown()
+
+```ts
+shutdown(): void
+```
+
+Shutdown the adapter (e.g., close connections).
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter).[`shutdown`](../interfaces/flashcore-adapter#shutdown)
+
+***
+
+### size()
+
+```ts
+size(): number
+```
+
+Get the number of stored keys.
+
+#### Returns
+
+`number`
+
+***
+
+### snapshot()
+
+```ts
+snapshot(): Map<K, V>
+```
+
+Get a snapshot of the storage (for testing).
+
+#### Returns
+
+`Map`\<`K`, `V`\>

@@ -1,0 +1,223 @@
+---
+title: "RepairEngine"
+---
+
+# Class: RepairEngine
+
+Repair Engine.
+
+Repairs derived index structures from authoritative data sources.
+
+## Constructors
+
+### new RepairEngine()
+
+```ts
+new RepairEngine(adapter): RepairEngine
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+#### Returns
+
+[`RepairEngine`](repair-engine)
+
+## Methods
+
+### rebuildAll()
+
+```ts
+rebuildAll(
+   modelName, 
+   catalog, 
+   chunkManager, 
+   sortedFields, 
+   namespace?, 
+   onProgress?): Promise<{
+  durationMs: number;
+  filter: CuckooFilter;
+  sortedIndexes: Map<string, SortedIndex>;
+}>
+```
+
+Full rebuild of all indexes from authoritative data.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `chunkManager` | [`ChunkManager`](chunk-manager) |
+| `sortedFields` | `string`[] |
+| `namespace`? | `string` |
+| `onProgress`? | (`progress`) =\> `void` |
+
+#### Returns
+
+`Promise`\<\{
+  `durationMs`: `number`;
+  `filter`: [`CuckooFilter`](cuckoo-filter);
+  `sortedIndexes`: `Map`\<`string`, [`SortedIndex`](sorted-index)\>;
+ \}\>
+
+***
+
+### rebuildFilter()
+
+```ts
+rebuildFilter(catalog): Promise<CuckooFilter>
+```
+
+Rebuild filter only.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `catalog` | [`Catalog`](catalog) |
+
+#### Returns
+
+`Promise`\<[`CuckooFilter`](cuckoo-filter)\>
+
+***
+
+### rebuildSortedIndex()
+
+```ts
+rebuildSortedIndex(
+   modelName, 
+   catalog, 
+   chunkManager, 
+   field, 
+namespace?): Promise<SortedIndex>
+```
+
+Rebuild a single sorted index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `chunkManager` | [`ChunkManager`](chunk-manager) |
+| `field` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<[`SortedIndex`](sorted-index)\>
+
+***
+
+### repairFilter()
+
+```ts
+repairFilter(catalog, dryRun?): Promise<RepairResult>
+```
+
+Rebuild filter from catalog.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `catalog` | [`Catalog`](catalog) |
+| `dryRun`? | `boolean` |
+
+#### Returns
+
+`Promise`\<[`RepairResult`](../interfaces/repair-result)\>
+
+***
+
+### repairFromReport()
+
+```ts
+repairFromReport(
+   modelName, 
+   catalog, 
+   chunkManager, 
+   report, 
+options?): Promise<FullRepairResult>
+```
+
+Repair based on integrity report.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `chunkManager` | [`ChunkManager`](chunk-manager) |
+| `report` | [`IntegrityReport`](../interfaces/integrity-report) |
+| `options`? | [`RepairOptions`](../interfaces/repair-options) |
+
+#### Returns
+
+`Promise`\<[`FullRepairResult`](../interfaces/full-repair-result)\>
+
+***
+
+### repairSortedIndex()
+
+```ts
+repairSortedIndex(
+   modelName, 
+   catalog, 
+   chunkManager, 
+   field, 
+   namespace?, 
+dryRun?): Promise<RepairResult>
+```
+
+Rebuild sorted index from records.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `chunkManager` | [`ChunkManager`](chunk-manager) |
+| `field` | `string` |
+| `namespace`? | `string` |
+| `dryRun`? | `boolean` |
+
+#### Returns
+
+`Promise`\<[`RepairResult`](../interfaces/repair-result)\>
+
+***
+
+### repairUniqueIndex()
+
+```ts
+repairUniqueIndex(
+   modelName, 
+   integrityResult, 
+   namespace?, 
+dryRun?): Promise<RepairResult>
+```
+
+Clean orphaned unique keys.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `integrityResult` | [`UniqueIntegrityResult`](../interfaces/unique-integrity-result) |
+| `namespace`? | `string` |
+| `dryRun`? | `boolean` |
+
+#### Returns
+
+`Promise`\<[`RepairResult`](../interfaces/repair-result)\>

@@ -1,0 +1,90 @@
+---
+title: "QueryPlanner"
+---
+
+# Class: QueryPlanner
+
+Query Planner.
+
+Analyzes queries and produces execution plans using available indexes.
+
+## Constructors
+
+### new QueryPlanner()
+
+```ts
+new QueryPlanner(totalRecords): QueryPlanner
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `totalRecords` | `number` |
+
+#### Returns
+
+[`QueryPlanner`](query-planner)
+
+## Methods
+
+### plan()
+
+```ts
+plan(args, indexes): QueryPlan
+```
+
+Create an execution plan for a query.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`QueryArgs`](../interfaces/query-args) | Query arguments |
+| `indexes` | [`AvailableIndexes`](../interfaces/available-indexes) | Available indexes |
+
+#### Returns
+
+[`QueryPlan`](../interfaces/query-plan)
+
+Optimal query plan
+
+***
+
+### requiresPostFilter()
+
+```ts
+requiresPostFilter(plan): boolean
+```
+
+Check if plan requires post-filtering.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `plan` | [`QueryPlan`](../interfaces/query-plan) |
+
+#### Returns
+
+`boolean`
+
+***
+
+### usesIndex()
+
+```ts
+usesIndex(plan): boolean
+```
+
+Check if a plan uses an index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `plan` | [`QueryPlan`](../interfaces/query-plan) |
+
+#### Returns
+
+`boolean`

@@ -1,0 +1,301 @@
+---
+title: "SortedIndex"
+---
+
+# Class: SortedIndex
+
+SortedIndex implementation using a B+Tree.
+
+Provides efficient range queries and ordered iteration.
+Values are compared using standard JavaScript comparison.
+Records with the same value are secondarily sorted by id.
+
+## Constructors
+
+### new SortedIndex()
+
+```ts
+new SortedIndex(field, options?): SortedIndex
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `field` | `string` |
+| `options`? | \{ `order`: `number`; \} |
+| `options.order`? | `number` |
+
+#### Returns
+
+[`SortedIndex`](sorted-index)
+
+## Properties
+
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="field-1"></a> `field` | `readonly` | `string` |
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all entries from the index.
+
+#### Returns
+
+`void`
+
+***
+
+### estimateMemoryUsage()
+
+```ts
+estimateMemoryUsage(): number
+```
+
+Estimate memory usage in bytes.
+
+#### Returns
+
+`number`
+
+***
+
+### find()
+
+```ts
+find(value): string[]
+```
+
+Find all IDs for a specific value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`string`[]
+
+***
+
+### getAll()
+
+```ts
+getAll(order): string[]
+```
+
+Get all IDs in sorted order.
+
+#### Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `order` | `"asc"` \| `"desc"` | `'asc'` |
+
+#### Returns
+
+`string`[]
+
+***
+
+### getCount()
+
+```ts
+getCount(): number
+```
+
+Get the number of entries in the index.
+
+#### Returns
+
+`number`
+
+***
+
+### has()
+
+```ts
+has(value, id): boolean
+```
+
+Check if a value-id pair exists in the index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### insert()
+
+```ts
+insert(value, id): void
+```
+
+Insert a value-id pair into the index.
+Null/undefined values are ignored.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+| `id` | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### isEmpty()
+
+```ts
+isEmpty(): boolean
+```
+
+Check if the index is empty.
+
+#### Returns
+
+`boolean`
+
+***
+
+### range()
+
+```ts
+range(options): string[]
+```
+
+Range query returning IDs matching the criteria.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`RangeOptions`](../interfaces/range-options) |
+
+#### Returns
+
+`string`[]
+
+***
+
+### remove()
+
+```ts
+remove(value, id): boolean
+```
+
+Remove a value-id pair from the index.
+Returns true if found and removed.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+| `id` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### serialize()
+
+```ts
+serialize(): SortedIndexData
+```
+
+Serialize the index for persistence.
+
+#### Returns
+
+[`SortedIndexData`](../interfaces/sorted-index-data)
+
+***
+
+### bulkLoad()
+
+```ts
+static bulkLoad(
+   field, 
+   entries, 
+   options?): SortedIndex
+```
+
+Create an index from entries (bulk load).
+Entries should be an array of \{ value, id \}.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `field` | `string` |
+| `entries` | \{ `id`: `string`; `value`: `unknown`; \}[] |
+| `options`? | \{ `order`: `number`; \} |
+| `options.order`? | `number` |
+
+#### Returns
+
+[`SortedIndex`](sorted-index)
+
+***
+
+### deserialize()
+
+```ts
+static deserialize(data): SortedIndex
+```
+
+Deserialize an index from persisted data.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `data` | [`SortedIndexData`](../interfaces/sorted-index-data) |
+
+#### Returns
+
+[`SortedIndex`](sorted-index)
+
+***
+
+### empty()
+
+```ts
+static empty(field, options?): SortedIndex
+```
+
+Create an empty index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `field` | `string` |
+| `options`? | \{ `order`: `number`; \} |
+| `options.order`? | `number` |
+
+#### Returns
+
+[`SortedIndex`](sorted-index)

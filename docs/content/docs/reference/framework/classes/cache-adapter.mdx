@@ -1,0 +1,574 @@
+---
+title: "CacheAdapter<K, V>"
+---
+
+# Class: CacheAdapter\<K, V\>
+
+LRU cache wrapper for adapters.
+
+Uses a Map for O(1) access with LRU eviction based on insertion order.
+Map maintains insertion order, so deleting and re-setting moves to end.
+
+## Extends
+
+- [`AdapterWrapper`](adapter-wrapper)\<`K`, `V`\>
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Constructors
+
+### new CacheAdapter()
+
+```ts
+new CacheAdapter<K, V>(adapter, options): CacheAdapter<K, V>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `options` | [`CacheOptions`](../interfaces/cache-options) |
+
+#### Returns
+
+[`CacheAdapter`](cache-adapter)\<`K`, `V`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`constructor`](adapter-wrapper#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| <a id="name"></a> `name` | `readonly` | `"CacheAdapter"` | `'CacheAdapter'` | Human-readable name for this wrapper. Subclasses should override this. | [`AdapterWrapper`](adapter-wrapper).[`name`](adapter-wrapper#name) | - |
+| <a id="next"></a> `next` | `readonly` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | `undefined` | - | - | [`AdapterWrapper`](adapter-wrapper).[`next`](adapter-wrapper#next-1) |
+
+## Accessors
+
+### atomicBatch
+
+#### Get Signature
+
+```ts
+get atomicBatch(): (ops) => void | Promise<void>
+```
+
+Atomic batch operations.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ops` | [`BatchOperation`](../type-aliases/batch-operation)\<`K`, `V`\>[] |
+
+###### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`atomicBatch`](adapter-wrapper#atomicbatch)
+
+***
+
+### compareAndSwap
+
+#### Get Signature
+
+```ts
+get compareAndSwap(): (key, expected, next) => boolean | Promise<boolean>
+```
+
+Compare and swap.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `expected` | `V` |
+| `next` | `V` |
+
+###### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`compareAndSwap`](adapter-wrapper#compareandswap)
+
+***
+
+### maxValueSize
+
+#### Get Signature
+
+```ts
+get maxValueSize(): number
+```
+
+Maximum value size.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`number`
+
+Maximum size in bytes for a single value.
+Used for chunk sizing and WAL segmentation.
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`maxValueSize`](adapter-wrapper#maxvaluesize)
+
+***
+
+### scan
+
+#### Get Signature
+
+```ts
+get scan(): (prefix) => 
+  | K[]
+  | Promise<K[]>
+  | AsyncIterable<K, any, any>
+| Promise<AsyncIterable<K, any, any>>
+```
+
+Scan for keys with a prefix.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `K` |
+
+###### Returns
+
+  \| `K`[]
+  \| `Promise`\<`K`[]\>
+  \| `AsyncIterable`\<`K`, `any`, `any`\>
+  \| `Promise`\<`AsyncIterable`\<`K`, `any`, `any`\>\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`scan`](adapter-wrapper#scan)
+
+***
+
+### setIfNotExists
+
+#### Get Signature
+
+```ts
+get setIfNotExists(): (key, value) => boolean | Promise<boolean>
+```
+
+Set if not exists.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+###### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`setIfNotExists`](adapter-wrapper#setifnotexists)
+
+***
+
+### transaction
+
+#### Get Signature
+
+```ts
+get transaction(): (fn) => Promise<void>
+```
+
+Native transaction API.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `fn` | (`tx`) =\> `Promise`\<`void`\> |
+
+###### Returns
+
+`Promise`\<`void`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`transaction`](adapter-wrapper#transaction)
+
+## Methods
+
+### capabilities()?
+
+```ts
+optional capabilities(): Partial<AdapterCapabilitiesReport>
+```
+
+Extended capabilities.
+Propagates from underlying adapter if available.
+
+#### Returns
+
+`Partial`\<[`AdapterCapabilitiesReport`](../interfaces/adapter-capabilities-report)\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`capabilities`](adapter-wrapper#capabilities)
+
+***
+
+### clear()
+
+```ts
+clear(): Promise<void>
+```
+
+Clear all data.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`clear`](adapter-wrapper#clear)
+
+***
+
+### delete()
+
+```ts
+delete(key): Promise<boolean>
+```
+
+Delete a key.
+Returns true if the key existed and was deleted.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`delete`](adapter-wrapper#delete)
+
+***
+
+### get()
+
+```ts
+get(key): Promise<V>
+```
+
+Get a value by key.
+Returns undefined if the key does not exist.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`get`](adapter-wrapper#get)
+
+***
+
+### getCacheSize()
+
+```ts
+getCacheSize(): number
+```
+
+Get current cache size.
+
+#### Returns
+
+`number`
+
+***
+
+### getConfig()
+
+```ts
+getConfig(): {
+  maxAge: number;
+  maxSize: number;
+}
+```
+
+Get the current cache configuration.
+
+#### Returns
+
+```ts
+{
+  maxAge: number;
+  maxSize: number;
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="maxage"></a> `maxAge` | `number` |
+| <a id="maxsize"></a> `maxSize` | `number` |
+
+***
+
+### getInnermostAdapter()
+
+```ts
+protected getInnermostAdapter(): FlashcoreAdapter<K, V>
+```
+
+Get the innermost adapter by unwrapping all wrappers.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`getInnermostAdapter`](adapter-wrapper#getinnermostadapter)
+
+***
+
+### getStats()
+
+```ts
+getStats(): CacheStats
+```
+
+Get cache statistics.
+
+#### Returns
+
+[`CacheStats`](../interfaces/cache-stats)
+
+***
+
+### getWrappedAdapter()
+
+```ts
+protected getWrappedAdapter(): FlashcoreAdapter<K, V>
+```
+
+Get the underlying (wrapped) adapter.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`getWrappedAdapter`](adapter-wrapper#getwrappedadapter)
+
+***
+
+### has()
+
+```ts
+has(key): Promise<boolean>
+```
+
+Check if a key exists.
+Must return true for stored falsy values (0, false, '', null).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`has`](adapter-wrapper#has)
+
+***
+
+### init()?
+
+```ts
+optional init(): void | Promise<void>
+```
+
+Initialize the adapter (e.g., connect, create directories).
+Called once during Flashcore.$.init().
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`init`](adapter-wrapper#init)
+
+***
+
+### invalidate()
+
+```ts
+invalidate(key): void
+```
+
+Invalidate a specific cache entry.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`void`
+
+***
+
+### invalidatePrefix()
+
+```ts
+invalidatePrefix(prefix): void
+```
+
+Invalidate all cache entries with a given prefix.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### prune()
+
+```ts
+prune(): number
+```
+
+Prune expired entries from the cache.
+
+#### Returns
+
+`number`
+
+***
+
+### resetStats()
+
+```ts
+resetStats(): void
+```
+
+Reset cache statistics.
+
+#### Returns
+
+`void`
+
+***
+
+### set()
+
+```ts
+set(key, value): Promise<boolean>
+```
+
+Set a key-value pair.
+Returns true if the operation succeeded.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`set`](adapter-wrapper#set)
+
+***
+
+### shutdown()?
+
+```ts
+optional shutdown(): void | Promise<void>
+```
+
+Shutdown the adapter (e.g., close connections).
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`shutdown`](adapter-wrapper#shutdown)

@@ -1,0 +1,207 @@
+---
+title: "AdapterBuilder<K, V>"
+---
+
+# Class: AdapterBuilder\<K, V\>
+
+Builder for composing adapter wrappers.
+
+Wrappers are applied in the order they are called.
+The innermost wrapper (first added) is closest to the base adapter.
+
+## Example
+
+```typescript
+const adapter = new AdapterBuilder(new RedisAdapter(redis))
+  .withResilience({ maxRetries: 5 })
+  .withCompression({ threshold: 512 })
+  .withEncryption({ key: process.env.SECRET! })
+  .withCache({ maxSize: 1000 })
+  .build()
+
+// Data flow:
+// get() → Cache → Encryption → Compression → Resilience → Redis
+// set() → Cache → Encryption → Compression → Resilience → Redis
+```
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Constructors
+
+### new AdapterBuilder()
+
+```ts
+new AdapterBuilder<K, V>(baseAdapter): AdapterBuilder<K, V>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `baseAdapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+
+#### Returns
+
+[`AdapterBuilder`](adapter-builder)\<`K`, `V`\>
+
+## Methods
+
+### build()
+
+```ts
+build(): FlashcoreAdapter<K, V>
+```
+
+Build and return the composed adapter.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+***
+
+### describe()
+
+```ts
+describe(): string
+```
+
+Get a description of the wrapper stack.
+
+#### Returns
+
+`string`
+
+***
+
+### getWrapperNames()
+
+```ts
+getWrapperNames(): string[]
+```
+
+Get the list of applied wrappers (in order from outer to inner).
+
+#### Returns
+
+`string`[]
+
+***
+
+### with()
+
+```ts
+with(wrapper, name?): this
+```
+
+Add a custom wrapper.
+
+Use this to add wrappers not included in the standard set.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `wrapper` | (`adapter`) =\> [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `name`? | `string` |
+
+#### Returns
+
+`this`
+
+***
+
+### withCache()
+
+```ts
+withCache(options?): this
+```
+
+Add an LRU cache layer.
+
+The cache is in-memory and reduces reads to the underlying adapter.
+Cache entries are invalidated on writes.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`CacheOptions`](../interfaces/cache-options) |
+
+#### Returns
+
+`this`
+
+***
+
+### withCompression()
+
+```ts
+withCompression(options?): this
+```
+
+Add gzip compression for values above a threshold.
+
+Compressed values are tagged with '__gz__:' prefix.
+Decompression is automatic on read.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`CompressionOptions`](../interfaces/compression-options) |
+
+#### Returns
+
+`this`
+
+***
+
+### withEncryption()
+
+```ts
+withEncryption(options): this
+```
+
+Add AES-256 encryption for all values.
+
+Encrypted values are tagged with '__enc__:' prefix.
+Decryption is automatic on read.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`EncryptionOptions`](../interfaces/encryption-options) | Must include `key` for encryption |
+
+#### Returns
+
+`this`
+
+***
+
+### withResilience()
+
+```ts
+withResilience(options?): this
+```
+
+Add automatic retry with exponential backoff.
+
+Retries transient errors (network issues, timeouts, etc.)
+with configurable max retries and delay.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ResilienceOptions`](../interfaces/resilience-options) |
+
+#### Returns
+
+`this`

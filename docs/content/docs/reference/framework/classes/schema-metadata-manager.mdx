@@ -1,0 +1,310 @@
+---
+title: "SchemaMetadataManager"
+---
+
+# Class: SchemaMetadataManager
+
+Manager for schema metadata persistence.
+
+Handles:
+- Per-model schema metadata storage and retrieval
+- Namespace-level schema snapshots
+- Conversion between runtime and storage formats
+
+## Constructors
+
+### new SchemaMetadataManager()
+
+```ts
+new SchemaMetadataManager(adapter): SchemaMetadataManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+#### Returns
+
+[`SchemaMetadataManager`](schema-metadata-manager)
+
+## Methods
+
+### deleteModelMetadata()
+
+```ts
+deleteModelMetadata(modelName, namespace?): Promise<void>
+```
+
+Delete schema metadata for a model.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Model name |
+| `namespace`? | `string` | Optional namespace |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### deleteSnapshot()
+
+```ts
+deleteSnapshot(namespace?): Promise<void>
+```
+
+Delete the schema snapshot for a namespace.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getModelMetadata()
+
+```ts
+getModelMetadata(modelName, namespace?): Promise<SchemaMetadata>
+```
+
+Get schema metadata for a model.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Model name |
+| `namespace`? | `string` | Optional namespace |
+
+#### Returns
+
+`Promise`\<[`SchemaMetadata`](../interfaces/schema-metadata)\>
+
+Schema metadata or null if not found
+
+***
+
+### getSnapshot()
+
+```ts
+getSnapshot(namespace?): Promise<SchemaSnapshot>
+```
+
+Get the schema snapshot for a namespace.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<[`SchemaSnapshot`](../interfaces/schema-snapshot)\>
+
+Schema snapshot or null if not found
+
+***
+
+### hasModelMetadata()
+
+```ts
+hasModelMetadata(modelName, namespace?): Promise<boolean>
+```
+
+Check if schema metadata exists for a model.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Model name |
+| `namespace`? | `string` | Optional namespace |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### setModelMetadata()
+
+```ts
+setModelMetadata(
+   modelName, 
+   metadata, 
+namespace?): Promise<void>
+```
+
+Store schema metadata for a model.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Model name |
+| `metadata` | [`SchemaMetadata`](../interfaces/schema-metadata) | Schema metadata to store |
+| `namespace`? | `string` | Optional namespace |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### setSnapshot()
+
+```ts
+setSnapshot(snapshot, namespace?): Promise<void>
+```
+
+Store a schema snapshot for a namespace.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `snapshot` | [`SchemaSnapshot`](../interfaces/schema-snapshot) | Schema snapshot to store |
+| `namespace`? | `string` | Namespace name (undefined for default) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### computeCombinedChecksum()
+
+```ts
+static computeCombinedChecksum(models): string
+```
+
+Compute a combined checksum for multiple models.
+
+Used for namespace-level snapshot checksums.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `models` | `Record`\<`string`, [`SchemaMetadata`](../interfaces/schema-metadata)\> | Map of model name to schema metadata |
+
+#### Returns
+
+`string`
+
+Combined checksum string
+
+***
+
+### createInitialMetadata()
+
+```ts
+static createInitialMetadata(schema): SchemaMetadata
+```
+
+Create initial metadata for a new model.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Normalized schema |
+
+#### Returns
+
+[`SchemaMetadata`](../interfaces/schema-metadata)
+
+Initial schema metadata
+
+***
+
+### createSnapshot()
+
+```ts
+static createSnapshot(
+   models, 
+   namespace, 
+   version): SchemaSnapshot
+```
+
+Create a schema snapshot from multiple models.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `models` | `Record`\<`string`, [`SchemaMetadata`](../interfaces/schema-metadata)\> | Map of model name to schema metadata |
+| `namespace` | `string` | Namespace name |
+| `version` | `number` | Snapshot version |
+
+#### Returns
+
+[`SchemaSnapshot`](../interfaces/schema-snapshot)
+
+Schema snapshot
+
+***
+
+### createUpdatedMetadata()
+
+```ts
+static createUpdatedMetadata(
+   schema, 
+   previous, 
+   migrationName?): SchemaMetadata
+```
+
+Create updated metadata after a schema change.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | New normalized schema |
+| `previous` | [`SchemaMetadata`](../interfaces/schema-metadata) | Previous schema metadata |
+| `migrationName`? | `string` | Optional migration name if applied by migration |
+
+#### Returns
+
+[`SchemaMetadata`](../interfaces/schema-metadata)
+
+Updated schema metadata
+
+***
+
+### schemaToMetadata()
+
+```ts
+static schemaToMetadata(
+   schema, 
+   version, 
+   migrationHistory): SchemaMetadata
+```
+
+Convert a NormalizedSchema to SchemaMetadata for storage.
+
+#### Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | `undefined` | Normalized schema from a model |
+| `version` | `number` | `1` | Version number (default 1 for new) |
+| `migrationHistory` | `string`[] | `[]` | List of applied migrations |
+
+#### Returns
+
+[`SchemaMetadata`](../interfaces/schema-metadata)
+
+Schema metadata ready for storage

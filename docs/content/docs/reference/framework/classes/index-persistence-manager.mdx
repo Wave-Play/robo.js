@@ -1,0 +1,463 @@
+---
+title: "IndexPersistenceManager"
+---
+
+# Class: IndexPersistenceManager
+
+## Constructors
+
+### new IndexPersistenceManager()
+
+```ts
+new IndexPersistenceManager(adapter, options?): IndexPersistenceManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `options`? | [`IndexPersistenceOptions`](../interfaces/index-persistence-options) |
+
+#### Returns
+
+[`IndexPersistenceManager`](index-persistence-manager)
+
+## Methods
+
+### flushAll()
+
+```ts
+flushAll(): Promise<FlushResult>
+```
+
+Flush all dirty indexes to storage.
+
+#### Returns
+
+`Promise`\<[`FlushResult`](../interfaces/flush-result)\>
+
+***
+
+### flushModel()
+
+```ts
+flushModel(modelName, namespace?): Promise<FlushResult>
+```
+
+Flush dirty indexes for a specific model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<[`FlushResult`](../interfaces/flush-result)\>
+
+***
+
+### getDirtyCount()
+
+```ts
+getDirtyCount(): number
+```
+
+Get the number of dirty entries.
+
+#### Returns
+
+`number`
+
+***
+
+### getEpoch()
+
+```ts
+getEpoch(modelName, namespace?): number
+```
+
+Get the current epoch for a model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`number`
+
+***
+
+### getMemoryLimit()
+
+```ts
+getMemoryLimit(): number
+```
+
+Get the configured memory limit.
+
+#### Returns
+
+`number`
+
+***
+
+### getMemoryUsage()
+
+```ts
+getMemoryUsage(): number
+```
+
+Get current memory usage in bytes.
+
+#### Returns
+
+`number`
+
+***
+
+### hasDirty()
+
+```ts
+hasDirty(): boolean
+```
+
+Check if there are any dirty indexes pending flush.
+
+#### Returns
+
+`boolean`
+
+***
+
+### init()
+
+```ts
+init(): void
+```
+
+Initialize the persistence manager.
+Sets up periodic flush timer and shutdown handlers.
+
+#### Returns
+
+`void`
+
+***
+
+### isStale()
+
+```ts
+isStale(modelName, namespace?): Promise<boolean>
+```
+
+Check if persisted indexes are stale (epoch mismatch).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### loadEpoch()
+
+```ts
+loadEpoch(modelName, namespace?): Promise<EpochData>
+```
+
+Load epoch data to check for stale indexes.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<[`EpochData`](../interfaces/epoch-data)\>
+
+***
+
+### markFilterDirty()
+
+```ts
+markFilterDirty(modelName, namespace?): void
+```
+
+Mark a filter as dirty (needs persistence).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### markIndexDirty()
+
+```ts
+markIndexDirty(
+   modelName, 
+   field, 
+   namespace?): void
+```
+
+Mark a sorted index as dirty (needs persistence).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `field` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### persistEpoch()
+
+```ts
+persistEpoch(modelName, namespace?): Promise<void>
+```
+
+Persist epoch data for stale detection.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### registerFilter()
+
+```ts
+registerFilter(
+   modelName, 
+   filter, 
+   namespace?): void
+```
+
+Register a filter for persistence tracking.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `filter` | [`CuckooFilter`](cuckoo-filter) |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### registerSortedIndex()
+
+```ts
+registerSortedIndex(
+   modelName, 
+   field, 
+   index, 
+   namespace?): void
+```
+
+Register a sorted index for persistence tracking.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `field` | `string` |
+| `index` | [`SortedIndex`](sorted-index) |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### removeFromMemory()
+
+```ts
+removeFromMemory(
+   modelName, 
+   field, 
+   namespace?): void
+```
+
+Remove an entry from memory tracking.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `field` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### scheduleFlush()
+
+```ts
+scheduleFlush(intervalMs): void
+```
+
+Schedule periodic flush.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `intervalMs` | `number` |
+
+#### Returns
+
+`void`
+
+***
+
+### setupShutdownHandlers()
+
+```ts
+setupShutdownHandlers(): void
+```
+
+Setup process shutdown handlers.
+
+#### Returns
+
+`void`
+
+***
+
+### shutdown()
+
+```ts
+shutdown(): Promise<void>
+```
+
+Shutdown the persistence manager.
+Flushes pending changes and cleans up timers.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### touchEntry()
+
+```ts
+touchEntry(
+   modelName, 
+   field, 
+   namespace?): void
+```
+
+Mark an entry as recently accessed (for LRU ordering).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `field` | `string` |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### trackFilterMemory()
+
+```ts
+trackFilterMemory(
+   modelName, 
+   filter, 
+   namespace?): void
+```
+
+Track memory usage for a filter.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `filter` | [`CuckooFilter`](cuckoo-filter) |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### trackIndexMemory()
+
+```ts
+trackIndexMemory(
+   modelName, 
+   field, 
+   index, 
+   namespace?): void
+```
+
+Track memory usage for a sorted index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `field` | `string` |
+| `index` | [`SortedIndex`](sorted-index) |
+| `namespace`? | `string` |
+
+#### Returns
+
+`void`

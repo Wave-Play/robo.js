@@ -1,0 +1,45 @@
+---
+title: "NotFoundError"
+---
+
+# Class: NotFoundError
+
+Thrown when a record is not found (e.g., update/delete on non-existent record).
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new NotFoundError()
+
+```ts
+new NotFoundError(message, options?): NotFoundError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `id`: `string`; `model`: `string`; \} |
+| `options.cause`? | `Error` |
+| `options.id`? | `string` |
+| `options.model`? | `string` |
+
+#### Returns
+
+[`NotFoundError`](not-found-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="id-1"></a> `id?` | `readonly` | `string` | - |
+| <a id="model-1"></a> `model?` | `readonly` | `string` | - |

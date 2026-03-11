@@ -1,0 +1,281 @@
+---
+title: "TransactionContext"
+---
+
+# Class: TransactionContext
+
+Transaction context implementation.
+
+Provides staging for writes/deletes, read tracking for optimistic locking,
+and commit logic for different transaction modes.
+
+## Implements
+
+- [`ITransactionContext`](../interfaces/i-transaction-context)
+
+## Constructors
+
+### new TransactionContext()
+
+```ts
+new TransactionContext(
+   adapter, 
+   resolvedMode, 
+   options): TransactionContext
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `resolvedMode` | [`ResolvedTransactionMode`](../type-aliases/resolved-transaction-mode) |
+| `options` | `Required`\<[`TransactionOptions`](../interfaces/transaction-options)\> |
+
+#### Returns
+
+[`TransactionContext`](transaction-context)
+
+## Accessors
+
+### mode
+
+#### Get Signature
+
+```ts
+get mode(): ResolvedTransactionMode
+```
+
+Get the transaction mode.
+
+##### Returns
+
+[`ResolvedTransactionMode`](../type-aliases/resolved-transaction-mode)
+
+Get the current transaction mode.
+
+#### Implementation of
+
+[`ITransactionContext`](../interfaces/i-transaction-context).[`mode`](../interfaces/i-transaction-context#mode)
+
+***
+
+### mutationCount
+
+#### Get Signature
+
+```ts
+get mutationCount(): number
+```
+
+Get the current mutation count.
+
+##### Returns
+
+`number`
+
+Get mutation count so far.
+
+#### Implementation of
+
+[`ITransactionContext`](../interfaces/i-transaction-context).[`mutationCount`](../interfaces/i-transaction-context#mutationcount)
+
+## Methods
+
+### commit()
+
+```ts
+commit(): Promise<void>
+```
+
+Commit the transaction.
+The actual commit logic is determined by the mode.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### delete()
+
+```ts
+delete(key): void
+```
+
+Stage a delete operation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ITransactionContext`](../interfaces/i-transaction-context).[`delete`](../interfaces/i-transaction-context#delete)
+
+***
+
+### getOptions()
+
+```ts
+getOptions(): Required<TransactionOptions>
+```
+
+Get transaction options.
+
+#### Returns
+
+`Required`\<[`TransactionOptions`](../interfaces/transaction-options)\>
+
+***
+
+### getReadVersions()
+
+```ts
+getReadVersions(): Map<string, number>
+```
+
+Get the read versions map (for commit).
+
+#### Returns
+
+`Map`\<`string`, `number`\>
+
+***
+
+### getStagedDeletes()
+
+```ts
+getStagedDeletes(): Set<string>
+```
+
+Get staged deletes.
+
+#### Returns
+
+`Set`\<`string`\>
+
+***
+
+### getStagedWrites()
+
+```ts
+getStagedWrites(): Map<string, unknown>
+```
+
+Get staged writes.
+
+#### Returns
+
+`Map`\<`string`, `unknown`\>
+
+***
+
+### hasPendingOperations()
+
+```ts
+hasPendingOperations(): boolean
+```
+
+Check if there are any pending operations.
+
+#### Returns
+
+`boolean`
+
+***
+
+### read()
+
+```ts
+read<V>(key): Promise<V>
+```
+
+Read a value within the transaction.
+Tracks the version for conflict detection in optimistic mode.
+
+#### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+#### Implementation of
+
+[`ITransactionContext`](../interfaces/i-transaction-context).[`read`](../interfaces/i-transaction-context#read)
+
+***
+
+### rollback()
+
+```ts
+rollback(): void
+```
+
+Rollback the transaction (discard staged operations).
+
+#### Returns
+
+`void`
+
+***
+
+### set()
+
+```ts
+set(key, value): void
+```
+
+Stage a set operation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `value` | `unknown` |
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`ITransactionContext`](../interfaces/i-transaction-context).[`set`](../interfaces/i-transaction-context#set)
+
+***
+
+### trackReadVersion()
+
+```ts
+trackReadVersion(key, version): void
+```
+
+Track a read version externally (for model operations).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `version` | `number` |
+
+#### Returns
+
+`void`

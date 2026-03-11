@@ -1,0 +1,360 @@
+---
+title: "PluginManager"
+---
+
+# Class: PluginManager
+
+Plugin Manager - handles plugin lifecycle, middleware, and extensions.
+
+## Constructors
+
+### new PluginManager()
+
+```ts
+new PluginManager(): PluginManager
+```
+
+#### Returns
+
+[`PluginManager`](plugin-manager)
+
+## Methods
+
+### applyPendingMarks()
+
+```ts
+applyPendingMarks(model): void
+```
+
+Apply pending model marks to a newly registered model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `model` | [`FlashcoreModel`](flashcore-model)\<\{ `id`: `string`; \}\> |
+
+#### Returns
+
+`void`
+
+***
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all plugins (for testing).
+
+#### Returns
+
+`void`
+
+***
+
+### getAllClientExtensions()
+
+```ts
+getAllClientExtensions(): Record<string, Record<string, unknown>>
+```
+
+Get all client extensions (for Flashcore.$).
+
+#### Returns
+
+`Record`\<`string`, `Record`\<`string`, `unknown`\>\>
+
+***
+
+### getClientExtensions()
+
+```ts
+getClientExtensions(name): Record<string, unknown>
+```
+
+Get client extensions for a plugin.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+***
+
+### getCustomIndexes()
+
+```ts
+getCustomIndexes(model): {
+  field: string;
+  indexType: string;
+  provider: IndexProvider<unknown>;
+ }[]
+```
+
+Get custom indexes registered for a model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `model` | `string` |
+
+#### Returns
+
+\{
+  `field`: `string`;
+  `indexType`: `string`;
+  `provider`: [`IndexProvider`](../interfaces/index-provider)\<`unknown`\>;
+ \}[]
+
+***
+
+### getIndexProvider()
+
+```ts
+getIndexProvider(indexType): IndexProvider<unknown>
+```
+
+Get an index provider by type.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `indexType` | `string` |
+
+#### Returns
+
+[`IndexProvider`](../interfaces/index-provider)\<`unknown`\>
+
+***
+
+### getMiddlewareChain()
+
+```ts
+getMiddlewareChain<Op>(operation): {
+  fn: MiddlewareFn<Op>;
+  plugin: PluginContext;
+ }[]
+```
+
+Get middleware chain for an operation.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `operation` | `Op` |
+
+#### Returns
+
+\{
+  `fn`: [`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\>;
+  `plugin`: [`PluginContext`](../interfaces/plugin-context);
+ \}[]
+
+***
+
+### getModelExtensions()
+
+```ts
+getModelExtensions(): Record<string, unknown>
+```
+
+Get model extensions from all plugins.
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+***
+
+### getPluginContext()
+
+```ts
+getPluginContext(name): PluginContext
+```
+
+Get plugin context by name.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`PluginContext`](../interfaces/plugin-context)
+
+***
+
+### getPluginNames()
+
+```ts
+getPluginNames(): string[]
+```
+
+Get all registered plugin names.
+
+#### Returns
+
+`string`[]
+
+***
+
+### getQueryOperator()
+
+```ts
+getQueryOperator(operator): {
+  context: PluginContext;
+  fn: QueryOperatorFn;
+}
+```
+
+Get a query operator.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `operator` | `string` |
+
+#### Returns
+
+```ts
+{
+  context: PluginContext;
+  fn: QueryOperatorFn;
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="context"></a> `context` | [`PluginContext`](../interfaces/plugin-context) |
+| <a id="fn"></a> `fn` | [`QueryOperatorFn`](../type-aliases/query-operator-fn) |
+
+***
+
+### hasMiddleware()
+
+```ts
+hasMiddleware(operation): boolean
+```
+
+Check if an operation has middleware.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `operation` | [`OperationType`](../type-aliases/operation-type) |
+
+#### Returns
+
+`boolean`
+
+***
+
+### init()
+
+```ts
+init(options): void
+```
+
+Initialize the plugin manager with model access functions.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | \{ `getModel`: \<`T`\>(`name`) =\> [`FlashcoreModel`](flashcore-model)\<`T`\>; `models`: `Map`\<`string`, [`FlashcoreModel`](flashcore-model)\<\{ `id`: `string`; \}\>\>; `registerModel`: \<`T`\>(`name`, `schema`) =\> [`FlashcoreModel`](flashcore-model)\<`T`\>; \} |
+| `options.getModel` | \<`T`\>(`name`) =\> [`FlashcoreModel`](flashcore-model)\<`T`\> |
+| `options.models` | `Map`\<`string`, [`FlashcoreModel`](flashcore-model)\<\{ `id`: `string`; \}\>\> |
+| `options.registerModel` | \<`T`\>(`name`, `schema`) =\> [`FlashcoreModel`](flashcore-model)\<`T`\> |
+
+#### Returns
+
+`void`
+
+***
+
+### register()
+
+```ts
+register(plugin): void
+```
+
+Register a plugin.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `plugin` | [`FlashcorePluginDefinition`](../interfaces/flashcore-plugin-definition)\<`Record`\<`string`, `unknown`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, `unknown`\>\> |
+
+#### Returns
+
+`void`
+
+***
+
+### setup()
+
+```ts
+setup(): Promise<void>
+```
+
+Run setup() for all registered plugins.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### setupPlugin()
+
+```ts
+setupPlugin(plugin): Promise<void>
+```
+
+Run setup() for a single plugin.
+Used for runtime plugin registration via Flashcore.extend().
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `plugin` | [`FlashcorePluginDefinition`](../interfaces/flashcore-plugin-definition)\<`Record`\<`string`, `unknown`\>, `Record`\<`string`, `unknown`\>, `Record`\<`string`, `unknown`\>\> |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### shutdown()
+
+```ts
+shutdown(): Promise<void>
+```
+
+Run shutdown() for all registered plugins.
+
+#### Returns
+
+`Promise`\<`void`\>

@@ -1,0 +1,468 @@
+---
+title: "ChunkManager"
+---
+
+# Class: ChunkManager
+
+Chunk manager for a single model.
+
+Handles loading, saving, and assigning chunks with:
+- LRU cache eviction
+- Size-aware chunk selection
+- Support for large record segmentation
+
+## Constructors
+
+### new ChunkManager()
+
+```ts
+new ChunkManager(options): ChunkManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options` | `ChunkManagerOptions` |
+
+#### Returns
+
+[`ChunkManager`](chunk-manager)
+
+## Methods
+
+### buildSegmentKey()
+
+```ts
+buildSegmentKey(recordId, segmentIndex): string
+```
+
+Build the storage key for a record segment.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `recordId` | `string` |
+| `segmentIndex` | `number` |
+
+#### Returns
+
+`string`
+
+***
+
+### checkRecordSize()
+
+```ts
+checkRecordSize(record): SizeCheckResult
+```
+
+Check if a record needs to be stored as segments.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `unknown` | Record to check |
+
+#### Returns
+
+`SizeCheckResult`
+
+Size check result
+
+***
+
+### clearCache()
+
+```ts
+clearCache(): void
+```
+
+Clear the chunk cache.
+
+#### Returns
+
+`void`
+
+***
+
+### deleteChunk()
+
+```ts
+deleteChunk(chunkId): Promise<void>
+```
+
+Delete a chunk from storage.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID to delete |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### deleteRecord()
+
+```ts
+deleteRecord(chunkId, recordId): Promise<boolean>
+```
+
+Delete a record from a chunk.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+| `recordId` | `string` | Record ID |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+True if record existed
+
+***
+
+### deleteSegmentedRecord()
+
+```ts
+deleteSegmentedRecord(recordId, segmentIds): Promise<void>
+```
+
+Delete all segments for a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `recordId` | `string` | Record ID |
+| `segmentIds` | `string`[] | Array of segment IDs |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### estimateRecordSize()
+
+```ts
+estimateRecordSize(record): number
+```
+
+Estimate the serialized size of a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `unknown` | Record to estimate |
+
+#### Returns
+
+`number`
+
+Estimated size in bytes
+
+***
+
+### getCacheStats()
+
+```ts
+getCacheStats(): {
+  entries: number[];
+  maxSize: number;
+  size: number;
+}
+```
+
+Get cache statistics for debugging/metrics.
+
+#### Returns
+
+```ts
+{
+  entries: number[];
+  maxSize: number;
+  size: number;
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="entries"></a> `entries` | `number`[] |
+| <a id="maxsize"></a> `maxSize` | `number` |
+| <a id="size"></a> `size` | `number` |
+
+***
+
+### getMaxChunkSize()
+
+```ts
+getMaxChunkSize(): number
+```
+
+Get the max chunk size.
+
+#### Returns
+
+`number`
+
+***
+
+### getMaxRecordsPerChunk()
+
+```ts
+getMaxRecordsPerChunk(): number
+```
+
+Get the max records per chunk.
+
+#### Returns
+
+`number`
+
+***
+
+### getRecord()
+
+```ts
+getRecord(chunkId, recordId): Promise<unknown>
+```
+
+Get a record from a chunk.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+| `recordId` | `string` | Record ID |
+
+#### Returns
+
+`Promise`\<`unknown`\>
+
+Record or undefined
+
+***
+
+### invalidateChunk()
+
+```ts
+invalidateChunk(chunkId): void
+```
+
+Invalidate a specific chunk from cache.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID to invalidate |
+
+#### Returns
+
+`void`
+
+***
+
+### loadChunk()
+
+```ts
+loadChunk(chunkId): Promise<ChunkData>
+```
+
+Load a chunk from storage.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID to load |
+
+#### Returns
+
+`Promise`\<[`ChunkData`](../type-aliases/chunk-data)\>
+
+Chunk data or empty object if not found
+
+***
+
+### loadSegmentedRecord()
+
+```ts
+loadSegmentedRecord(recordId, segmentIds): Promise<unknown>
+```
+
+Load a segmented record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `recordId` | `string` | Record ID |
+| `segmentIds` | `string`[] | Array of segment IDs |
+
+#### Returns
+
+`Promise`\<`unknown`\>
+
+Reconstructed record
+
+***
+
+### saveChunk()
+
+```ts
+saveChunk(chunkId, data): Promise<void>
+```
+
+Save a chunk to storage.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+| `data` | [`ChunkData`](../type-aliases/chunk-data) | Chunk data |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### saveChunkWithCAS()
+
+```ts
+saveChunkWithCAS(
+   chunkId, 
+   data, 
+expectedData?): Promise<void>
+```
+
+Save a chunk with CAS (compare-and-swap) if available.
+Falls back to regular save if CAS is not supported.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+| `data` | [`ChunkData`](../type-aliases/chunk-data) | Chunk data |
+| `expectedData`? | [`ChunkData`](../type-aliases/chunk-data) | Expected current data (for CAS) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
+
+TransactionConflictError if CAS fails
+
+***
+
+### saveSegmentedRecord()
+
+```ts
+saveSegmentedRecord(recordId, record): Promise<string[]>
+```
+
+Save a large record as segments.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `recordId` | `string` | Record ID |
+| `record` | `unknown` | Record data |
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+Array of segment IDs (as strings, "0", "1", ...)
+
+***
+
+### selectChunkForInsert()
+
+```ts
+selectChunkForInsert(catalog, recordSize?): number
+```
+
+Select a chunk for inserting a new record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `catalog` | [`Catalog`](catalog) | Current catalog |
+| `recordSize`? | `number` | Estimated size of the new record |
+
+#### Returns
+
+`number`
+
+Chunk ID to use, or -1 if record needs segmentation
+
+***
+
+### setRecord()
+
+```ts
+setRecord(
+   chunkId, 
+   recordId, 
+record): Promise<void>
+```
+
+Set a record in a chunk.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+| `recordId` | `string` | Record ID |
+| `record` | `unknown` | Record data |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### updateSegmentedRecord()
+
+```ts
+updateSegmentedRecord(
+   recordId, 
+   oldSegmentIds, 
+record): Promise<string[]>
+```
+
+Update a segmented record (delete old segments, write new ones).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `recordId` | `string` | Record ID |
+| `oldSegmentIds` | `string`[] | Old segment IDs to delete |
+| `record` | `unknown` | New record data |
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+New segment IDs

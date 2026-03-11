@@ -1,0 +1,57 @@
+---
+title: "RelationField"
+---
+
+# Class: RelationField
+
+Relation field builder for model relationships.
+
+## Constructors
+
+### new RelationField()
+
+```ts
+new RelationField(
+   type, 
+   model, 
+   foreignKey?): RelationField
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | [`RelationType`](../type-aliases/relation-type) |
+| `model` | `string` |
+| `foreignKey`? | `string` |
+
+#### Returns
+
+[`RelationField`](relation-field)
+
+## Properties
+
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="_def"></a> `_def` | `readonly` | [`RelationDef`](../interfaces/relation-def) |
+| <a id="_isrelation"></a> `_isRelation` | `readonly` | `true` |
+
+## Methods
+
+### onDelete()
+
+```ts
+onDelete(action): this
+```
+
+Set the delete behavior for this relation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `action` | [`OnDeleteAction`](../type-aliases/on-delete-action) |
+
+#### Returns
+
+`this`

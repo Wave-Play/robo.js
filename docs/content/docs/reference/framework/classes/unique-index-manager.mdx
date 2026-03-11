@@ -1,0 +1,151 @@
+---
+title: "UniqueIndexManager"
+---
+
+# Class: UniqueIndexManager
+
+Manages unique constraints for a model.
+
+Uses adapter setIfNotExists for race-free constraints when available,
+otherwise falls back to check-then-set (embedded mode only).
+
+## Constructors
+
+### new UniqueIndexManager()
+
+```ts
+new UniqueIndexManager(adapter): UniqueIndexManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+#### Returns
+
+[`UniqueIndexManager`](unique-index-manager)
+
+## Methods
+
+### acquire()
+
+```ts
+acquire(
+   options, 
+   value, 
+recordId): Promise<void>
+```
+
+Acquire a unique constraint for a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`UniqueConstraintOptions`](../interfaces/unique-constraint-options) | Model/field options |
+| `value` | `unknown` | The unique field value |
+| `recordId` | `string` | The record ID claiming this value |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
+
+UniqueConstraintError if value is already taken
+
+***
+
+### exists()
+
+```ts
+exists(options, value): Promise<boolean>
+```
+
+Check if a unique value exists.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`UniqueConstraintOptions`](../interfaces/unique-constraint-options) | Model/field options |
+| `value` | `unknown` | The unique field value |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+True if value exists
+
+***
+
+### lookup()
+
+```ts
+lookup(options, value): Promise<string>
+```
+
+Look up the record ID for a unique value.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`UniqueConstraintOptions`](../interfaces/unique-constraint-options) | Model/field options |
+| `value` | `unknown` | The unique field value |
+
+#### Returns
+
+`Promise`\<`string`\>
+
+Record ID or null if not found
+
+***
+
+### release()
+
+```ts
+release(options, value): Promise<void>
+```
+
+Release a unique constraint.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`UniqueConstraintOptions`](../interfaces/unique-constraint-options) | Model/field options |
+| `value` | `unknown` | The unique field value to release |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### update()
+
+```ts
+update(
+   options, 
+   oldValue, 
+   newValue, 
+recordId): Promise<void>
+```
+
+Update a unique constraint (release old, acquire new).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`UniqueConstraintOptions`](../interfaces/unique-constraint-options) | Model/field options |
+| `oldValue` | `unknown` | The old unique field value |
+| `newValue` | `unknown` | The new unique field value |
+| `recordId` | `string` | The record ID |
+
+#### Returns
+
+`Promise`\<`void`\>

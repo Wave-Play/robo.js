@@ -1,0 +1,45 @@
+---
+title: "ValidationError"
+---
+
+# Class: ValidationError
+
+Thrown when input validation fails (schema validation, type checking, required fields).
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new ValidationError()
+
+```ts
+new ValidationError(message, options?): ValidationError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `field`: `string`; `value`: `unknown`; \} |
+| `options.cause`? | `Error` |
+| `options.field`? | `string` |
+| `options.value`? | `unknown` |
+
+#### Returns
+
+[`ValidationError`](validation-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="field-1"></a> `field?` | `readonly` | `string` | - |
+| <a id="value-1"></a> `value?` | `readonly` | `unknown` | - |

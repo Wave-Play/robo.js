@@ -1,0 +1,517 @@
+---
+title: "EncryptionAdapter<K, V>"
+---
+
+# Class: EncryptionAdapter\<K, V\>
+
+Encryption wrapper for adapters.
+
+Uses AES-256-GCM (authenticated encryption) by default.
+Each value gets a unique random IV for security.
+
+## Extends
+
+- [`AdapterWrapper`](adapter-wrapper)\<`K`, `V`\>
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Constructors
+
+### new EncryptionAdapter()
+
+```ts
+new EncryptionAdapter<K, V>(adapter, options): EncryptionAdapter<K, V>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `options` | [`EncryptionOptions`](../interfaces/encryption-options) |
+
+#### Returns
+
+[`EncryptionAdapter`](encryption-adapter)\<`K`, `V`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`constructor`](adapter-wrapper#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| <a id="name"></a> `name` | `readonly` | `"EncryptionAdapter"` | `'EncryptionAdapter'` | Human-readable name for this wrapper. Subclasses should override this. | [`AdapterWrapper`](adapter-wrapper).[`name`](adapter-wrapper#name) | - |
+| <a id="next"></a> `next` | `readonly` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> | `undefined` | - | - | [`AdapterWrapper`](adapter-wrapper).[`next`](adapter-wrapper#next-1) |
+
+## Accessors
+
+### atomicBatch
+
+#### Get Signature
+
+```ts
+get atomicBatch(): (ops) => void | Promise<void>
+```
+
+Atomic batch operations.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ops` | [`BatchOperation`](../type-aliases/batch-operation)\<`K`, `V`\>[] |
+
+###### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`atomicBatch`](adapter-wrapper#atomicbatch)
+
+***
+
+### compareAndSwap
+
+#### Get Signature
+
+```ts
+get compareAndSwap(): (key, expected, next) => boolean | Promise<boolean>
+```
+
+Compare and swap.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `expected` | `V` |
+| `next` | `V` |
+
+###### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`compareAndSwap`](adapter-wrapper#compareandswap)
+
+***
+
+### maxValueSize
+
+#### Get Signature
+
+```ts
+get maxValueSize(): number
+```
+
+Maximum value size.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`number`
+
+Maximum size in bytes for a single value.
+Used for chunk sizing and WAL segmentation.
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`maxValueSize`](adapter-wrapper#maxvaluesize)
+
+***
+
+### scan
+
+#### Get Signature
+
+```ts
+get scan(): (prefix) => 
+  | K[]
+  | Promise<K[]>
+  | AsyncIterable<K, any, any>
+| Promise<AsyncIterable<K, any, any>>
+```
+
+Scan for keys with a prefix.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `prefix` | `K` |
+
+###### Returns
+
+  \| `K`[]
+  \| `Promise`\<`K`[]\>
+  \| `AsyncIterable`\<`K`, `any`, `any`\>
+  \| `Promise`\<`AsyncIterable`\<`K`, `any`, `any`\>\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`scan`](adapter-wrapper#scan)
+
+***
+
+### setIfNotExists
+
+#### Get Signature
+
+```ts
+get setIfNotExists(): (key, value) => boolean | Promise<boolean>
+```
+
+Set if not exists.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+###### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`setIfNotExists`](adapter-wrapper#setifnotexists)
+
+***
+
+### transaction
+
+#### Get Signature
+
+```ts
+get transaction(): (fn) => Promise<void>
+```
+
+Native transaction API.
+Propagates from underlying adapter if available.
+
+##### Returns
+
+`Function`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `fn` | (`tx`) =\> `Promise`\<`void`\> |
+
+###### Returns
+
+`Promise`\<`void`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`transaction`](adapter-wrapper#transaction)
+
+## Methods
+
+### capabilities()?
+
+```ts
+optional capabilities(): Partial<AdapterCapabilitiesReport>
+```
+
+Extended capabilities.
+Propagates from underlying adapter if available.
+
+#### Returns
+
+`Partial`\<[`AdapterCapabilitiesReport`](../interfaces/adapter-capabilities-report)\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`capabilities`](adapter-wrapper#capabilities)
+
+***
+
+### clear()
+
+```ts
+clear(): boolean | void | Promise<void> | Promise<boolean>
+```
+
+Clear all data.
+
+#### Returns
+
+`boolean` \| `void` \| `Promise`\<`void`\> \| `Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`clear`](adapter-wrapper#clear)
+
+***
+
+### delete()
+
+```ts
+delete(key): boolean | Promise<boolean>
+```
+
+Delete a key.
+Returns true if the key existed and was deleted.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`delete`](adapter-wrapper#delete)
+
+***
+
+### get()
+
+```ts
+get(key): Promise<V>
+```
+
+Get a value by key.
+Returns undefined if the key does not exist.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`get`](adapter-wrapper#get)
+
+***
+
+### getConfig()
+
+```ts
+getConfig(): {
+  algorithm: "aes-256-gcm" | "aes-256-cbc";
+}
+```
+
+Get the current encryption configuration.
+
+#### Returns
+
+```ts
+{
+  algorithm: "aes-256-gcm" | "aes-256-cbc";
+}
+```
+
+| Name | Type |
+| ------ | ------ |
+| <a id="algorithm"></a> `algorithm` | `"aes-256-gcm"` \| `"aes-256-cbc"` |
+
+***
+
+### getInnermostAdapter()
+
+```ts
+protected getInnermostAdapter(): FlashcoreAdapter<K, V>
+```
+
+Get the innermost adapter by unwrapping all wrappers.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`getInnermostAdapter`](adapter-wrapper#getinnermostadapter)
+
+***
+
+### getWrappedAdapter()
+
+```ts
+protected getWrappedAdapter(): FlashcoreAdapter<K, V>
+```
+
+Get the underlying (wrapped) adapter.
+
+#### Returns
+
+[`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`getWrappedAdapter`](adapter-wrapper#getwrappedadapter)
+
+***
+
+### has()
+
+```ts
+has(key): boolean | Promise<boolean>
+```
+
+Check if a key exists.
+Must return true for stored falsy values (0, false, '', null).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`boolean` \| `Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`has`](adapter-wrapper#has)
+
+***
+
+### init()?
+
+```ts
+optional init(): void | Promise<void>
+```
+
+Initialize the adapter (e.g., connect, create directories).
+Called once during Flashcore.$.init().
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`init`](adapter-wrapper#init)
+
+***
+
+### isEncrypted()
+
+```ts
+isEncrypted(stored): boolean
+```
+
+Check if a stored value is encrypted.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `stored` | `unknown` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### reEncrypt()
+
+```ts
+reEncrypt(key, newAdapter): Promise<boolean>
+```
+
+Re-encrypt a value with a new key.
+Useful for key rotation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `newAdapter` | [`EncryptionAdapter`](encryption-adapter)\<`K`, `V`\> |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### set()
+
+```ts
+set(key, value): Promise<boolean>
+```
+
+Set a key-value pair.
+Returns true if the operation succeeded.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Overrides
+
+[`AdapterWrapper`](adapter-wrapper).[`set`](adapter-wrapper#set)
+
+***
+
+### shutdown()?
+
+```ts
+optional shutdown(): void | Promise<void>
+```
+
+Shutdown the adapter (e.g., close connections).
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+#### Inherited from
+
+[`AdapterWrapper`](adapter-wrapper).[`shutdown`](adapter-wrapper#shutdown)

@@ -1,0 +1,45 @@
+---
+title: "MigrationError"
+---
+
+# Class: MigrationError
+
+Thrown when a migration fails.
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new MigrationError()
+
+```ts
+new MigrationError(message, options?): MigrationError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `migrationName`: `string`; `phase`: `"up"` \| `"down"` \| `"lock"`; \} |
+| `options.cause`? | `Error` |
+| `options.migrationName`? | `string` |
+| `options.phase`? | `"up"` \| `"down"` \| `"lock"` |
+
+#### Returns
+
+[`MigrationError`](migration-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="migrationname-1"></a> `migrationName?` | `readonly` | `string` | - |
+| <a id="phase-1"></a> `phase?` | `readonly` | `"up"` \| `"down"` \| `"lock"` | - |

@@ -1,0 +1,165 @@
+---
+title: "IntegrityChecker"
+---
+
+# Class: IntegrityChecker
+
+Integrity Checker.
+
+Validates derived index structures against authoritative data.
+
+## Constructors
+
+### new IntegrityChecker()
+
+```ts
+new IntegrityChecker(adapter): IntegrityChecker
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+#### Returns
+
+[`IntegrityChecker`](integrity-checker)
+
+## Methods
+
+### checkAll()
+
+```ts
+checkAll(
+   modelName, 
+   catalog, 
+options?): Promise<IntegrityReport>
+```
+
+Check all integrity aspects of a model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `options`? | [`IntegrityCheckOptions`](../interfaces/integrity-check-options) & \{ `filter`: [`CuckooFilter`](cuckoo-filter); `namespace`: `string`; `sortedIndexes`: `Map`\<`string`, [`SortedIndex`](sorted-index)\>; `uniqueFields`: `string`[]; \} |
+
+#### Returns
+
+`Promise`\<[`IntegrityReport`](../interfaces/integrity-report)\>
+
+***
+
+### checkFilter()
+
+```ts
+checkFilter(
+   catalog, 
+   filter, 
+options?): Promise<FilterIntegrityResult>
+```
+
+Check filter integrity against catalog.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `catalog` | [`Catalog`](catalog) |
+| `filter` | [`CuckooFilter`](cuckoo-filter) |
+| `options`? | \{ `sampleSize`: `number`; \} |
+| `options.sampleSize`? | `number` |
+
+#### Returns
+
+`Promise`\<[`FilterIntegrityResult`](../interfaces/filter-integrity-result)\>
+
+***
+
+### checkSortedIndex()
+
+```ts
+checkSortedIndex(
+   modelName, 
+   catalog, 
+   field, 
+   index, 
+namespace?): Promise<IndexIntegrityResult>
+```
+
+Check sorted index integrity against records.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `field` | `string` |
+| `index` | [`SortedIndex`](sorted-index) |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<[`IndexIntegrityResult`](../interfaces/index-integrity-result)\>
+
+***
+
+### checkUniqueIndexes()
+
+```ts
+checkUniqueIndexes(
+   modelName, 
+   uniqueFields, 
+namespace?): Promise<UniqueIntegrityResult>
+```
+
+Check unique index integrity.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `uniqueFields` | `string`[] |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<[`UniqueIntegrityResult`](../interfaces/unique-integrity-result)\>
+
+***
+
+### quickCheck()
+
+```ts
+quickCheck(
+   modelName, 
+   catalog, 
+   filter?, 
+   namespace?): Promise<{
+  healthy: boolean;
+  issues: string[];
+}>
+```
+
+Quick health check (samples only).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelName` | `string` |
+| `catalog` | [`Catalog`](catalog) |
+| `filter`? | [`CuckooFilter`](cuckoo-filter) |
+| `namespace`? | `string` |
+
+#### Returns
+
+`Promise`\<\{
+  `healthy`: `boolean`;
+  `issues`: `string`[];
+ \}\>

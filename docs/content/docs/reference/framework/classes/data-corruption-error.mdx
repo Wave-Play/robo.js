@@ -1,0 +1,47 @@
+---
+title: "DataCorruptionError"
+---
+
+# Class: DataCorruptionError
+
+Thrown when data corruption is detected (malformed chunk, catalog mismatch).
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new DataCorruptionError()
+
+```ts
+new DataCorruptionError(message, options?): DataCorruptionError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `model`: `string`; `repairGuidance`: `string`; `structure`: `"wal"` \| `"chunk"` \| `"catalog"` \| `"index"` \| `"filter"`; \} |
+| `options.cause`? | `Error` |
+| `options.model`? | `string` |
+| `options.repairGuidance`? | `string` |
+| `options.structure`? | `"wal"` \| `"chunk"` \| `"catalog"` \| `"index"` \| `"filter"` |
+
+#### Returns
+
+[`DataCorruptionError`](data-corruption-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="model-1"></a> `model?` | `readonly` | `string` | - |
+| <a id="repairguidance-1"></a> `repairGuidance?` | `readonly` | `string` | - |
+| <a id="structure-1"></a> `structure?` | `readonly` | `"wal"` \| `"chunk"` \| `"catalog"` \| `"index"` \| `"filter"` | - |

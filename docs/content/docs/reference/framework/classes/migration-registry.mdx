@@ -1,0 +1,127 @@
+---
+title: "MigrationRegistry"
+---
+
+# Class: MigrationRegistry
+
+Migration registry for discovered migrations.
+
+Used internally to collect migrations from the filesystem.
+
+## Constructors
+
+### new MigrationRegistry()
+
+```ts
+new MigrationRegistry(): MigrationRegistry
+```
+
+#### Returns
+
+[`MigrationRegistry`](migration-registry)
+
+## Accessors
+
+### size
+
+#### Get Signature
+
+```ts
+get size(): number
+```
+
+Get the number of registered migrations.
+
+##### Returns
+
+`number`
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all registered migrations.
+
+#### Returns
+
+`void`
+
+***
+
+### get()
+
+```ts
+get(name): RegisteredMigration
+```
+
+Get a specific migration by name.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`RegisteredMigration`](../interfaces/registered-migration)
+
+***
+
+### getAll()
+
+```ts
+getAll(): RegisteredMigration[]
+```
+
+Get all registered migrations in order.
+
+Migrations are sorted by name (typically timestamp-prefixed).
+
+#### Returns
+
+[`RegisteredMigration`](../interfaces/registered-migration)[]
+
+***
+
+### has()
+
+```ts
+has(name): boolean
+```
+
+Check if a migration is registered.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### register()
+
+```ts
+register(migration): void
+```
+
+Register a migration.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `migration` | [`RegisteredMigration`](../interfaces/registered-migration) | Registered migration |
+
+#### Returns
+
+`void`

@@ -1,0 +1,235 @@
+---
+title: "RecordValidator"
+---
+
+# Class: RecordValidator
+
+Record validator for schema-based validation.
+
+## Constructors
+
+### new RecordValidator()
+
+```ts
+new RecordValidator(schema): RecordValidator
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) |
+
+#### Returns
+
+[`RecordValidator`](record-validator)
+
+## Methods
+
+### validateBoolean()
+
+```ts
+validateBoolean(value): boolean
+```
+
+Validate boolean value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### validateCreate()
+
+```ts
+validateCreate(data): ValidationResult
+```
+
+Validate data for create operation.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `data` | `unknown` | Input data |
+
+#### Returns
+
+[`ValidationResult`](../interfaces/validation-result)
+
+Validation result
+
+***
+
+### validateDate()
+
+```ts
+validateDate(value): boolean
+```
+
+Validate date value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### validateEnum()
+
+```ts
+validateEnum(value, allowed): boolean
+```
+
+Validate enum value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+| `allowed` | `string`[] |
+
+#### Returns
+
+`boolean`
+
+***
+
+### validateField()
+
+```ts
+validateField(
+   name, 
+   value, 
+   field): SchemaValidationError[]
+```
+
+Validate a single field value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `value` | `unknown` |
+| `field` | [`NormalizedField`](../interfaces/normalized-field) |
+
+#### Returns
+
+[`SchemaValidationError`](../interfaces/schema-validation-error)[]
+
+***
+
+### validateId()
+
+```ts
+validateId(id): SchemaValidationError[]
+```
+
+Validate a record ID.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `unknown` |
+
+#### Returns
+
+[`SchemaValidationError`](../interfaces/schema-validation-error)[]
+
+***
+
+### validateJson()
+
+```ts
+validateJson(value): boolean
+```
+
+Validate JSON value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### validateNumber()
+
+```ts
+validateNumber(value): boolean
+```
+
+Validate number value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### validateString()
+
+```ts
+validateString(value): boolean
+```
+
+Validate string value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### validateUpdate()
+
+```ts
+validateUpdate(data): ValidationResult
+```
+
+Validate data for update operation.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `data` | `unknown` | Input data |
+
+#### Returns
+
+[`ValidationResult`](../interfaces/validation-result)
+
+Validation result

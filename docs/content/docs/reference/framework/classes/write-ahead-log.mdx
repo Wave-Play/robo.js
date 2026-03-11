@@ -1,0 +1,271 @@
+---
+title: "WriteAheadLog"
+---
+
+# Class: WriteAheadLog
+
+Write-Ahead Log manager.
+
+Handles WAL entry creation, phase tracking, and cleanup.
+WAL is only enabled when the adapter supports scan.
+
+## Constructors
+
+### new WriteAheadLog()
+
+```ts
+new WriteAheadLog(adapter, config?): WriteAheadLog
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `config`? | [`WALConfig`](../interfaces/wal-config) |
+
+#### Returns
+
+[`WriteAheadLog`](write-ahead-log)
+
+## Accessors
+
+### maxEntrySize
+
+#### Get Signature
+
+```ts
+get maxEntrySize(): number
+```
+
+Get the max entry size.
+
+##### Returns
+
+`number`
+
+***
+
+### staleThresholdMs
+
+#### Get Signature
+
+```ts
+get staleThresholdMs(): number
+```
+
+Get the stale threshold.
+
+##### Returns
+
+`number`
+
+## Methods
+
+### begin()
+
+```ts
+begin(input): Promise<string>
+```
+
+Begin a new WAL entry.
+
+Creates a new entry with phase='pending' and persists it.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `input` | [`WALEntryInput`](../type-aliases/wal-entry-input) | Entry input (without id, timestamp, phase) |
+
+#### Returns
+
+`Promise`\<`string`\>
+
+WAL entry ID
+
+#### Throws
+
+Error if WAL is disabled
+
+***
+
+### complete()
+
+```ts
+complete(walId): Promise<void>
+```
+
+Mark a WAL entry as complete and delete it.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `walId` | `string` | WAL entry ID |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### deleteEntry()
+
+```ts
+deleteEntry(walId): Promise<void>
+```
+
+Delete a WAL entry and all its segments.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `walId` | `string` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getAllEntryKeys()
+
+```ts
+getAllEntryKeys(): Promise<string[]>
+```
+
+Get all WAL entry keys (for recovery).
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+Array of WAL entry keys
+
+***
+
+### isEnabled()
+
+```ts
+isEnabled(): boolean
+```
+
+Check if WAL is enabled for this adapter.
+WAL requires scan capability.
+
+#### Returns
+
+`boolean`
+
+***
+
+### isStale()
+
+```ts
+isStale(entry): boolean
+```
+
+Check if an entry is stale (old pending entry that should be rolled back).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `entry` | [`WALEntry`](../interfaces/wal-entry) |
+
+#### Returns
+
+`boolean`
+
+***
+
+### markPhase()
+
+```ts
+markPhase(walId, phase): Promise<void>
+```
+
+Mark a WAL entry as having reached a phase.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `walId` | `string` | WAL entry ID |
+| `phase` | [`WalPhase`](../type-aliases/wal-phase) | New phase |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### readEntry()
+
+```ts
+readEntry(walId): Promise<WALEntry>
+```
+
+Read a WAL entry by ID.
+
+Handles both inline and segmented entries.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `walId` | `string` | WAL entry ID |
+
+#### Returns
+
+`Promise`\<[`WALEntry`](../interfaces/wal-entry)\>
+
+Entry or null if not found
+
+***
+
+### shouldReplay()
+
+```ts
+shouldReplay(entry): boolean
+```
+
+Determine if an entry should be replayed or rolled back.
+
+- If phase \> 'pending', always replay (authoritative writes started)
+- If phase == 'pending' and stale, rollback
+- If phase == 'pending' and recent, replay (may have crashed during WAL write)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `entry` | [`WALEntry`](../interfaces/wal-entry) |
+
+#### Returns
+
+`boolean`
+
+***
+
+### writeEntry()
+
+```ts
+writeEntry(entry): Promise<void>
+```
+
+Write a WAL entry.
+
+Handles segmentation for large entries.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `entry` | [`WALEntry`](../interfaces/wal-entry) |
+
+#### Returns
+
+`Promise`\<`void`\>

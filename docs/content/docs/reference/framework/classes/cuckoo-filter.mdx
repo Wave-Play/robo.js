@@ -1,0 +1,262 @@
+---
+title: "CuckooFilter"
+---
+
+# Class: CuckooFilter
+
+Cuckoo Filter implementation with 16-bit fingerprints.
+
+Provides O(1) membership testing with support for deletion.
+False positives are possible (~0.003% at 95% load with 16-bit FP).
+False negatives are impossible (by design).
+
+Note: This implementation tracks original IDs to enable correct resize.
+This trades memory for correctness. For space-critical applications,
+use a fixed-size filter created with fromIds().
+
+## Constructors
+
+### new CuckooFilter()
+
+```ts
+new CuckooFilter(options?): CuckooFilter
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`CuckooFilterOptions`](../interfaces/cuckoo-filter-options) |
+
+#### Returns
+
+[`CuckooFilter`](cuckoo-filter)
+
+## Methods
+
+### add()
+
+```ts
+add(id): boolean
+```
+
+Add an item to the filter.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The record ID to add |
+
+#### Returns
+
+`boolean`
+
+true if added successfully, false if resize needed
+
+***
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all items from the filter.
+
+#### Returns
+
+`void`
+
+***
+
+### estimateMemoryUsage()
+
+```ts
+estimateMemoryUsage(): number
+```
+
+Estimate memory usage in bytes.
+
+#### Returns
+
+`number`
+
+***
+
+### getCapacity()
+
+```ts
+getCapacity(): number
+```
+
+Get the capacity (max items before resize).
+
+#### Returns
+
+`number`
+
+***
+
+### getCount()
+
+```ts
+getCount(): number
+```
+
+Get the number of items in the filter.
+
+#### Returns
+
+`number`
+
+***
+
+### getLoadFactor()
+
+```ts
+getLoadFactor(): number
+```
+
+Get the current load factor.
+
+#### Returns
+
+`number`
+
+***
+
+### mightContain()
+
+```ts
+mightContain(id): boolean
+```
+
+Check if an item might be in the filter.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The record ID to check |
+
+#### Returns
+
+`boolean`
+
+true if possibly present, false if definitely not present
+
+***
+
+### remove()
+
+```ts
+remove(id): boolean
+```
+
+Remove an item from the filter.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | The record ID to remove |
+
+#### Returns
+
+`boolean`
+
+true if removed, false if not found
+
+***
+
+### resize()
+
+```ts
+resize(): void
+```
+
+Resize the filter to accommodate more items.
+Doubles the number of buckets.
+
+We use tracked IDs to properly rehash all items, ensuring no false negatives
+after resize. This is the only correct way to resize a Cuckoo filter.
+
+#### Returns
+
+`void`
+
+***
+
+### serialize()
+
+```ts
+serialize(): CuckooFilterData
+```
+
+Serialize the filter for persistence.
+
+#### Returns
+
+[`CuckooFilterData`](../interfaces/cuckoo-filter-data)
+
+***
+
+### deserialize()
+
+```ts
+static deserialize(data): CuckooFilter
+```
+
+Deserialize a filter from persisted data.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `data` | [`CuckooFilterData`](../interfaces/cuckoo-filter-data) |
+
+#### Returns
+
+[`CuckooFilter`](cuckoo-filter)
+
+***
+
+### empty()
+
+```ts
+static empty(options?): CuckooFilter
+```
+
+Create an empty filter.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`CuckooFilterOptions`](../interfaces/cuckoo-filter-options) |
+
+#### Returns
+
+[`CuckooFilter`](cuckoo-filter)
+
+***
+
+### fromIds()
+
+```ts
+static fromIds(ids, options?): CuckooFilter
+```
+
+Create a filter from a set of IDs (bulk load).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ids` | `string`[] |
+| `options`? | [`CuckooFilterOptions`](../interfaces/cuckoo-filter-options) |
+
+#### Returns
+
+[`CuckooFilter`](cuckoo-filter)

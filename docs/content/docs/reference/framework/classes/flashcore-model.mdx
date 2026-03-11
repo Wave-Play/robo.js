@@ -1,0 +1,431 @@
+---
+title: "FlashcoreModel<T>"
+---
+
+# Class: FlashcoreModel\<T\>
+
+FlashcoreModel class.
+
+Provides CRUD operations for a model defined by a schema.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* \{ `id`: `string`; \} | \{ `id`: `string`; \} |
+
+## Constructors
+
+### new FlashcoreModel()
+
+```ts
+new FlashcoreModel<T>(
+   name, 
+   schemaFields, 
+   adapter, 
+options?): FlashcoreModel<T>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `schemaFields` | [`SchemaFields`](../type-aliases/schema-fields) |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `options`? | [`FlashcoreModelOptions`](../interfaces/flashcore-model-options) |
+
+#### Returns
+
+[`FlashcoreModel`](flashcore-model)\<`T`\>
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="hooks"></a> `hooks?` | `readonly` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | `undefined` | - |
+| <a id="meta"></a> `meta` | `readonly` | `Record`\<`string`, `unknown`\> | `{}` | Plugin metadata storage. |
+| <a id="name-1"></a> `name` | `readonly` | `string` | `undefined` | - |
+| <a id="namespace"></a> `namespace?` | `readonly` | `string` | `undefined` | - |
+| <a id="schema"></a> `schema` | `readonly` | [`NormalizedSchema`](../interfaces/normalized-schema) | `undefined` | - |
+
+## Methods
+
+### count()
+
+```ts
+count(args?): Promise<number>
+```
+
+Get the record count, optionally with filtering.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args`? | [`CountArgs`](../interfaces/count-args)\<`T`\> | Optional count arguments with where clause |
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Count of matching records
+
+***
+
+### create()
+
+```ts
+create(data): Promise<T>
+```
+
+Create a new record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `data` | [`CreateInput`](../type-aliases/create-input)\<`T`\> | Record data (id is auto-generated if not provided) |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Created record
+
+***
+
+### createMany()
+
+```ts
+createMany(args): Promise<CreateManyResult<T>>
+```
+
+Create multiple records atomically.
+Requires adapter with ACID support (transaction or atomicBatch).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`CreateManyArgs`](../interfaces/create-many-args)\<`T`\> | Create many arguments with data array |
+
+#### Returns
+
+`Promise`\<`CreateManyResult`\<`T`\>\>
+
+Created records array
+
+***
+
+### delete()
+
+```ts
+delete(args): Promise<T>
+```
+
+Delete a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`DeleteArgs`](../interfaces/delete-args)\<`T`\> | Delete arguments with where clause |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Deleted record or null if not found
+
+***
+
+### deleteMany()
+
+```ts
+deleteMany(args): Promise<BatchResult>
+```
+
+Delete multiple records atomically.
+Requires adapter with ACID support (transaction or atomicBatch).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`DeleteManyArgs`](../interfaces/delete-many-args)\<`T`\> | Delete many arguments with where clause |
+
+#### Returns
+
+`Promise`\<[`BatchResult`](../interfaces/batch-result)\>
+
+Batch result with count of deleted records
+
+***
+
+### findFirst()
+
+```ts
+findFirst(args?): Promise<T>
+```
+
+Find the first matching record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args`? | [`FindFirstArgs`](../interfaces/find-first-args)\<`T`\> | FindFirst arguments |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+First matching record or null
+
+***
+
+### findMany()
+
+```ts
+findMany(args?): Promise<T[]>
+```
+
+Find multiple records with filtering, ordering, and pagination.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args`? | [`FindManyArgs`](../interfaces/find-many-args)\<`T`\> | FindMany arguments |
+
+#### Returns
+
+`Promise`\<`T`[]\>
+
+Array of matching records
+
+***
+
+### findManyStream()
+
+```ts
+findManyStream(args?): AsyncGenerator<T, void, undefined>
+```
+
+Stream records for memory-efficient processing.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args`? | [`FindManyArgs`](../interfaces/find-many-args)\<`T`\> | FindMany arguments |
+
+#### Returns
+
+`AsyncGenerator`\<`T`, `void`, `undefined`\>
+
+#### Yields
+
+Records one by one
+
+***
+
+### findUnique()
+
+```ts
+findUnique(args): Promise<T>
+```
+
+Find a unique record by ID or unique field.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`FindUniqueArgs`](../interfaces/find-unique-args)\<`T`\> | Find arguments with where clause |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Found record or null
+
+***
+
+### getIndexedFields()
+
+```ts
+getIndexedFields(): string[]
+```
+
+Get indexed field names.
+
+#### Returns
+
+`string`[]
+
+***
+
+### getRelations()
+
+```ts
+getRelations(): RelationDef[]
+```
+
+Get relation definitions.
+
+#### Returns
+
+[`RelationDef`](../interfaces/relation-def)[]
+
+***
+
+### getSchema()
+
+```ts
+getSchema(): Map<string, {
+  indexed: boolean;
+  name: string;
+  optional: boolean;
+  primaryKey: boolean;
+  type: string;
+  unique: boolean;
+}>
+```
+
+Get the raw schema fields.
+
+#### Returns
+
+`Map`\<`string`, \{
+  `indexed`: `boolean`;
+  `name`: `string`;
+  `optional`: `boolean`;
+  `primaryKey`: `boolean`;
+  `type`: `string`;
+  `unique`: `boolean`;
+ \}\>
+
+***
+
+### getSchemaChecksum()
+
+```ts
+getSchemaChecksum(): string
+```
+
+Get the schema checksum.
+
+#### Returns
+
+`string`
+
+***
+
+### getUniqueFields()
+
+```ts
+getUniqueFields(): string[]
+```
+
+Get unique field names.
+
+#### Returns
+
+`string`[]
+
+***
+
+### pluginContext()
+
+```ts
+pluginContext(pluginName): PluginContext
+```
+
+Get plugin context by name.
+
+Used by plugins to access their state and methods from model operations.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `pluginName` | `string` | Name of the plugin |
+
+#### Returns
+
+[`PluginContext`](../interfaces/plugin-context)
+
+Plugin context
+
+#### Throws
+
+Error if plugin not found
+
+***
+
+### update()
+
+```ts
+update(args): Promise<T>
+```
+
+Update a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`UpdateArgs`](../interfaces/update-args)\<`T`\> | Update arguments with where and data |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Updated record or null if not found
+
+***
+
+### updateMany()
+
+```ts
+updateMany(args): Promise<BatchResult>
+```
+
+Update multiple records atomically.
+Requires adapter with ACID support (transaction or atomicBatch).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`UpdateManyArgs`](../interfaces/update-many-args)\<`T`\> | Update many arguments with where clause and data |
+
+#### Returns
+
+`Promise`\<[`BatchResult`](../interfaces/batch-result)\>
+
+Batch result with count of updated records
+
+***
+
+### upsert()
+
+```ts
+upsert(args): Promise<T>
+```
+
+Create or update a record based on unique identifier.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `args` | [`UpsertArgs`](../interfaces/upsert-args)\<`T`\> | Upsert arguments with where, create, and update data |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Created or updated record

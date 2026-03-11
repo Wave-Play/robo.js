@@ -1,0 +1,177 @@
+---
+title: "Field<Type, Optional, Custom>"
+---
+
+# Class: Field\<Type, Optional, Custom\>
+
+Field builder class with fluent modifiers.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `Type` *extends* [`FieldType`](../type-aliases/field-type) | [`FieldType`](../type-aliases/field-type) |
+| `Optional` *extends* `boolean` | `false` |
+| `Custom` | `unknown` |
+
+## Constructors
+
+### new Field()
+
+```ts
+new Field<Type, Optional, Custom>(type): Field<Type, Optional, Custom>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | `Type` |
+
+#### Returns
+
+[`Field`](field)\<`Type`, `Optional`, `Custom`\>
+
+## Properties
+
+| Property | Modifier | Type |
+| ------ | ------ | ------ |
+| <a id="_def"></a> `_def` | `readonly` | [`FieldDef`](../interfaces/field-def) |
+| <a id="_isrelation"></a> `_isRelation` | `readonly` | `false` |
+
+## Methods
+
+### default()
+
+```ts
+default(value): this
+```
+
+Set a default value for this field.
+Can be a static value or a factory function.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `InferType`\<`Type`, `Custom`\> \| () =\> `InferType`\<`Type`, `Custom`\> |
+
+#### Returns
+
+`this`
+
+***
+
+### indexed()
+
+```ts
+indexed(): this
+```
+
+Mark this field as indexed (creates sorted index).
+
+#### Returns
+
+`this`
+
+***
+
+### indexedWith()
+
+```ts
+indexedWith(type): this
+```
+
+Mark this field with custom index type(s).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | `string` \| `string`[] |
+
+#### Returns
+
+`this`
+
+***
+
+### optional()
+
+```ts
+optional(): Field<Type, true, Custom>
+```
+
+Mark this field as optional.
+
+#### Returns
+
+[`Field`](field)\<`Type`, `true`, `Custom`\>
+
+***
+
+### primaryKey()
+
+```ts
+primaryKey(): this
+```
+
+Mark this field as the primary key.
+
+#### Returns
+
+`this`
+
+***
+
+### unique()
+
+```ts
+unique(): this
+```
+
+Mark this field as unique (creates unique constraint).
+
+#### Returns
+
+`this`
+
+***
+
+### values()
+
+```ts
+values<T>(values): this
+```
+
+Set allowed enum values (for enum type).
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* `string` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `values` | `T`[] |
+
+#### Returns
+
+`this`
+
+***
+
+### version()
+
+```ts
+version(): this
+```
+
+Mark this field as a version field for optimistic locking.
+
+#### Returns
+
+`this`

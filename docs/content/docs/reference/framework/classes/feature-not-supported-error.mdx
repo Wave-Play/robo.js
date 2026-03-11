@@ -1,0 +1,45 @@
+---
+title: "FeatureNotSupportedError"
+---
+
+# Class: FeatureNotSupportedError
+
+Thrown when a feature is not supported by the current adapter configuration.
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new FeatureNotSupportedError()
+
+```ts
+new FeatureNotSupportedError(message, options?): FeatureNotSupportedError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `feature`: `string`; `requiredCapability`: `string`; \} |
+| `options.cause`? | `Error` |
+| `options.feature`? | `string` |
+| `options.requiredCapability`? | `string` |
+
+#### Returns
+
+[`FeatureNotSupportedError`](feature-not-supported-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="feature-1"></a> `feature` | `readonly` | `string` | - |
+| <a id="requiredcapability-1"></a> `requiredCapability?` | `readonly` | `string` | - |

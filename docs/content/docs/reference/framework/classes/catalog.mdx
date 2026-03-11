@@ -1,0 +1,430 @@
+---
+title: "Catalog"
+---
+
+# Class: Catalog
+
+Catalog class for managing ID -\> chunk mappings.
+
+The catalog is authoritative:
+- If a record is in the catalog, it exists
+- If a record is not in the catalog, it doesn't exist
+- Derived structures (filter, indexes) are rebuilt from catalog + chunks
+
+## Constructors
+
+### new Catalog()
+
+```ts
+new Catalog(): Catalog
+```
+
+#### Returns
+
+[`Catalog`](catalog)
+
+## Methods
+
+### \[iterator\]()
+
+```ts
+iterator: IterableIterator<CatalogEntry, any, any>
+```
+
+Iterate over all entries.
+
+#### Returns
+
+`IterableIterator`\<[`CatalogEntry`](../interfaces/catalog-entry), `any`, `any`\>
+
+***
+
+### addEntry()
+
+```ts
+addEntry(
+   id, 
+   chunkId, 
+   recordSize?): void
+```
+
+Add a regular chunked record to the catalog.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+| `chunkId` | `number` | Chunk where record is stored |
+| `recordSize`? | `number` | Optional estimated size of record in bytes |
+
+#### Returns
+
+`void`
+
+***
+
+### addSegmentedEntry()
+
+```ts
+addSegmentedEntry(id, segmentIds): void
+```
+
+Add a segmented (large) record to the catalog.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+| `segmentIds` | `string`[] | Array of segment IDs |
+
+#### Returns
+
+`void`
+
+***
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all entries.
+
+#### Returns
+
+`void`
+
+***
+
+### getAllIds()
+
+```ts
+getAllIds(): string[]
+```
+
+Get all record IDs in the catalog.
+
+#### Returns
+
+`string`[]
+
+Array of all record IDs
+
+***
+
+### getChunkCount()
+
+```ts
+getChunkCount(chunkId): number
+```
+
+Get the count of records in a specific chunk.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+
+#### Returns
+
+`number`
+
+Record count in chunk
+
+***
+
+### getChunkFor()
+
+```ts
+getChunkFor(id): number
+```
+
+Get the chunk ID for a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+
+#### Returns
+
+`number`
+
+Chunk ID or null if not found
+
+***
+
+### getChunkIds()
+
+```ts
+getChunkIds(): number[]
+```
+
+Get all chunk IDs that contain records.
+
+#### Returns
+
+`number`[]
+
+Array of chunk IDs
+
+***
+
+### getChunkSize()
+
+```ts
+getChunkSize(chunkId): number
+```
+
+Get the estimated size of a specific chunk in bytes.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+
+#### Returns
+
+`number`
+
+Estimated size in bytes
+
+***
+
+### getCount()
+
+```ts
+getCount(): number
+```
+
+Get the total count of records.
+
+#### Returns
+
+`number`
+
+Record count
+
+***
+
+### getEntry()
+
+```ts
+getEntry(id): CatalogEntry
+```
+
+Get the full entry for a record.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+
+#### Returns
+
+[`CatalogEntry`](../interfaces/catalog-entry)
+
+Catalog entry or undefined
+
+***
+
+### getSampleIds()
+
+```ts
+getSampleIds(n): string[]
+```
+
+Get sample IDs for verification purposes.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `n` | `number` | Number of samples |
+
+#### Returns
+
+`string`[]
+
+Array of sample IDs
+
+***
+
+### getSegmentedCount()
+
+```ts
+getSegmentedCount(): number
+```
+
+Get the count of segmented records.
+
+#### Returns
+
+`number`
+
+Count of segmented records
+
+***
+
+### has()
+
+```ts
+has(id): boolean
+```
+
+Check if a record exists in the catalog.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+
+#### Returns
+
+`boolean`
+
+True if exists
+
+***
+
+### ids()
+
+```ts
+ids(): IterableIterator<string, any, any>
+```
+
+Get all record IDs.
+
+#### Returns
+
+`IterableIterator`\<`string`, `any`, `any`\>
+
+Iterator of record IDs
+
+***
+
+### isSegmented()
+
+```ts
+isSegmented(id): boolean
+```
+
+Check if a record is stored as segments.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+
+#### Returns
+
+`boolean`
+
+True if record is segmented
+
+***
+
+### removeEntry()
+
+```ts
+removeEntry(id): boolean
+```
+
+Remove a record from the catalog.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID |
+
+#### Returns
+
+`boolean`
+
+True if removed
+
+***
+
+### serialize()
+
+```ts
+serialize(): CatalogData
+```
+
+Serialize catalog for storage (v2 format).
+
+#### Returns
+
+[`CatalogData`](../interfaces/catalog-data)
+
+Serialized catalog data
+
+***
+
+### setChunkSize()
+
+```ts
+setChunkSize(chunkId, size): void
+```
+
+Update the size of a chunk (useful when loading/saving chunks).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `number` | Chunk ID |
+| `size` | `number` | New size in bytes |
+
+#### Returns
+
+`void`
+
+***
+
+### deserialize()
+
+```ts
+static deserialize(data): Catalog
+```
+
+Deserialize catalog from storage.
+Supports both v1 and v2 formats (automatic migration).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `data` | [`CatalogData`](../interfaces/catalog-data) | Stored catalog data |
+
+#### Returns
+
+[`Catalog`](catalog)
+
+Catalog instance
+
+***
+
+### empty()
+
+```ts
+static empty(): Catalog
+```
+
+Create an empty catalog.
+
+#### Returns
+
+[`Catalog`](catalog)
+
+New empty catalog

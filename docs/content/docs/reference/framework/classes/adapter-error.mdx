@@ -1,0 +1,45 @@
+---
+title: "AdapterError"
+---
+
+# Class: AdapterError
+
+Thrown when an adapter operation fails.
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new AdapterError()
+
+```ts
+new AdapterError(message, options?): AdapterError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `key`: `string`; `operation`: `string`; \} |
+| `options.cause`? | `Error` |
+| `options.key`? | `string` |
+| `options.operation`? | `string` |
+
+#### Returns
+
+[`AdapterError`](adapter-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="key-1"></a> `key?` | `readonly` | `string` | - |
+| <a id="operation-1"></a> `operation` | `readonly` | `string` | - |

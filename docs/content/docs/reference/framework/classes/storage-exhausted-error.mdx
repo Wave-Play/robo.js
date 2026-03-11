@@ -1,0 +1,40 @@
+---
+title: "StorageExhaustedError"
+---
+
+# Class: StorageExhaustedError
+
+Thrown when storage is exhausted (ENOSPC, quota exceeded).
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new StorageExhaustedError()
+
+```ts
+new StorageExhaustedError(message, options?): StorageExhaustedError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | `ErrorOptions` |
+
+#### Returns
+
+[`StorageExhaustedError`](storage-exhausted-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |

@@ -1,0 +1,166 @@
+---
+title: "JunctionTableManager"
+---
+
+# Class: JunctionTableManager
+
+Junction table manager for many-to-many relationships.
+
+Provides methods to add, remove, and query junction table entries.
+
+## Constructors
+
+### new JunctionTableManager()
+
+```ts
+new JunctionTableManager(adapter, getModel): JunctionTableManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `getModel` | (`name`) =\> `unknown` |
+
+#### Returns
+
+[`JunctionTableManager`](junction-table-manager)
+
+## Methods
+
+### addRelation()
+
+```ts
+addRelation(
+   sourceModel, 
+   sourceId, 
+   targetModel, 
+targetId): Promise<void>
+```
+
+Add a relationship between two records.
+Uses compound unique constraint to prevent duplicates.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sourceModel` | `string` | Source model name |
+| `sourceId` | `string` | Source record ID |
+| `targetModel` | `string` | Target model name |
+| `targetId` | `string` | Target record ID |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
+
+UniqueConstraintError if relationship already exists
+
+***
+
+### getRelatedIds()
+
+```ts
+getRelatedIds(
+   sourceModel, 
+   sourceId, 
+targetModel): Promise<string[]>
+```
+
+Get all related IDs through a junction table.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sourceModel` | `string` | Source model name |
+| `sourceId` | `string` | Source record ID |
+| `targetModel` | `string` | Target model name |
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+Array of related record IDs
+
+***
+
+### removeAllRelations()
+
+```ts
+removeAllRelations(model, recordId): Promise<number>
+```
+
+Remove all relationships for a record (used in cascade delete).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `model` | `string` | Model name |
+| `recordId` | `string` | Record ID |
+
+#### Returns
+
+`Promise`\<`number`\>
+
+Number of relationships removed
+
+***
+
+### removeRelation()
+
+```ts
+removeRelation(
+   sourceModel, 
+   sourceId, 
+   targetModel, 
+targetId): Promise<boolean>
+```
+
+Remove a relationship between two records.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sourceModel` | `string` | Source model name |
+| `sourceId` | `string` | Source record ID |
+| `targetModel` | `string` | Target model name |
+| `targetId` | `string` | Target record ID |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+True if relationship was removed, false if it didn't exist
+
+***
+
+### setRelations()
+
+```ts
+setRelations(
+   sourceModel, 
+   sourceId, 
+   targetModel, 
+targetIds): Promise<void>
+```
+
+Set relationships to exactly the given IDs (replaces existing).
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `sourceModel` | `string` | Source model name |
+| `sourceId` | `string` | Source record ID |
+| `targetModel` | `string` | Target model name |
+| `targetIds` | `string`[] | Array of target record IDs |
+
+#### Returns
+
+`Promise`\<`void`\>

@@ -1,0 +1,54 @@
+---
+title: "ChunkLockManager"
+---
+
+# Class: ChunkLockManager
+
+Lock manager for chunk operations.
+
+Provides per-chunk locking to serialize chunk read-modify-write cycles.
+
+## Constructors
+
+### new ChunkLockManager()
+
+```ts
+new ChunkLockManager(): ChunkLockManager
+```
+
+#### Returns
+
+[`ChunkLockManager`](chunk-lock-manager)
+
+## Methods
+
+### withChunkLock()
+
+```ts
+withChunkLock<T>(
+   modelKey, 
+   chunkId, 
+fn): Promise<T>
+```
+
+Execute a function while holding the chunk lock.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelKey` | `string` | Model key |
+| `chunkId` | `number` | Chunk ID |
+| `fn` | () =\> `Promise`\<`T`\> | Function to execute |
+
+#### Returns
+
+`Promise`\<`T`\>
+
+Result of the function

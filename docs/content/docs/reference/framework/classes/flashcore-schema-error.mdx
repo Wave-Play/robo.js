@@ -1,0 +1,47 @@
+---
+title: "FlashcoreSchemaError"
+---
+
+# Class: FlashcoreSchemaError
+
+Thrown when schema validation fails on startup (breaking schema drift).
+
+## Extends
+
+- [`FlashcoreError`](flashcore-error)
+
+## Constructors
+
+### new FlashcoreSchemaError()
+
+```ts
+new FlashcoreSchemaError(message, options?): FlashcoreSchemaError
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `string` |
+| `options`? | \{ `cause`: `Error`; `cliInstructions`: `string`; `model`: `string`; `schemaChange`: `string`; \} |
+| `options.cause`? | `Error` |
+| `options.cliInstructions`? | `string` |
+| `options.model`? | `string` |
+| `options.schemaChange`? | `string` |
+
+#### Returns
+
+[`FlashcoreSchemaError`](flashcore-schema-error)
+
+#### Overrides
+
+[`FlashcoreError`](flashcore-error).[`constructor`](flashcore-error#constructors)
+
+## Properties
+
+| Property | Modifier | Type | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="cliinstructions-1"></a> `cliInstructions?` | `readonly` | `string` | - |
+| <a id="code"></a> `code` | `readonly` | `string` | [`FlashcoreError`](flashcore-error).[`code`](flashcore-error#code-1) |
+| <a id="model-1"></a> `model?` | `readonly` | `string` | - |
+| <a id="schemachange-1"></a> `schemaChange?` | `readonly` | `string` | - |

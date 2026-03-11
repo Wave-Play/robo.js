@@ -1,0 +1,133 @@
+---
+title: "MigrationLockManager"
+---
+
+# Class: MigrationLockManager
+
+Manager for migration lock acquisition and release.
+
+Uses compare-and-swap (CAS) or setIfNotExists when available
+for safe concurrent access. Falls back to check-then-set
+with a small race window for adapters without atomic support.
+
+## Constructors
+
+### new MigrationLockManager()
+
+```ts
+new MigrationLockManager(adapter, options?): MigrationLockManager
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `options`? | [`MigrationLockOptions`](../interfaces/migration-lock-options) |
+
+#### Returns
+
+[`MigrationLockManager`](migration-lock-manager)
+
+## Methods
+
+### acquire()
+
+```ts
+acquire(): Promise<LockAcquisitionResult>
+```
+
+Attempt to acquire the migration lock.
+
+Algorithm:
+1. Check for existing lock
+2. If locked and not stale, return false
+3. If stale, try atomic override (CAS if available)
+4. If no lock, use setIfNotExists if available, else check-then-set
+
+#### Returns
+
+`Promise`\<[`LockAcquisitionResult`](../interfaces/lock-acquisition-result)\>
+
+Lock acquisition result with lock ID if successful
+
+***
+
+### extend()
+
+```ts
+extend(lockId): Promise<boolean>
+```
+
+Extend the lock timeout (heartbeat).
+
+Call periodically during long-running migrations to prevent
+the lock from appearing stale.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `lockId` | `string` | Lock ID to extend |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+True if extended successfully
+
+***
+
+### forceRelease()
+
+```ts
+forceRelease(): Promise<void>
+```
+
+Force release the migration lock regardless of holder.
+
+Use with caution - only for stuck locks or CLI force-unlock.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### isLocked()
+
+```ts
+isLocked(): Promise<LockStatus>
+```
+
+Check the current lock status.
+
+#### Returns
+
+`Promise`\<[`LockStatus`](../interfaces/lock-status)\>
+
+Lock status information
+
+***
+
+### release()
+
+```ts
+release(lockId): Promise<boolean>
+```
+
+Release the migration lock.
+
+Only releases if the lock is held by the given lockId.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `lockId` | `string` | Lock ID returned from acquire() |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+True if the lock was released

@@ -1,0 +1,109 @@
+---
+title: "MigrationRunner"
+---
+
+# Class: MigrationRunner
+
+Migration runner class.
+
+Handles:
+- Lock acquisition/release
+- Pending migration discovery
+- Migration execution with status tracking
+- Rollback on failure
+- Dry-run mode
+
+## Constructors
+
+### new MigrationRunner()
+
+```ts
+new MigrationRunner(adapter, options?): MigrationRunner
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `options`? | [`MigrationRunnerOptions`](../interfaces/migration-runner-options) |
+
+#### Returns
+
+[`MigrationRunner`](migration-runner)
+
+## Methods
+
+### forceUnlock()
+
+```ts
+forceUnlock(): Promise<boolean>
+```
+
+Force unlock the migration lock.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+True if unlocked
+
+***
+
+### getStatus()
+
+```ts
+getStatus(): Promise<MigrationStatusReport>
+```
+
+Get the current migration status report.
+
+#### Returns
+
+`Promise`\<[`MigrationStatusReport`](../interfaces/migration-status-report)\>
+
+Status report with pending, completed, and failed migrations
+
+***
+
+### rollback()
+
+```ts
+rollback(migrationName): Promise<MigrationResult>
+```
+
+Roll back a specific migration.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `migrationName` | `string` | Name of migration to roll back |
+
+#### Returns
+
+`Promise`\<[`MigrationResult`](../interfaces/migration-result)\>
+
+Result of rollback attempt
+
+***
+
+### runPending()
+
+```ts
+runPending(options): Promise<MigrationResult[]>
+```
+
+Run all pending migrations.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`MigrationRunOptions`](../interfaces/migration-run-options) | Run options (dryRun, forceUnlock, target) |
+
+#### Returns
+
+`Promise`\<[`MigrationResult`](../interfaces/migration-result)[]\>
+
+Results for each migration attempted

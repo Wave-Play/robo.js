@@ -1,0 +1,129 @@
+---
+title: "SafeKeyEncoder"
+---
+
+# Class: SafeKeyEncoder
+
+SafeKeyEncoder class for stateful encoding operations.
+
+Provides encoding/decoding with version tracking for future
+format migrations.
+
+## Constructors
+
+### new SafeKeyEncoder()
+
+```ts
+new SafeKeyEncoder(): SafeKeyEncoder
+```
+
+#### Returns
+
+[`SafeKeyEncoder`](safe-key-encoder)
+
+## Properties
+
+| Property | Modifier | Type | Default value | Description |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="version"></a> `VERSION` | `readonly` | `1` | `1` | Current encoding format version. |
+
+## Methods
+
+### decode()
+
+```ts
+decode(storageKey): EncodedKeyData
+```
+
+Decode a storage key.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `storageKey` | `string` |
+
+#### Returns
+
+[`EncodedKeyData`](../interfaces/encoded-key-data)
+
+***
+
+### decodeValue()
+
+```ts
+decodeValue(encoded): unknown
+```
+
+Decode a unique field value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `encoded` | `string` |
+
+#### Returns
+
+`unknown`
+
+***
+
+### encode()
+
+```ts
+encode(namespace, key): string
+```
+
+Encode a (namespace, key) pair.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string`[] |
+| `key` | `string` |
+
+#### Returns
+
+`string`
+
+***
+
+### encodeValue()
+
+```ts
+encodeValue(value): string
+```
+
+Encode a unique field value.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `unknown` |
+
+#### Returns
+
+`string`
+
+***
+
+### isEncoded()
+
+```ts
+isEncoded(key): boolean
+```
+
+Check if a key is encoded.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`boolean`
