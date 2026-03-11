@@ -43,15 +43,30 @@ npm run dev
 
 Define your API procedures in the server and call them from the client with full type safety:
 
-```typescript
-// Server
-export const appRouter = router({
-  hello: publicProcedure.query(() => 'Hello, world!')
-})
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Server
+    export const appRouter = router({
+      hello: publicProcedure.query(() => 'Hello, world!')
+    })
 
-// Client
-const { data } = trpc.hello.useQuery()
-```
+    // Client
+    const { data } = trpc.hello.useQuery()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Server
+    export const appRouter = router({
+      hello: publicProcedure.query(() => 'Hello, world!')
+    })
+
+    // Client
+    const { data } = trpc.hello.useQuery()
+    ```
+  </Tab>
+</Tabs>
 
 ## Hosting
 

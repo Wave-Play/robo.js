@@ -45,11 +45,22 @@ Creating a **[Slash Command](/docs/discord-bots/commands)** is as easy as creati
 
 Let's say you want a new `/hello` command. Just create a file in the `/src/commands` directory named `hello.ts` and export a default function that returns something.
 
-```typescript title="/src/commands/hello.ts"
-export default (interaction) => {
-	interaction.reply('Hello World!')
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="/src/commands/hello.ts"
+    export default (interaction) => {
+    	interaction.reply('Hello World!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="/src/commands/hello.js"
+    export default (interaction) => {
+    	interaction.reply('Hello World!')
+    }
+    ```
+  </Tab>
+</Tabs>
 
 Your `/hello` command is now ready to use! **Robo.js** takes care of registration for you.
 
@@ -57,11 +68,22 @@ Ever clicked on an avatar or message and seen an _Apps_ section? Those are **[Co
 
 Create a file in `/src/context/message` named after the command. For example, `Quote.ts`.
 
-```typescript title="/src/context/message/Quote.ts"
-export default (interaction, message) => {
-	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="/src/context/message/Quote.ts"
+    export default (interaction, message) => {
+    	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="/src/context/message/Quote.js"
+    export default (interaction, message) => {
+    	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+    }
+    ```
+  </Tab>
+</Tabs>
 
 <Cards>
   <Card href="/docs/discord-bots/commands" title="Slash Commands" description="Your bot follows best practices by default." />
@@ -87,13 +109,26 @@ You even get `/dev` **[Subcommands](/docs/discord-bots/commands#subcommands)** f
 
 **Robo.js** manages your **Discord.js** `Client` instance. You may import `client` anywhere in your project.
 
-```typescript
-import { client } from 'robo.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { client } from 'robo.js'
 
-export default () => {
-	return `My name is ${client.user.username}`
-}
-```
+    export default () => {
+    	return `My name is ${client.user.username}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { client } from 'robo.js'
+
+    export default () => {
+    	return `My name is ${client.user.username}`
+    }
+    ```
+  </Tab>
+</Tabs>
 
 Intents or other configurations can be set in the `config/robo.mjs` file.
 
@@ -111,7 +146,7 @@ export default {
 
 ## Robo Ecosystem
 
-By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](/plugins)**, **[templates](/templates)**, and **[tools](/docs/framework/cli)**. **[Robo Plugins](/docs/plugins)** are special. They can add features with one command.
+By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](/plugins)**, **[templates](/templates)**, and **[tools](/docs/cli)**. **[Robo Plugins](/docs/plugins)** are special. They can add features with one command.
 
 ```bash
 npx robo add @robojs/ai @robojs/moderation

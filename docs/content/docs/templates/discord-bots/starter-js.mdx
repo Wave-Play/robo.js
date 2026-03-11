@@ -38,11 +38,22 @@ npm run dev
 
 Creating a **[Slash Command](/docs/discord-bots/commands)** is as easy as creating files.
 
-```javascript title="/src/commands/hello.js"
-export default (interaction) => {
-	interaction.reply('Hello World!')
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="/src/commands/hello.ts"
+    export default (interaction) => {
+    	interaction.reply('Hello World!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="/src/commands/hello.js"
+    export default (interaction) => {
+    	interaction.reply('Hello World!')
+    }
+    ```
+  </Tab>
+</Tabs>
 
 Your `/hello` command is now ready to use!
 

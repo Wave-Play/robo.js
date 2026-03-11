@@ -55,11 +55,22 @@ Your server-side code is located in the `/src/api` folder. This is where you can
 
 This backend is powered by [**@robojs/server**](/docs/plugins/server).
 
-```js
-export default () => {
-	return { status: 'ok' }
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/health.ts"
+    export default () => {
+    	return { status: 'ok' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/health.js"
+    export default () => {
+    	return { status: 'ok' }
+    }
+    ```
+  </Tab>
+</Tabs>
 
 ## Hosting
 
