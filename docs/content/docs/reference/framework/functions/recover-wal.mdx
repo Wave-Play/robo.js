@@ -1,0 +1,31 @@
+---
+title: "recoverWAL()"
+---
+
+# Function: recoverWAL()
+
+```ts
+function recoverWAL(adapter, config?): Promise<RecoveryResult>
+```
+
+Recover from any orphaned WAL entries.
+
+Called during Flashcore.$.init() before model registration.
+
+Recovery strategy:
+- If phase \> 'pending', replay (authoritative writes started)
+- If phase == 'pending' and stale, rollback
+- If phase == 'pending' and recent, replay
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> | The storage adapter |
+| `config`? | [`WALConfig`](../interfaces/wal-config) | Optional WAL configuration |
+
+## Returns
+
+`Promise`\<[`RecoveryResult`](../interfaces/recovery-result)\>
+
+Recovery result with stats

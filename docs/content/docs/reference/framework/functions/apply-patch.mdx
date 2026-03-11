@@ -1,0 +1,30 @@
+---
+title: "applyPatch()"
+---
+
+# Function: applyPatch()
+
+```ts
+function applyPatch<T>(record, patch): T
+```
+
+Merge a patch into an existing record.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* `Record`\<`string`, `unknown`\> |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `T` | Base record |
+| `patch` | `Record`\<`string`, `unknown`\> | Fields to update |
+
+## Returns
+
+`T`
+
+Merged record

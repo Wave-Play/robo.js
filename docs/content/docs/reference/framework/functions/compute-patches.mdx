@@ -1,0 +1,24 @@
+---
+title: "computePatches()"
+---
+
+# Function: computePatches()
+
+```ts
+function computePatches(before, after): JSONPatch[]
+```
+
+Compute JSON Patch (RFC 6902) between two objects.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `before` | `Record`\<`string`, `unknown`\> | Original object |
+| `after` | `Record`\<`string`, `unknown`\> | Modified object |
+
+## Returns
+
+[`JSONPatch`](../interfaces/json-patch)[]
+
+Array of JSON Patch operations

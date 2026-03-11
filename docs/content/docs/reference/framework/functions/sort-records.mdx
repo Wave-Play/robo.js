@@ -1,0 +1,30 @@
+---
+title: "sortRecords()"
+---
+
+# Function: sortRecords()
+
+```ts
+function sortRecords<T>(records, orderBy?): T[]
+```
+
+Sort records by orderBy clause.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `records` | `T`[] | Records to sort |
+| `orderBy`? | \| `Partial`\<`Record`\<keyof `T`, [`OrderDirection`](../type-aliases/order-direction)\>\> \| `Partial`\<`Record`\<keyof `T`, [`OrderDirection`](../type-aliases/order-direction)\>\>[] | Order by clause (single or array) |
+
+## Returns
+
+`T`[]
+
+Sorted records (new array)

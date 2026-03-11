@@ -1,0 +1,26 @@
+---
+title: "applyCatalogDeleteDelta()"
+---
+
+# Function: applyCatalogDeleteDelta()
+
+```ts
+function applyCatalogDeleteDelta(
+   adapter, 
+   catalogKey, 
+id): Promise<void>
+```
+
+Recovery-aware catalog delete.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `catalogKey` | `string` |
+| `id` | `string` |
+
+## Returns
+
+`Promise`\<`void`\>

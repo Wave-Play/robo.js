@@ -1,0 +1,28 @@
+---
+title: "getState()"
+---
+
+# Function: getState()
+
+```ts
+function getState(): IpcState | null
+```
+
+Gets the current IPC state from state.json written by the host.
+
+## Returns
+
+[`IpcState`](../interfaces/ipc-state) \| `null`
+
+The IPC state or null if not available
+
+## Example
+
+```ts
+import { getState } from 'robo.js/ipc'
+
+const state = getState()
+if (state) {
+  console.log(`Running in ${state.env.type}`)
+}
+```

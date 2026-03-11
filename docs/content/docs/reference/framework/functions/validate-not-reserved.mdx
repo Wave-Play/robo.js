@@ -1,0 +1,24 @@
+---
+title: "validateNotReserved()"
+---
+
+# Function: validateNotReserved()
+
+```ts
+function validateNotReserved(key, operation): void
+```
+
+Validate that a key does not use reserved prefixes.
+
+Throws SafetyError if the key starts with a reserved prefix.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `key` | `string` | The key to validate |
+| `operation` | `"delete"` \| `"set"` | The operation being performed (for error message) |
+
+## Returns
+
+`void`

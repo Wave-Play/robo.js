@@ -1,0 +1,24 @@
+---
+title: "getMissingRequiredFields()"
+---
+
+# Function: getMissingRequiredFields()
+
+```ts
+function getMissingRequiredFields(data, schema): string[]
+```
+
+Get missing required fields.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `data` | `Record`\<`string`, `unknown`\> | Input data |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Normalized schema |
+
+## Returns
+
+`string`[]
+
+Array of missing field names

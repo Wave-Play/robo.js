@@ -1,0 +1,30 @@
+---
+title: "evaluateWhere()"
+---
+
+# Function: evaluateWhere()
+
+```ts
+function evaluateWhere<T>(record, where): boolean
+```
+
+Evaluate a where clause against a record.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* `Record`\<`string`, `unknown`\> |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `T` | Record to test |
+| `where` | [`WhereClause`](../type-aliases/where-clause)\<`T`\> | Where clause |
+
+## Returns
+
+`boolean`
+
+True if record matches

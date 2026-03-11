@@ -1,0 +1,29 @@
+---
+title: "createCacheAdapter()"
+---
+
+# Function: createCacheAdapter()
+
+```ts
+function createCacheAdapter<K, V>(adapter, options?): CacheAdapter<K, V>
+```
+
+Create a new CacheAdapter wrapping another adapter.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `options`? | [`CacheOptions`](../interfaces/cache-options) |
+
+## Returns
+
+[`CacheAdapter`](../classes/cache-adapter)\<`K`, `V`\>

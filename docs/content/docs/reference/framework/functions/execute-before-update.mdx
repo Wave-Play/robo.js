@@ -1,0 +1,34 @@
+---
+title: "executeBeforeUpdate()"
+---
+
+# Function: executeBeforeUpdate()
+
+```ts
+function executeBeforeUpdate<T>(
+   hooks, 
+   data, 
+existing): Promise<unknown>
+```
+
+Execute before-update hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | Model hooks |
+| `data` | `unknown` | Update data |
+| `existing` | `T` | Existing record |
+
+## Returns
+
+`Promise`\<`unknown`\>
+
+Possibly modified data

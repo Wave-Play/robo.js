@@ -1,0 +1,28 @@
+---
+title: "createMigrationRunner()"
+---
+
+# Function: createMigrationRunner()
+
+```ts
+function createMigrationRunner(
+   adapter, 
+   models, 
+   migrations): MigrationRunner
+```
+
+Create a migration runner with model access.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> | Flashcore adapter |
+| `models` | `Map`\<`string`, \{ `count`: `Function`; `delete`: `Function`; `findMany`: `Function`; `findUnique`: `Function`; `update`: `Function`; \}\> | Map of model name to model instance |
+| `migrations` | [`RegisteredMigration`](../interfaces/registered-migration)[] | Array of registered migrations |
+
+## Returns
+
+[`MigrationRunner`](../classes/migration-runner)
+
+Configured migration runner

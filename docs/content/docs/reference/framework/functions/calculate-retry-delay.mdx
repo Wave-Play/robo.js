@@ -1,0 +1,26 @@
+---
+title: "calculateRetryDelay()"
+---
+
+# Function: calculateRetryDelay()
+
+```ts
+function calculateRetryDelay(
+   baseDelay, 
+   attempt, 
+   jitter): number
+```
+
+Calculate retry delay with optional jitter.
+
+## Parameters
+
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `baseDelay` | `number` | `undefined` |
+| `attempt` | `number` | `undefined` |
+| `jitter` | `boolean` | `true` |
+
+## Returns
+
+`number`

@@ -1,0 +1,29 @@
+---
+title: "createKeyvAdapterFromOptions()"
+---
+
+# Function: createKeyvAdapterFromOptions()
+
+```ts
+function createKeyvAdapterFromOptions<V>(keyvOptions?): Promise<KeyvAdapter<V>>
+```
+
+Dynamically import Keyv and create an adapter.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `keyvOptions`? | `unknown` | Options passed to Keyv constructor |
+
+## Returns
+
+`Promise`\<[`KeyvAdapter`](../classes/keyv-adapter)\<`V`\>\>
+
+KeyvAdapter wrapping a new Keyv instance

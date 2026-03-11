@@ -1,0 +1,33 @@
+---
+title: "verifyCatalogIntegrity()"
+---
+
+# Function: verifyCatalogIntegrity()
+
+```ts
+function verifyCatalogIntegrity(
+   adapter, 
+   catalog, 
+   modelName, 
+namespace?): Promise<CatalogVerificationResult>
+```
+
+Verify catalog integrity against stored chunks and segments.
+
+Compares the catalog entries against actual stored data and reports
+any discrepancies.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> | The storage adapter |
+| `catalog` | [`Catalog`](../classes/catalog) | The catalog to verify |
+| `modelName` | `string` | Name of the model |
+| `namespace`? | `string` | Optional namespace |
+
+## Returns
+
+`Promise`\<[`CatalogVerificationResult`](../interfaces/catalog-verification-result)\>
+
+Verification result with any issues found

@@ -1,0 +1,29 @@
+---
+title: "createResilienceAdapter()"
+---
+
+# Function: createResilienceAdapter()
+
+```ts
+function createResilienceAdapter<K, V>(adapter, options?): ResilienceAdapter<K, V>
+```
+
+Create a new ResilienceAdapter wrapping another adapter.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `options`? | [`ResilienceOptions`](../interfaces/resilience-options) |
+
+## Returns
+
+[`ResilienceAdapter`](../classes/resilience-adapter)\<`K`, `V`\>

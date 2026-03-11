@@ -1,0 +1,36 @@
+---
+title: "createMultiDrain()"
+---
+
+# Function: createMultiDrain()
+
+```ts
+function createMultiDrain(drains): LogDrain
+```
+
+Composes multiple drains into a single drain that calls all of them.
+Useful for logging to multiple outputs (e.g., console + file) simultaneously.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `drains` | [`LogDrain`](../type-aliases/log-drain)[] | Array of drain functions to compose |
+
+## Returns
+
+[`LogDrain`](../type-aliases/log-drain)
+
+A single drain function that calls all provided drains
+
+## Example
+
+```typescript
+import { createMultiDrain, consoleDrain } from 'robo.js/logger'
+import { createFileDrain } from 'robo.js/logger/drains'
+
+const fileDrain = createFileDrain({ path: 'logs/app.log' })
+const multiDrain = createMultiDrain([consoleDrain, fileDrain])
+
+logger({ drain: multiDrain })
+```

@@ -1,0 +1,47 @@
+---
+title: "createFileDrain()"
+---
+
+# Function: createFileDrain()
+
+```ts
+function createFileDrain(options): LogDrain
+```
+
+Creates a file-based log drain.
+
+This drain writes log entries to a file with support for:
+- Timestamp formatting
+- ANSI color code stripping
+- Level filtering
+- File rotation based on size
+- Blocking and non-blocking write modes
+- Optional color map generation for color reconstruction
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | [`FileDrainOptions`](../interfaces/file-drain-options) | Configuration options for the file drain |
+
+## Returns
+
+[`LogDrain`](../../core/logger/type-aliases/log-drain)
+
+A LogDrain function that writes to the specified file
+
+## Example
+
+```typescript
+import { logger } from 'robo.js/logger'
+import { createFileDrain } from 'robo.js/logger/drains'
+
+const drain = createFileDrain({
+  path: 'logs/app.log',
+  timestamp: 'iso',
+  blocking: true,
+  colorMap: true  // Generate .colormap companion file
+})
+
+logger().addDrain(drain, 'file-logger')
+```

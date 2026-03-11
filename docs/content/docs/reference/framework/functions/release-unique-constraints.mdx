@@ -1,0 +1,22 @@
+---
+title: "releaseUniqueConstraints()"
+---
+
+# Function: releaseUniqueConstraints()
+
+```ts
+function releaseUniqueConstraints(manager, constraints): Promise<void>
+```
+
+Release multiple unique constraints.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `manager` | [`UniqueIndexManager`](../classes/unique-index-manager) | UniqueIndexManager instance |
+| `constraints` | \{ `options`: [`UniqueConstraintOptions`](../interfaces/unique-constraint-options); `value`: `unknown`; \}[] | Array of \{ options, value \} |
+
+## Returns
+
+`Promise`\<`void`\>

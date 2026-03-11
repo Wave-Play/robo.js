@@ -1,0 +1,28 @@
+---
+title: "generateId()"
+---
+
+# Function: generateId()
+
+```ts
+function generateId(): string
+```
+
+Generate a collision-resistant ID.
+
+Format: \{timestamp\}-\{counter\}-\{random\}
+- timestamp: base36 encoded milliseconds since epoch
+- counter: monotonic counter for same-millisecond uniqueness
+- random: random component for cross-process uniqueness
+
+Properties:
+- Roughly sortable by creation time
+- Safe characters (alphanumeric + hyphen)
+- Collision-resistant in single process
+- Reasonably unique across processes
+
+## Returns
+
+`string`
+
+Generated ID string

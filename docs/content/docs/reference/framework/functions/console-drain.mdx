@@ -1,0 +1,31 @@
+---
+title: "consoleDrain()"
+---
+
+# Function: consoleDrain()
+
+```ts
+function consoleDrain(
+   _logger, 
+   level, ...
+data): Promise<void>
+```
+
+A drain function that writes logs either to stdout/stderr (in Node.js)
+or uses console.log/error (in browsers). In browsers, it uses ansiToBrowserFormat()
+to convert ANSI codes into %c format with merged CSS.
+
+In Node.js, this uses synchronous writes (like console.log) to ensure logs
+appear immediately and in order, without delayed output on shutdown.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `_logger` | [`Logger`](../classes/logger) |
+| `level` | `string` |
+| ...`data` | `unknown`[] |
+
+## Returns
+
+`Promise`\<`void`\>

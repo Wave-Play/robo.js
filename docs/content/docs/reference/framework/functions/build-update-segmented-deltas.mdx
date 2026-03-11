@@ -1,0 +1,30 @@
+---
+title: "buildUpdateSegmentedDeltas()"
+---
+
+# Function: buildUpdateSegmentedDeltas()
+
+```ts
+function buildUpdateSegmentedDeltas(
+   id, 
+   oldSegmentIds, 
+   oldSegments, 
+   newSegmentIds, 
+   newSegments, 
+   uniqueUpdates): DeltaBuildResult
+```
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `oldSegmentIds` | `string`[] |
+| `oldSegments` | [`SegmentWrite`](../interfaces/segment-write)[] |
+| `newSegmentIds` | `string`[] |
+| `newSegments` | [`SegmentWrite`](../interfaces/segment-write)[] |
+| `uniqueUpdates` | [`UniqueUpdate`](../interfaces/unique-update)[] |
+
+## Returns
+
+[`DeltaBuildResult`](../interfaces/delta-build-result)

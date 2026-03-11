@@ -1,0 +1,26 @@
+---
+title: "createBoundContext()"
+---
+
+# Function: createBoundContext()
+
+```ts
+function createBoundContext(context): Record<string, unknown> & PluginContext
+```
+
+Create a bound context for a plugin that can be used in middleware.
+
+This creates an object with the plugin's methods bound to the plugin context,
+allowing middleware to use `this.methodName()` syntax.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `context` | [`PluginContext`](../interfaces/plugin-context) | Plugin context |
+
+## Returns
+
+`Record`\<`string`, `unknown`\> & [`PluginContext`](../interfaces/plugin-context)
+
+Bound context object

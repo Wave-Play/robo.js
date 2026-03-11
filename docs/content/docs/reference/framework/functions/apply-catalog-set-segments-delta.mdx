@@ -1,0 +1,28 @@
+---
+title: "applyCatalogSetSegmentsDelta()"
+---
+
+# Function: applyCatalogSetSegmentsDelta()
+
+```ts
+function applyCatalogSetSegmentsDelta(
+   adapter, 
+   catalogKey, 
+   id, 
+segmentIds): Promise<void>
+```
+
+Recovery-aware catalog set for segmented records.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `catalogKey` | `string` |
+| `id` | `string` |
+| `segmentIds` | `string`[] |
+
+## Returns
+
+`Promise`\<`void`\>

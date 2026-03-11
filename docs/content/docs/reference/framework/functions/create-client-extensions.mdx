@@ -1,0 +1,25 @@
+---
+title: "createClientExtensions()"
+---
+
+# Function: createClientExtensions()
+
+```ts
+function createClientExtensions(): Record<string, Record<string, unknown>>
+```
+
+Create client extensions object for Flashcore.$.
+
+Returns an object where each plugin's client extensions are
+namespaced under the plugin name.
+
+## Returns
+
+`Record`\<`string`, `Record`\<`string`, `unknown`\>\>
+
+## Example
+
+```typescript
+// If audit plugin has clientExtensions: { history() }
+// Then Flashcore.$.audit.history() is available
+```

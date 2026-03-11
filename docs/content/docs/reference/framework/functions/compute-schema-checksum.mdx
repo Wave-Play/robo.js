@@ -1,0 +1,30 @@
+---
+title: "computeSchemaChecksum()"
+---
+
+# Function: computeSchemaChecksum()
+
+```ts
+function computeSchemaChecksum(schema): string
+```
+
+Compute a deterministic checksum for a schema.
+
+The checksum changes when:
+- Fields are added or removed
+- Field types change
+- Modifiers change (optional, unique, indexed, etc.)
+- Enum values change
+- Relations change
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `schema` | [`SchemaFields`](../type-aliases/schema-fields) | Schema definition |
+
+## Returns
+
+`string`
+
+Hex string checksum

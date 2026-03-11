@@ -1,0 +1,21 @@
+---
+title: "createValidationMiddleware()"
+---
+
+# Function: createValidationMiddleware()
+
+```ts
+function createValidationMiddleware(validate): MiddlewareFn<OperationType>
+```
+
+Create a middleware that validates args before passing to next.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `validate` | (`operation`, `args`) =\> `void` |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<[`OperationType`](../type-aliases/operation-type)\>

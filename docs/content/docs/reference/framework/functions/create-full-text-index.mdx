@@ -1,0 +1,23 @@
+---
+title: "createFullTextIndex()"
+---
+
+# Function: createFullTextIndex()
+
+```ts
+function createFullTextIndex(options?): Index<string>
+```
+
+Create an inverted index for full-text search.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | \{ `minTokenLength`: `number`; `tokenizer`: (`text`) =\> `string`[]; \} |
+| `options.minTokenLength`? | `number` |
+| `options.tokenizer`? | (`text`) =\> `string`[] |
+
+## Returns
+
+[`Index`](../interfaces/index)\<`string`\>

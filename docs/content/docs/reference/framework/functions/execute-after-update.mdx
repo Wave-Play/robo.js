@@ -1,0 +1,28 @@
+---
+title: "executeAfterUpdate()"
+---
+
+# Function: executeAfterUpdate()
+
+```ts
+function executeAfterUpdate<T>(hooks, record): Promise<void>
+```
+
+Execute after-update hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | Model hooks |
+| `record` | `T` | Updated record |
+
+## Returns
+
+`Promise`\<`void`\>

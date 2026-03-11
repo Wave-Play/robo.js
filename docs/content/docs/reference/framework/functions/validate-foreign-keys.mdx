@@ -1,0 +1,30 @@
+---
+title: "validateForeignKeys()"
+---
+
+# Function: validateForeignKeys()
+
+```ts
+function validateForeignKeys(
+   modelName, 
+   schema, 
+   data, 
+   getModel, 
+updatedFields?): Promise<void>
+```
+
+Validate all foreign keys in a record's data.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Model name |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Normalized schema |
+| `data` | `Record`\<`string`, `unknown`\> | Record data being created/updated |
+| `getModel` | (`name`) =\> `unknown` | Function to get model instance by name |
+| `updatedFields`? | `Set`\<`string`\> | Set of fields being updated (for update validation) |
+
+## Returns
+
+`Promise`\<`void`\>

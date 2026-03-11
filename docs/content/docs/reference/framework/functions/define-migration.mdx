@@ -1,0 +1,54 @@
+---
+title: "defineMigration()"
+---
+
+# Function: defineMigration()
+
+```ts
+function defineMigration(definition): RegisteredMigration
+```
+
+Define a migration script.
+
+Migrations are used to apply breaking schema changes that cannot be
+auto-applied on startup. Each migration should be:
+
+1. **Idempotent**: Safe to run multiple times
+2. **Atomic**: Either fully applies or fully rolls back
+3. **Testable**: Can be verified in a test environment
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `definition` | [`MigrationDefinition`](../interfaces/migration-definition) | Migration definition with name, up, and optional down |
+
+## Returns
+
+[`RegisteredMigration`](../interfaces/registered-migration)
+
+Registered migration with computed checksum
+
+## Example
+
+```typescript
+// migrations/001_add_role_field.ts
+import { defineMigration } from 'robo.js/flashcore'
+
+export default defineMigration({
+  name: 'add_role_field',
+
+  async up(ctx) {
+    // Add default value for existing records
+    await ctx.model('user').updateMany({
+      where: { role: { equals: undefined } },
+      data: { role: 'user' }
+    })
+  },
+
+  async down(ctx) {
+    // Remove the field (optional rollback)
+    ctx.progress('Rollback not supported for this migration')
+  }
+})
+```

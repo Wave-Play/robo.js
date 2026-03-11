@@ -1,0 +1,34 @@
+---
+title: "collectCascadeOperations()"
+---
+
+# Function: collectCascadeOperations()
+
+```ts
+function collectCascadeOperations(
+   modelName, 
+   schema, 
+   record, 
+   ctx, 
+depth): Promise<CascadeOp[]>
+```
+
+Collect all cascade operations for a delete.
+Operations are collected depth-first to ensure proper ordering.
+
+## Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `modelName` | `string` | `undefined` | Model being deleted from |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | `undefined` | Model's normalized schema |
+| `record` | \{ `[key: string]`: `unknown`; `id`: `string`; \} | `undefined` | Record being deleted |
+| `record.id` | `string` | `undefined` | - |
+| `ctx` | [`CascadeContext`](../interfaces/cascade-context) | `undefined` | Cascade context |
+| `depth` | `number` | `0` | Current depth in the cascade tree |
+
+## Returns
+
+`Promise`\<[`CascadeOp`](../interfaces/cascade-op)[]\>
+
+Array of cascade operations to execute

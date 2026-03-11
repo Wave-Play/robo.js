@@ -1,0 +1,33 @@
+---
+title: "wrapModelWithPluginAccess()"
+---
+
+# Function: wrapModelWithPluginAccess()
+
+```ts
+function wrapModelWithPluginAccess<T>(model): T & {
+  pluginContext: (name) => PluginContext;
+}
+```
+
+Wrap a model proxy to include plugin context access.
+
+This allows models to access plugin contexts via model.pluginContext(name).
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `model` | `T` & \{ `pluginContext`: (`name`) =\> [`PluginContext`](../interfaces/plugin-context); \} |
+
+## Returns
+
+`T` & \{
+  `pluginContext`: (`name`) =\> [`PluginContext`](../interfaces/plugin-context);
+ \}

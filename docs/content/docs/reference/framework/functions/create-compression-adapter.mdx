@@ -1,0 +1,29 @@
+---
+title: "createCompressionAdapter()"
+---
+
+# Function: createCompressionAdapter()
+
+```ts
+function createCompressionAdapter<K, V>(adapter, options?): CompressionAdapter<K, V>
+```
+
+Create a new CompressionAdapter wrapping another adapter.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `options`? | [`CompressionOptions`](../interfaces/compression-options) |
+
+## Returns
+
+[`CompressionAdapter`](../classes/compression-adapter)\<`K`, `V`\>

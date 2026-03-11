@@ -1,0 +1,28 @@
+---
+title: "forModels()"
+---
+
+# Function: forModels()
+
+```ts
+function forModels<Op>(modelNames, middleware): MiddlewareFn<Op>
+```
+
+Create a middleware that only runs for specific models.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `modelNames` | `string`[] |
+| `middleware` | [`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\> |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\>

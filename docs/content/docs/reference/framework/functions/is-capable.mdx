@@ -1,0 +1,33 @@
+---
+title: "isCapable()"
+---
+
+# Function: isCapable()
+
+```ts
+function isCapable(type): boolean
+```
+
+Checks if a capability/event type is supported by the host.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `type` | `string` | The event type to check |
+
+## Returns
+
+`boolean`
+
+true if the capability is supported
+
+## Example
+
+```ts
+import { isCapable, emit } from 'robo.js/ipc'
+
+if (isCapable('open:url')) {
+  emit('open:url', { url: 'https://example.com' })
+}
+```

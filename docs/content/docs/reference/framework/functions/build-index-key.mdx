@@ -1,0 +1,30 @@
+---
+title: "buildIndexKey()"
+---
+
+# Function: buildIndexKey()
+
+```ts
+function buildIndexKey(
+   modelName, 
+   field, 
+   indexType?, 
+   namespace?): string
+```
+
+Build a sorted index key.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | The model name |
+| `field` | `string` | The indexed field name |
+| `indexType`? | `string` | Optional index type for plugin indexes |
+| `namespace`? | `string` | Optional namespace |
+
+## Returns
+
+`string`
+
+Sorted index key

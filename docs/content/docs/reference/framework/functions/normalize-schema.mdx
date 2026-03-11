@@ -1,0 +1,30 @@
+---
+title: "normalizeSchema()"
+---
+
+# Function: normalizeSchema()
+
+```ts
+function normalizeSchema(schema): NormalizedSchema
+```
+
+Normalize a schema definition into internal format.
+
+Validates the schema structure and computes derived information
+like required fields, unique fields, and indexed fields.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `schema` | [`SchemaFields`](../type-aliases/schema-fields) | Raw schema definition from user |
+
+## Returns
+
+[`NormalizedSchema`](../interfaces/normalized-schema)
+
+Normalized schema for internal use
+
+## Throws
+
+FlashcoreValidationError if schema is invalid

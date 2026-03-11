@@ -1,0 +1,26 @@
+---
+title: "normalizeCapabilities()"
+---
+
+# Function: normalizeCapabilities()
+
+```ts
+function normalizeCapabilities(adapter): AdapterCapabilities
+```
+
+Normalize adapter capabilities.
+
+Inspects the adapter interface for optional methods and combines with
+self-reported capabilities if available.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> | The adapter to inspect |
+
+## Returns
+
+[`AdapterCapabilities`](../interfaces/adapter-capabilities)
+
+Normalized capabilities object

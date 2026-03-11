@@ -1,0 +1,34 @@
+---
+title: "createModel()"
+---
+
+# Function: createModel()
+
+```ts
+function createModel<T>(
+   name, 
+   schemaFields, 
+   adapter, 
+options?): FlashcoreModel<T>
+```
+
+Create a FlashcoreModel instance.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `schemaFields` | [`SchemaFields`](../type-aliases/schema-fields) |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `options`? | [`FlashcoreModelOptions`](../interfaces/flashcore-model-options) |
+
+## Returns
+
+[`FlashcoreModel`](../classes/flashcore-model)\<`T`\>

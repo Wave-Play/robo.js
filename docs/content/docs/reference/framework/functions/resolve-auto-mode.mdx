@@ -1,0 +1,26 @@
+---
+title: "resolveAutoMode()"
+---
+
+# Function: resolveAutoMode()
+
+```ts
+function resolveAutoMode(adapter): ResolvedTransactionMode
+```
+
+Resolve 'auto' mode to a concrete mode based on adapter capabilities.
+
+Priority order:
+1. native (if adapter.transaction exists)
+2. batch (if adapter.atomicBatch exists)
+3. single (fallback for minimal adapters)
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+## Returns
+
+[`ResolvedTransactionMode`](../type-aliases/resolved-transaction-mode)

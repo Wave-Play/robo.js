@@ -1,0 +1,28 @@
+---
+title: "executeAfterCreate()"
+---
+
+# Function: executeAfterCreate()
+
+```ts
+function executeAfterCreate<T>(hooks, record): Promise<void>
+```
+
+Execute after-create hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | Model hooks |
+| `record` | `T` | Created record |
+
+## Returns
+
+`Promise`\<`void`\>

@@ -1,0 +1,22 @@
+---
+title: "requiresAcid()"
+---
+
+# Function: requiresAcid()
+
+```ts
+function requiresAcid(adapter): void
+```
+
+Check if multi-key atomic operations are supported.
+Required for bulk operations like createMany, updateMany, deleteMany.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+## Returns
+
+`void`

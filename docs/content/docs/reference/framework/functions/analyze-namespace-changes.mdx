@@ -1,0 +1,24 @@
+---
+title: "analyzeNamespaceChanges()"
+---
+
+# Function: analyzeNamespaceChanges()
+
+```ts
+function analyzeNamespaceChanges(storedSnapshot, currentModels): ChangeAnalysisResult
+```
+
+Analyze namespace-level changes (model additions/removals).
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `storedSnapshot` | [`SchemaSnapshot`](../interfaces/schema-snapshot) | Previously stored schema snapshot (null for new namespace) |
+| `currentModels` | `Map`\<`string`, [`SchemaMetadata`](../interfaces/schema-metadata)\> | Map of model name to current schema metadata |
+
+## Returns
+
+[`ChangeAnalysisResult`](../interfaces/change-analysis-result)
+
+Analysis result with safe and breaking changes

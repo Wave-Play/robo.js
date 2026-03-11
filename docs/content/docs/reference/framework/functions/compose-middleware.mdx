@@ -1,0 +1,27 @@
+---
+title: "composeMiddleware()"
+---
+
+# Function: composeMiddleware()
+
+```ts
+function composeMiddleware<Op>(...middlewares): MiddlewareFn<Op>
+```
+
+Compose multiple middleware functions into one.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| ...`middlewares` | [`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\>[] |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\>

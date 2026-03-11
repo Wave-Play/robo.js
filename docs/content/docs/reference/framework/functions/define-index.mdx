@@ -1,0 +1,36 @@
+---
+title: "defineIndex()"
+---
+
+# Function: defineIndex()
+
+```ts
+function defineIndex<T>(provider): IndexProvider<T>
+```
+
+Define a custom index provider.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `provider` | [`IndexProvider`](../interfaces/index-provider)\<`T`\> |
+
+## Returns
+
+[`IndexProvider`](../interfaces/index-provider)\<`T`\>
+
+## Example
+
+```typescript
+export const trieIndex = defineIndex({
+  create: (options) => new TrieIndex(options),
+  operators: ['prefixMatch', 'autocomplete'],
+})
+```

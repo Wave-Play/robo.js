@@ -1,0 +1,28 @@
+---
+title: "forOperations()"
+---
+
+# Function: forOperations()
+
+```ts
+function forOperations<Op>(operations, middleware): MiddlewareFn<Op>
+```
+
+Create a middleware that only runs for specific operations.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `operations` | [`OperationType`](../type-aliases/operation-type)[] |
+| `middleware` | [`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\> |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\>

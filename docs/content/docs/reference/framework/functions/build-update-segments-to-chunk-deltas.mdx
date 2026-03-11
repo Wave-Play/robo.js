@@ -1,0 +1,32 @@
+---
+title: "buildUpdateSegmentsToChunkDeltas()"
+---
+
+# Function: buildUpdateSegmentsToChunkDeltas()
+
+```ts
+function buildUpdateSegmentsToChunkDeltas(
+   id, 
+   oldSegmentIds, 
+   oldSegments, 
+   newChunkKey, 
+   newChunkId, 
+   newRecord, 
+   uniqueUpdates): DeltaBuildResult
+```
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `oldSegmentIds` | `string`[] |
+| `oldSegments` | [`SegmentWrite`](../interfaces/segment-write)[] |
+| `newChunkKey` | `string` |
+| `newChunkId` | `number` |
+| `newRecord` | `unknown` |
+| `uniqueUpdates` | [`UniqueUpdate`](../interfaces/unique-update)[] |
+
+## Returns
+
+[`DeltaBuildResult`](../interfaces/delta-build-result)

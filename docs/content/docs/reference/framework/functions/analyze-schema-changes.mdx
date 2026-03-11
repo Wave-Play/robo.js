@@ -1,0 +1,42 @@
+---
+title: "analyzeSchemaChanges()"
+---
+
+# Function: analyzeSchemaChanges()
+
+```ts
+function analyzeSchemaChanges(
+   stored, 
+   current, 
+   modelName): ChangeAnalysisResult
+```
+
+Analyze schema changes between stored metadata and current schema.
+
+Change classification per spec 13.4:
+
+Safe changes (auto-apply):
+- Add optional field
+- Add field with default
+- Add/remove index
+- Add unique constraint (validates existing data)
+
+Breaking changes (require migration):
+- Add required field without default
+- Remove field
+- Change field type
+- Remove unique constraint (potential data implications)
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `stored` | `Record`\<`string`, [`FieldMetadata`](../interfaces/field-metadata)\> | Previously stored field metadata |
+| `current` | [`NormalizedSchema`](../interfaces/normalized-schema) | Current normalized schema |
+| `modelName` | `string` | Model name for change descriptions |
+
+## Returns
+
+[`ChangeAnalysisResult`](../interfaces/change-analysis-result)
+
+Analysis result with safe and breaking changes

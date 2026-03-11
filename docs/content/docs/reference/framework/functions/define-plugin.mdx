@@ -1,0 +1,60 @@
+---
+title: "definePlugin()"
+---
+
+# Function: definePlugin()
+
+```ts
+function definePlugin<TClientExtensions, TModelExtensions, TState>(plugin): FlashcorePluginDefinition<TClientExtensions, TModelExtensions, TState>
+```
+
+Define a Flashcore plugin with full type safety.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TClientExtensions` | `Record`\<`string`, `unknown`\> |
+| `TModelExtensions` | `Record`\<`string`, `unknown`\> |
+| `TState` | `Record`\<`string`, `unknown`\> |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `plugin` | [`FlashcorePluginDefinition`](../interfaces/flashcore-plugin-definition)\<`TClientExtensions`, `TModelExtensions`, `TState`\> |
+
+## Returns
+
+[`FlashcorePluginDefinition`](../interfaces/flashcore-plugin-definition)\<`TClientExtensions`, `TModelExtensions`, `TState`\>
+
+## Example
+
+```typescript
+export const myPlugin = () => definePlugin({
+  name: 'my-plugin',
+
+  setup(ctx) {
+    ctx.state.counter = 0
+  },
+
+  middleware: {
+    async create(params, next) {
+      this.state.counter++
+      return next()
+    },
+  },
+
+  modelExtensions: {
+    async myMethod(this: FlashcoreModel<any>) {
+      return this.findMany({})
+    },
+  },
+
+  clientExtensions: {
+    getStats() {
+      return { count: this.state.counter }
+    },
+  },
+})
+```

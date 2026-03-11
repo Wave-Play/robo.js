@@ -1,0 +1,23 @@
+---
+title: "registerEnvPattern()"
+---
+
+# Function: registerEnvPattern()
+
+```ts
+function registerEnvPattern(key, pattern): void
+```
+
+Register a custom pattern for validating environment variables.
+Plugins can use this to add validation for their specific variables.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `pattern` | [`EnvPattern`](../interfaces/env-pattern) |
+
+## Returns
+
+`void`

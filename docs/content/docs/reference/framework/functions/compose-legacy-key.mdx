@@ -1,0 +1,30 @@
+---
+title: "composeLegacyKey()"
+---
+
+# Function: composeLegacyKey()
+
+```ts
+function composeLegacyKey(
+   key, 
+   namespace?, 
+   separator?): string
+```
+
+Compose a key using the legacy format.
+
+Legacy format: `{namespace}__key` where namespace segments are joined by separator.
+
+## Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `key` | `string` | `undefined` | The key |
+| `namespace`? | `string` \| `string`[] | `undefined` | Optional namespace |
+| `separator`? | `string` | `DEFAULT_NAMESPACE_SEPARATOR` | Namespace segment separator (default: '/') |
+
+## Returns
+
+`string`
+
+Composed legacy key

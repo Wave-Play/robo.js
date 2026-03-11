@@ -1,0 +1,26 @@
+---
+title: "composeV1Key()"
+---
+
+# Function: composeV1Key()
+
+```ts
+function composeV1Key(key, namespace?): string
+```
+
+Compose a key using the safe (v1) format.
+
+Safe format uses SafeKeyEncoder for safe storage across all adapters.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `key` | `string` | The key |
+| `namespace`? | `string` \| `string`[] | Optional namespace |
+
+## Returns
+
+`string`
+
+Composed safe key

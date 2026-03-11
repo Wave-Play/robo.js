@@ -1,0 +1,28 @@
+---
+title: "executeBeforeDelete()"
+---
+
+# Function: executeBeforeDelete()
+
+```ts
+function executeBeforeDelete<T>(hooks, record): Promise<void>
+```
+
+Execute before-delete hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | Model hooks |
+| `record` | `T` | Record about to be deleted |
+
+## Returns
+
+`Promise`\<`void`\>

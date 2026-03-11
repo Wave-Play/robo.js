@@ -1,0 +1,37 @@
+---
+title: "setHookPriority()"
+---
+
+# Function: setHookPriority()
+
+```ts
+function setHookPriority(
+   hookType, 
+   pluginName, 
+   priority): void
+```
+
+Set the execution priority for a specific plugin's hook.
+Lower numbers run first. Default priority is 100.
+Hooks with the same priority run in parallel.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hookType` | [`LifecycleHookType`](../type-aliases/lifecycle-hook-type) | The lifecycle hook type ('init', 'prepare', 'start', 'stop', 'setup') |
+| `pluginName` | `string` | The plugin package name (e.g., '@robojs/server') |
+| `priority` | `number` | The priority value (lower runs first) |
+
+## Returns
+
+`void`
+
+## Example
+
+```typescript
+import { setHookPriority } from 'robo.js'
+
+// Run server before other plugins (default is 100)
+setHookPriority('start', '@robojs/server', 50)
+```

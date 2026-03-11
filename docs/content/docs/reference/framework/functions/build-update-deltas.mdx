@@ -1,0 +1,37 @@
+---
+title: "buildUpdateDeltas()"
+---
+
+# Function: buildUpdateDeltas()
+
+```ts
+function buildUpdateDeltas(
+   chunkId, 
+   id, 
+   patch, 
+   inversePatch, 
+   uniqueUpdates): DeltaBuildResult
+```
+
+Build deltas for an update operation.
+
+Update operation:
+- auth: chunk_patch, unique_acquire (for changed unique fields), unique_release
+- undo: chunk_patch (inverse), unique_acquire (old), unique_release (new)
+- derived: (index updates will be added in Phase 6)
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkId` | `string` | Chunk containing the record |
+| `id` | `string` | Record ID |
+| `patch` | `Record`\<`string`, `unknown`\> | Fields being updated (new values) |
+| `inversePatch` | `Record`\<`string`, `unknown`\> | Previous values for rollback |
+| `uniqueUpdates` | [`UniqueUpdate`](../interfaces/unique-update)[] | Unique constraint changes |
+
+## Returns
+
+[`DeltaBuildResult`](../interfaces/delta-build-result)
+
+Delta build result

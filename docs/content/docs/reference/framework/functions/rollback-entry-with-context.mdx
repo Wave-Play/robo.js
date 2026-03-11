@@ -1,0 +1,22 @@
+---
+title: "rollbackEntryWithContext()"
+---
+
+# Function: rollbackEntryWithContext()
+
+```ts
+function rollbackEntryWithContext(ctx, entry): Promise<void>
+```
+
+Rollback a WAL entry with full model context.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ctx` | [`RecoveryContext`](../interfaces/recovery-context) |
+| `entry` | [`WALEntry`](../interfaces/wal-entry) |
+
+## Returns
+
+`Promise`\<`void`\>

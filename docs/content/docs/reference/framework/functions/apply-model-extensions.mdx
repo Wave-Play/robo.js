@@ -1,0 +1,31 @@
+---
+title: "applyModelExtensions()"
+---
+
+# Function: applyModelExtensions()
+
+```ts
+function applyModelExtensions<T>(model): T
+```
+
+Apply model extensions from all plugins to a model instance.
+
+This is called when a model is created to add plugin-provided methods.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* `object` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `model` | `T` | The model instance to extend |
+
+## Returns
+
+`T`
+
+The extended model (same reference, mutated)

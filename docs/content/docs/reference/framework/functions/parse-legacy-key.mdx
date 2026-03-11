@@ -1,0 +1,37 @@
+---
+title: "parseLegacyKey()"
+---
+
+# Function: parseLegacyKey()
+
+```ts
+function parseLegacyKey(composedKey, separator): {
+  key: string;
+  namespace: string[];
+}
+```
+
+Parse a legacy composed key back to namespace and key.
+
+## Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `composedKey` | `string` | `undefined` | The legacy composed key |
+| `separator` | `string` | `DEFAULT_NAMESPACE_SEPARATOR` | Namespace segment separator (default: '/') |
+
+## Returns
+
+```ts
+{
+  key: string;
+  namespace: string[];
+}
+```
+
+Object with namespace array and key
+
+| Name | Type |
+| ------ | ------ |
+| <a id="key"></a> `key` | `string` |
+| <a id="namespace"></a> `namespace` | `string`[] |

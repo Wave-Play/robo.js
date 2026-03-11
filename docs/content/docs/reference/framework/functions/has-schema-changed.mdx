@@ -1,0 +1,26 @@
+---
+title: "hasSchemaChanged()"
+---
+
+# Function: hasSchemaChanged()
+
+```ts
+function hasSchemaChanged(storedChecksum, currentChecksum): boolean
+```
+
+Check if a schema has any changes from stored metadata.
+
+Quick check without full analysis.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `storedChecksum` | `string` | Previously stored checksum |
+| `currentChecksum` | `string` | Current schema checksum |
+
+## Returns
+
+`boolean`
+
+True if checksums differ

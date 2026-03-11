@@ -1,0 +1,30 @@
+---
+title: "applyPatches()"
+---
+
+# Function: applyPatches()
+
+```ts
+function applyPatches<T>(obj, patches): T
+```
+
+Apply JSON Patch operations to an object.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* `Record`\<`string`, `unknown`\> |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `obj` | `T` | Object to patch (not mutated) |
+| `patches` | [`JSONPatch`](../interfaces/json-patch)[] | Array of patch operations |
+
+## Returns
+
+`T`
+
+New patched object

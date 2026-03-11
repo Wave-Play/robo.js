@@ -1,0 +1,48 @@
+---
+title: "scanKeys()"
+---
+
+# Function: scanKeys()
+
+```ts
+function scanKeys<K>(adapter, prefix): AsyncIterable<K>
+```
+
+Normalize adapter scan results into an async iterable.
+
+Adapters may return:
+- K[] (synchronous array)
+- Promise\<K[]\> (async array)
+- AsyncIterable\<K\> (streaming)
+- Promise\<AsyncIterable\<K\>\> (async streaming)
+
+This function normalizes all these to AsyncIterable\<K\> so callers
+can always use `for await...of` without type checking.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` | `string` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `unknown`\> | The adapter to scan |
+| `prefix` | `K` | The prefix to scan for |
+
+## Returns
+
+`AsyncIterable`\<`K`\>
+
+An async iterable of keys, or empty if scan is not supported
+
+## Example
+
+```typescript
+const adapter = new MemoryAdapter()
+for await (const key of scanKeys(adapter, '_flashcore:wal:entry:')) {
+  console.log(key)
+}
+```

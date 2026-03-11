@@ -1,0 +1,24 @@
+---
+title: "filterMightContain()"
+---
+
+# Function: filterMightContain()
+
+```ts
+function filterMightContain(id, filter): boolean
+```
+
+Check if a record might exist using filter.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `id` | `string` | Record ID to check |
+| `filter` | [`CuckooFilter`](../classes/cuckoo-filter) | Cuckoo filter |
+
+## Returns
+
+`boolean`
+
+true if might exist, false if definitely doesn't

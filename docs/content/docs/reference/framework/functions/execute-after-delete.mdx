@@ -1,0 +1,28 @@
+---
+title: "executeAfterDelete()"
+---
+
+# Function: executeAfterDelete()
+
+```ts
+function executeAfterDelete<T>(hooks, record): Promise<void>
+```
+
+Execute after-delete hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | Model hooks |
+| `record` | `T` | Deleted record |
+
+## Returns
+
+`Promise`\<`void`\>

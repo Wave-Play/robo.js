@@ -1,0 +1,39 @@
+---
+title: "computePatch()"
+---
+
+# Function: computePatch()
+
+```ts
+function computePatch(oldRecord, newRecord): {
+  inversePatch: Record<string, unknown>;
+  patch: Record<string, unknown>;
+}
+```
+
+Compute a minimal patch from old and new record.
+
+Only includes fields that have changed.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `oldRecord` | `Record`\<`string`, `unknown`\> | Previous record state |
+| `newRecord` | `Record`\<`string`, `unknown`\> | New record state |
+
+## Returns
+
+```ts
+{
+  inversePatch: Record<string, unknown>;
+  patch: Record<string, unknown>;
+}
+```
+
+Patch with only changed fields
+
+| Name | Type |
+| ------ | ------ |
+| <a id="inversepatch"></a> `inversePatch` | `Record`\<`string`, `unknown`\> |
+| <a id="patch"></a> `patch` | `Record`\<`string`, `unknown`\> |

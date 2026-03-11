@@ -1,0 +1,36 @@
+---
+title: "prioritizeHookAfter()"
+---
+
+# Function: prioritizeHookAfter()
+
+```ts
+function prioritizeHookAfter(
+   hookType, 
+   pluginName, 
+   afterPlugin): void
+```
+
+Set a plugin's hook to run after another plugin's hook.
+Adjusts the priority to be 10 more than the target plugin's priority.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hookType` | [`LifecycleHookType`](../type-aliases/lifecycle-hook-type) | The lifecycle hook type |
+| `pluginName` | `string` | The plugin to deprioritize |
+| `afterPlugin` | `string` | The plugin that should run before |
+
+## Returns
+
+`void`
+
+## Example
+
+```typescript
+import { prioritizeHookAfter } from 'robo.js'
+
+// Ensure mock runs after server
+prioritizeHookAfter('start', '@robojs/mock', '@robojs/server')
+```

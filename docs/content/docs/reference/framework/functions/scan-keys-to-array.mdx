@@ -1,0 +1,33 @@
+---
+title: "scanKeysToArray()"
+---
+
+# Function: scanKeysToArray()
+
+```ts
+function scanKeysToArray<K>(adapter, prefix): Promise<K[]>
+```
+
+Collect all scan results into an array.
+
+Useful when you need all keys at once rather than streaming.
+Use with caution on large keysets.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` | `string` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `unknown`\> | The adapter to scan |
+| `prefix` | `K` | The prefix to scan for |
+
+## Returns
+
+`Promise`\<`K`[]\>
+
+Array of all matching keys

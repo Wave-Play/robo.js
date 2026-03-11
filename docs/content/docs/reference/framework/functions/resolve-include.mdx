@@ -1,0 +1,38 @@
+---
+title: "resolveInclude()"
+---
+
+# Function: resolveInclude()
+
+```ts
+function resolveInclude<T>(
+   record, 
+   includeClause, 
+   schema, 
+   modelName, 
+ctx): Promise<T & Record<string, unknown>>
+```
+
+Resolve includes for a single record.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `T` | Record to resolve includes for |
+| `includeClause` | `IncludeClause` | Include clause |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Model's normalized schema |
+| `modelName` | `string` | Model name (for junction table resolution) |
+| `ctx` | [`IncludeContext`](../interfaces/include-context) | Include context |
+
+## Returns
+
+`Promise`\<`T` & `Record`\<`string`, `unknown`\>\>
+
+Record with resolved includes

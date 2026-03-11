@@ -1,0 +1,26 @@
+---
+title: "validateMode()"
+---
+
+# Function: validateMode()
+
+```ts
+function validateMode(mode, adapter): ResolvedTransactionMode
+```
+
+Validate that a transaction mode is supported by the adapter.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `mode` | [`TransactionMode`](../type-aliases/transaction-mode) |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+
+## Returns
+
+[`ResolvedTransactionMode`](../type-aliases/resolved-transaction-mode)
+
+## Throws
+
+FeatureNotSupportedError if the mode is not supported

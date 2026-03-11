@@ -1,0 +1,22 @@
+---
+title: "createErrorHandlerMiddleware()"
+---
+
+# Function: createErrorHandlerMiddleware()
+
+```ts
+function createErrorHandlerMiddleware(handler): MiddlewareFn<OperationType>
+```
+
+Create a middleware that wraps the operation in a try-catch.
+Useful for error handling/transformation.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `handler` | (`error`, `params`) =\> `unknown` |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<[`OperationType`](../type-aliases/operation-type)\>

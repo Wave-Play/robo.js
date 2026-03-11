@@ -1,0 +1,25 @@
+---
+title: "getPluginContext()"
+---
+
+# Function: getPluginContext()
+
+```ts
+function getPluginContext(pluginName): PluginContext
+```
+
+Get plugin context for a model.
+
+Used by model.pluginContext(pluginName) to access plugin state and methods.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `pluginName` | `string` | Name of the plugin |
+
+## Returns
+
+[`PluginContext`](../interfaces/plugin-context)
+
+Plugin context or throws if plugin not found

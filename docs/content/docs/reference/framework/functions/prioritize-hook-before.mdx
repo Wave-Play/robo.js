@@ -1,0 +1,36 @@
+---
+title: "prioritizeHookBefore()"
+---
+
+# Function: prioritizeHookBefore()
+
+```ts
+function prioritizeHookBefore(
+   hookType, 
+   pluginName, 
+   beforePlugin): void
+```
+
+Set a plugin's hook to run before another plugin's hook.
+Adjusts the priority to be 10 less than the target plugin's priority.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hookType` | [`LifecycleHookType`](../type-aliases/lifecycle-hook-type) | The lifecycle hook type |
+| `pluginName` | `string` | The plugin to prioritize |
+| `beforePlugin` | `string` | The plugin that should run after |
+
+## Returns
+
+`void`
+
+## Example
+
+```typescript
+import { prioritizeHookBefore } from 'robo.js'
+
+// Ensure server starts before discordjs
+prioritizeHookBefore('start', '@robojs/server', '@robojs/discordjs')
+```

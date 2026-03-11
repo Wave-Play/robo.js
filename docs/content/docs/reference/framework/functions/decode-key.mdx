@@ -1,0 +1,25 @@
+---
+title: "decodeKey()"
+---
+
+# Function: decodeKey()
+
+```ts
+function decodeKey(storageKey): EncodedKeyData
+```
+
+Decode a storage key back to (namespace, key) pair.
+
+Handles both plain keys and encoded `_e:{base64url}` keys.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `storageKey` | `string` | The key from storage |
+
+## Returns
+
+[`EncodedKeyData`](../interfaces/encoded-key-data)
+
+Decoded namespace and key

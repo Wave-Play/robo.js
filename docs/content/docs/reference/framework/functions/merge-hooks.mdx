@@ -1,0 +1,31 @@
+---
+title: "mergeHooks()"
+---
+
+# Function: mergeHooks()
+
+```ts
+function mergeHooks<T>(...hooksList): ModelHooks<T>
+```
+
+Merge hook objects.
+
+Later hooks wrap earlier hooks.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| ...`hooksList` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\>[] | List of hooks to merge |
+
+## Returns
+
+[`ModelHooks`](../interfaces/model-hooks)\<`T`\>
+
+Merged hooks

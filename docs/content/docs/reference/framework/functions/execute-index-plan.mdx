@@ -1,0 +1,24 @@
+---
+title: "executeIndexPlan()"
+---
+
+# Function: executeIndexPlan()
+
+```ts
+function executeIndexPlan(plan, indexes): string[] | null
+```
+
+Execute a query plan against sorted index.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `plan` | [`QueryPlan`](../interfaces/query-plan) | Query plan |
+| `indexes` | [`AvailableIndexes`](../interfaces/available-indexes) | Available indexes |
+
+## Returns
+
+`string`[] \| `null`
+
+Record IDs from index (or null if full scan needed)

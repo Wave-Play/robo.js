@@ -1,0 +1,27 @@
+---
+title: "normalizeRecordShape()"
+---
+
+# Function: normalizeRecordShape()
+
+```ts
+function normalizeRecordShape(record, schema): Record<string, unknown>
+```
+
+Normalize a record shape by:
+- Removing undefined values
+- Preserving null values
+- Ensuring consistent field order
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `Record`\<`string`, `unknown`\> | Input record |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Normalized schema |
+
+## Returns
+
+`Record`\<`string`, `unknown`\>
+
+Normalized record

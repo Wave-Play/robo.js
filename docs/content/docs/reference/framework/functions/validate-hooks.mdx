@@ -1,0 +1,31 @@
+---
+title: "validateHooks()"
+---
+
+# Function: validateHooks()
+
+```ts
+function validateHooks<T>(hooks): asserts hooks is ModelHooks<T>
+```
+
+Validate hooks object structure.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | `unknown` | Hooks to validate |
+
+## Returns
+
+`asserts hooks is ModelHooks<T>`
+
+## Throws
+
+Error if hooks are invalid

@@ -1,0 +1,37 @@
+---
+title: "emit()"
+---
+
+# Function: emit()
+
+```ts
+function emit(
+   type, 
+   data, 
+   options?): string
+```
+
+Emits an IPC event to the outbox for the host to process.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `type` | `string` | Event type (e.g., "open:url", "notify") |
+| `data` | `unknown` | Event payload |
+| `options`? | [`IpcEmitOptions`](../interfaces/ipc-emit-options) | Optional target and ref |
+
+## Returns
+
+`string`
+
+The generated event ID
+
+## Example
+
+```ts
+import { emit } from 'robo.js/ipc'
+
+emit('open:url', { url: 'https://example.com' })
+emit('notify', { level: 'info', title: 'Hello!' })
+```

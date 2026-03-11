@@ -1,0 +1,27 @@
+---
+title: "validateRelationsSchema()"
+---
+
+# Function: validateRelationsSchema()
+
+```ts
+function validateRelationsSchema(models): RelationValidationError[]
+```
+
+Validate relation schema definitions at build/registration time.
+Checks that:
+- Target model exists
+- Foreign key field exists in the appropriate model
+- Foreign key field is indexed (warning if not)
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `models` | `Map`\<`string`, [`NormalizedSchema`](../interfaces/normalized-schema)\> | Map of model name to normalized schema |
+
+## Returns
+
+[`RelationValidationError`](../interfaces/relation-validation-error)[]
+
+Array of validation errors

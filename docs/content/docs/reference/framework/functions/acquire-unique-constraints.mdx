@@ -1,0 +1,24 @@
+---
+title: "acquireUniqueConstraints()"
+---
+
+# Function: acquireUniqueConstraints()
+
+```ts
+function acquireUniqueConstraints(manager, constraints): Promise<void>
+```
+
+Acquire multiple unique constraints atomically (best effort).
+
+Acquires constraints in order. If any fails, releases already-acquired ones.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `manager` | [`UniqueIndexManager`](../classes/unique-index-manager) | UniqueIndexManager instance |
+| `constraints` | \{ `options`: [`UniqueConstraintOptions`](../interfaces/unique-constraint-options); `recordId`: `string`; `value`: `unknown`; \}[] | Array of \{ options, value, recordId \} |
+
+## Returns
+
+`Promise`\<`void`\>

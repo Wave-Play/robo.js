@@ -1,0 +1,40 @@
+---
+title: "rebuildCatalogFromChunks()"
+---
+
+# Function: rebuildCatalogFromChunks()
+
+```ts
+function rebuildCatalogFromChunks(
+   adapter, 
+   modelName, 
+   namespace?, 
+options?): Promise<CatalogRebuildResult>
+```
+
+Rebuild a catalog from chunks and segments stored in the adapter.
+
+This function scans all chunk and segment keys for a model and
+reconstructs the catalog from the stored data. It's useful for:
+- Recovery when catalog is missing or corrupted
+- Verification of catalog integrity
+- Migration between catalog versions
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> | The storage adapter (must support scan) |
+| `modelName` | `string` | Name of the model to rebuild |
+| `namespace`? | `string` | Optional namespace |
+| `options`? | [`CatalogRebuildOptions`](../interfaces/catalog-rebuild-options) | Rebuild options |
+
+## Returns
+
+`Promise`\<[`CatalogRebuildResult`](../interfaces/catalog-rebuild-result)\>
+
+Rebuild result with the new catalog
+
+## Throws
+
+FeatureNotSupportedError if adapter doesn't support scan

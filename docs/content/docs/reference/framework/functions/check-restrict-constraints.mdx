@@ -1,0 +1,33 @@
+---
+title: "checkRestrictConstraints()"
+---
+
+# Function: checkRestrictConstraints()
+
+```ts
+function checkRestrictConstraints(
+   modelName, 
+   schema, 
+   record, 
+ctx): Promise<void>
+```
+
+Check if delete should be blocked due to restrict policy.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Model being deleted from |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Model's normalized schema |
+| `record` | \{ `[key: string]`: `unknown`; `id`: `string`; \} | Record being deleted |
+| `record.id` | `string` | - |
+| `ctx` | [`CascadeContext`](../interfaces/cascade-context) | Cascade context |
+
+## Returns
+
+`Promise`\<`void`\>
+
+## Throws
+
+FlashcoreError if delete is blocked

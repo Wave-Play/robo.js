@@ -1,0 +1,34 @@
+---
+title: "validateForeignKey()"
+---
+
+# Function: validateForeignKey()
+
+```ts
+function validateForeignKey(
+   modelName, 
+   fkField, 
+   fkValue, 
+   targetModel, 
+getModel): Promise<void>
+```
+
+Validate that a foreign key points to an existing record.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | Source model name (for error messages) |
+| `fkField` | `string` | Foreign key field name |
+| `fkValue` | `string` | Foreign key value (target record ID) |
+| `targetModel` | `string` | Target model to look up |
+| `getModel` | (`name`) =\> `unknown` | Function to get model instance by name |
+
+## Returns
+
+`Promise`\<`void`\>
+
+## Throws
+
+ValidationError if the referenced record doesn't exist

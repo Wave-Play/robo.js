@@ -1,0 +1,27 @@
+---
+title: "evaluatePluginWhere()"
+---
+
+# Function: evaluatePluginWhere()
+
+```ts
+function evaluatePluginWhere(record, where): boolean
+```
+
+Evaluate a where clause against a record.
+
+Supports operators: equals, gt, gte, lt, lte, not, in, notIn,
+contains, startsWith, endsWith, AND, OR, NOT.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `record` | `Record`\<`string`, `unknown`\> | The record to evaluate |
+| `where` | `Record`\<`string`, `unknown`\> | The where clause |
+
+## Returns
+
+`boolean`
+
+True if record matches where clause

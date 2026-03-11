@@ -1,0 +1,29 @@
+---
+title: "createEncryptionAdapter()"
+---
+
+# Function: createEncryptionAdapter()
+
+```ts
+function createEncryptionAdapter<K, V>(adapter, options): EncryptionAdapter<K, V>
+```
+
+Create a new EncryptionAdapter wrapping another adapter.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+| `options` | [`EncryptionOptions`](../interfaces/encryption-options) |
+
+## Returns
+
+[`EncryptionAdapter`](../classes/encryption-adapter)\<`K`, `V`\>

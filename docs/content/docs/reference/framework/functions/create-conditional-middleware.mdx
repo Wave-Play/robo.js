@@ -1,0 +1,28 @@
+---
+title: "createConditionalMiddleware()"
+---
+
+# Function: createConditionalMiddleware()
+
+```ts
+function createConditionalMiddleware<Op>(condition, middleware): MiddlewareFn<Op>
+```
+
+Create a middleware that conditionally executes based on model name.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `condition` | (`params`) =\> `boolean` |
+| `middleware` | [`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\> |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<`Op`\>

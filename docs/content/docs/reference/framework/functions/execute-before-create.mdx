@@ -1,0 +1,30 @@
+---
+title: "executeBeforeCreate()"
+---
+
+# Function: executeBeforeCreate()
+
+```ts
+function executeBeforeCreate<T>(hooks, data): Promise<unknown>
+```
+
+Execute before-create hook.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `hooks` | [`ModelHooks`](../interfaces/model-hooks)\<`T`\> | Model hooks |
+| `data` | `unknown` | Input data |
+
+## Returns
+
+`Promise`\<`unknown`\>
+
+Possibly modified data

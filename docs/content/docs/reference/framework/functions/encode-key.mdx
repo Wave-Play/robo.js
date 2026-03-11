@@ -1,0 +1,27 @@
+---
+title: "encodeKey()"
+---
+
+# Function: encodeKey()
+
+```ts
+function encodeKey(namespace, key): string
+```
+
+Encode a (namespace, key) pair into a safe storage key.
+
+If the composed key contains only safe characters, it's stored as-is.
+Otherwise, it's encoded as `_e:{base64url}` where the payload is JSON.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace` | `string`[] | Namespace segments (can be empty) |
+| `key` | `string` | The key within the namespace |
+
+## Returns
+
+`string`
+
+Safe storage key

@@ -1,0 +1,24 @@
+---
+title: "replayEntryWithContext()"
+---
+
+# Function: replayEntryWithContext()
+
+```ts
+function replayEntryWithContext(ctx, entry): Promise<void>
+```
+
+Replay a WAL entry with full model context.
+
+This version can properly update catalogs because it knows the model structure.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ctx` | [`RecoveryContext`](../interfaces/recovery-context) |
+| `entry` | [`WALEntry`](../interfaces/wal-entry) |
+
+## Returns
+
+`Promise`\<`void`\>

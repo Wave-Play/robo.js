@@ -1,0 +1,28 @@
+---
+title: "buildModelKey()"
+---
+
+# Function: buildModelKey()
+
+```ts
+function buildModelKey(
+   modelName, 
+   suffix, 
+   namespace?): string
+```
+
+Build a model key for internal storage.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `modelName` | `string` | The model name |
+| `suffix` | `string` | Key suffix (e.g., 'catalog', 'chunk:0') |
+| `namespace`? | `string` | Optional namespace (omitted for default namespace) |
+
+## Returns
+
+`string`
+
+Model storage key

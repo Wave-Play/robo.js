@@ -1,27 +1,16 @@
 ---
-title: "getConfig"
-description: "Access the currently loaded Robo.js configuration"
+title: "getConfig()"
 ---
 
-Returns the currently loaded configuration. This function provides access to all the configuration settings defined in your Robo.js application.
+# Function: getConfig()
 
-## `getConfig()`
-
-```typescript
+```ts
 function getConfig(): Config | null
 ```
 
-Returns the currently loaded configuration. May return null if config has yet to load.
+Returns the currently loaded configuration.
+May return null if config has yet to load. Use loadConfig to load it first.
 
-<Steps>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'Config | null',
-        description: 'The current configuration object, or null if not loaded'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+## Returns
+
+[`Config`](../interfaces/config) \| `null`

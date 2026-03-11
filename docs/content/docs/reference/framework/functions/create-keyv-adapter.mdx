@@ -1,0 +1,28 @@
+---
+title: "createKeyvAdapter()"
+---
+
+# Function: createKeyvAdapter()
+
+```ts
+function createKeyvAdapter<V>(keyv, options?): KeyvAdapter<V>
+```
+
+Create a KeyvAdapter from a Keyv instance.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `keyv` | [`KeyvLike`](../interfaces/keyv-like)\<`V`\> |
+| `options`? | [`KeyvAdapterOptions`](../interfaces/keyv-adapter-options) |
+
+## Returns
+
+[`KeyvAdapter`](../classes/keyv-adapter)\<`V`\>

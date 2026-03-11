@@ -1,0 +1,38 @@
+---
+title: "resolveIncludesBatched()"
+---
+
+# Function: resolveIncludesBatched()
+
+```ts
+function resolveIncludesBatched<T>(
+   records, 
+   includeClause, 
+   schema, 
+   modelName, 
+ctx): Promise<T & Record<string, unknown>[]>
+```
+
+Resolve includes for multiple records with batching (N+1 prevention).
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `records` | `T`[] | Records to resolve includes for |
+| `includeClause` | `IncludeClause` | Include clause |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Model's normalized schema |
+| `modelName` | `string` | Model name |
+| `ctx` | [`IncludeContext`](../interfaces/include-context) | Include context |
+
+## Returns
+
+`Promise`\<`T` & `Record`\<`string`, `unknown`\>[]\>
+
+Records with resolved includes

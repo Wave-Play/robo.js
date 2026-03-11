@@ -1,0 +1,30 @@
+---
+title: "executeCascadeOperations()"
+---
+
+# Function: executeCascadeOperations()
+
+```ts
+function executeCascadeOperations(
+   ops, 
+   parentId, 
+ctx): Promise<void>
+```
+
+Execute collected cascade operations.
+Operations are executed in the correct order:
+1. Junction table deletions first
+2. setNull operations
+3. Cascade deletes (deepest first)
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `ops` | [`CascadeOp`](../interfaces/cascade-op)[] | Collected cascade operations |
+| `parentId` | `string` | Parent record ID |
+| `ctx` | [`CascadeContext`](../interfaces/cascade-context) | Cascade context |
+
+## Returns
+
+`Promise`\<`void`\>

@@ -1,0 +1,26 @@
+---
+title: "requireCapability()"
+---
+
+# Function: requireCapability()
+
+```ts
+function requireCapability(
+   capabilities, 
+   required, 
+   featureName): void
+```
+
+Check if an adapter meets minimum requirements for a feature.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `capabilities` | [`AdapterCapabilities`](../interfaces/adapter-capabilities) |
+| `required` | keyof [`AdapterCapabilities`](../interfaces/adapter-capabilities) |
+| `featureName` | `string` |
+
+## Returns
+
+`void`

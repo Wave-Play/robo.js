@@ -1,0 +1,39 @@
+---
+title: "buildAdapter()"
+---
+
+# Function: buildAdapter()
+
+```ts
+function buildAdapter<K, V>(baseAdapter): AdapterBuilder<K, V>
+```
+
+Create a new AdapterBuilder with the given base adapter.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` *extends* `string` | `string` |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `baseAdapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`K`, `V`\> |
+
+## Returns
+
+[`AdapterBuilder`](../classes/adapter-builder)\<`K`, `V`\>
+
+## Example
+
+```typescript
+import { buildAdapter, MemoryAdapter } from 'robo.js/flashcore'
+
+const adapter = buildAdapter(new MemoryAdapter())
+  .withCache({ maxSize: 500 })
+  .withCompression()
+  .build()
+```

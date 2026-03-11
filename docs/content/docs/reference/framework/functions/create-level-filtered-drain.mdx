@@ -1,0 +1,40 @@
+---
+title: "createLevelFilteredDrain()"
+---
+
+# Function: createLevelFilteredDrain()
+
+```ts
+function createLevelFilteredDrain(drain, minLevel): LogDrain
+```
+
+Wraps a drain with level filtering.
+Only log entries at or above the specified minimum level will be passed to the wrapped drain.
+
+This is useful when combining drains with different level requirements, such as:
+- Console output at 'info' level
+- File output at 'debug' level
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `drain` | [`LogDrain`](../type-aliases/log-drain) | The drain to wrap with level filtering |
+| `minLevel` | `string` | The minimum level to pass through (e.g., 'info', 'debug') |
+
+## Returns
+
+[`LogDrain`](../type-aliases/log-drain)
+
+A new drain that filters messages below the specified level
+
+## Example
+
+```typescript
+import { createLevelFilteredDrain, createMultiDrain, consoleDrain } from 'robo.js/logger'
+import { createFileDrain } from 'robo.js/logger/drains'
+
+const filteredConsole = createLevelFilteredDrain(consoleDrain, 'info')
+const fileDrain = createFileDrain({ path: 'logs/app.log', level: 'debug' })
+const multiDrain = createMultiDrain([filteredConsole, fileDrain])
+```

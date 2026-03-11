@@ -1,0 +1,37 @@
+---
+title: "buildDeleteDeltas()"
+---
+
+# Function: buildDeleteDeltas()
+
+```ts
+function buildDeleteDeltas(
+   chunkKey, 
+   chunkId, 
+   id, 
+   record, 
+   uniqueKeys): DeltaBuildResult
+```
+
+Build deltas for a delete operation.
+
+Delete operation:
+- auth: chunk_delete, catalog_delete, unique_release
+- undo: chunk_put (full record), catalog_set, unique_acquire
+- derived: filter_remove
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkKey` | `string` | - |
+| `chunkId` | `number` | Chunk containing the record |
+| `id` | `string` | Record ID |
+| `record` | `unknown` | Full record data (for rollback) |
+| `uniqueKeys` | [`UniqueChange`](../interfaces/unique-change)[] | Unique constraint keys to release |
+
+## Returns
+
+[`DeltaBuildResult`](../interfaces/delta-build-result)
+
+Delta build result

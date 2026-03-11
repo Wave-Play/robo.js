@@ -1,0 +1,22 @@
+---
+title: "createLoggingMiddleware()"
+---
+
+# Function: createLoggingMiddleware()
+
+```ts
+function createLoggingMiddleware(logger): MiddlewareFn<OperationType>
+```
+
+Create a simple middleware that logs operations.
+Useful for debugging.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `logger` | (`message`, ...`args`) =\> `void` |
+
+## Returns
+
+[`MiddlewareFn`](../type-aliases/middleware-fn)\<[`OperationType`](../type-aliases/operation-type)\>

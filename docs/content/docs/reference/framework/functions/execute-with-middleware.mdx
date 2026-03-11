@@ -1,0 +1,43 @@
+---
+title: "executeWithMiddleware()"
+---
+
+# Function: executeWithMiddleware()
+
+```ts
+function executeWithMiddleware<Op>(
+   operation, 
+   model, 
+   args, 
+execute): Promise<OperationResult<Op>>
+```
+
+Execute operation through middleware pipeline.
+
+Middleware executes in config order (outermost first/last):
+1. Plugin A before
+2.   Plugin B before
+3.     Actual operation
+4.   Plugin B after
+5. Plugin A after
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `operation` | `Op` | Operation type (create, update, delete, etc.) |
+| `model` | [`FlashcoreModel`](../classes/flashcore-model)\<\{ `id`: `string`; \}\> | The model being operated on |
+| `args` | [`OperationArgs`](../type-aliases/operation-args)\<`Op`\> | Operation arguments (can be mutated by middleware) |
+| `execute` | () =\> `Promise`\<[`OperationResult`](../type-aliases/operation-result)\<`Op`\>\> | The actual operation function |
+
+## Returns
+
+`Promise`\<[`OperationResult`](../type-aliases/operation-result)\<`Op`\>\>
+
+Operation result (possibly modified by middleware)

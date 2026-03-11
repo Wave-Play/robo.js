@@ -1,0 +1,37 @@
+---
+title: "buildCreateDeltas()"
+---
+
+# Function: buildCreateDeltas()
+
+```ts
+function buildCreateDeltas(
+   chunkKey, 
+   chunkId, 
+   id, 
+   record, 
+   uniqueKeys): DeltaBuildResult
+```
+
+Build deltas for a create operation.
+
+Create operation:
+- auth: chunk_put, catalog_set, unique_acquire (for each unique field)
+- undo: chunk_delete, catalog_delete, unique_release
+- derived: filter_add
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `chunkKey` | `string` | - |
+| `chunkId` | `number` | Target chunk ID |
+| `id` | `string` | Record ID |
+| `record` | `unknown` | Full record data (serialized) |
+| `uniqueKeys` | [`UniqueChange`](../interfaces/unique-change)[] | Unique constraint keys to acquire |
+
+## Returns
+
+[`DeltaBuildResult`](../interfaces/delta-build-result)
+
+Delta build result

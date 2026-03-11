@@ -1,0 +1,24 @@
+---
+title: "getUnknownFields()"
+---
+
+# Function: getUnknownFields()
+
+```ts
+function getUnknownFields(data, schema): string[]
+```
+
+Get field names that are unknown (not in schema).
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `data` | `Record`\<`string`, `unknown`\> | Input data |
+| `schema` | [`NormalizedSchema`](../interfaces/normalized-schema) | Normalized schema |
+
+## Returns
+
+`string`[]
+
+Array of unknown field names

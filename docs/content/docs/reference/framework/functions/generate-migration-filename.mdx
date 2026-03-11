@@ -1,0 +1,30 @@
+---
+title: "generateMigrationFilename()"
+---
+
+# Function: generateMigrationFilename()
+
+```ts
+function generateMigrationFilename(name): string
+```
+
+Helper to generate a migration filename.
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `name` | `string` | Migration name (lowercase, underscore-separated) |
+
+## Returns
+
+`string`
+
+Filename with timestamp prefix
+
+## Example
+
+```typescript
+generateMigrationFilename('add_role_field')
+// => '20240115120000_add_role_field.ts'
+```

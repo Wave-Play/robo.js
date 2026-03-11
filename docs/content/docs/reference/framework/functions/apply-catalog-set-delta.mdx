@@ -1,0 +1,31 @@
+---
+title: "applyCatalogSetDelta()"
+---
+
+# Function: applyCatalogSetDelta()
+
+```ts
+function applyCatalogSetDelta(
+   adapter, 
+   catalogKey, 
+   id, 
+chunkId): Promise<void>
+```
+
+Recovery-aware catalog set.
+
+During recovery, we need to apply catalog deltas at the raw adapter level.
+This helper manages the catalog structure.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter)\<`string`, `unknown`\> |
+| `catalogKey` | `string` |
+| `id` | `string` |
+| `chunkId` | `number` |
+
+## Returns
+
+`Promise`\<`void`\>

@@ -1,43 +1,23 @@
 ---
-title: "getPluginOptions"
-description: "Get the configuration options for a Robo.js plugin"
+title: "getPluginOptions()"
 ---
 
-Gets the config options for a specific plugin package. This function allows plugin authors to access their plugin's configuration data.
+# Function: getPluginOptions()
 
-## `getPluginOptions()`
-
-```typescript
-function getPluginOptions(packageName: string): unknown | null
+```ts
+function getPluginOptions(packageName): unknown | null
 ```
 
 Gets the config options for a specific plugin package.
 
-<Steps>
-  <Step>
-    **Parameters**
-    <TypeTable
-      type={{
-        packageName: {
-          description: 'The name of the package to get the options for',
-          type: 'string',
-          required: true
-        }
-      }}
-    />
-  </Step>
-  <Step>
-    **Returns**
-    <ReturnType
-      type={{
-        type: 'unknown | null',
-        description: 'The options for the package, or null if the package is not installed nor configured'
-      }}
-    />
-  </Step>
-  ---
-</Steps>
+## Parameters
 
-<Callout type="info" title="Type Safety">
-  The return type is `unknown` because the shape of options depends on the specific plugin. You may need to type-cast or validate the options to ensure they are correct.
-</Callout>
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `packageName` | `string` | The name of the package to get the options for. |
+
+## Returns
+
+`unknown` \| `null`
+
+The options for the package, or null if the package is not installed nor configured.
