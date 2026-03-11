@@ -1,0 +1,137 @@
+---
+title: Developer Portal
+description: Configure your activity in the Discord Developer Portal
+---
+
+The **Developer Portal** is where you create and configure your Discord application for activities.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal applications page showing the list of applications with the New Application button in the top right"
+  focus="The New Application button and the applications list"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show discord.com/developers/applications with the 'New Application' button visible. Include portal header and sidebar."
+/>
+
+## Create an Application
+
+1. Go to [discord.com/developers/applications](https://discord.com/developers/applications).
+2. Click **New Application** in the top right.
+3. Enter a name for your application.
+4. Click **Create**.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal 'Create an Application' dialog with a text field for the application name and Create button"
+  focus="The application creation modal with the name input field"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the modal after clicking 'New Application'. Name field should contain 'My Activity'. Create button visible."
+/>
+
+## Enable Activities
+
+To enable activities for your application:
+
+1. Open your application in the [Developer Portal](https://discord.com/developers/applications).
+2. Navigate to **Activities** in the left sidebar.
+3. Toggle the **Enable Activities** switch to on.
+4. This unlocks the **URL Mappings** section and other activity-specific settings.
+
+Once enabled, Discord treats your application as an activity that can be launched from voice channels, text channels, and DMs.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal Activities tab showing the Enable Activities toggle in the on position, with URL Mappings section visible below"
+  focus="The Activities sidebar item and Enable Activities toggle turned on"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Activities tab selected in sidebar. Enable Activities toggle ON. URL Mappings section visible below (even if empty)."
+/>
+
+## URL Mappings
+
+Discord doesn't let activities make network requests directly. All traffic goes through Discord's proxy. URL Mappings tell Discord where to forward those requests.
+
+The root mapping points to your app's URL: a tunnel URL during development, or your production URL when deployed.
+
+| Prefix | Target |
+|--------|--------|
+| `/` (Root) | `https://your-tunnel-url.trycloudflare.com` |
+| `/google-fonts` | `https://fonts.googleapis.com` |
+
+Additional mappings let your activity load external resources through Discord's proxy. Add entries for any third-party domains your frontend needs to access.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal URL Mappings section showing root mapping '/' pointing to a Cloudflare tunnel URL, with an additional mapping for external services"
+  focus="The URL Mappings table with root mapping filled in"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the URL Mappings section with ONLY the root '/' mapped to a tunnel URL. One mapping row, showing a fresh initial setup. Include the Add button to hint more can be added."
+/>
+
+## Entry Point Command
+
+<Callout type="info">
+When `DISCORD_TOKEN` is set in your `.env` file, `@robojs/patch` automatically creates and syncs the entry point command for you during development. This is the recommended approach — no manual setup needed.
+</Callout>
+
+Discord requires an **entry point command** to launch activities. This is a special command type (type 4) that appears in the Activities shelf — it is different from regular slash commands. When a user clicks your activity in the shelf, Discord invokes this command to start the embedded session.
+
+Without the bot token, you need to create the command manually:
+
+1. Go to your application in the Developer Portal.
+2. Navigate to **Commands** in the left sidebar.
+3. Click **New Command** and select the entry point command type.
+4. Set the command name (this is what users see in the Activities shelf).
+5. Save your changes.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal Commands tab showing the entry point command configuration with the special entry point command type selected"
+  focus="The Commands section with entry point command type setup"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Commands tab with the entry point command form. The command type should be the entry point type (type 4). Name field filled with something like 'my-activity'."
+/>
+
+## OAuth2 Setup
+
+Navigate to the **OAuth2** tab and add a redirect URI. Select the scopes (permission categories that control what user data your app can access) your activity requires. Common defaults are `identify` and `guilds`.
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal OAuth2 tab showing Redirects section with 'https://localhost' entered and scope checkboxes with 'identify' and 'guilds' selected"
+  focus="The redirect URI field and scope checkboxes"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show OAuth2 tab with 'https://localhost' as redirect URI. Scopes 'identify' and 'guilds' checked."
+/>
+
+## Testing
+
+After configuring URL Mappings, open Discord and join a voice channel. Click the Activities button in the voice channel controls, then select your activity from the list.
+
+<ScreenshotPlaceholder
+  alt="Discord desktop client in a voice channel with the activity being launched from the Activities shelf, showing the embedded panel loading"
+  focus="The Activities shelf with the activity selected and loading in the embedded panel"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the activity actually running inside the embedded panel after launch. The voice channel participants should be visible alongside the activity iframe content. Focus on proving the end-to-end setup works."
+/>
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./tunnels"
+    title="Tunnels"
+    description="Expose your local server for testing."
+  />
+  <Card
+    href="./proxy"
+    title="Discord Proxy"
+    description="Understand how Discord proxies activity requests."
+  />
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Build the UI for your activity."
+  />
+</Cards>

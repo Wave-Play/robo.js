@@ -1,7 +1,26 @@
 {
-  "title": "Activities",
+  "title": "Discord Activities",
   "icon": "PartyPopper",
-  "description": "Learn how to build discord activities",
+  "description": "Build Discord Activities with Robo.js",
   "root": true,
-  "pages": ["index", "authentication", "beginner-guide", "credentials", "multiplayer", "proxy"]
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quick-start",
+    "credentials",
+    "developer-portal",
+    "tunnels",
+    "---Guides---",
+    "frontend",
+    "backend",
+    "sdk",
+    "authentication",
+    "multiplayer",
+    "proxy",
+    "---Reference---",
+    "configuration",
+    "sync-api",
+    "---Advanced---",
+    "migrate"
+  ]
 }

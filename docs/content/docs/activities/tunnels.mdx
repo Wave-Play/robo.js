@@ -1,0 +1,157 @@
+---
+title: Tunnels
+description: Use tunnels for local Discord Activity development
+---
+
+Discord requires HTTPS URLs for activities, which means `localhost` does not work directly. **Robo.js** manages free Cloudflare Tunnels automatically during development.
+
+## How It Works
+
+When you run `npm run dev` (or `pnpm dev`), the scaffolded dev script includes the `--tunnel` flag, which starts a Cloudflare Tunnel alongside the dev server. A public HTTPS URL appears in the terminal. No installation or configuration required.
+
+<Callout type="info">
+You should see output similar to this in your terminal:
+
+```
+Ready on port 3000
+Tunnel URL: https://abc-123-xyz.trycloudflare.com
+```
+</Callout>
+
+<ScreenshotPlaceholder
+  alt="Terminal output showing the Robo.js dev server starting with the tunnel URL displayed, indicating the local server port and generated Cloudflare HTTPS URL"
+  focus="The tunnel URL line in the terminal output"
+  zoom="100%"
+  aspect="16/9"
+  notes="Crop tightly to just the tunnel-related output lines: 'Ready on port 3000' and 'Tunnel URL: https://abc-xyz.trycloudflare.com'. Exclude Vite compilation output and build steps. Highlight the tunnel URL itself. Use a dark terminal theme."
+/>
+
+## URL Mapping
+
+Copy the tunnel URL from the terminal. In the Developer Portal, set it as the Root Mapping under URL Mappings. The URL changes each time the dev server restarts.
+
+<Callout type="info">
+Update the root mapping in the Developer Portal whenever the tunnel URL changes.
+</Callout>
+
+<ScreenshotPlaceholder
+  alt="Discord Developer Portal URL Mappings section with the root '/' field containing a Cloudflare tunnel URL from the terminal"
+  focus="The root mapping field with the tunnel URL pasted in"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the URL Mappings section with the root '/' field being actively edited — the tunnel URL is being pasted into the input field with the cursor visible. Emphasize the workflow of copying from terminal and pasting here. Include Save button if visible."
+/>
+
+## Stable Tunnels
+
+<Callout type="info">
+Stable tunnels are optional. Free tunnels work fine for development — you just need to update the Developer Portal each time the dev server restarts.
+</Callout>
+
+For a fixed URL that persists across restarts, configure Cloudflare credentials in your `@robojs/server` plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.ts"
+    export default {
+      tunnel: {
+        enabled: true,
+        cloudflare: {
+          domain: process.env.CLOUDFLARE_DOMAIN,
+          apiKey: process.env.CLOUDFLARE_API_KEY,
+          zoneId: process.env.CLOUDFLARE_ZONE_ID,
+          accountId: process.env.CLOUDFLARE_ACCOUNT_ID
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.js"
+    export default {
+      tunnel: {
+        enabled: true,
+        cloudflare: {
+          domain: process.env.CLOUDFLARE_DOMAIN,
+          apiKey: process.env.CLOUDFLARE_API_KEY,
+          zoneId: process.env.CLOUDFLARE_ZONE_ID,
+          accountId: process.env.CLOUDFLARE_ACCOUNT_ID
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+On first run, the provider automatically creates a named tunnel and stores `CLOUDFLARE_TUNNEL_ID` and `CLOUDFLARE_TUNNEL_TOKEN` in your `.env` file. Subsequent runs reuse the same tunnel URL.
+
+<Callout type="info">
+Stable tunnel URLs avoid the need to update Developer Portal mappings on each restart.
+</Callout>
+
+## Manual Tunnel Management
+
+<Callout type="info">
+Most developers don't need manual commands — the `--tunnel` flag on `npm run dev` handles everything automatically.
+</Callout>
+
+Use the `robo tunnel` CLI for manual control:
+
+```bash
+robo tunnel start             # Start a background tunnel
+robo tunnel start --attach    # Start in foreground
+robo tunnel list              # List running tunnels
+robo tunnel stop <id>         # Stop a specific tunnel
+robo tunnel stop --all        # Stop all tunnels
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Tunnel not starting | Check your internet connection and firewall settings. Cloudflare tunnels require outbound HTTPS access. |
+| URL not loading in Discord | Verify the URL mapping in the Developer Portal matches the tunnel URL from your terminal output. |
+| Connection refused | Ensure the dev server is running on the expected port (default 3000). |
+
+### Activity loads but shows blank
+
+This usually means Discord's Content Security Policy (CSP) — browser rules controlling which URLs your app can load — is blocking resources. Check the browser console (F12) for CSP errors. Common causes:
+
+- Missing URL mappings for external domains (fonts, CDNs, etc.)
+- `DiscordProxy.Vite()` not included in `config/vite.mjs`
+- Frontend code referencing `localhost` instead of relative paths
+
+### Tunnel URL keeps changing
+
+Free Cloudflare tunnels generate a new URL each time the dev server restarts. To avoid updating the Developer Portal every time, set up a stable tunnel by configuring Cloudflare credentials in your `@robojs/server` plugin config (see [Stable Tunnels](#stable-tunnels) above). This requires a Cloudflare account with a domain, API key, zone ID, and account ID.
+
+### Works locally but not in Discord
+
+Activities run behind Discord's proxy, which rewrites network requests. Verify:
+
+- `DiscordProxy.Vite()` is in your Vite config plugins array
+- API calls use relative paths (e.g., `/api/token`) instead of absolute URLs with `localhost`
+- All external domains are mapped in the Developer Portal's URL Mappings section
+
+### Mixed content errors
+
+Discord requires all resources to load over HTTPS. If you see "Mixed Content" errors in the console:
+
+- Ensure your tunnel provides an HTTPS URL (Cloudflare tunnels do this by default)
+- Replace any `http://` references in your code with `https://` or protocol-relative paths
+- Check that external APIs you call support HTTPS
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Build the UI for your activity."
+  />
+  <Card
+    href="./backend"
+    title="Backend"
+    description="Add server-side logic and API routes."
+  />
+</Cards>

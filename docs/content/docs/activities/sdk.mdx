@@ -1,0 +1,214 @@
+---
+title: Embedded App SDK
+description: Connect your activity to Discord
+---
+
+The **Embedded App SDK** (`@discord/embedded-app-sdk`) connects your activity to Discord. Since activities run inside Discord's embedded frame, this SDK provides the bridge between your web app and Discord's features — handling authorization, authentication, and access to Discord APIs.
+
+## Setup
+
+The SDK is included in activity templates. `DiscordContextProvider` wraps the app in `src/app/App.tsx`:
+
+<Callout type="info">
+This code is already in your project if you used the activity template.
+</Callout>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/App.tsx"
+    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+    import { Activity } from './Activity'
+
+    export default function App() {
+      return (
+        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+          <Activity />
+        </DiscordContextProvider>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/App.jsx"
+    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+    import { Activity } from './Activity'
+
+    export default function App() {
+      return (
+        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+          <Activity />
+        </DiscordContextProvider>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This provider initializes the SDK, handles the OAuth2 flow, and makes the SDK instance available to child components.
+
+## DiscordContextProvider
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `authenticate` | boolean | Prompt users to authenticate on load |
+| `scope` | string[] | OAuth2 scopes to request |
+| `loadingScreen` | ReactNode | Component shown during authentication |
+
+When `authenticate` is set, the provider automatically runs the full authorization and authentication flow on mount.
+
+## useDiscordSdk Hook
+
+Access SDK state and user data from any component:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Activity.tsx"
+    import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+    export function Activity() {
+      const { authenticated, session, status } = useDiscordSdk()
+
+      if (!authenticated) {
+        return <div>Connecting...</div>
+      }
+
+      return <div>Welcome, {session?.user.username}</div>
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Activity.jsx"
+    import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+    export function Activity() {
+      const { authenticated, session, status } = useDiscordSdk()
+
+      if (!authenticated) {
+        return <div>Connecting...</div>
+      }
+
+      return <div>Welcome, {session?.user.username}</div>
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `accessToken` | string \| null | OAuth2 access token |
+| `authenticated` | boolean | Whether authentication succeeded |
+| `discordSdk` | DiscordSDK | SDK instance |
+| `error` | string \| null | Error message if authentication failed |
+| `session` | DiscordSession \| null | Authenticated user session |
+| `status` | string | Current status: `pending`, `loading`, `authenticating`, `ready`, `error` |
+
+Status progresses: `pending` -> `loading` -> `authenticating` -> `ready` (or `error` if something goes wrong at any step).
+
+<ScreenshotPlaceholder
+  alt="A Discord Activity running in the embedded panel showing 'Welcome, username', demonstrating the SDK has authenticated the user and retrieved session data"
+  focus="The activity displaying the authenticated user's username from SDK session"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a Discord Activity in a voice channel embedded panel displaying 'Welcome, [username]'. Discord UI around the activity should be visible for context."
+/>
+
+## SDK Instance
+
+The `discordSdk` object provides access to Discord commands and events.
+
+| Command | Description |
+|---------|-------------|
+| `ready()` | Signal the SDK is ready |
+| `commands.authorize()` | Request OAuth2 authorization |
+| `commands.authenticate()` | Authenticate with an access token |
+| `commands.getChannel()` | Get current channel info |
+| `commands.getInstanceConnectedParticipants()` | List connected participants |
+| `subscribe()` | Subscribe to SDK events |
+
+Example using the SDK instance directly:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Activity.tsx"
+    const { discordSdk } = useDiscordSdk()
+
+    const channel = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Activity.jsx"
+    const { discordSdk } = useDiscordSdk()
+
+    const channel = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId })
+    ```
+  </Tab>
+</Tabs>
+
+## Mock Mode
+
+The template auto-detects whether the app runs inside Discord by checking for a `frame_id` query parameter — a value Discord adds to the URL when loading your app inside its embedded frame. Outside Discord, it uses `DiscordSDKMock` for local development.
+
+Mock mode generates random values for user, guild, and channel IDs, stored in session storage so they persist across refreshes within the same tab.
+
+Override mock values via query parameters:
+
+| Parameter | Description |
+|-----------|-------------|
+| `user_id` | Override the mock user ID |
+| `guild_id` | Override the mock guild ID |
+| `channel_id` | Override the mock channel ID |
+
+<ScreenshotPlaceholder
+  alt="A browser window showing the activity running at localhost outside of Discord, operating in mock mode with randomly generated user data"
+  focus="The activity in a standalone browser window with mock data"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show browser at localhost:5173 with the activity running outside Discord. Mock data visible (random username or mock ID). Browser address bar showing localhost to emphasize it's outside Discord."
+/>
+
+## Vanilla Projects
+
+For non-React projects, import the SDK directly. Call `ready()` and handle authorization and authentication manually:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/main.ts"
+    import { DiscordSDK } from '@discord/embedded-app-sdk'
+
+    const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+    await discordSdk.ready()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/main.js"
+    import { DiscordSDK } from '@discord/embedded-app-sdk'
+
+    const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+    await discordSdk.ready()
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+See the [Authentication](./authentication) page for the full vanilla authorization flow, including the code-for-token exchange.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./authentication"
+    title="Authentication"
+    description="Full OAuth2 flow for Discord Activities."
+  />
+  <Card
+    href="./multiplayer"
+    title="Multiplayer"
+    description="Add real-time multiplayer features."
+  />
+  <Card
+    href="./proxy"
+    title="Proxy"
+    description="Handle network requests inside Discord's iframe."
+  />
+</Cards>

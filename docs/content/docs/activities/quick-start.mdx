@@ -1,0 +1,189 @@
+---
+title: Quick Start
+description: Create and run your first Discord Activity
+---
+
+Get a Discord Activity running in minutes with **Robo.js**.
+
+## Prerequisites
+
+- **Node.js** 18 or later.
+- A code editor such as VS Code.
+- A **Discord account**.
+- A **Discord server** you can test in (create one if needed).
+
+## Create a Project
+
+Run the scaffolding command and select the activity kit:
+
+```package-install
+npx create-robo my-activity
+```
+
+Follow the prompts to configure your project. The default template uses React.
+
+<ScreenshotPlaceholder
+  alt="Terminal showing the create-robo CLI prompts during activity project creation, with the activity kit selected and React template options visible"
+  focus="The CLI prompts with the activity kit option highlighted"
+  zoom="100%"
+  aspect="16/9"
+  notes="Run 'npx create-robo my-activity'. Show prompts where user selects activity kit, TypeScript, and React template. Clean dark terminal theme."
+/>
+
+## Project Structure
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="app" defaultOpen>
+      <File name="App.tsx" />
+      <File name="Activity.tsx" />
+    </Folder>
+    <Folder name="api" defaultOpen>
+      <File name="token.ts" />
+    </Folder>
+    <Folder name="hooks">
+      <File name="useDiscordSdk.tsx" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen>
+    <File name="vite.mjs" />
+  </Folder>
+  <File name=".env" />
+</Files>
+
+- **`src/app/`** — Frontend UI components. `App.tsx` is the entry point, `Activity.tsx` renders the main view.
+- **`src/api/`** — Backend API endpoints. `token.ts` handles authentication with Discord (exchanges a temporary code for an access token that proves the user's identity).
+- **`src/hooks/`** — React hooks. `useDiscordSdk.tsx` initializes the Embedded App SDK.
+- **`config/vite.mjs`** — Vite configuration for the frontend build.
+- **`.env`** — Environment variables (configuration values stored outside your code, keeping secrets like passwords out of your source files).
+
+## Set Up Credentials
+
+Before running your activity, create a Discord application and configure your environment variables.
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new application (see [Developer Portal Setup](./developer-portal) for detailed steps).
+2. Copy your **Application ID** from the General Information tab.
+3. Copy your **Client Secret** from the OAuth2 tab.
+4. Add these values to the `.env` file in your project root:
+
+```bash
+# .env
+DISCORD_CLIENT_ID="your_application_id"
+VITE_DISCORD_CLIENT_ID="your_application_id"
+DISCORD_CLIENT_SECRET="your_client_secret"
+```
+
+Both `DISCORD_CLIENT_ID` and `VITE_DISCORD_CLIENT_ID` must be set to the same value. See [Credentials](./credentials) for a full explanation of each variable.
+
+<ScreenshotPlaceholder
+  alt="A code editor showing the .env file with DISCORD_CLIENT_ID, VITE_DISCORD_CLIENT_ID, and DISCORD_CLIENT_SECRET environment variables filled in"
+  focus="The .env file with all three required variables"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show VS Code with .env open. Three variables visible with placeholder values. File explorer sidebar showing project structure."
+/>
+
+## Your First Change
+
+Open `src/app/Activity.tsx` and modify the content:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Activity.tsx"
+    export function Activity() {
+      return (
+        <div>
+          <h1>Hello, Discord!</h1>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Activity.jsx"
+    export function Activity() {
+      return (
+        <div>
+          <h1>Hello, Discord!</h1>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Save the file. The dev server picks up changes automatically via hot reload.
+
+## Run in Development
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+A tunnel creates a public HTTPS URL that points to your local computer, which Discord requires to load your activity. The scaffolded `dev` script includes the `--tunnel` flag, so a tunnel URL appears in the terminal output automatically.
+
+<Callout type="info">
+You should see output similar to this in your terminal:
+
+```
+Ready on port 3000
+Tunnel URL: https://abc-123-xyz.trycloudflare.com
+```
+</Callout>
+
+<Callout type="warn">
+Copy the tunnel URL from your terminal and paste it as the Root Mapping in the Developer Portal's URL Mappings. Without this, Discord cannot reach your local server.
+</Callout>
+
+<ScreenshotPlaceholder
+  alt="Terminal output showing the Robo.js dev server running with a Cloudflare tunnel URL, indicating the server is ready with an HTTPS tunnel for Discord testing"
+  focus="The tunnel URL output line and the 'Ready' status"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the full terminal output from initial 'npx robo dev' including build output, Vite compilation messages, port readiness, AND the tunnel URL. Show the complete startup sequence — this is a beginner's first run. Use a dark terminal theme."
+/>
+
+## Test on Discord
+
+Open Discord and join a voice channel. Click the Activities button (the rocket ship icon) in the voice channel toolbar, then select your activity from the list.
+
+<ScreenshotPlaceholder
+  alt="Discord voice channel with the Activities shelf open, showing the custom activity listed, with the rocket ship icon button visible in the toolbar"
+  focus="The Activities shelf with the custom activity and the rocket ship launch button"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Activities shelf open in a voice channel with the custom activity listed. Focus on the rocket ship icon button in the toolbar and the shelf panel. Do NOT show the activity running yet — this captures the moment before launch."
+/>
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `npx robo dev` fails to start | Ensure Node.js 18+ is installed. Run `node -v` to check. |
+| Activity not appearing in Discord | Verify URL Mappings in the Developer Portal match the tunnel URL from the terminal. |
+| Blank screen after launching | Check the browser console for Content Security Policy (CSP) errors — these are browser rules controlling which URLs your app can load. Ensure `DiscordProxy.Vite()` is in `config/vite.mjs`. This Vite plugin rewrites network requests so they work through Discord's proxy. |
+| Authentication errors | Confirm `DISCORD_CLIENT_ID`, `VITE_DISCORD_CLIENT_ID`, and `DISCORD_CLIENT_SECRET` are set correctly in `.env`. |
+| Hot reload not working | Make sure the dev server is running (`npx robo dev`). Check for syntax errors in your code. |
+| Tunnel URL not appearing | Check your internet connection. The Cloudflare tunnel requires outbound access. |
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./credentials"
+    title="Credentials"
+    description="Set up environment variables for authentication."
+  />
+  <Card
+    href="./developer-portal"
+    title="Developer Portal"
+    description="Configure your application in Discord."
+  />
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Build the UI for your activity."
+  />
+</Cards>

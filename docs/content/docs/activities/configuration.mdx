@@ -1,0 +1,168 @@
+---
+title: Configuration
+description: Configure your Discord Activity project
+---
+
+This page is the central reference for all **configuration** in a Discord Activity project. Other pages link here rather than duplicating config details.
+
+<ScreenshotPlaceholder
+  alt="VS Code file explorer showing the config directory structure with robo.mjs, vite.mjs, and config/plugins/robojs containing server.ts, sync.ts, and patch.ts"
+  focus="The config directory structure showing all configuration files"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show VS Code file explorer with config/ expanded: robo.mjs, vite.mjs, plugins/robojs/ with server.ts, sync.ts, patch.ts. Also .env in root. Optionally have one config file open."
+/>
+
+## Robo Configuration
+
+The main Robo config file is `config/robo.mjs` (or `.ts`). This controls the Robo.js runtime, plugins, and experimental features.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    export default {
+      // Enable experimental features
+      experimental: {
+        disableBot: true // Activities don't need the bot gateway connection
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    export default {
+      // Enable experimental features
+      experimental: {
+        disableBot: true // Activities don't need the bot gateway connection
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Activity projects use the `--tunnel` (`-t`) flag on `robo dev` to start a Cloudflare Tunnel during development. The scaffolded `dev` script includes this flag by default. For stable tunnel URLs, configure Cloudflare credentials in the `@robojs/server` plugin config's `tunnel` section. See [Tunnels](./tunnels) for details.
+
+## Vite Configuration
+
+The `config/vite.mjs` file configures the Vite build tool. Activity projects include the React plugin and the Discord proxy plugin by default.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/vite.mjs"
+    import { DiscordProxy } from '@robojs/patch'
+    import react from '@vitejs/plugin-react-swc'
+    import { defineConfig } from 'vite'
+
+    export default defineConfig({
+      plugins: [react(), DiscordProxy.Vite()],
+      server: {
+        allowedHosts: true
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/vite.mjs"
+    import { DiscordProxy } from '@robojs/patch'
+    import react from '@vitejs/plugin-react-swc'
+    import { defineConfig } from 'vite'
+
+    export default defineConfig({
+      plugins: [react(), DiscordProxy.Vite()],
+      server: {
+        allowedHosts: true
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+`DiscordProxy.Vite()` must remain in the plugins array. Removing it will break network requests when running inside Discord.
+</Callout>
+
+## Server Configuration
+
+Configure `@robojs/server` in `config/plugins/robojs/server.ts`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.ts"
+    export default {
+      port: 3000,
+      cors: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.js"
+    export default {
+      port: 3000,
+      cors: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `port` | number | 3000 | Server port. Overridden by the `PORT` env variable. |
+| `cors` | boolean | false | Enable CORS headers on all API routes. |
+| `prefix` | string | `/api` | Route prefix for file-based API endpoints. |
+
+## Environment Variables
+
+Store these in a `.env` file in your project root. Robo.js loads them automatically at startup.
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DISCORD_CLIENT_ID` | Yes | Application ID (used by backend / `process.env`) |
+| `VITE_DISCORD_CLIENT_ID` | Yes | Same Application ID (used by frontend / `import.meta.env`). Must match `DISCORD_CLIENT_ID`. |
+| `DISCORD_CLIENT_SECRET` | Yes | OAuth2 client secret from the Developer Portal |
+| `DISCORD_TOKEN` | No | Bot token. When set, `@robojs/patch` auto-creates the entry point command. |
+| `PORT` | No | Overrides the server port from plugin config |
+
+<Callout type="info">
+Vite only exposes variables prefixed with `VITE_` to client-side code. That is why both `DISCORD_CLIENT_ID` and `VITE_DISCORD_CLIENT_ID` exist — they hold the same value but are read by different environments.
+</Callout>
+
+## Plugin Configuration
+
+Plugins are configured via files in `config/plugins/`. The file path mirrors the plugin's package name: the `@` scope is dropped and `/` becomes a directory. For example, `@robojs/server` becomes `config/plugins/robojs/server.ts`.
+
+| Plugin | Config file |
+|--------|-------------|
+| `@robojs/server` | `config/plugins/robojs/server.ts` |
+| `@robojs/sync` | `config/plugins/robojs/sync.ts` |
+| `@robojs/patch` | `config/plugins/robojs/patch.ts` |
+
+Each file default-exports an options object specific to that plugin.
+
+## SyncContextProvider Options
+
+When using `@robojs/sync` for multiplayer, wrap your app in `SyncContextProvider`. See the [Sync API](./sync-api) reference for the full API.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `loadingScreen` | ReactNode | null | Component shown while the WebSocket connection is being established |
+| `clientData` | unknown | undefined | Metadata attached to this client, visible to other connected clients |
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Build your activity's user interface."
+  />
+  <Card
+    href="./backend"
+    title="Backend"
+    description="Server-side logic and API routes."
+  />
+  <Card
+    href="./sync-api"
+    title="Sync API"
+    description="Full API reference for @robojs/sync."
+  />
+</Cards>

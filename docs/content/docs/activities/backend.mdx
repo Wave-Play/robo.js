@@ -1,0 +1,195 @@
+---
+title: Backend
+description: Server-side development for Discord Activities
+---
+
+**[`@robojs/server`](/docs/ref/@robojs/server)** provides file-based HTTP routing (your file names and folder structure automatically become endpoints) for your activity's server-side logic. Files in `/src/api` become API endpoints.
+
+<ScreenshotPlaceholder
+  alt="VS Code file explorer showing the src/api directory expanded with route files like hello.ts, token.ts, and a users subdirectory with [id].ts, illustrating file-based routing"
+  focus="The src/api directory structure showing file-to-route mapping"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show VS Code file explorer with src/api expanded: hello.ts, token.ts, data.ts, and users/[id].ts. Demonstrates the file-based routing concept."
+/>
+
+## Creating Routes
+
+Each file in `src/api/` maps to an endpoint. The file name determines the route path. For example, `src/api/hello.ts` becomes `GET /api/hello`.
+
+Return a string or object from the default export:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/hello.ts"
+    export default () => {
+      return { message: 'Hello, world!' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/hello.js"
+    export default () => {
+      return { message: 'Hello, world!' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Request and Response
+
+Use `RoboRequest` to read query parameters, body, and headers. Return an object for JSON responses, or use `RoboResponse` for custom status codes and headers:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/data.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export default async (req: RoboRequest) => {
+      const body = await req.json()
+      return { received: body }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/data.js"
+    export default async (req) => {
+      const body = await req.json()
+      return { received: body }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Access query parameters through `req.query` and URL parameters through `req.params`.
+
+## The Token Endpoint
+
+Every activity template includes `src/api/token.ts`, which exchanges an OAuth2 authorization code for an access token while keeping your client secret secure on the server. See [Authentication](./authentication) for the full implementation and details on the OAuth2 flow.
+
+## Nested Routes
+
+Create subdirectories for nested route paths. Dynamic segments use `[param]` syntax in the file name:
+
+| File path | Route |
+|-----------|-------|
+| `src/api/users.ts` | `/api/users` |
+| `src/api/users/[id].ts` | `/api/users/:id` |
+| `src/api/guilds/[guildId]/members.ts` | `/api/guilds/:guildId/members` |
+
+Access dynamic parameters through `req.params`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users/[id].ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export default (req: RoboRequest) => {
+      const { id } = req.params
+      return { userId: id }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users/[id].js"
+    export default (req) => {
+      const { id } = req.params
+      return { userId: id }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<ScreenshotPlaceholder
+  alt="Browser or API client showing a JSON response from /api/users/123, returning { userId: '123' }, demonstrating dynamic route parameters"
+  focus="The API response showing the dynamic parameter extracted from the URL"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show browser or DevTools hitting localhost:3000/api/users/123 displaying { userId: '123' }. Demonstrates dynamic segments."
+/>
+
+## HTTP Methods
+
+The default export handles all HTTP methods. Use named exports for method-specific handlers:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export const GET = () => {
+      return { users: [] }
+    }
+
+    export const POST = async (req: RoboRequest) => {
+      const body = await req.json()
+      return { created: body }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users.js"
+    export const GET = () => {
+      return { users: [] }
+    }
+
+    export const POST = async (req) => {
+      const body = await req.json()
+      return { created: body }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Supported named exports: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`.
+
+## Server Configuration
+
+Configure the server plugin in `config/plugins/robojs/server.ts`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.ts"
+    export default {
+      port: 3000,
+      cors: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.js"
+    export default {
+      port: 3000,
+      cors: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `port` | number | 3000 | Server port |
+| `cors` | boolean | false | Enable CORS |
+| `prefix` | string | `/api` | Route prefix |
+
+The `PORT` environment variable overrides the `port` option.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Client-side development with Vite."
+  />
+  <Card
+    href="./authentication"
+    title="Authentication"
+    description="Authenticate users in your activity."
+  />
+  <Card
+    href="./multiplayer"
+    title="Multiplayer"
+    description="Add real-time multiplayer with state sync."
+  />
+</Cards>

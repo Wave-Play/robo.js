@@ -1,0 +1,160 @@
+---
+title: Migration
+description: Migrate to Robo.js from other setups
+---
+
+**Migration** from an existing Discord Activity project to Robo.js.
+
+<ScreenshotPlaceholder
+  alt="Side-by-side comparison of a plain Embedded App SDK project structure on the left versus a Robo.js activity project on the right, showing file reorganization"
+  focus="The structural comparison between a plain SDK project and a Robo.js project"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show two file explorers: left has flat src/ with manual server file, right has Robo.js structure with src/app/, src/api/, config/. Arrows connecting equivalent files would help."
+/>
+
+## From Plain Embedded App SDK
+
+Robo.js adds file-based routing (your file names and folder structure automatically become commands/endpoints), a plugin system, built-in tunnels, and development tools on top of the Embedded App SDK. To migrate:
+
+1. Create a new Robo project: `npx create-robo my-activity`
+2. Move frontend code to `src/app/`
+3. Move backend code to `src/api/`
+4. Use the `useDiscordSdk` hook or keep manual SDK initialization
+5. Move environment variables to `.env`
+
+### Before and After: SDK Initialization
+
+**Before** (plain SDK):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="main.ts"
+    import { DiscordSDK } from '@discord/embedded-app-sdk'
+
+    const sdk = new DiscordSDK(CLIENT_ID)
+    await sdk.ready()
+    const { code } = await sdk.commands.authorize({ client_id: CLIENT_ID, response_type: 'code', scope: ['identify'] })
+    // manual token exchange...
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="main.js"
+    import { DiscordSDK } from '@discord/embedded-app-sdk'
+
+    const sdk = new DiscordSDK(CLIENT_ID)
+    await sdk.ready()
+    const { code } = await sdk.commands.authorize({ client_id: CLIENT_ID, response_type: 'code', scope: ['identify'] })
+    // manual token exchange...
+    ```
+  </Tab>
+</Tabs>
+
+**After** (Robo.js):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/App.tsx"
+    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+    import { Activity } from './Activity'
+
+    export default function App() {
+      return (
+        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+          <Activity />
+        </DiscordContextProvider>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/App.jsx"
+    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+    import { Activity } from './Activity'
+
+    export default function App() {
+      return (
+        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+          <Activity />
+        </DiscordContextProvider>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `DiscordContextProvider` handles SDK initialization, authorization, token exchange, and authentication automatically.
+
+<ScreenshotPlaceholder
+  alt="Code comparison showing manual DiscordSDK setup with explicit ready(), authorize(), authenticate() calls versus the DiscordContextProvider wrapper approach"
+  focus="The before/after code comparison highlighting boilerplate reduction"
+  zoom="100%"
+  aspect="16/9"
+  notes="Side-by-side: left ('Before') has ~10 lines of imperative SDK code, right ('After') has ~5 lines of DiscordContextProvider JSX. Use diff-style coloring or a clean before/after layout."
+/>
+
+## From Next.js
+
+1. Create a Robo activity project: `npx create-robo my-activity`
+2. Move page components from `pages/` or `app/` to `src/app/`
+3. Convert API routes from `pages/api/` or `app/api/` to `src/api/` (change `NextApiRequest`/`NextApiResponse` to `RoboRequest`)
+4. Move static assets from `public/` to `public/`
+5. Update imports — Robo uses `.js` extensions in import paths (e.g., `import { foo } from './bar.js'`)
+6. Move environment variables from `.env.local` to `.env`
+
+## From Create React App (CRA)
+
+1. Create a Robo activity project: `npx create-robo my-activity`
+2. Move components from `src/` to `src/app/`
+3. Move `public/` assets to `public/`
+4. Replace `react-scripts` with `npx robo dev` / `npx robo build`
+5. Update imports to use `.js` extensions
+
+## From Express or Fastify Backend
+
+Convert routes to the file-based `src/api/` structure. Each route file exports a default handler function.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/health.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export default (req: RoboRequest) => {
+      return { status: 'ok' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/health.js"
+    export default (req) => {
+      return { status: 'ok' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+For Fastify, the `@robojs/server` plugin supports custom engine configuration.
+
+## Common Pitfalls
+
+| Issue | Solution |
+|-------|----------|
+| Missing `.js` extensions | Robo.js requires `.js` extensions in import paths, even for TypeScript files. Add them to all relative imports. |
+| `.env` not loading | Ensure `.env` is in the project root (not in `src/` or a subdirectory). Robo.js loads it automatically. |
+| Files in wrong directory | Frontend code goes in `src/app/`, not `src/`. API routes go in `src/api/`. |
+| Vite config missing | Activity projects need `config/vite.mjs` with `DiscordProxy.Vite()` in the plugins array. |
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Configure your Discord Activity project."
+  />
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Build the UI for your activity."
+  />
+</Cards>

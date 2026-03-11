@@ -1,195 +1,88 @@
 ---
-title: Getting Started
-description: Create a Discord Activity in seconds with Robo.js - a tiny framework that simplifies development of Discord Activities.
+title: Discord Activities
+icon: PartyPopper
 ---
 
-**[Robo.js](https://github.com/Wave-Play/robo.js)** helps you to create **[Discord Activities](https://support.discord.com/hc/en-us/articles/4422142836759-Activities-on-Discord)** with ease, among **[other things](../index.mdx)**.
+**Discord Activities** are interactive web applications that run directly inside Discord. They load within an embedded panel (iframe) in voice channels, text channels, and DMs, giving users a shared experience without leaving the app. Under the hood, activities are standard web apps built with HTML, CSS, and JavaScript — connected to Discord through the [Embedded App SDK](./sdk).
 
-**Discord Activities** are web apps that run inside Discord and can be built using **[HTML](https://developer.mozilla.org/en-US/docs/Web/HTTP)**, **[CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)**, and **[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)**. They use Discord's **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** to interact with Discord APIs.
+Robo.js brings a streamlined developer experience to activity development. Instead of wiring up separate frontend and backend projects, you get a **unified project structure** where your React (or vanilla) UI and API routes live side by side.
+
+Built-in [Cloudflare Tunnels](./tunnels) (a secure connection that lets Discord reach your local computer) give you an HTTPS URL for testing instantly, and the [`@robojs/patch`](./proxy) plugin handles Discord's proxy requirements automatically — no manual network patching needed.
+
+The mental model is straightforward: your activity has a **frontend** (Vite — a fast build tool for web projects — powered UI in `src/app/`), a **backend** (file-based API routes in `src/api/`), and the **Discord SDK** connecting them to the platform. Robo.js ties these pieces together, adds a plugin ecosystem for features like [real-time multiplayer](./multiplayer) and [authentication](./authentication), and handles the build tooling so you can focus on your app.
+
+<ScreenshotPlaceholder
+  alt="A Discord voice channel with an embedded activity running inside the panel, showing a custom web application rendered alongside the voice call participants"
+  focus="The activity running inside Discord's voice channel panel as an embedded iframe"
+  zoom="100%"
+  aspect="16/9"
+  notes="Capture Discord's desktop client with a voice channel open. An activity should be visible in the embedded panel showing a simple web app. At least one voice participant visible."
+/>
 
 ## Quick Start
 
-Ready to start your adventure? Try **[Create Robo](../framework/cli/create-robo.mdx)** in your terminal:
+Create a new activity project:
 
 ```package-install
-npx create-robo <projectName>
+npx create-robo my-activity
 ```
 
-This will help spawn a new **Robo.js** project as a **Discord Activity**. We call these **Robos**.
+Select the activity kit when prompted. The CLI generates a project with frontend, backend, and Vite preconfigured.
+
+<ScreenshotPlaceholder
+  alt="Terminal output showing a new Robo.js activity project being created with the create-robo CLI, displaying scaffolding prompts and file generation"
+  focus="The create-robo CLI running in a terminal with the activity kit selected"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show terminal running 'npx create-robo my-activity' with the activity kit prompt visible or already selected. Dark terminal theme."
+/>
+
+## What Robo.js Provides
+
+| Feature | Description |
+|---------|-------------|
+| Unified project | Frontend and backend in a single project |
+| Vite integration | Preconfigured Vite for fast development and builds |
+| Built-in tunnels | Free Cloudflare tunnels for local testing |
+| Proxy patching | `@robojs/patch` handles Discord's proxy requirements |
+| Authentication helpers | OAuth2 token exchange with minimal setup |
+| API routes | File-based HTTP endpoints via `@robojs/server` |
+| Real-time sync | Multiplayer state synchronization with `@robojs/sync` |
+| TypeScript support | TypeScript works out of the box |
+| Plugin ecosystem | Extend functionality with installable plugins |
+
+## Recommended Learning Path
+
+1. [Quick Start](./quick-start) — Create and run your first activity
+2. [Credentials](./credentials) — Set up environment variables
+3. [Developer Portal](./developer-portal) — Configure your Discord application
+4. [Tunnels](./tunnels) — Understand how tunnels connect Discord to your machine
+5. [Frontend](./frontend) — Build the UI
+6. [Backend](./backend) — Add server-side logic and API routes
+7. [SDK](./sdk) — Interact with Discord APIs from your activity
+8. [Multiplayer](./multiplayer) — Add real-time features
+
+## Next Steps
 
 <Cards>
-	<Card
-		href="../templates/overview#discord-activities"
-		title="Templates"
-		description="Kickstart your project with a template."
-	/>
-	<Card
-		href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng"
-		title="Tutorial"
-		description="How to create a Discord Activity in seconds."
-	/>
-</Cards>
-
-## How does Robo.js help?
-
-**Robo.js** simplifies the process by providing features and an ecosystem of plugins to help you build your **Discord Activity** faster and more efficiently.
-
-Here's what you can expect:
-
-- **[One Project](../robojs/files.mdx)**: Everything is in one place, making it easy to manage. No more separate backend and frontend projects.
-- **[Integrated Database](../robojs/flashcore.mdx)**: Robo.js has an built-in KV database that can be pointed to any data source via adapters.
-- **[TypeScript Support](../robojs/typescript.mdx)**: TypeScript works out of the box, so you can use it without any setup.
-- **[Built-in Tunnels](./tunnels.mdx)**: The Robo CLI automatically sets up free Cloudflare tunnels for easy testing.
-- **[Plugin System](../plugins/overview.mdx)**: Extend your activity's features with plugins that integrate seamlessly.
-- **[Easy Hosting](../framework/hosting/overview.mdx)**: Deploy your activity with just one command for others to use, or self-host it on your own.
-- **[Ecosystem](../plugins/directory.mdx)**: A growing ecosystem of plugins, templates, and tools to help you build faster with less effort.
-
-## Documentation
-
-**Discord Activities** are like web apps, but there are a few unique things you should know.
-
-These docs cover everything you need to know about creating **Discord Activities** with **Robo.js**, from setting up your project to adding features and deploying it for others to use.
-
-<Cards>
-	<Card href="./authentication" title="Authentication" description="Customize your user experience." />
-	<Card href="./credentials" title="Credentials" description="Secure your Discord Activity credentials." />
-	<Card href="./proxy" title="Discord Proxy" description="Things to know about Discord's Proxy." />
-	<Card href="../framework/hosting/overview" title="Hosting" description="Deploy your activity for others to use." />
-	<Card
-		href="./multiplayer"
-		title="Multiplayer"
-		description="Add multiplayer functionality to your Discord Activity."
-	/>
-</Cards>
-
-Not sure where to start? See the **[Beginner Guide](./beginner-guide.mdx)**.
-
-<Cards>
-	<Card
-		href="./beginner-guide"
-		title="Beginner Guide"
-		description="
-		New to Discord Activities with Robo? Start here!"
-	/>
-</Cards>
-
-## Tutorials
-
-Creating **Discord Activities** is easy to learn, but we also have tutorials to help you get started quickly.
-
-<Cards>
-	<Card
-		href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng"
-		title="How to Build a Discord Activity"
-		description="Create a Discord Activity in seconds."
-	/>
-	<Card
-		href="https://dev.to/waveplay/how-to-add-multiplayer-to-your-discord-activity-lo1"
-		title="Add Multiplayer to Your Activity"
-		description="Create a real-time multiplayer Discord Activity."
-	/>
-	<Card
-		href="https://dev.to/waveplay/achieve-game-like-scaling-in-discord-activities-and-web-apps-using-css-874"
-		title="Achieve Game-like Scaling"
-		description="Scale your Discord Activity like a game."
-	/>
-	<Card
-		href="https://dev.to/waveplay/how-to-fix-stuck-ready-event-in-discord-embedded-app-sdk-h9e"
-		title="Fix Stuck DiscordSDK Ready Event"
-		description="Prevent the .ready() function from getting stuck."
-	/>
-	<Card
-		href="https://dev.to/waveplay/resolve-content-security-policy-csp-issues-in-your-discord-activity-using-a-nodejs-proxy-2634"
-		title="Resolve CSP Issues with a Proxy"
-		description="Use a Node.js proxy to resolve CSP issues."
-	/>
-	<Card
-		href="https://dev.to/waveplay"
-		title="More Tutorials"
-		description="Explore more tutorials for Discord Activities."
-	/>
-</Cards>
-
-## Plugin Power Ups
-
-**[Robo Plugins](../plugins/overview.mdx)** are special. They let you add features to your **Robo** with one command.
-
-```bash
-robo add @robojs/ai @robojs/sync
-```
-
-Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files.mdx)**. What's more, anyone can **[create a plugin](../plugins/create.mdx)**.
-
-<Cards>
-	<Card href="../plugins/overview" title="Robo Plugins" description="Add features to your Robo seamlessly." />
-	<Card href="../plugins/directory" title="Plugin Directory" description="Browse plugins for your Robo." />
-</Cards>
-
-## Community
-
-Join our server to chat with other developers, ask questions, and share your projects.
-
-<Cards>
-	<Card href="https://roboplay.dev/discord" title="Discord Server" description="Join our Discord community!" />
-</Cards>
-
-Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord's SDK**, and more.
-
-<Callout type="info">
-Sage is powered by **[@robojs/ai](../plugins/ai.mdx)**
-</Callout>
-
-## Frequently Asked Questions
-
-<Accordions type="single">
-  <Accordion title="Do I need to use Robo.js for my bot if I use it for my activity?">
-
-Nope, you can keep your bot and activity separate! **[Robo.js is designed for both](../index.mdx#choose-your-adventure)**, but you can use it for either if you prefer.
-
-  </Accordion>
-  <Accordion title="Where can I see my activity in Discord?">
-
-Join a voice channel and click on the "Activities" button in the bottom left corner of the screen, or on the bottom right in some text channels. You can then select your activity from the list.
-
-  </Accordion>
-  <Accordion title="How do I add multiplayer functionality to my activity?">
-
-Use your backend to manage game state and player interactions. Check out our **[multiplayer docs](./multiplayer.mdx)**, **[tutorial](https://dev.to/waveplay/how-to-add-multiplayer-to-your-discord-activity-lo1)**, or **[@robojs/sync](../plugins/sync.mdx)** for more info.
-
-  </Accordion>
-  <Accordion title="How do I keep my activity running for others to use?">
-
-You can deploy your activity to **[RoboPlay](https://roboplay.dev)** with the `deploy` command. This will **[keep your activity online](../framework/hosting/overview.mdx)** 24/7 for others to use.
-
-  </Accordion>
-  <Accordion title="I'm getting an entry point command error and can't find a launch button. What should I do?">
-
-Discord recently changed the way activities are launched. Activities created before this change may not work as expected. You can try **[creating a new activity](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)** or **[updating your existing one](https://discord.com/developers/docs/interactions/application-commands#registering-a-command)** to fix this issue.
-
-  </Accordion>
-  <Accordion title="I'm getting Content Security Policy (CSP) errors. How do I fix them?">
-
-Follow the **[Discord Proxy](./proxy.mdx)** rules to resolve CSP issues. You may need to **[map external URLs](./proxy.mdx#url-mapping)** or **[create a proxy](https://dev.to/waveplay/resolve-content-security-policy-csp-issues-in-your-discord-activity-using-a-nodejs-proxy-2634)** to handle requests.
-
-  </Accordion>
-  <Accordion title="OAUTH2 Error: invalid_request: Missing &quot;redirect_uri&quot; in request">
-
-This error occurs when the redirect URI is, well... missing. Make sure you have the correct redirect URI in your **[Discord Developer Portal](https://discord.com/developers/applications)** OAuth section.
-
-  </Accordion>
-</Accordions>
-
-## Learn More
-
-**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
-
-<Cards>
-	<Card href="../robojs/overview" title="Core Package" description="See what makes Robo.js awesome." />
-	<Card
-		href="../templates/overview#discord-activities"
-		title="Templates"
-		description="Kickstart your project with a template."
-	/>
-	<Card href="../robojs/modules" title="Modules" description="Stay organized with modules." />
-	<Card href="../robojs/typescript" title="TypeScript" description="Write better code with type safety." />
+  <Card
+    href="./quick-start"
+    title="Quick Start"
+    description="Create and run your first activity."
+  />
+  <Card
+    href="./credentials"
+    title="Credentials"
+    description="Set up environment variables for authentication."
+  />
+  <Card
+    href="./developer-portal"
+    title="Developer Portal"
+    description="Configure your application in Discord."
+  />
+  <Card
+    href="./frontend"
+    title="Frontend"
+    description="Build the UI for your activity."
+  />
 </Cards>

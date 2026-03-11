@@ -1,0 +1,797 @@
+---
+title: Sync API
+description: Complete @robojs/sync API reference
+---
+
+<Callout type="info">
+This is an API reference. For a tutorial on adding multiplayer to your activity, see [Multiplayer](./multiplayer).
+</Callout>
+
+Complete API reference for **`@robojs/sync`**, the real-time state synchronization plugin for Discord Activities.
+
+## Choosing the Right Hook
+
+| Hook | Use Case | Persists? | Example |
+|------|----------|-----------|---------|
+| `useSyncState` | Shared state across clients | Yes (in-memory) | Game scores, shared counters, form data |
+| `useSyncBroadcast` | Ephemeral messages | No | Reactions, typing indicators, sound effects |
+| `useSyncCall` | Server-validated actions | No (returns result) | Move validation, purchases, admin actions |
+| `useSyncPresence` | Who's online and their status | Auto-managed | Player list, "user is typing", online indicators |
+| `useSyncCursor` | Cursor position tracking | No | Collaborative drawing, pointer trails |
+| `useSyncDrag` | Draggable elements | Yes (position) | Card games, drag-and-drop boards, sliders |
+
+**Start with `useSyncState`** — it covers most use cases. Reach for specialized hooks when you need ephemeral messaging (`useSyncBroadcast`), server authority (`useSyncCall`), or optimized tracking (`useSyncPresence`, `useSyncCursor`, `useSyncDrag`).
+
+Use hooks for simple cases. For complex UIs with many independent synchronized elements, use `SyncZone` and `SyncBox` — they provide hierarchical key management and declarative state containers without needing to wire up individual hooks.
+
+## Core Hooks
+
+### useSyncState
+
+Synchronized state shared across all clients subscribed to the same key. Works like React's `useState`, but updates are broadcast to every connected client.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const [state, setState, context] = useSyncState<T>(initialState, key)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const [state, setState, context] = useSyncState(initialState, key)
+    ```
+  </Tab>
+</Tabs>
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `state` | `T` | Current synchronized state |
+| `setState` | `(newState: Partial<T> \| ((prev: T) => T)) => void` | Update state with a partial object or updater function |
+| `context` | `SyncContext` | Client awareness and messaging context |
+
+Keys are arrays that scope the state. Components using the same key share the same synchronized value.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Game.tsx"
+    const [position, setPosition, context] = useSyncState({ x: 0, y: 0 }, ['player-position'])
+
+    setPosition({ x: 10 })
+    setPosition((prev) => ({ ...prev, y: prev.y + 1 }))
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Game.jsx"
+    const [position, setPosition, context] = useSyncState({ x: 0, y: 0 }, ['player-position'])
+
+    setPosition({ x: 10 })
+    setPosition((prev) => ({ ...prev, y: prev.y + 1 }))
+    ```
+  </Tab>
+</Tabs>
+
+### useSyncBroadcast
+
+Ephemeral messaging for fire-and-forget payloads that do not persist as state. Broadcasts do not trigger re-renders in other components.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const { broadcast, send, context } = useSyncBroadcast(handler, key)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const { broadcast, send, context } = useSyncBroadcast(handler, key)
+    ```
+  </Tab>
+</Tabs>
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `broadcast` | `(payload: unknown) => void` | Send to all clients in the room |
+| `send` | `(clientId: string, payload: unknown) => void` | Send to a specific client |
+| `context` | `SyncContext` | Client awareness and messaging context |
+
+Use cases include reactions, typing indicators, and cursor movements.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Chat.tsx"
+    const { broadcast, send, context } = useSyncBroadcast((payload, { client }) => {
+      console.log(client.id, 'sent', payload)
+    }, ['chat-room'])
+
+    broadcast('Hello everyone!')
+    send(targetClientId, 'Private message')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Chat.jsx"
+    const { broadcast, send, context } = useSyncBroadcast((payload, { client }) => {
+      console.log(client.id, 'sent', payload)
+    }, ['chat-room'])
+
+    broadcast('Hello everyone!')
+    send(targetClientId, 'Private message')
+    ```
+  </Tab>
+</Tabs>
+
+### useSyncCall
+
+Server-authoritative RPC for operations where the server should validate and process the action rather than applying direct state updates.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const call = useSyncCall(key)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const call = useSyncCall(key)
+    ```
+  </Tab>
+</Tabs>
+
+The returned function sends a method call to the server and returns a promise with the result.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    call<Payload, Result>(method: string, payload?: Payload): Promise<CallResult<Result>>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    call(method, payload) // Returns: Promise<CallResult>
+    ```
+  </Tab>
+</Tabs>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether the call succeeded |
+| `result` | `T \| undefined` | Return value from the server handler |
+| `error` | `string \| undefined` | Error message if the call failed |
+
+Server handlers live in `/src/sync/` as file-based routes.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Game.tsx"
+    const call = useSyncCall(['game', roomId])
+
+    const result = await call('move', { x: 10, y: 20 })
+    if (!result.success) {
+      console.log('Rejected:', result.error)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Game.jsx"
+    const call = useSyncCall(['game', roomId])
+
+    const result = await call('move', { x: 10, y: 20 })
+    if (!result.success) {
+      console.log('Rejected:', result.error)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### useSyncContext
+
+Access the sync context for a given key without managing state. Returns client awareness, host status, and messaging capabilities.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const context = useSyncContext(key)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const context = useSyncContext(key)
+    ```
+  </Tab>
+</Tabs>
+
+Supports optional callbacks for connection events:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Room.tsx"
+    const context = useSyncContext({
+      onConnect: (client) => console.log(client.id, 'joined'),
+      onDisconnect: (client) => console.log(client.id, 'left')
+    }, ['game-room'])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Room.jsx"
+    const context = useSyncContext({
+      onConnect: (client) => console.log(client.id, 'joined'),
+      onDisconnect: (client) => console.log(client.id, 'left')
+    }, ['game-room'])
+    ```
+  </Tab>
+</Tabs>
+
+## Presence and Cursors
+
+### useSyncPresence
+
+Track participants and their metadata in real time. Handles heartbeats and stale detection automatically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = useSyncPresence<T>(key, options?)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = useSyncPresence(key, options)
+    ```
+  </Tab>
+</Tabs>
+
+**PresenceOptions**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `initialPresence` | `T` | `{}` | Initial presence data |
+| `staleTimeout` | `number` | `5000` | Ms before marking stale |
+| `heartbeatInterval` | `number` | `2000` | Ms between heartbeats |
+
+**PresenceResult**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `participants` | `Participant<T>[]` | All participants with presence data |
+| `updatePresence` | `(update: Partial<T> \| ((prev: T) => T)) => void` | Update current client's presence |
+| `clientId` | `string` | Current client's ID |
+| `isHost` | `boolean` | Whether current client is host |
+| `context` | `SyncContext` | Full sync context |
+
+**Participant**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clientId` | `string` | Client ID |
+| `user` | `Client` | Client metadata |
+| `presence` | `T` | Presence data |
+| `isStale` | `boolean` | Whether presence is stale |
+| `isYou` | `boolean` | Whether this is the current client |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Room.tsx"
+    const { participants, updatePresence } = useSyncPresence(['room', roomId], {
+      initialPresence: { status: 'online', activity: 'idle' }
+    })
+
+    updatePresence({ activity: 'typing' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Room.jsx"
+    const { participants, updatePresence } = useSyncPresence(['room', roomId], {
+      initialPresence: { status: 'online', activity: 'idle' }
+    })
+
+    updatePresence({ activity: 'typing' })
+    ```
+  </Tab>
+</Tabs>
+
+### useSyncCursor
+
+Broadcast cursor positions in real time. Optimized to avoid rerenders for your own cursor movement.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = useSyncCursor<ClientData>(key, options?)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = useSyncCursor(key, options)
+    ```
+  </Tab>
+</Tabs>
+
+**CursorOptions**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `throttle` | `number` | `16` | Ms between updates (~60fps) |
+| `normalize` | `boolean` | `true` | Convert to 0-1 viewport range |
+| `hideOnLeave` | `boolean` | `true` | Hide cursor when mouse leaves |
+| `inactiveTimeout` | `number` | `3000` | Ms before removing inactive cursors |
+| `autoTrack` | `boolean` | `false` | Automatically track mouse movement |
+
+**CursorResult**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cursors` | `RemoteCursor[]` | All cursors including yours |
+| `remoteCursors` | `RemoteCursor[]` | Only other users' cursors |
+| `updatePosition` | `(pos: { x: number; y: number; active?: boolean }) => void` | Manually update cursor position |
+| `clientId` | `string` | Current client's ID |
+
+**RemoteCursor**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clientId` | `string` | Cursor owner's client ID |
+| `user` | `Client` | Client metadata |
+| `position` | `CursorPosition` | `{ x, y, active }` |
+| `isYou` | `boolean` | Whether this is your cursor |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Canvas.tsx"
+    const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Canvas.jsx"
+    const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+    ```
+  </Tab>
+</Tabs>
+
+### SyncCursors
+
+Drop-in component for rendering remote cursors. Handles mouse tracking, throttling, and positioning automatically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Activity.tsx"
+    <SyncCursors roomKey={['room', roomId]} />
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Activity.jsx"
+    <SyncCursors roomKey={['room', roomId]} />
+    ```
+  </Tab>
+</Tabs>
+
+**Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `roomKey` | `(string \| null)[]` | required | Room key for cursor sync |
+| `throttle` | `number` | `16` | Ms between updates |
+| `renderCursor` | `(cursor: RemoteCursor) => ReactNode` | `undefined` | Custom cursor renderer |
+| `showLabels` | `boolean` | `true` | Show user labels |
+| `labelKey` | `keyof ClientData \| (client: Client) => string` | `undefined` | Key or function for label text |
+| `colorFn` | `(clientId: string) => string` | hash-based | Color generator from client ID |
+| `zIndex` | `number` | `9999` | Z-index for cursor container |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Activity.tsx"
+    <SyncCursors
+      roomKey={['room', roomId]}
+      renderCursor={(cursor) => (
+        <div>
+          <CustomCursorIcon color={colorFn(cursor.clientId)} />
+          <span>{cursor.user.data?.name}</span>
+        </div>
+      )}
+    />
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Activity.jsx"
+    <SyncCursors
+      roomKey={['room', roomId]}
+      renderCursor={(cursor) => (
+        <div>
+          <CustomCursorIcon color={colorFn(cursor.clientId)} />
+          <span>{cursor.user.data?.name}</span>
+        </div>
+      )}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## Draggable Elements
+
+### useSyncDrag
+
+Synchronized dragging with locking, interpolation, bounds, and gesture detection.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = useSyncDrag<T extends DragState>(key, initialState, options?)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = useSyncDrag(key, initialState, options)
+    ```
+  </Tab>
+</Tabs>
+
+**DragOptions**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `interpolate` | `InterpolateConfig` | `undefined` | Lerp factors for smooth remote updates |
+| `throttle` | `number` | `16` | Ms between updates |
+| `bounds` | `DragBounds` | `undefined` | Position constraints (`minX`, `maxX`, `minY`, `maxY`) |
+| `normalize` | `boolean` | `true` | Use 0-1 viewport coordinates |
+| `lockOnDrag` | `boolean` | `true` | Acquire lock when dragging starts |
+
+**DragResult**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | `T` | Current position and custom data |
+| `setState` | `(update: Partial<T> \| ((prev: T) => T)) => void` | Update state |
+| `isDragging` | `boolean` | Whether current client is dragging |
+| `isBeingDragged` | `boolean` | Whether anyone is dragging (locked) |
+| `canInteract` | `boolean` | Whether current client can interact |
+| `dragHandlers` | `{ onMouseDown, onTouchStart }` | Handlers to spread onto the element |
+| `lock` | `LockContext` | Lock/unlock functions |
+| `context` | `SyncContext` | Sync context |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/DraggableBall.tsx"
+    function DraggableBall({ id }: { id: string }) {
+      const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+        ['ball', id],
+        { x: 0.5, y: 0.5 },
+        { interpolate: { x: 0.2, y: 0.2 } }
+      )
+
+      return (
+        <div
+          {...dragHandlers}
+          style={{
+            position: 'absolute',
+            left: `${state.x * 100}%`,
+            top: `${state.y * 100}%`,
+            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+          }}
+        />
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/DraggableBall.jsx"
+    function DraggableBall({ id }) {
+      const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+        ['ball', id],
+        { x: 0.5, y: 0.5 },
+        { interpolate: { x: 0.2, y: 0.2 } }
+      )
+
+      return (
+        <div
+          {...dragHandlers}
+          style={{
+            position: 'absolute',
+            left: `${state.x * 100}%`,
+            top: `${state.y * 100}%`,
+            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+          }}
+        />
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### SyncDraggable
+
+Declarative component wrapper for synchronized dragging. Handles positioning, locking, interpolation, and touch/mouse events automatically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Activity.tsx"
+    <SyncDraggable id={['ball', '1']} initial={{ x: 0.5, y: 0.5 }}>
+      <div className="ball">Drag me</div>
+    </SyncDraggable>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Activity.jsx"
+    <SyncDraggable id={['ball', '1']} initial={{ x: 0.5, y: 0.5 }}>
+      <div className="ball">Drag me</div>
+    </SyncDraggable>
+    ```
+  </Tab>
+</Tabs>
+
+**Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `(string \| null)[]` | required | Key suffix |
+| `initial` | `T` | required | Initial state (must include `x`, `y`) |
+| `interpolate` | `InterpolateConfig` | `undefined` | Smooth remote updates |
+| `throttle` | `number` | `16` | Ms between updates |
+| `bounds` | `DragBounds` | `undefined` | Position constraints |
+| `normalize` | `boolean` | `true` | Use 0-1 coordinates |
+| `onDragStart` | `(state: T) => void` | `undefined` | Called when drag starts |
+| `onDrag` | `(state: T) => void` | `undefined` | Called on each update |
+| `onDragEnd` | `(state: T) => void` | `undefined` | Called when drag ends |
+| `style` | `CSSProperties` | `undefined` | Wrapper styles |
+| `className` | `string` | `undefined` | Wrapper class |
+| `as` | `string \| null` | `'div'` | Wrapper element |
+
+Supports render props for custom styling:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Activity.tsx"
+    <SyncDraggable
+      id={['ball', '1']}
+      initial={{ x: 0.5, y: 0.5 }}
+      interpolate={{ x: 0.2, y: 0.2 }}
+      bounds={{ minX: 0.05, maxX: 0.95 }}
+    >
+      {({ isDragging, canInteract }) => (
+        <div style={{ cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed' }}>
+          Drag me
+        </div>
+      )}
+    </SyncDraggable>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Activity.jsx"
+    <SyncDraggable
+      id={['ball', '1']}
+      initial={{ x: 0.5, y: 0.5 }}
+      interpolate={{ x: 0.2, y: 0.2 }}
+      bounds={{ minX: 0.05, maxX: 0.95 }}
+    >
+      {({ isDragging, canInteract }) => (
+        <div style={{ cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed' }}>
+          Drag me
+        </div>
+      )}
+    </SyncDraggable>
+    ```
+  </Tab>
+</Tabs>
+
+## Zones and Boxes
+
+### SyncZone
+
+Hierarchical key prefixing for organizing sync state. Nested zones accumulate their prefixes.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Game.tsx"
+    <SyncZone id={['game']}>
+      <SyncZone id={['board']}>
+        <SyncBox id={['piece']} /> {/* key becomes game.board.piece */}
+      </SyncZone>
+    </SyncZone>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Game.jsx"
+    <SyncZone id={['game']}>
+      <SyncZone id={['board']}>
+        <SyncBox id={['piece']} /> {/* key becomes game.board.piece */}
+      </SyncZone>
+    </SyncZone>
+    ```
+  </Tab>
+</Tabs>
+
+**Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `(string \| null)[]` | required | Key prefix for this zone |
+| `hostRules` | `'first' \| 'explicit'` | `'first'` | Host determination strategy |
+| `host` | `string \| null` | `undefined` | Explicit host client ID |
+
+### SyncBox
+
+Declarative sync state container with render function support. Inherits zone prefixes automatically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/Game.tsx"
+    <SyncBox id={['counter']} initialState={{ count: 0 }}>
+      {(state, setState, status, context, lock) => (
+        <button onClick={() => setState({ count: (state?.count ?? 0) + 1 })}>
+          {state?.count}
+        </button>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/Game.jsx"
+    <SyncBox id={['counter']} initialState={{ count: 0 }}>
+      {(state, setState, status, context, lock) => (
+        <button onClick={() => setState({ count: (state?.count ?? 0) + 1 })}>
+          {state?.count}
+        </button>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+**Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `(string \| null)[]` | required | Key suffix |
+| `initialState` | `T` | `undefined` | Initial state |
+| `lockable` | `boolean` | `false` | Enable lock mode |
+| `interpolate` | `InterpolateConfig` | `undefined` | Smooth remote updates |
+| `throttle` | `ThrottleConfig` | `undefined` | Update throttling (number or per-field config) |
+| `onStateChange` | `(state: T, prevState: T \| undefined) => void` | `undefined` | State change callback |
+| `onConflict` | `(localState: T, remoteState: T) => T` | `undefined` | Conflict resolution |
+| `as` | `element \| null` | `'div'` | Wrapper element |
+| `style` | `CSSProperties` | `undefined` | Wrapper styles |
+| `className` | `string` | `undefined` | Wrapper class |
+
+The render function receives five arguments:
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `state` | `T \| undefined` | Current synchronized state |
+| `setState` | `SyncBoxSetState<T>` | Update function with optional `SetStateOptions` |
+| `status` | `SyncStatus` | `{ synced, syncing, stale, lastSyncedAt }` |
+| `context` | `SyncContext` | Client awareness context |
+| `lock` | `LockContext \| undefined` | Lock controls (when `lockable` is enabled) |
+
+### useZoneContext
+
+Access zone metadata from any component inside a `SyncZone`. Returns `null` if not within a zone.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/app/Game.tsx"
+    const zone = useZoneContext()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/app/Game.jsx"
+    const zone = useZoneContext()
+    ```
+  </Tab>
+</Tabs>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `prefix` | `(string \| null)[]` | Accumulated key prefix from nested zones |
+| `hostId` | `string` | The host client ID for this zone |
+| `isHost` | `boolean` | Whether current client is host |
+| `connectionStatus` | `ConnectionStatus` | `'connecting' \| 'connected' \| 'disconnected' \| 'error'` |
+| `clients` | `Client[]` | Clients subscribed to this zone |
+| `broadcast` | `(payload: unknown) => void` | Send to all clients in zone |
+| `send` | `(clientId: string, payload: unknown) => void` | Send to specific client |
+
+## Server Handlers
+
+File-based handlers in `/src/sync/` process server-side logic for sync keys. Each handler file can export:
+
+| Export | Description |
+|--------|-------------|
+| `schema` | Validation schema for incoming state |
+| `validate()` | Custom validation function |
+| `transform()` | Modify state before broadcasting |
+| `onUpdate()` | Side effects on state change |
+| Named methods | RPC handlers invoked via `useSyncCall` |
+
+Here is a complete example of a server handler that validates moves and tracks game state:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/sync/game.ts"
+    import type { SyncUpdateContext, SyncCallContext } from '@robojs/sync/server'
+
+    // State validation — reject invalid updates
+    export function validate(context: SyncUpdateContext<{ x: number; y: number }>) {
+      if (context.newState.x < 0 || context.newState.x > 100 || context.newState.y < 0 || context.newState.y > 100) {
+        return 'Position out of bounds'
+      }
+      return true
+    }
+
+    // Transform state before broadcasting to other clients
+    export function transform(context: SyncUpdateContext<{ x: number; y: number }>) {
+      return { ...context.newState, lastUpdatedBy: context.client.id }
+    }
+
+    // Side effects on state change
+    export function onUpdate(context: SyncUpdateContext<{ x: number; y: number }>) {
+      console.log('Game state updated:', context.newState)
+    }
+
+    // RPC handler — invoked via useSyncCall(['game'], 'move', payload)
+    export function move(payload: { x: number; y: number }, context: SyncCallContext) {
+      if (payload.x < 0 || payload.y < 0) {
+        return { success: false, error: 'Invalid position' }
+      }
+      return { success: true, result: { x: payload.x, y: payload.y } }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/sync/game.js"
+    // State validation — reject invalid updates
+    export function validate(context) {
+      if (context.newState.x < 0 || context.newState.x > 100 || context.newState.y < 0 || context.newState.y > 100) {
+        return 'Position out of bounds'
+      }
+      return true
+    }
+
+    // Transform state before broadcasting to other clients
+    export function transform(context) {
+      return { ...context.newState, lastUpdatedBy: context.client.id }
+    }
+
+    // Side effects on state change
+    export function onUpdate(context) {
+      console.log('Game state updated:', context.newState)
+    }
+
+    // RPC handler — invoked via useSyncCall(['game'], 'move', payload)
+    export function move(payload, context) {
+      if (payload.x < 0 || payload.y < 0) {
+        return { success: false, error: 'Invalid position' }
+      }
+      return { success: true, result: { x: payload.x, y: payload.y } }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## SyncContext Object
+
+The `SyncContext` object is returned by `useSyncState`, `useSyncContext`, and `useSyncBroadcast`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clients` | `Client[]` | Connected clients |
+| `clientId` | `string` | Current client's ID |
+| `isHost` | `boolean` | Whether current client is host |
+| `broadcast` | `(payload: unknown) => void` | Send to all clients |
+| `send` | `(clientId: string, payload: unknown) => void` | Send to specific client |
+
+**Client**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique client identifier |
+| `data` | `unknown` | Client metadata |
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./multiplayer"
+    title="Multiplayer"
+    description="Build multiplayer features with real-time sync."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Configure your Discord Activity project."
+  />
+</Cards>
