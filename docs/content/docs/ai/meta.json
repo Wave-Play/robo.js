@@ -1,0 +1,25 @@
+{
+	"title": "@robojs/ai",
+	"icon": "Brain",
+	"description": "AI copilot with voice, vision, and web search.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Getting Started---",
+		"configuration",
+		"seed-commands",
+		"---Features---",
+		"conversations",
+		"voice",
+		"vision",
+		"web-search",
+		"command-execution",
+		"---Integrations---",
+		"token-usage",
+		"mcp",
+		"web-api",
+		"---Advanced---",
+		"custom-engines",
+		"hooks"
+	]
+}

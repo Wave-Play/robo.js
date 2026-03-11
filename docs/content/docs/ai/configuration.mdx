@@ -1,0 +1,341 @@
+---
+title: Configuration
+description: All plugin options, engine settings, and environment variables for @robojs/ai.
+---
+
+The AI plugin is configured through a file at `config/plugins/robojs/ai.mjs` (or `.ts`). You only need to specify the options you want to change.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	instructions: 'You are Sage, a helpful community assistant.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	instructions: 'You are Sage, a helpful community assistant.'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Plugin options
+
+<TypeTable
+  type={{
+    instructions: { type: 'string', description: 'System prompt injected into every conversation.', default: 'undefined' },
+    commands: { type: 'boolean | string[]', description: 'Allow/deny list for natural language command tools. true = all commands exposed, false = none, array = whitelist of specific command names.', default: 'undefined (all exposed)' },
+    insight: { type: 'boolean', description: 'Enable /documents sync to a vector store for knowledge injection.', default: 'true' },
+    restrict: { type: '{ channelIds: string[] }', description: 'Only respond in these channels. Takes precedence over whitelist.', default: 'undefined' },
+    whitelist: { type: '{ channelIds: string[] }', description: 'Respond to all messages (no mention needed) in these channels.', default: 'undefined' },
+    context: { type: '{ enabled?: boolean, depth?: number }', description: 'Surrounding message context for mentions in regular channels.', default: '{ enabled: true, depth: 8 }' },
+    engine: { type: 'BaseEngine', description: 'Custom engine instance. Defaults to auto-creating an OpenAiEngine.', default: 'OpenAiEngine' },
+    voice: { type: 'VoicePluginVoiceOptions', description: 'Voice configuration. See the voice docs for full details.', default: 'See voice defaults' },
+    usage: { type: 'PluginUsageOptions', description: 'Token tracking and rate limit configuration.', default: 'No limits' },
+    mcpServers: { type: 'MCPTool[]', description: 'MCP server configurations to expose as tools.', default: '[]' },
+    mcp: { type: 'object', description: 'MCP error handling options.', default: 'See defaults' },
+    hooks: { type: 'Partial<Record<HookEvent, Hook>>', description: 'Pipeline hooks for intercepting AI operations.', default: 'undefined' },
+  }}
+/>
+
+### Channel behavior
+
+`restrict` and `whitelist` control where the bot listens:
+
+- **restrict** limits the bot to specific channels. Messages in all other channels are ignored, even if the bot is mentioned.
+- **whitelist** enables ambient chat (no mention needed) in the listed channels.
+- If both are set, `restrict` wins. The bot only responds in restricted channels, and whitelisted channels outside the restrict list are ignored.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	restrict: { channelIds: ['345678901234567890'] },
+    	whitelist: { channelIds: ['456789012345678901', '567890123456789012'] }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	restrict: { channelIds: ['345678901234567890'] },
+    	whitelist: { channelIds: ['456789012345678901', '567890123456789012'] }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Command tools
+
+The `commands` option controls which of your registered slash commands the AI can invoke via natural language.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	// Only allow these commands to be called by the AI
+    	commands: ['ban', 'kick', 'ai log']
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	// Only allow these commands to be called by the AI
+    	commands: ['ban', 'kick', 'ai log']
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Set to `false` to disable command execution entirely. Omit or set to `true` to expose all commands.
+
+### Context depth
+
+When someone mentions the bot in a busy channel, the plugin fetches surrounding messages to give the AI conversational context. Control this with the `context` option.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	context: {
+    		enabled: true,
+    		depth: 12
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	context: {
+    		enabled: true,
+    		depth: 12
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Set `enabled: false` to disable context fetching. The `depth` value controls how many surrounding messages are included.
+
+## Engine configuration
+
+The default `OpenAiEngine` accepts these constructor options.
+
+### `clientOptions`
+
+Pass-through to the OpenAI SDK. Use this for API key overrides, custom base URLs, or fetch configuration.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new OpenAiEngine({
+    	clientOptions: {
+    		apiKey: process.env.OPENAI_API_KEY,
+    		baseURL: 'https://custom-proxy.example.com/v1',
+    		organization: process.env.OPENAI_ORG_ID
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new OpenAiEngine({
+    	clientOptions: {
+    		apiKey: process.env.OPENAI_API_KEY,
+    		baseURL: 'https://custom-proxy.example.com/v1',
+    		organization: process.env.OPENAI_ORG_ID
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### `chat`
+
+Model configuration for text conversations.
+
+<TypeTable
+  type={{
+model: { type: 'string', description: 'Chat model identifier.', default: "'gpt-4o'" },
+temperature: { type: 'number', description: 'Sampling temperature (0-2).', default: 'undefined' },
+maxOutputTokens: { type: 'number', description: 'Maximum tokens in the response.', default: 'undefined' },
+reasoningEffort: { type: "'low' | 'medium' | 'high'", description: 'Reasoning depth for o1, o3, and gpt-5 models.', default: 'undefined' },
+  }}
+/>
+
+### `voice`
+
+Model configuration for realtime voice sessions.
+
+<TypeTable
+  type={{
+model: { type: 'string', description: 'Realtime voice model.', default: "'gpt-realtime'" },
+transcription: { type: '{ model: string, language: string }', description: 'Transcription model and language code.', default: 'undefined' },
+  }}
+/>
+
+### `webSearch`
+
+Enable live web search with automatic citation formatting.
+
+<TypeTable
+  type={{
+webSearch: { type: 'boolean', description: 'Enable web search tool for the engine.', default: 'false' },
+  }}
+/>
+
+### `mcp`
+
+Engine-level MCP error handling. Same structure as the plugin-level `mcp` option.
+
+## Complete config example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	instructions: 'You are Sage, a concise community mentor. Answer questions directly.',
+    	commands: ['ban', 'kick', 'warn'],
+    	insight: true,
+    	restrict: { channelIds: ['345678901234567890'] },
+    	whitelist: { channelIds: ['456789012345678901'] },
+    	context: {
+    		enabled: true,
+    		depth: 10
+    	},
+    	engine: new OpenAiEngine({
+    		clientOptions: {
+    			apiKey: process.env.OPENAI_API_KEY,
+    			organization: process.env.OPENAI_ORG_ID
+    		},
+    		chat: {
+    			model: 'gpt-4.1',
+    			temperature: 0.5,
+    			maxOutputTokens: 1000
+    		},
+    		voice: {
+    			model: 'gpt-realtime',
+    			transcription: {
+    				model: 'gpt-4o-transcribe-latest',
+    				language: 'en'
+    			}
+    		},
+    		webSearch: true
+    	}),
+    	voice: {
+    		endpointing: 'server-vad',
+    		maxConcurrentChannels: 3,
+    		playbackVoice: 'alloy',
+    		instructions: 'Keep spoken replies under 10 seconds.',
+    		capture: {
+    			sampleRate: 24000,
+    			silenceDurationMs: 300,
+    			vadThreshold: 0.01
+    		},
+    		transcript: {
+    			enabled: true,
+    			targetChannelId: '987654321098765432'
+    		}
+    	},
+    	usage: {
+    		limits: {
+    			perModel: {
+    				'gpt-4o': { window: 'month', maxTokens: 500_000, mode: 'block' },
+    				'gpt-4.1-mini': { window: 'month', maxTokens: 800_000, mode: 'block' }
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	instructions: 'You are Sage, a concise community mentor. Answer questions directly.',
+    	commands: ['ban', 'kick', 'warn'],
+    	insight: true,
+    	restrict: { channelIds: ['345678901234567890'] },
+    	whitelist: { channelIds: ['456789012345678901'] },
+    	context: {
+    		enabled: true,
+    		depth: 10
+    	},
+    	engine: new OpenAiEngine({
+    		clientOptions: {
+    			apiKey: process.env.OPENAI_API_KEY,
+    			organization: process.env.OPENAI_ORG_ID
+    		},
+    		chat: {
+    			model: 'gpt-4.1',
+    			temperature: 0.5,
+    			maxOutputTokens: 1000
+    		},
+    		voice: {
+    			model: 'gpt-realtime',
+    			transcription: {
+    				model: 'gpt-4o-transcribe-latest',
+    				language: 'en'
+    			}
+    		},
+    		webSearch: true
+    	}),
+    	voice: {
+    		endpointing: 'server-vad',
+    		maxConcurrentChannels: 3,
+    		playbackVoice: 'alloy',
+    		instructions: 'Keep spoken replies under 10 seconds.',
+    		capture: {
+    			sampleRate: 24000,
+    			silenceDurationMs: 300,
+    			vadThreshold: 0.01
+    		},
+    		transcript: {
+    			enabled: true,
+    			targetChannelId: '987654321098765432'
+    		}
+    	},
+    	usage: {
+    		limits: {
+    			perModel: {
+    				'gpt-4o': { window: 'month', maxTokens: 500_000, mode: 'block' },
+    				'gpt-4.1-mini': { window: 'month', maxTokens: 800_000, mode: 'block' }
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `OPENAI_API_KEY` | Yes (unless custom engine) | OpenAI API key used by the default `OpenAiEngine`. |
+| `OPENAI_REALTIME_API_KEY` | No | Separate key for voice sessions. Falls back to `OPENAI_API_KEY` if not set. |
+| `DEBUG` | No | Set to `ai:voice` for verbose voice debug logs. |
+
+```bash title=".env"
+OPENAI_API_KEY="sk-..."
+```
+
+<Callout type="warn">
+If you're using a custom engine that doesn't rely on OpenAI, you can skip `OPENAI_API_KEY` entirely. The engine handles its own authentication.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card href="./seed-commands" title="Seed commands" description="Optional slash commands scaffolded during installation." />
+  <Card href="./conversations" title="Conversations" description="How the AI handles messages, threads, and replies." />
+  <Card href="./voice" title="Voice" description="Realtime voice conversations with transcription." />
+</Cards>

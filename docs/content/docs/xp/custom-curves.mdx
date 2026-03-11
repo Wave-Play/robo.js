@@ -1,0 +1,350 @@
+---
+title: Custom curves
+description: Customize the level progression formula with presets or custom code.
+---
+
+By default, the XP plugin uses a quadratic formula to determine how much XP each level requires:
+
+```
+XP(level) = 5 * level² + 50 * level + 100
+```
+
+This means early levels are quick to earn and later levels require progressively more XP. You can replace this with any of the four built-in presets or supply your own formula via code.
+
+## Preset curve types
+
+All presets support an optional `maxLevel` cap to prevent progression beyond a certain level.
+
+### Quadratic
+
+Formula: `XP = a * level² + b * level + c`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    // Steeper progression for large guilds
+    await config.set(guildId, {
+    	levels: {
+    		type: 'quadratic',
+    		params: { a: 10, b: 100, c: 200 },
+    		maxLevel: 100
+    	}
+    })
+
+    // Gentler progression for small guilds
+    await config.set(guildId, {
+    	levels: {
+    		type: 'quadratic',
+    		params: { a: 2, b: 20, c: 50 }
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    // Steeper progression for large guilds
+    await config.set(guildId, {
+    	levels: {
+    		type: 'quadratic',
+    		params: { a: 10, b: 100, c: 200 },
+    		maxLevel: 100
+    	}
+    })
+
+    // Gentler progression for small guilds
+    await config.set(guildId, {
+    	levels: {
+    		type: 'quadratic',
+    		params: { a: 2, b: 20, c: 50 }
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Higher `a` values make late-game progression steeper. Adjust `b` and `c` to tune early levels.
+
+### Linear
+
+Formula: `XP = level * xpPerLevel`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await config.set(guildId, {
+    	levels: {
+    		type: 'linear',
+    		params: { xpPerLevel: 100 }
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await config.set(guildId, {
+    	levels: {
+    		type: 'linear',
+    		params: { xpPerLevel: 100 }
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Every level requires the same amount of XP. Good for reputation systems, currencies, or non-competitive tracks.
+
+### Exponential
+
+Formula: `XP = multiplier * base^level`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await config.set(guildId, {
+    	levels: {
+    		type: 'exponential',
+    		params: { base: 2, multiplier: 100 },
+    		maxLevel: 50
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await config.set(guildId, {
+    	levels: {
+    		type: 'exponential',
+    		params: { base: 2, multiplier: 100 },
+    		maxLevel: 50
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Exponential growth gets steep fast. Always set a `maxLevel` to prevent overflow at high levels.
+</Callout>
+
+### Lookup table
+
+Define exact XP thresholds per level with an array.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await config.set(guildId, {
+    	levels: {
+    		type: 'lookup',
+    		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000, 10000] }
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await config.set(guildId, {
+    	levels: {
+    		type: 'lookup',
+    		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000, 10000] }
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+The array index is the level, and the value is the total XP required. `maxLevel` defaults to `thresholds.length - 1` when not specified. Thresholds must be sorted in ascending order.
+
+This gives pixel-perfect control over each level's requirement. Useful for seasonal passes and event-specific tuning.
+
+## Dynamic curves with getCurve
+
+For logic that can't be expressed with static presets, define a `getCurve` callback in your plugin config. This has the **highest precedence** in the resolution chain:
+
+```
+getCurve callback → guild preset → default quadratic
+```
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/xp.ts"
+    import type { PluginOptions } from '@robojs/xp'
+
+    export default {
+    	levels: {
+    		getCurve: (guildId, storeId) => {
+    			if (storeId === 'reputation') {
+    				return {
+    					xpForLevel: (level) => level * 500,
+    					levelFromXp: (xp) => Math.floor(xp / 500)
+    				}
+    			}
+    			return null // Fall through to guild preset or default
+    		}
+    	}
+    } satisfies PluginOptions
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/xp.js"
+    export default {
+    	levels: {
+    		getCurve: (guildId, storeId) => {
+    			if (storeId === 'reputation') {
+    				return {
+    					xpForLevel: (level) => level * 500,
+    					levelFromXp: (xp) => Math.floor(xp / 500)
+    				}
+    			}
+    			return null // Fall through to guild preset or default
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Return `null` to fall through to the next level in the resolution chain. The callback can be synchronous or asynchronous.
+
+### Use cases for getCurve
+
+**Different curves per store:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/xp.ts"
+    import type { PluginOptions } from '@robojs/xp'
+
+    export default {
+    	levels: {
+    		getCurve: (guildId, storeId) => {
+    			if (storeId === 'coins') {
+    				return {
+    					xpForLevel: (level) => level * 50,
+    					levelFromXp: (xp) => Math.floor(xp / 50),
+    					maxLevel: 999
+    				}
+    			}
+    			return null
+    		}
+    	}
+    } satisfies PluginOptions
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/xp.js"
+    export default {
+    	levels: {
+    		getCurve: (guildId, storeId) => {
+    			if (storeId === 'coins') {
+    				return {
+    					xpForLevel: (level) => level * 50,
+    					levelFromXp: (xp) => Math.floor(xp / 50),
+    					maxLevel: 999
+    				}
+    			}
+    			return null
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Dynamic curves based on guild size:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/xp.ts"
+    import { client } from 'robo.js'
+    import type { PluginOptions } from '@robojs/xp'
+
+    export default {
+    	levels: {
+    		getCurve: async (guildId) => {
+    			const guild = await client.guilds.fetch(guildId)
+    			if (guild.memberCount > 1000) {
+    				return {
+    					xpForLevel: (level) => 10 * level * level + 100 * level + 200,
+    					levelFromXp: (xp) => Math.floor((-100 + Math.sqrt(10000 + 40 * (xp - 200))) / 20)
+    				}
+    			}
+    			return null
+    		}
+    	}
+    } satisfies PluginOptions
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/xp.js"
+    import { client } from 'robo.js'
+
+    export default {
+    	levels: {
+    		getCurve: async (guildId) => {
+    			const guild = await client.guilds.fetch(guildId)
+    			if (guild.memberCount > 1000) {
+    				return {
+    					xpForLevel: (level) => 10 * level * level + 100 * level + 200,
+    					levelFromXp: (xp) => Math.floor((-100 + Math.sqrt(10000 + 40 * (xp - 200))) / 20)
+    				}
+    			}
+    			return null
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### LevelCurve interface
+
+Custom curves must implement this interface:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface LevelCurve {
+    	xpForLevel: (level: number) => number   // Total XP needed to reach this level
+    	levelFromXp: (totalXp: number) => number // Level for a given total XP (inverse)
+    	maxLevel?: number                        // Optional level cap
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+`levelFromXp` must be the mathematical inverse of `xpForLevel`. Incorrect inverses cause level calculation errors.
+
+## Resolution and caching
+
+Curves resolve lazily on first XP operation per `(guildId, storeId)` pair and are cached in-memory. Subsequent operations use the cached curve with sub-millisecond lookups.
+
+Cache is invalidated when guild config changes. If you update a `getCurve` callback, restart the Robo to clear the cache.
+
+## Default curve reference
+
+| Level | XP for level | Total XP |
+|---|---|---|
+| 1 | 155 | 155 |
+| 5 | 475 | 1,675 |
+| 10 | 1,100 | 5,675 |
+| 20 | 3,100 | 25,175 |
+| 50 | 15,100 | 260,675 |
+| 100 | 55,100 | 1,838,175 |
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Setting curves via guild config." />
+  <Card href="./multi-store" title="Multi-store" description="Different curves per store." />
+  <Card href="./api-reference" title="API reference" description="Math utilities for level calculations." />
+</Cards>

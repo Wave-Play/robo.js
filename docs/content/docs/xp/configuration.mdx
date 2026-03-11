@@ -1,0 +1,354 @@
+---
+title: Configuration
+description: Complete reference for all XP plugin configuration options.
+---
+
+The XP plugin supports configuration at three levels with clear precedence: guild config overrides global config, which overrides system defaults.
+
+## Config precedence
+
+1. **Guild config** (highest) -- set via `/xp config` or `config.set(guildId, ...)`
+2. **Global config** -- set via plugin options `defaults` or `config.setGlobal(...)`
+3. **System defaults** (lowest) -- built-in fallback values
+
+## Plugin options file
+
+The plugin config file at `config/plugins/robojs/xp.ts` controls global defaults and advanced features like custom level curves.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/xp.ts"
+    import type { PluginOptions } from '@robojs/xp'
+
+    export default {
+    	defaults: {
+    		cooldownSeconds: 90,
+    		xpRate: 1.5,
+    		rewardsMode: 'stack',
+    		leaderboard: { public: true },
+    		labels: { xpDisplayName: 'Reputation' }
+    	}
+    } satisfies PluginOptions
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/xp.js"
+    export default {
+    	defaults: {
+    		cooldownSeconds: 90,
+    		xpRate: 1.5,
+    		rewardsMode: 'stack',
+    		leaderboard: { public: true },
+    		labels: { xpDisplayName: 'Reputation' }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `defaults` field accepts any `GuildConfig` fields. These are applied as global defaults on startup via Flashcore and persist across restarts.
+
+### PluginOptions fields
+
+<TypeTable
+  type={{
+    defaults: { type: 'Partial<GuildConfig>', description: 'Global defaults applied to all guilds on startup.', default: 'undefined' },
+    'levels.getCurve': { type: '(guildId, storeId) => LevelCurve | null', description: 'Code-based curve factory with highest precedence. See Custom Curves.', default: 'undefined' },
+  }}
+/>
+
+## Guild configuration
+
+All configuration fields with their types, defaults, and validation rules.
+
+### Basic settings
+
+<TypeTable
+  type={{
+    cooldownSeconds: { type: 'number', description: 'Minimum seconds between XP awards for the same user.', default: '60' },
+    xpRate: { type: 'number', description: 'Global XP multiplier. Applied to all XP gains.', default: '1.0' },
+  }}
+/>
+
+### Exclusions
+
+<TypeTable
+  type={{
+    noXpRoleIds: { type: 'string[]', description: 'Users with any of these roles do not earn XP. Valid Discord snowflakes.', default: '[]' },
+    noXpChannelIds: { type: 'string[]', description: 'Messages in these channels do not award XP. Also blocks threads in listed forum channels.', default: '[]' },
+  }}
+/>
+
+### Role rewards
+
+<TypeTable
+  type={{
+    roleRewards: { type: 'RoleReward[]', description: 'Array of { level, roleId } mappings. Roles awarded at specific levels.', default: '[]' },
+    rewardsMode: { type: "'stack' | 'replace'", description: "Stack: keep all earned rewards. Replace: only highest qualifying role.", default: "'stack'" },
+    removeRewardOnXpLoss: { type: 'boolean', description: 'Remove role rewards when users lose levels from XP removal.', default: 'false' },
+  }}
+/>
+
+### Multipliers
+
+<TypeTable
+  type={{
+    'multipliers.server': { type: 'number | undefined', description: 'Server-wide XP multiplier. Set to 0 to disable automatic XP.', default: 'undefined (1.0)' },
+    'multipliers.role': { type: 'Record<string, number> | undefined', description: 'Per-role multipliers. Highest matching role value is used.', default: 'undefined' },
+    'multipliers.user': { type: 'Record<string, number> | undefined', description: 'Per-user multipliers for personal XP boosts.', default: 'undefined' },
+  }}
+/>
+
+Multipliers combine **multiplicatively**: `effective = server * max(role) * user`. The result is rounded to 3 decimal places.
+
+Setting any multiplier to `0` disables automatic XP earning at that scope. Admin commands (`/xp give`, `/xp set`) still work regardless.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    // Disable automatic XP for entire guild (manual control only)
+    await config.set(guildId, {
+    	multipliers: { server: 0 }
+    })
+
+    // 2x boost for booster role
+    await config.set(guildId, {
+    	multipliers: {
+    		role: { '123456789012345678': 2.0 }
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    // Disable automatic XP for entire guild (manual control only)
+    await config.set(guildId, {
+    	multipliers: { server: 0 }
+    })
+
+    // 2x boost for booster role
+    await config.set(guildId, {
+    	multipliers: {
+    		role: { '123456789012345678': 2.0 }
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Leaderboard
+
+<TypeTable
+  type={{
+    'leaderboard.public': { type: 'boolean', description: 'Allow non-admins to use /leaderboard.', default: 'false' },
+  }}
+/>
+
+### Theme
+
+<TypeTable
+  type={{
+    'theme.embedColor': { type: 'number | undefined', description: 'Custom embed color for rank/leaderboard commands. Numeric hex value (e.g., 0x5865F2).', default: 'undefined (Discord Blurple)' },
+    'theme.backgroundUrl': { type: 'string | undefined', description: 'Reserved for future rank card background image.', default: 'undefined' },
+  }}
+/>
+
+### Custom branding
+
+<TypeTable
+  type={{
+    'labels.xpDisplayName': { type: 'string | undefined', description: 'Custom display name for XP in all user-facing commands. Max 20 characters.', default: "'XP'" },
+  }}
+/>
+
+Rename "XP" to match your server's theme. All user-facing displays update automatically while command names stay the same.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    await config.set(guildId, {
+    	labels: { xpDisplayName: 'Reputation' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    await config.set(guildId, {
+    	labels: { xpDisplayName: 'Reputation' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+| Label | Use case | Display |
+|---|---|---|
+| `'Reputation'` | Community reputation | "1,500 Reputation" |
+| `'Points'` | Point-based rewards | "1,500 Points" |
+| `'Karma'` | Reddit-style systems | "1,500 Karma" |
+| `'Credits'` | Economy/currency | "1,500 Credits" |
+| `'Exp'` | Gaming experience | "1,500 Exp" |
+
+### Level curves
+
+<TypeTable
+  type={{
+    levels: { type: 'LevelCurveConfig | undefined', description: 'Custom level curve preset. See Custom Curves for full documentation.', default: 'undefined (quadratic: 5l² + 50l + 100)' },
+  }}
+/>
+
+## Environment variables
+
+<TypeTable
+  type={{
+    XP_ADMIN_PERMISSION: { type: 'string', description: "Override the default ManageGuild permission for admin commands. Set to any PermissionFlagsBits key (e.g., 'Administrator').", default: "'ManageGuild'" },
+  }}
+/>
+
+```bash title=".env"
+XP_ADMIN_PERMISSION=Administrator
+```
+
+## Setting config via API
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    // Get merged config for a guild (never returns null)
+    const guildConfig = await config.get(guildId)
+
+    // Partial updates -- only specified fields change
+    await config.set(guildId, {
+    	cooldownSeconds: 45,
+    	noXpChannelIds: ['123456789012345678'],
+    	roleRewards: [
+    		{ level: 5, roleId: '111111111111111111' },
+    		{ level: 10, roleId: '222222222222222222' }
+    	]
+    })
+
+    // Validate config before applying
+    const { valid, errors } = config.validate(partialConfig)
+    if (!valid) {
+    	console.log('Validation errors:', errors)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    // Get merged config for a guild (never returns null)
+    const guildConfig = await config.get(guildId)
+
+    // Partial updates -- only specified fields change
+    await config.set(guildId, {
+    	cooldownSeconds: 45,
+    	noXpChannelIds: ['123456789012345678'],
+    	roleRewards: [
+    		{ level: 5, roleId: '111111111111111111' },
+    		{ level: 10, roleId: '222222222222222222' }
+    	]
+    })
+
+    // Validate config before applying
+    const { valid, errors } = config.validate(partialConfig)
+    if (!valid) {
+    	console.log('Validation errors:', errors)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Global configuration
+
+Global defaults apply to all guilds that haven't overridden specific fields.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    // Set global defaults
+    await config.setGlobal({
+    	cooldownSeconds: 45,
+    	xpRate: 1.5,
+    	leaderboard: { public: true }
+    })
+
+    // Read global defaults
+    const globalConfig = await config.getGlobal()
+
+    // Get system defaults (before any overrides)
+    const systemDefaults = config.getDefault()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    // Set global defaults
+    await config.setGlobal({
+    	cooldownSeconds: 45,
+    	xpRate: 1.5,
+    	leaderboard: { public: true }
+    })
+
+    // Read global defaults
+    const globalConfig = await config.getGlobal()
+
+    // Get system defaults (before any overrides)
+    const systemDefaults = config.getDefault()
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Setting global config clears all guild config caches. This forces a re-merge on the next access.
+</Callout>
+
+## Per-store configuration
+
+When using [multi-store](./multi-store.mdx), each store has independent configuration. Pass `{ storeId }` as the options argument.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    // Default store config
+    await config.set(guildId, { cooldownSeconds: 60 })
+
+    // Reputation store gets a longer cooldown
+    await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    // Default store config
+    await config.set(guildId, { cooldownSeconds: 60 })
+
+    // Reputation store gets a longer cooldown
+    await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./commands" title="Commands" description="All slash commands and the interactive config UI." />
+  <Card href="./custom-curves" title="Custom curves" description="Change the level progression formula." />
+  <Card href="./multi-store" title="Multi-store" description="Run parallel progression systems." />
+</Cards>

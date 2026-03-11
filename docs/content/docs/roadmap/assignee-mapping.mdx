@@ -1,0 +1,115 @@
+---
+title: Assignee mapping
+description: Map provider assignee names to Discord users for privacy-safe mentions.
+---
+
+The plugin maps provider assignee names (like Jira display names) to Discord user mentions. This keeps provider identities private while showing relevant Discord mentions in forum threads.
+
+## How it works
+
+Provider display names are never shown directly in Discord. Instead, the assignee mapping system:
+
+1. Stores the provider's display name as an internal key
+2. Looks up the corresponding Discord user ID from guild-specific mappings
+3. Renders a Discord mention (`<@userId>`) in thread content
+4. Hides the assignee entirely if no mapping exists
+
+This is a security contract. Provider names like Jira's `displayName` must never appear in public-facing Discord content.
+
+## Interactive setup
+
+The easiest way to manage mappings is through the `/roadmap setup` panel:
+
+1. Run `/roadmap setup`
+2. Click "Provider Settings"
+3. Use "Add Mapping" to create new assignee mappings
+4. Select a Jira name from the dropdown, then select the corresponding Discord user
+5. Use "Remove" buttons to delete existing mappings
+6. Click "View All" to see all configured mappings
+
+## Programmatic API
+
+Manage mappings directly with the settings API:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+      setAssigneeMapping,
+      removeAssigneeMapping,
+      getAssigneeMapping,
+      getDiscordUserIdForJiraName
+    } from '@robojs/roadmap'
+
+    // Create a mapping
+    setAssigneeMapping(guildId, 'Alice Smith', '123456789012345678')
+
+    // Remove a mapping
+    removeAssigneeMapping(guildId, 'Alice Smith')
+
+    // Get all mappings for a guild
+    const mappings = getAssigneeMapping(guildId)
+    // { 'Alice Smith': '123456789012345678', 'Bob Jones': '987654321098765432' }
+
+    // Look up a single mapping
+    const discordId = getDiscordUserIdForJiraName(guildId, 'Alice Smith')
+    // '123456789012345678' or undefined
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+      setAssigneeMapping,
+      removeAssigneeMapping,
+      getAssigneeMapping,
+      getDiscordUserIdForJiraName
+    } from '@robojs/roadmap'
+
+    // Create a mapping
+    setAssigneeMapping(guildId, 'Alice Smith', '123456789012345678')
+
+    // Remove a mapping
+    removeAssigneeMapping(guildId, 'Alice Smith')
+
+    // Get all mappings for a guild
+    const mappings = getAssigneeMapping(guildId)
+    // { 'Alice Smith': '123456789012345678', 'Bob Jones': '987654321098765432' }
+
+    // Look up a single mapping
+    const discordId = getDiscordUserIdForJiraName(guildId, 'Alice Smith')
+    // '123456789012345678' or undefined
+    ```
+  </Tab>
+</Tabs>
+
+## Discord User ID custom field
+
+Skip manual mapping entirely by storing Discord User IDs in a Jira custom field. When configured, this takes priority over the assignee mapping system.
+
+```bash title=".env"
+JIRA_DISCORD_USER_ID_FIELD_ID="customfield_10042"
+```
+
+The field value must be a 17-19 digit numeric Discord User ID. Invalid values are logged and the system falls back to the standard assignee mapping.
+
+See [Provider setup](./provider-setup) for detailed configuration steps.
+
+## Content rendering
+
+When a card is synced, the `formatCardContentV2()` function renders assignees as Discord mentions with avatar thumbnails:
+
+- If the first mapped assignee has a valid Discord account in the guild, their avatar appears as a thumbnail in the Components v2 section
+- All mapped assignees appear as `<@userId>` mentions in the "Assigned to" metadata field
+- Unmapped assignees are hidden entirely
+
+## Admin-only exceptions
+
+The `/roadmap setup` panel displays raw provider names in the mapping configuration UI. This is the only context where provider names appear, and it's restricted to administrators managing the mappings.
+
+## Next steps
+
+<Cards>
+  <Card href="./column-mapping" title="Column mapping" description="Configure status-to-column mappings." />
+  <Card href="./thread-templates" title="Thread templates" description="Customize Discord thread titles." />
+  <Card href="./api-reference" title="API reference" description="Full programmatic API." />
+</Cards>

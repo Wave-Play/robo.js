@@ -1,0 +1,95 @@
+---
+title: 'Static files'
+description: 'Serve static assets and single-page applications.'
+---
+
+The plugin automatically serves static files from the `public/` directory. This includes images, CSS, JavaScript, fonts, and any other assets your application needs.
+
+## Directory structure
+
+In development, files are served from `public/` at the project root. In production, files are served from `.robo/public/` (built by Vite or copied during `robo build`).
+
+```
+<Files>
+  <Folder name="public" defaultOpen>
+    <File name="favicon.ico" />
+    <File name="logo.png" />
+    <Folder name="assets">
+      <File name="styles.css" />
+    </Folder>
+  </Folder>
+</Files>
+```
+
+These files are accessible at:
+
+- `public/favicon.ico` → `http://localhost:3000/favicon.ico`
+- `public/assets/styles.css` → `http://localhost:3000/assets/styles.css`
+
+## MIME types
+
+The plugin detects content types automatically based on file extension. Common types like `.html`, `.css`, `.js`, `.json`, `.png`, `.jpg`, `.svg`, `.woff2`, and many more are supported. All responses include `X-Content-Type-Options: nosniff` for security.
+
+## SPA fallback
+
+For single-page applications with client-side routing, the plugin automatically serves `index.html` when:
+
+- The request method is GET
+- The request accepts `text/html`
+- No API route matches the path
+- No static file matches the path
+- The path doesn't have a file extension
+- The path is outside the API prefix (e.g., not under `/api/`)
+
+This means URLs like `/dashboard`, `/settings/profile`, or `/about` all serve your `index.html`, letting your client-side router handle the path.
+
+Place your `index.html` in the `public/` directory (dev) or ensure it's built to `.robo/public/` (production).
+
+## Vite integration
+
+When Vite is installed as a dev dependency, the plugin automatically:
+
+- Creates a Vite dev server in middleware mode during development
+- Builds frontend assets to `.robo/public/` during `robo build`
+- Sets up HMR on the `/hmr` WebSocket path
+
+The plugin auto-discovers your Vite config from `config/vite.ts`, `config/vite.mjs`, `vite.config.ts`, or `vite.config.js`.
+
+To specify a custom config path:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	viteBuild: {
+    		configFile: 'config/vite.ts'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	viteBuild: {
+    		configFile: 'config/vite.ts'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Caching
+
+In development, static files are served with `Cache-Control: no-cache, no-store, must-revalidate` to prevent stale assets during development. In production, no cache headers are set by default — configure caching at your CDN or reverse proxy layer.
+
+## Security
+
+The plugin includes directory traversal protection. Requests that attempt to access files outside the `public/` directory (using `../` or similar) receive a 403 response.
+
+## Next steps
+
+<Cards>
+	<Card title="Configuration" description="Customize your server settings." href="./configuration" />
+	<Card title="Routing" description="Learn about file-based API routing." href="./routing" />
+	<Card title="Engines" description="Understand server engines and Vite integration." href="./engines" />
+</Cards>

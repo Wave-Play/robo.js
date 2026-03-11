@@ -1,0 +1,329 @@
+---
+title: OAuth providers
+description: Configure OAuth providers like Discord, Google, and GitHub for single sign-on authentication.
+---
+
+The plugin re-exports 80+ OAuth providers from Auth.js. Import them from `@robojs/auth/providers/*` and add them to the `providers` array.
+
+## Basic usage
+
+Import providers and configure them with your OAuth credentials:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import Discord from '@robojs/auth/providers/discord'
+    import Google from '@robojs/auth/providers/google'
+    import GitHub from '@robojs/auth/providers/github'
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    export default <AuthPluginOptions>{
+    	secret: process.env.AUTH_SECRET,
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+    		Google({ clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! }),
+    		GitHub({ clientId: process.env.GITHUB_CLIENT_ID!, clientSecret: process.env.GITHUB_CLIENT_SECRET! })
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import Discord from '@robojs/auth/providers/discord'
+    import Google from '@robojs/auth/providers/google'
+    import GitHub from '@robojs/auth/providers/github'
+
+    export default {
+    	secret: process.env.AUTH_SECRET,
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+    		Google({ clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! }),
+    		GitHub({ clientId: process.env.GITHUB_CLIENT_ID!, clientSecret: process.env.GITHUB_CLIENT_SECRET! })
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Popular providers
+
+<Tabs items={['Discord', 'Google', 'GitHub']}>
+	<Tab value="Discord">
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```ts
+		    import Discord from '@robojs/auth/providers/discord'
+
+		    Discord({
+		    	clientId: process.env.DISCORD_CLIENT_ID!,
+		    	clientSecret: process.env.DISCORD_CLIENT_SECRET!
+		    })
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```js
+		    import Discord from '@robojs/auth/providers/discord'
+
+		    Discord({
+		    	clientId: process.env.DISCORD_CLIENT_ID!,
+		    	clientSecret: process.env.DISCORD_CLIENT_SECRET!
+		    })
+		    ```
+		  </Tab>
+		</Tabs>
+
+		Callback URL: `{AUTH_URL}/api/auth/callback/discord`
+	</Tab>
+
+	<Tab value="Google">
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```ts
+		    import Google from '@robojs/auth/providers/google'
+
+		    Google({
+		    	clientId: process.env.GOOGLE_CLIENT_ID!,
+		    	clientSecret: process.env.GOOGLE_CLIENT_SECRET!
+		    })
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```js
+		    import Google from '@robojs/auth/providers/google'
+
+		    Google({
+		    	clientId: process.env.GOOGLE_CLIENT_ID!,
+		    	clientSecret: process.env.GOOGLE_CLIENT_SECRET!
+		    })
+		    ```
+		  </Tab>
+		</Tabs>
+
+		Callback URL: `{AUTH_URL}/api/auth/callback/google`
+	</Tab>
+
+	<Tab value="GitHub">
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```ts
+		    import GitHub from '@robojs/auth/providers/github'
+
+		    GitHub({
+		    	clientId: process.env.GITHUB_CLIENT_ID!,
+		    	clientSecret: process.env.GITHUB_CLIENT_SECRET!
+		    })
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```js
+		    import GitHub from '@robojs/auth/providers/github'
+
+		    GitHub({
+		    	clientId: process.env.GITHUB_CLIENT_ID!,
+		    	clientSecret: process.env.GITHUB_CLIENT_SECRET!
+		    })
+		    ```
+		  </Tab>
+		</Tabs>
+
+		Callback URL: `{AUTH_URL}/api/auth/callback/github`
+	</Tab>
+</Tabs>
+
+## Callback URLs
+
+Each provider requires a callback URL in the pattern `{AUTH_URL}/api/auth/callback/{provider-id}`. The `AUTH_URL` defaults to `http://localhost:3000` in development. Register this URL in each provider's developer console.
+
+## Available providers
+
+The plugin includes support for Apple, Auth0, Azure AD, Cognito, Discord, Dropbox, Facebook, GitHub, GitLab, Google, Instagram, Keycloak, LinkedIn, Microsoft Entra ID, Notion, Okta, Reddit, Salesforce, Slack, Spotify, Twitch, Twitter, and 60+ more.
+
+Full list at the Auth.js docs. All are imported as `@robojs/auth/providers/{name}`.
+
+## Account linking
+
+Enable `allowDangerousEmailAccountLinking` to link accounts across providers that share the same email:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export default <AuthPluginOptions>{
+    	allowDangerousEmailAccountLinking: true,
+    	providers: [Discord({ ... }), Google({ ... })]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export default {
+    	allowDangerousEmailAccountLinking: true,
+    	providers: [Discord({ ... }), Google({ ... })]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+	Only enable this if every provider in your config verifies email ownership. Otherwise, an attacker could create an
+	account with a stolen email on one provider and gain access to another user's account.
+</Callout>
+
+## Combining with email/password
+
+Use OAuth alongside EmailPassword authentication:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import Discord from '@robojs/auth/providers/discord'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default <AuthPluginOptions>{
+    	secret: process.env.AUTH_SECRET,
+    	adapter,
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+    		EmailPassword({ adapter })
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import Discord from '@robojs/auth/providers/discord'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default {
+    	secret: process.env.AUTH_SECRET,
+    	adapter,
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+    		EmailPassword({ adapter })
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Client-side sign-in
+
+Trigger OAuth from the client:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signIn } from '@robojs/auth/client'
+
+    // Redirect to Discord OAuth
+    await signIn('discord')
+
+    // With callback URL
+    await signIn('discord', { callbackUrl: '/dashboard' })
+
+    // With redirect mode for cross-origin
+    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.example.com' }, true)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signIn } from '@robojs/auth/client'
+
+    // Redirect to Discord OAuth
+    await signIn('discord')
+
+    // With callback URL
+    await signIn('discord', { callbackUrl: '/dashboard' })
+
+    // With redirect mode for cross-origin
+    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.example.com' }, true)
+    ```
+  </Tab>
+</Tabs>
+
+## Listing providers at runtime
+
+Retrieve all configured providers on the client:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getProviders } from '@robojs/auth/client'
+
+    const providers = await getProviders()
+    // [{ id: 'discord', name: 'Discord', type: 'oauth', ... }, ...]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getProviders } from '@robojs/auth/client'
+
+    const providers = await getProviders()
+    // [{ id: 'discord', name: 'Discord', type: 'oauth', ... }, ...]
+    ```
+  </Tab>
+</Tabs>
+
+## Custom callbacks
+
+Extend user data from OAuth providers using callbacks:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    export default <AuthPluginOptions>{
+    	providers: [Discord({ ... })],
+    	callbacks: {
+    		async jwt({ token, account, profile }) {
+    			if (account) {
+    				token.accessToken = account.access_token
+    				token.discordId = profile?.id
+    			}
+    			return token
+    		},
+    		async session({ session, token }) {
+    			session.accessToken = token.accessToken
+    			session.discordId = token.discordId
+    			return session
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    export default {
+    	providers: [Discord({ ... })],
+    	callbacks: {
+    		async jwt({ token, account, profile }) {
+    			if (account) {
+    				token.accessToken = account.access_token
+    				token.discordId = profile?.id
+    			}
+    			return token
+    		},
+    		async session({ session, token }) {
+    			session.accessToken = token.accessToken
+    			session.discordId = token.discordId
+    			return session
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+	<Card href="./email-password" title="Email and password" description="Add credential-based authentication" />
+	<Card href="./configuration" title="Configuration" description="All plugin config options" />
+	<Card href="./client-api" title="Client API" description="Sign-in, sign-out, and session helpers" />
+	<Card href="./session-management" title="Sessions" description="Manage user sessions" />
+</Cards>

@@ -1,0 +1,89 @@
+---
+title: "README"
+icon: Discord
+description: Discord.js integration for slash commands, events, context menus, middleware, and client management.
+---
+
+<PluginHero
+	name="@robojs/discordjs"
+	description="Discord.js integration for slash commands, events, context menus, middleware, and client management."
+	icon={<Discord />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/discordjs"
+	platforms={["Bots", "Activities"]}
+/>
+
+The core Discord plugin for Robo.js. It manages the Discord.js client lifecycle, routes slash commands and events through the file system, handles context menus and middleware, auto-defers interactions with Sage mode, infers gateway intents, aggregates permissions, and registers commands with Discord's API.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Terminal />} title="Slash Commands" description="File-based routing with type-safe options" />
+	<Feature icon={<Zap />} title="Events" description="Gateway event handlers with frequency control" />
+	<Feature icon={<FileText />} title="Embeds" description="Rich embedded messages with fields and images" />
+	<Feature icon={<Blocks />} title="Components" description="Buttons, select menus, and interactive elements" />
+	<Feature icon={<CPU />} title="Sage Mode" description="Automatic defer and error handling" />
+	<Feature icon={<Shield />} title="Intent Inference" description="Auto-detect required gateway intents" />
+	<Feature icon={<Waypoints />} title="Namespace Controllers" description="Programmatic access to all handlers" />
+	<Feature icon={<Rocket />} title="Command Registration" description="Hash-cached registration with retry" />
+</FeatureGrid>
+
+## Installation
+
+```bash
+npx robo add @robojs/discordjs
+```
+
+Or scaffold a new project with the plugin already wired up:
+
+```package-install
+npx create-robo my-bot -p @robojs/discordjs
+```
+
+<Callout type="warn">
+Set `DISCORD_TOKEN` and `DISCORD_CLIENT_ID` in your `.env` file. These are required for the bot to connect to Discord.
+</Callout>
+
+```bash title=".env"
+DISCORD_TOKEN="your-bot-token"
+DISCORD_CLIENT_ID="your-client-id"
+```
+
+## Quick start
+
+Create a file at `src/commands/ping.ts` and export a default function:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    export default (interaction) => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Run `npx robo dev` and type `/ping` in Discord. That's it -- Robo handles registration, deferral, and replies automatically.
+
+<Callout>
+Looking for tutorials on building Discord bots? Check out the [Bot guides](/docs/bots) for step-by-step walkthroughs.
+</Callout>
+
+## Next steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="Plugin options, client settings, and environment variables." />
+	<Card href="./lifecycle" title="Lifecycle" description="Startup sequence, client timeline, and lifecycle hooks." />
+	<Card href="./commands" title="Commands" description="Slash command routing, options, and type-safe configs." />
+	<Card href="./embeds" title="Embeds" description="Rich embedded messages with fields and images." />
+	<Card href="./components" title="Components" description="Buttons, select menus, and interactive elements." />
+	<Card href="./sage" title="Sage mode" description="Automatic defer, error handling, and ephemeral replies." />
+</Cards>

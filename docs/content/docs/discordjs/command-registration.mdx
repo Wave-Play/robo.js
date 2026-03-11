@@ -1,0 +1,132 @@
+---
+title: Command Registration
+description: How commands are registered with Discord, hash caching, test servers, and force re-registration.
+---
+
+The plugin handles command registration automatically. During builds, it compiles your command files into Discord API payloads and pushes them to Discord. A SHA-256 hash cache prevents unnecessary re-registration when nothing has changed.
+
+## Registration flow
+
+1. **Build time**: `robo build` scans `src/commands/` and `src/context/` directories
+2. **Hash comparison**: A SHA-256 hash of the compiled command data is compared to the cached hash
+3. **Skip or register**: If the hash matches, registration is skipped. If it differs, commands are pushed to Discord
+4. **Cache update**: The new hash is stored in Flashcore for the next build
+
+This means builds are fast when commands haven't changed, and only a hash mismatch triggers a bulk PUT API call.
+
+## `autoRegisterCommands`
+
+Control when commands are registered:
+
+```ts title="config/plugins/robojs/discordjs.mjs"
+export default {
+	// Always register (default)
+	autoRegisterCommands: true,
+
+	// Never register
+	autoRegisterCommands: false,
+
+	// Only register in specific modes
+	autoRegisterCommands: ['production']
+}
+```
+
+When set to a string array, commands are only registered when the current mode matches one of the values (e.g., `['production']` skips registration during `robo dev`).
+
+## Test servers
+
+Register commands as guild commands for faster development. Guild commands update instantly, while global commands can take up to an hour.
+
+<Tabs items={["Config file", "Environment variable"]} groupId="test-server" persist>
+  <Tab value="Config file">
+    ```ts title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	testServers: ['123456789012345678']
+    }
+    ```
+  </Tab>
+  <Tab value="Environment variable">
+    ```bash title=".env"
+    DISCORD_GUILD_ID="123456789012345678"
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+`DISCORD_GUILD_ID` takes precedence over `testServers` in the config. Only one guild can be used via the environment variable. Note that only the first entry in `testServers` is used for guild-specific command registration (`testServers?.[0]`), so listing multiple servers does not register commands in all of them.
+</Callout>
+
+## Force re-registration
+
+If commands get out of sync, force a clean re-registration:
+
+### Using the CLI flag
+
+```bash
+npx robo build --force
+```
+
+The `--force` flag also works with `robo dev`:
+
+```bash
+npx robo dev --force
+```
+
+### Using an environment variable
+
+```bash title=".env"
+DISCORD_FORCE_REGISTER="true"
+```
+
+Force registration bypasses the SHA-256 hash cache, causing all commands to be re-registered via a bulk PUT even if they haven't changed. It does not delete commands first. This ensures commands are in sync but is slower than a cache-hit skip.
+
+<Callout>
+**Activity developers:** The registration logic detects and preserves existing entry point commands (type 4) during a normal bulk PUT and re-creates them during force registration. This prevents Activities from losing their entry point command during development.
+</Callout>
+
+## HMR during development
+
+During `robo dev`, the plugin watches for file changes and re-registers commands in the background:
+
+1. A file change triggers a rebuild of the affected command
+2. The command's hash is compared to the cached version
+3. If changed, a background registration pushes **all** commands via bulk PUT (the `changedKeys` parameter is only used for logging which commands triggered the update, not for selective registration)
+4. The dev server continues running without interruption
+
+HMR registration uses a 10-second timeout and registers commands as guild commands when `testServers` or `DISCORD_GUILD_ID` is set.
+
+## Mock mode
+
+When `ROBO_MOCK_MODE=true`, commands are registered at runtime against the mock REST API instead of during build. This works with `@robojs/mock` for testing without a real Discord connection.
+
+```bash title=".env"
+ROBO_MOCK_MODE="true"
+DISCORD_REST_API="http://localhost:3000"
+```
+
+## Rate limiting
+
+The registration process handles Discord API rate limits automatically:
+
+- **Exponential backoff**: Delays increase with each retry (1s, 2s, 4s...)
+- **Max delay**: Capped at 10 seconds between retries
+- **Max retries**: 3 retries (4 total attempts, since `maxRetries = 3` and the loop runs from attempt 0 through 3 inclusive)
+- **Retry-After header**: Respected when Discord provides a specific wait time
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Commands not appearing | Run `npx robo build --force` to re-register all commands |
+| Commands still show old version | Global commands can take up to an hour to propagate; use `testServers` for instant updates |
+| Registration timeout | Check your network connection; increase `timeouts.commandRegistration` in config |
+| Rate limit errors | Wait a few minutes and try again; the plugin handles retries automatically |
+| "Missing DISCORD_TOKEN" error | Ensure `DISCORD_TOKEN` and `DISCORD_CLIENT_ID` are set in `.env` |
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./intents-permissions" title="Intents & permissions" description="Intent inference and permission aggregation." />
+</Cards>

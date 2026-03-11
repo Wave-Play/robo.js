@@ -1,0 +1,247 @@
+---
+title: Multi-store
+description: Run parallel progression systems with isolated data stores.
+---
+
+The XP plugin supports multiple isolated data stores so you can run parallel progression systems side-by-side. Each store has independent user data, configuration, leaderboard cache, and event stream.
+
+## Default store
+
+The default store (`'default'`) is used automatically when no `storeId` is specified. All built-in commands (`/rank`, `/leaderboard`, `/xp`) operate on the default store.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { XP } from '@robojs/xp'
+
+    // These are equivalent
+    await XP.addXP(guildId, userId, 100)
+    await XP.addXP(guildId, userId, 100, { storeId: 'default' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { XP } from '@robojs/xp'
+
+    // These are equivalent
+    await XP.addXP(guildId, userId, 100)
+    await XP.addXP(guildId, userId, 100, { storeId: 'default' })
+    ```
+  </Tab>
+</Tabs>
+
+## Custom stores
+
+Access custom stores by passing `{ storeId }` in the options parameter.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { XP, leaderboard, config } from '@robojs/xp'
+
+    // Reputation store
+    await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+    const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+
+    // Credits store
+    await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
+    const credits = await XP.getXP(guildId, userId, { storeId: 'credits' })
+
+    // Per-store leaderboard
+    const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+
+    // Per-store config
+    await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { XP, leaderboard, config } from '@robojs/xp'
+
+    // Reputation store
+    await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+    const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+
+    // Credits store
+    await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
+    const credits = await XP.getXP(guildId, userId, { storeId: 'credits' })
+
+    // Per-store leaderboard
+    const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+
+    // Per-store config
+    await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+    ```
+  </Tab>
+</Tabs>
+
+Stores are created implicitly on first use. No registration or setup required.
+
+## Use cases
+
+| Use case | Default store | Custom stores |
+|---|---|---|
+| Leveling + currencies | XP/Levels with role rewards | `'coins'`, `'gems'`, `'tokens'` |
+| Multi-dimensional reputation | Overall activity | `'helpfulness'`, `'creativity'`, `'trading'` |
+| Seasonal systems | Permanent progression | `'season1'`, `'season2'`, `'event_halloween'` |
+
+### Multi-currency economy
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { XP } from '@robojs/xp'
+
+    // Award to multiple stores simultaneously
+    await XP.addXP(guildId, userId, 20, { reason: 'message' })
+    await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+    if (member.roles.cache.has(premiumRoleId)) {
+    	await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { XP } from '@robojs/xp'
+
+    // Award to multiple stores simultaneously
+    await XP.addXP(guildId, userId, 20, { reason: 'message' })
+    await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+    if (member.roles.cache.has(premiumRoleId)) {
+    	await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Seasonal battle pass
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { XP, config } from '@robojs/xp'
+
+    const CURRENT_SEASON = 'season3'
+
+    // Award seasonal XP
+    await XP.addXP(guildId, userId, amount, {
+    	reason: 'seasonal_activity',
+    	storeId: CURRENT_SEASON
+    })
+
+    // Configure seasonal progression (lookup curve with 50 levels)
+    await config.set(guildId, {
+    	levels: {
+    		type: 'lookup',
+    		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] }
+    	}
+    }, { storeId: CURRENT_SEASON })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { XP, config } from '@robojs/xp'
+
+    const CURRENT_SEASON = 'season3'
+
+    // Award seasonal XP
+    await XP.addXP(guildId, userId, amount, {
+    	reason: 'seasonal_activity',
+    	storeId: CURRENT_SEASON
+    })
+
+    // Configure seasonal progression (lookup curve with 50 levels)
+    await config.set(guildId, {
+    	levels: {
+    		type: 'lookup',
+    		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] }
+    	}
+    }, { storeId: CURRENT_SEASON })
+    ```
+  </Tab>
+</Tabs>
+
+## Store isolation
+
+Each store is fully isolated:
+
+- **User data** -- XP, levels, messages, and cooldowns are independent
+- **Configuration** -- Each store has its own `GuildConfig` (cooldown, xpRate, etc.)
+- **Leaderboard cache** -- Caches and invalidation are per-store
+- **Events** -- All events include `storeId` for filtering
+- **Schema versions** -- Migrations run independently per store
+
+Changing one store's config doesn't affect others. Leaderboard invalidation in one store doesn't clear other stores' caches.
+
+## Event filtering
+
+All events include a `storeId` field. Filter events to respond only to specific stores.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp(({ userId, newLevel, storeId }) => {
+    	if (storeId === 'reputation') {
+    		console.log(`Reputation level up: ${newLevel}`)
+    	} else if (storeId === 'default') {
+    		console.log(`XP level up: ${newLevel}`)
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp(({ userId, newLevel, storeId }) => {
+    	if (storeId === 'reputation') {
+    		console.log(`Reputation level up: ${newLevel}`)
+    	} else if (storeId === 'default') {
+    		console.log(`XP level up: ${newLevel}`)
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Constraints
+
+### Built-in commands
+
+Built-in commands (`/rank`, `/leaderboard`, `/xp give`, etc.) only interact with the default store. Custom stores require building custom commands.
+
+### Role rewards
+
+Role rewards only trigger for the default store. This prevents conflicts where multiple stores would compete over the same roles.
+
+To grant roles based on a custom store, build a custom event listener. See [Role rewards](./role-rewards.mdx) for an example.
+
+### Data storage
+
+Flashcore namespaces are scoped by store:
+
+```
+xp:default:{guildId}:users:{userId}
+xp:reputation:{guildId}:users:{userId}
+xp:coins:{guildId}:users:{userId}
+```
+
+Each store maintains independent user records, member tracking, and schema versions.
+
+## Performance
+
+Each store adds approximately 10KB of memory per guild for the leaderboard cache (100 entries). A guild with 3 stores uses roughly 30KB.
+
+XP changes in one store don't invalidate caches for other stores, keeping cache hit rates high.
+
+## Next steps
+
+<Cards>
+  <Card href="./events" title="Events" description="Filter events by store." />
+  <Card href="./custom-curves" title="Custom curves" description="Different progression curves per store." />
+  <Card href="./api-reference" title="API reference" description="All API methods support storeId." />
+</Cards>

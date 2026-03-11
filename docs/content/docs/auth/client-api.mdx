@@ -1,0 +1,548 @@
+---
+title: Client API
+description: Complete reference for client-side authentication helpers — sign-in, sign-out, sessions, and multi-account switching.
+---
+
+All client helpers are exported from `@robojs/auth/client` and re-exported from the main `@robojs/auth` entry. Each function accepts optional `ClientOptions` for customizing the base path, base URL, headers, or fetch implementation.
+
+## ClientOptions
+
+Shared configuration object accepted by all client helpers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface ClientOptions {
+      basePath?: string   // Default: '/api/auth'
+      baseUrl?: string    // Default: '' (same origin)
+      fetch?: typeof fetch // Custom fetch implementation
+      headers?: Record<string, string> // Extra headers
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+Use these options when working with cross-origin auth servers, server-side rendering, or custom fetch implementations.
+
+## signIn
+
+Signs in with the specified provider.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Legacy mode
+    function signIn(
+      providerId: string,
+      body?: Record<string, unknown>,
+      options?: ClientOptions
+    ): Promise<Response>
+
+    // Redirect-aware mode
+    function signIn(
+      providerId: string,
+      options?: { csrfToken?: string; callbackUrl?: string; [key: string]: unknown },
+      proxy?: ClientOptions,
+      redirect?: boolean | 'manual'
+    ): Promise<SignInResult>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Legacy mode
+    function signIn(
+      providerId: string,
+      body?: Record<string, unknown>,
+      options?: ClientOptions
+    ): Promise<Response>
+
+    // Redirect-aware mode
+    function signIn(
+      providerId: string,
+      options?: { csrfToken?: string; callbackUrl?: string; [key: string]: unknown },
+      proxy?: ClientOptions,
+      redirect?: boolean | 'manual'
+    ): Promise<SignInResult>
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `providerId` | `string` | Provider ID (e.g., `'discord'`, `'google'`, `'credentials'`) |
+| `body` / `options` | `Record<string, unknown>` | Extra payload — email, password, callbackUrl, csrfToken |
+| `options` / `proxy` | `ClientOptions` | Base URL, headers, custom fetch |
+| `redirect` | `boolean \| 'manual'` | Redirect behavior (see below) |
+
+**Redirect modes:**
+
+| Value | Behavior | Return type |
+|---|---|---|
+| `true` | Creates hidden form and submits (POST with CSRF) | `{ ok: true, redirected: true }` |
+| `'manual'` | Returns the redirect URL without navigating | `{ ok: true, url: string }` |
+| `false` | Fetch-based flow with normalized result | `{ ok: boolean, url?: string, error?: string }` |
+| omitted | Legacy behavior — returns raw `Response` | `Response` |
+
+**Examples:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signIn } from '@robojs/auth/client'
+
+    // OAuth sign-in (redirects to provider)
+    await signIn('discord')
+
+    // Email/password sign-in
+    await signIn('credentials', { email: 'user@example.com', password: 'pass' })
+
+    // With callback URL
+    await signIn('discord', { callbackUrl: '/dashboard' })
+
+    // Cross-origin redirect (form-based)
+    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.example.com' }, true)
+
+    // Manual redirect (get URL only)
+    const { url } = await signIn('discord', { callbackUrl: '/' }, { baseUrl: process.env.AUTH_URL! }, 'manual')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signIn } from '@robojs/auth/client'
+
+    // OAuth sign-in (redirects to provider)
+    await signIn('discord')
+
+    // Email/password sign-in
+    await signIn('credentials', { email: 'user@example.com', password: 'pass' })
+
+    // With callback URL
+    await signIn('discord', { callbackUrl: '/dashboard' })
+
+    // Cross-origin redirect (form-based)
+    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.example.com' }, true)
+
+    // Manual redirect (get URL only)
+    const { url } = await signIn('discord', { callbackUrl: '/' }, { baseUrl: process.env.AUTH_URL! }, 'manual')
+    ```
+  </Tab>
+</Tabs>
+
+## signOut
+
+Signs out and clears the session cookie.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function signOut(options?: ClientOptions): Promise<Response>
+
+    function signOut(
+      options?: { csrfToken?: string; callbackUrl?: string },
+      proxy?: ClientOptions,
+      redirect?: boolean | 'manual'
+    ): Promise<SignOutResult>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function signOut(options?: ClientOptions): Promise<Response>
+
+    function signOut(
+      options?: { csrfToken?: string; callbackUrl?: string },
+      proxy?: ClientOptions,
+      redirect?: boolean | 'manual'
+    ): Promise<SignOutResult>
+    ```
+  </Tab>
+</Tabs>
+
+Auto-fetches CSRF token via `getCsrfToken`.
+
+**Example:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signOut } from '@robojs/auth/client'
+
+    await signOut()
+
+    // With redirect
+    await signOut({ callbackUrl: '/' }, { baseUrl: 'https://auth.example.com' }, true)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signOut } from '@robojs/auth/client'
+
+    await signOut()
+
+    // With redirect
+    await signOut({ callbackUrl: '/' }, { baseUrl: 'https://auth.example.com' }, true)
+    ```
+  </Tab>
+</Tabs>
+
+## signUp
+
+Registers a new user via the email/password signup endpoint.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function signUp(
+      body: Record<string, unknown>,
+      options?: ClientOptions
+    ): Promise<Response>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function signUp(
+      body: Record<string, unknown>,
+      options?: ClientOptions
+    ): Promise<Response>
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `email` | `string` | Yes | User email |
+| `password` | `string` | Yes | Password (min 8 chars) |
+| `confirmPassword` | `string` | No | Must match password if provided |
+| `name` | `string` | No | Display name |
+| `acceptTerms` | `boolean` | No | Terms acceptance |
+
+Auto-fetches CSRF token. On success, the user is auto-signed in.
+
+**Example:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signUp } from '@robojs/auth/client'
+
+    const response = await signUp({
+      email: 'user@example.com',
+      password: 'securepassword',
+      confirmPassword: 'securepassword',
+      name: 'Jane Doe'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signUp } from '@robojs/auth/client'
+
+    const response = await signUp({
+      email: 'user@example.com',
+      password: 'securepassword',
+      confirmPassword: 'securepassword',
+      name: 'Jane Doe'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## getSession
+
+Returns the current session or `null`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getSession<T extends Session = Session>(
+      options?: ClientOptions
+    ): Promise<T | null>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getSession(
+      options?: ClientOptions
+    ): Promise<T | null>
+    ```
+  </Tab>
+</Tabs>
+
+**Example:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getSession } from '@robojs/auth/client'
+
+    const session = await getSession()
+    if (session) {
+      console.log(session.user?.name)
+    }
+
+    // With custom headers (e.g., forwarding cookies in SSR)
+    const session = await getSession({
+      headers: { cookie: request.headers.get('cookie') ?? '' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getSession } from '@robojs/auth/client'
+
+    const session = await getSession()
+    if (session) {
+      console.log(session.user?.name)
+    }
+
+    // With custom headers (e.g., forwarding cookies in SSR)
+    const session = await getSession({
+      headers: { cookie: request.headers.get('cookie') ?? '' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## getProviders
+
+Lists configured auth providers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getProviders(
+      options?: ClientOptions
+    ): Promise<PublicProvider[] | null>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getProviders(
+      options?: ClientOptions
+    ): Promise<PublicProvider[] | null>
+    ```
+  </Tab>
+</Tabs>
+
+**Example:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getProviders } from '@robojs/auth/client'
+
+    const providers = await getProviders()
+    // [{ id: 'discord', name: 'Discord', type: 'oauth', ... }]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getProviders } from '@robojs/auth/client'
+
+    const providers = await getProviders()
+    // [{ id: 'discord', name: 'Discord', type: 'oauth', ... }]
+    ```
+  </Tab>
+</Tabs>
+
+## getCsrfToken
+
+Retrieves a CSRF token for form submissions.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getCsrfToken(
+      options?: ClientOptions
+    ): Promise<string | null>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getCsrfToken(
+      options?: ClientOptions
+    ): Promise<string | null>
+    ```
+  </Tab>
+</Tabs>
+
+Most helpers auto-fetch the CSRF token, so direct usage is rare.
+
+## getSessions
+
+Lists all sessions on the current device. Requires database session strategy.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getSessions(
+      options?: ClientOptions
+    ): Promise<DeviceSession[] | null>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getSessions(
+      options?: ClientOptions
+    ): Promise<DeviceSession[] | null>
+    ```
+  </Tab>
+</Tabs>
+
+**`DeviceSession` type:**
+
+| Field | Type | Description |
+|---|---|---|
+| `userId` | `string` | User ID |
+| `name` | `string \| null` | Display name |
+| `email` | `string \| null` | Email address |
+| `image` | `string \| null` | Avatar URL |
+| `isActive` | `boolean` | Currently active session |
+| `isExpired` | `boolean` | Session has expired |
+
+**Example:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getSessions } from '@robojs/auth/client'
+
+    const sessions = await getSessions()
+    const active = sessions?.find(s => s.isActive)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getSessions } from '@robojs/auth/client'
+
+    const sessions = await getSessions()
+    const active = sessions?.find(s => s.isActive)
+    ```
+  </Tab>
+</Tabs>
+
+## switchSession
+
+Switches the active session to a different user on the device. Requires database strategy.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function switchSession(
+      userId: string,
+      options?: ClientOptions
+    ): Promise<SwitchSessionResult>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function switchSession(
+      userId: string,
+      options?: ClientOptions
+    ): Promise<SwitchSessionResult>
+    ```
+  </Tab>
+</Tabs>
+
+**`SwitchSessionResult`:**
+
+| Field | Type | Description |
+|---|---|---|
+| `ok` | `boolean` | Whether the switch succeeded |
+| `session` | `Session \| undefined` | New active session |
+| `error` | `string \| undefined` | `'session_expired'`, `'not_found'`, or `'forbidden'` |
+
+**Example:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { switchSession } from '@robojs/auth/client'
+
+    const result = await switchSession('user-id-123')
+    if (result.ok) {
+      console.log('Switched to:', result.session?.user)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { switchSession } from '@robojs/auth/client'
+
+    const result = await switchSession('user-id-123')
+    if (result.ok) {
+      console.log('Switched to:', result.session?.user)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## removeSession
+
+Removes a session from the device stack. If the active session is removed, auto-switches to the most recent valid session.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function removeSession(
+      userId: string,
+      options?: ClientOptions
+    ): Promise<Response>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function removeSession(
+      userId: string,
+      options?: ClientOptions
+    ): Promise<Response>
+    ```
+  </Tab>
+</Tabs>
+
+## clearSessions
+
+Removes all sessions from the device and signs out.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function clearSessions(
+      options?: ClientOptions
+    ): Promise<Response>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function clearSessions(
+      options?: ClientOptions
+    ): Promise<Response>
+    ```
+  </Tab>
+</Tabs>
+
+## Proxy deployment notes
+
+<Callout>
+When using upstream proxy mode or deploying auth to a separate origin:
+
+- Ensure auth server cookies use `SameSite=None; Secure` for cross-origin
+- Add the frontend origin to the CORS allowlist
+- The client auto-fetches CSRF tokens before redirects
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card href="./server-api" title="Server API" description="Server-side session and token helpers" />
+  <Card href="./session-management" title="Sessions" description="Session strategies and multi-account switching" />
+  <Card href="./email-password" title="Email and password" description="Signup and credential flows" />
+</Cards>

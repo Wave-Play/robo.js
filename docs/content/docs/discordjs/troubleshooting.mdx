@@ -1,0 +1,186 @@
+---
+title: Troubleshooting
+description: Common errors, registration issues, and debugging patterns for the plugin.
+---
+
+This guide covers the most common issues when working with `@robojs/discordjs` and how to resolve them.
+
+## Common errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `TOKEN_INVALID` | Bot token is incorrect, expired, or missing | Regenerate the token in the [Discord Developer Portal](https://discord.com/developers/applications) under **Bot > Reset Token** and update your `.env` |
+| `DISALLOWED_INTENTS` | Using a privileged intent without portal approval | Enable the intent in the Developer Portal under **Bot > Privileged Gateway Intents**. Bots in 100+ servers must be verified first |
+| `Missing Access` | Bot lacks permissions in the guild or channel | Check that the bot role has the required permissions. Re-invite with correct permissions if needed |
+| `Unknown Command` | Commands not registered with Discord | Run `npx robo build --force` to force re-registration |
+| `Unknown interaction` | Interaction expired before response | Respond within 3 seconds (or defer). For modals, submit within 15 minutes |
+| `Interaction has already been acknowledged` | Multiple replies or defers on the same interaction | When using Sage mode, don't call `interaction.reply()` manually. Either return a value (Sage handles the reply) or set `sage: false` and manage replies yourself |
+| Rate limit errors (`429`) | Too many API calls in a short period | The plugin handles retries with exponential backoff automatically. Reduce API call frequency if persistent |
+
+## Command registration
+
+### Commands not appearing
+
+If commands don't show up in Discord:
+
+1. **Force re-register**: Run `npx robo build --force` to bypass the hash cache and push all commands to Discord
+2. **Check propagation**: Guild-scoped commands (with `DISCORD_GUILD_ID` set) update instantly. Global commands can take up to **1 hour** to propagate
+3. **Verify credentials**: Ensure both `DISCORD_TOKEN` and `DISCORD_CLIENT_ID` are set in your `.env`
+4. **Check the build output**: Look for registration success/failure messages in the build log
+
+### Stale commands
+
+If removed commands still appear:
+
+```bash
+npx robo build --force
+```
+
+Force registration uses a bulk PUT that replaces all commands, cleaning up any that no longer exist in your `src/commands/` directory.
+
+### Guild vs global commands
+
+| Type | Propagation | When to use |
+|------|-------------|-------------|
+| Guild commands | Instant | Development (`DISCORD_GUILD_ID` set) |
+| Global commands | Up to 1 hour | Production |
+
+Always use guild-scoped registration during development for immediate feedback:
+
+```bash title=".env"
+DISCORD_GUILD_ID="your_test_server_id"
+```
+
+## Interaction timing
+
+Discord requires an initial response within **3 seconds** of receiving an interaction. After that, the interaction token expires and any response attempt fails with `Unknown interaction`.
+
+### How Sage handles this
+
+Sage mode starts a race between your handler and a defer timer (default 250ms):
+
+- If your handler returns within 250ms, Sage replies directly -- no defer needed
+- If your handler is still running at 250ms, Sage defers the interaction automatically
+- When your handler eventually returns, Sage edits the deferred reply with the result
+
+### Mixing Sage with manual replies
+
+If Sage is enabled and you also call `interaction.reply()` manually, you'll get `Interaction has already been acknowledged`. Solutions:
+
+1. **Use Sage only**: Return a value from your handler and let Sage handle the reply
+2. **Use manual only**: Set `sage: false` on the command and manage replies yourself
+3. **Use `interaction.followUp()`**: Send additional messages after the initial Sage reply
+
+```ts
+// Return value for Sage to handle
+export default () => 'Hello!'
+
+// OR disable Sage and reply manually
+export const config = { sage: false }
+export default async (interaction) => {
+	await interaction.reply('Hello!')
+}
+```
+
+### Modal timing
+
+`interaction.showModal()` must be the **first** response to an interaction. It cannot follow a reply or defer. See [Modals](./modals) for Sage interaction details.
+
+## Intent issues
+
+### Missing intent warnings
+
+The plugin checks your configured intents against registered event handlers at startup. If you see a warning like `Missing intents: GuildMembers`, it means you have event handlers that require intents you haven't configured.
+
+Fix by adding the required intent to your config:
+
+```ts title="config/plugins/robojs/discordjs.mjs"
+import { GatewayIntentBits } from 'discord.js'
+
+export default {
+	clientOptions: {
+		intents: [
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMembers // Add the missing intent
+		]
+	}
+}
+```
+
+### Privileged intents
+
+Three intents require explicit approval in the Discord Developer Portal:
+
+| Intent | Portal toggle |
+|--------|---------------|
+| `GuildMembers` | Server Members Intent |
+| `GuildPresences` | Presence Intent |
+| `MessageContent` | Message Content Intent |
+
+Enable these under **Applications > Bot > Privileged Gateway Intents**. Bots in 100+ servers must also be [verified by Discord](https://support.discord.com/hc/en-us/articles/360040720412).
+
+### Validating intents programmatically
+
+Use `validateIntents` to check if your configuration covers all required intents:
+
+```ts
+import { validateIntents } from '@robojs/discordjs'
+
+const result = validateIntents(configuredIntentsBitfield, ['messageCreate', 'guildMemberAdd'])
+if (!result.valid) {
+	console.log('Missing intents for:', result.missing)
+	console.log('Suggestions:', result.suggestions)
+}
+```
+
+## Client access errors
+
+### "Discord client is not initialized"
+
+This error occurs when calling `getClient()` before the plugin's prepare hook has completed. Common scenarios:
+
+- Calling `getClient()` at module import time (top-level code)
+- Using `getClient()` in a `robo/start.ts` lifecycle file for a non-Discord plugin that runs before `@robojs/discordjs`
+
+Fix with `hasClient()`:
+
+```ts
+import { getClient, hasClient } from '@robojs/discordjs'
+
+if (hasClient()) {
+	const client = getClient()
+	// Safe to use
+}
+```
+
+## Mock mode issues
+
+### Server not ready
+
+In mock mode, the start hook waits for `@robojs/server` to be ready before logging in. If the server fails to start, the bot won't connect.
+
+Ensure `@robojs/server` is installed and properly configured:
+
+```bash
+npx robo add @robojs/server
+```
+
+### Runtime vs build-time registration
+
+In mock mode, commands are registered at runtime instead of during the build step. This means:
+
+- The build/complete hook skips command registration
+- Commands are registered after login via `registerCommandsAtRuntime()`
+- Registration targets the mock REST API (`DISCORD_REST_API` env var)
+
+### Standalone mode
+
+When `__ROBO_MOCK_STANDALONE=true`, the start hook skips Discord login entirely. The mock server runs without a bot connection -- bots connect separately via `--mock-session`.
+
+## Next steps
+
+<Cards>
+	<Card href="./lifecycle" title="Lifecycle" description="Plugin lifecycle and startup sequence." />
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./intents-permissions" title="Intents & permissions" description="Intent inference and permission aggregation." />
+</Cards>

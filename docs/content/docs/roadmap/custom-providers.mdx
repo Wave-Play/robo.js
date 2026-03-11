@@ -1,0 +1,305 @@
+---
+title: Custom providers
+description: Build providers for GitHub Projects, Linear, or any custom backend.
+---
+
+The plugin uses an abstract `RoadmapProvider` base class that you can extend to sync data from any source. The built-in Jira provider is one implementation; you can create others for GitHub Projects, Linear, Notion, or custom backends.
+
+## Base class
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { RoadmapProvider } from '@robojs/roadmap'
+    import type {
+      RoadmapCard,
+      RoadmapColumn,
+      ProviderInfo,
+      ProviderConfig,
+      CreateCardInput,
+      CreateCardResult,
+      UpdateCardInput,
+      UpdateCardResult,
+      DateRangeFilter
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { RoadmapProvider } from '@robojs/roadmap'
+    ```
+  </Tab>
+</Tabs>
+
+## Required methods
+
+Every provider must implement these abstract methods:
+
+| Method | Return type | Description |
+|---|---|---|
+| `fetchCards()` | `Promise<readonly RoadmapCard[]>` | Fetch all cards from the source |
+| `getColumns()` | `Promise<readonly RoadmapColumn[]>` | Return column/status definitions |
+| `getCard(cardId)` | `Promise<RoadmapCard \| null>` | Fetch a single card by ID |
+| `createCard(input)` | `Promise<CreateCardResult>` | Create a new card |
+| `updateCard(cardId, input)` | `Promise<UpdateCardResult>` | Update an existing card (partial) |
+| `getProviderInfo()` | `Promise<ProviderInfo>` | Return provider metadata |
+| `getIssueTypes()` | `Promise<readonly string[]>` | Return available issue/card types |
+| `getLabels()` | `Promise<readonly string[]>` | Return available labels |
+
+## Optional methods
+
+| Method | Return type | Description |
+|---|---|---|
+| `validateConfig(config?)` | `boolean` | Validate configuration. Default returns `true`. |
+| `init()` | `Promise<void>` | Initialization hook (authenticate, verify connectivity). Default no-op. |
+| `fetchCardsByDateRange(filter)` | `Promise<readonly RoadmapCard[]>` | Fetch cards within a date range |
+| `getStatusMapping()` | `Record<string, string \| null> \| undefined` | Expose status-to-column mappings |
+
+## Example implementation
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/providers/github.ts"
+    import { RoadmapProvider } from '@robojs/roadmap'
+    import type {
+      RoadmapCard,
+      RoadmapColumn,
+      ProviderConfig,
+      ProviderInfo,
+      CreateCardInput,
+      CreateCardResult,
+      UpdateCardInput,
+      UpdateCardResult
+    } from '@robojs/roadmap'
+
+    interface GitHubConfig extends ProviderConfig {
+      type: 'github'
+      options: {
+        token: string
+        owner: string
+        repo: string
+        projectNumber: number
+      }
+    }
+
+    export class GitHubProvider extends RoadmapProvider<GitHubConfig> {
+      constructor(config: GitHubConfig) {
+        super(config)
+      }
+
+      public override validateConfig(): boolean {
+        const { token, owner, repo } = this.config.options
+        return Boolean(token && owner && repo)
+      }
+
+      public override async init(): Promise<void> {
+        // Verify GitHub API access
+        const response = await fetch('https://api.github.com/user', {
+          headers: { Authorization: `Bearer ${this.config.options.token}` }
+        })
+        if (!response.ok) {
+          throw new Error('GitHub authentication failed. Check your token.')
+        }
+      }
+
+      public async fetchCards(): Promise<readonly RoadmapCard[]> {
+        // Fetch project items via GitHub GraphQL API
+        return []
+      }
+
+      public async getColumns(): Promise<readonly RoadmapColumn[]> {
+        return [
+          { id: 'todo', name: 'Todo', order: 0, archived: false },
+          { id: 'in-progress', name: 'In Progress', order: 1, archived: false },
+          { id: 'done', name: 'Done', order: 2, archived: true }
+        ]
+      }
+
+      public async getIssueTypes(): Promise<readonly string[]> {
+        return ['Issue', 'Pull Request', 'Draft']
+      }
+
+      public async getLabels(): Promise<readonly string[]> {
+        // Fetch labels from GitHub API
+        return []
+      }
+
+      public async getCard(cardId: string): Promise<RoadmapCard | null> {
+        // Fetch single issue/PR
+        return null
+      }
+
+      public async createCard(input: CreateCardInput): Promise<CreateCardResult> {
+        // Create GitHub issue
+        const card: RoadmapCard = {
+          id: 'GH-1',
+          title: input.title,
+          description: input.description,
+          column: input.column,
+          labels: input.labels ?? [],
+          assignees: [],
+          url: `https://github.com/${this.config.options.owner}/${this.config.options.repo}/issues/1`,
+          updatedAt: new Date()
+        }
+        return { card, success: true }
+      }
+
+      public async updateCard(cardId: string, input: UpdateCardInput): Promise<UpdateCardResult> {
+        // Update GitHub issue
+        const card = await this.getCard(cardId)
+        return { card: card!, success: true }
+      }
+
+      public async getProviderInfo(): Promise<ProviderInfo> {
+        return {
+          name: 'GitHub Projects',
+          version: '1.0.0',
+          capabilities: ['cards', 'columns', 'labels']
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/providers/github.js"
+    import { RoadmapProvider } from '@robojs/roadmap'
+
+    export class GitHubProvider extends RoadmapProvider {
+      constructor(config) {
+        super(config)
+      }
+
+      validateConfig() {
+        const { token, owner, repo } = this.config.options
+        return Boolean(token && owner && repo)
+      }
+
+      async init() {
+        // Verify GitHub API access
+        const response = await fetch('https://api.github.com/user', {
+          headers: { Authorization: `Bearer ${this.config.options.token}` }
+        })
+        if (!response.ok) {
+          throw new Error('GitHub authentication failed. Check your token.')
+        }
+      }
+
+      async fetchCards() {
+        // Fetch project items via GitHub GraphQL API
+        return []
+      }
+
+      async getColumns() {
+        return [
+          { id: 'todo', name: 'Todo', order: 0, archived: false },
+          { id: 'in-progress', name: 'In Progress', order: 1, archived: false },
+          { id: 'done', name: 'Done', order: 2, archived: true }
+        ]
+      }
+
+      async getIssueTypes() {
+        return ['Issue', 'Pull Request', 'Draft']
+      }
+
+      async getLabels() {
+        // Fetch labels from GitHub API
+        return []
+      }
+
+      async getCard(cardId) {
+        // Fetch single issue/PR
+        return null
+      }
+
+      async createCard(input) {
+        // Create GitHub issue
+        const card = {
+          id: 'GH-1',
+          title: input.title,
+          description: input.description,
+          column: input.column,
+          labels: input.labels ?? [],
+          assignees: [],
+          url: `https://github.com/${this.config.options.owner}/${this.config.options.repo}/issues/1`,
+          updatedAt: new Date()
+        }
+        return { card, success: true }
+      }
+
+      async updateCard(cardId, input) {
+        // Update GitHub issue
+        const card = await this.getCard(cardId)
+        return { card, success: true }
+      }
+
+      async getProviderInfo() {
+        return {
+          name: 'GitHub Projects',
+          version: '1.0.0',
+          capabilities: ['cards', 'columns', 'labels']
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Registration
+
+Register your provider in the plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    import { GitHubProvider } from '../src/providers/github.js'
+
+    export default {
+      provider: new GitHubProvider({
+        type: 'github',
+        options: {
+          token: process.env.GITHUB_TOKEN,
+          owner: 'my-org',
+          repo: 'my-project',
+          projectNumber: 1
+        }
+      })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    import { GitHubProvider } from '../src/providers/github.js'
+
+    export default {
+      provider: new GitHubProvider({
+        type: 'github',
+        options: {
+          token: process.env.GITHUB_TOKEN,
+          owner: 'my-org',
+          repo: 'my-project',
+          projectNumber: 1
+        }
+      })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Best practices
+
+- **Validate inputs early.** Throw descriptive errors with actionable messages from `validateConfig()`.
+- **Handle pagination.** Many APIs paginate results. Handle this transparently in `fetchCards()`.
+- **Respect rate limits.** Implement backoff or throttling for APIs with rate limits.
+- **Cache hot data.** Cache labels, issue types, and columns with reasonable TTLs.
+- **Use metadata.** Store provider-specific fields in `card.metadata` for downstream access.
+- **Map statuses carefully.** Normalize status names and implement `getStatusMapping()` if you support custom mappings.
+- **Return null for missing cards.** In `getCard()`, return `null` for 404s instead of throwing.
+- **Support partial updates.** In `updateCard()`, only modify fields that are present in the input.
+
+## Next steps
+
+<Cards>
+  <Card href="./api-reference" title="API reference" description="Full programmatic API." />
+  <Card href="./column-mapping" title="Column mapping" description="Configure status-to-column mappings." />
+  <Card href="./recipes" title="Recipes" description="Common patterns and use cases." />
+</Cards>

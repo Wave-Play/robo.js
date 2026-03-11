@@ -1,0 +1,145 @@
+---
+title: Lockdown Mode
+description: Restrict all bot commands to moderators during emergencies
+---
+
+Lockdown mode blocks all bot commands for non-moderators. When enabled, only users with the `ModerateMembers` permission can use any command — not just moderation commands, but all commands registered with your Robo.
+
+## Enabling lockdown
+
+Toggle lockdown mode from the `/mod setup` panel. The lockdown button turns red when active.
+
+When lockdown is enabled:
+
+- Any command from a user without `ModerateMembers` permission is blocked
+- The user sees an ephemeral message: "Sorry, this command is currently disabled."
+- The `/mod setup` command is always exempt, so administrators can disable lockdown
+
+## How it works
+
+Lockdown is implemented as Robo.js middleware. It intercepts every command execution before the handler runs:
+
+1. Checks if the interaction is a command (events and other types pass through)
+2. Reads the guild's lockdown setting
+3. If lockdown is off, does nothing
+4. If lockdown is on, checks the user's `ModerateMembers` permission
+5. If the user lacks the permission, replies with an ephemeral message and aborts the command
+
+The `/mod setup` command is explicitly exempted so that moderators can always toggle lockdown off.
+
+## `getLockdown` API
+
+The plugin exports a function to check lockdown status programmatically. This is the plugin's only exported API.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getLockdown } from '@robojs/moderation'
+
+    const { enabled } = getLockdown('123456789012345678')
+
+    if (enabled) {
+      // Server is in lockdown mode
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getLockdown } from '@robojs/moderation'
+
+    const { enabled } = getLockdown('123456789012345678')
+
+    if (enabled) {
+      // Server is in lockdown mode
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getLockdown(guildId: string): { enabled: boolean }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getLockdown(guildId): { enabled: boolean }
+    ```
+  </Tab>
+</Tabs>
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `guildId` | `string` | The Discord guild/server ID |
+
+**Returns:** `{ enabled: boolean }` — `true` if lockdown mode is active for the guild, `false` otherwise.
+
+Use this in your own commands or plugins to respect lockdown status:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/custom.ts"
+    import { getLockdown } from '@robojs/moderation'
+    import type { CommandResult } from 'robo.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction): CommandResult => {
+      const { enabled } = getLockdown(interaction.guildId!)
+
+      if (enabled) {
+        return {
+          content: 'This command is disabled during lockdown.',
+          ephemeral: true
+        }
+      }
+
+      return 'Command executed.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/custom.js"
+    import { getLockdown } from '@robojs/moderation'
+
+    export default (interaction) => {
+      const { enabled } = getLockdown(interaction.guildId)
+
+      if (enabled) {
+        return {
+          content: 'This command is disabled during lockdown.',
+          ephemeral: true
+        }
+      }
+
+      return 'Command executed.'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+The lockdown middleware already blocks all commands for non-moderators. Use `getLockdown` when you need to adjust behavior rather than block entirely — for example, limiting a command's output or disabling optional features during lockdown.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Plugin options, intents, and permissions."
+  />
+  <Card
+    href="./ai-integration"
+    title="AI Integration"
+    description="Natural language moderation with @robojs/ai."
+  />
+</Cards>

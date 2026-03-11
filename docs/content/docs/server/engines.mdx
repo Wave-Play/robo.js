@@ -1,0 +1,295 @@
+---
+title: Engines
+description: Server engine architecture, built-in engines, and custom engine development.
+---
+
+The plugin uses a pluggable engine architecture. An engine handles HTTP requests, WebSocket upgrades, Vite middleware, and route registration. Two engines are included out of the box.
+
+## Built-in engines
+
+### Node engine (default)
+
+Uses Node.js `http.createServer()` with a radix-tree router for fast route matching. Supports:
+
+- HTTP request routing
+- WebSocket upgrades with path-scoped handlers
+- Vite middleware integration
+- Static file serving
+- SPA fallback
+- Custom 404 handlers
+
+### Fastify engine
+
+Automatically selected when `fastify` is listed in your project's dependencies. Provides Fastify's performance benefits while using the same route registration API.
+
+<Callout type="warn">
+The Fastify engine does not support WebSocket registration. Use the Node engine if you need WebSocket support.
+</Callout>
+
+## Engine selection
+
+The plugin auto-detects which engine to use:
+
+1. If a custom `engine` is provided in config, it's used directly.
+2. If `fastify` is in your `package.json` dependencies, `FastifyEngine` is used.
+3. Otherwise, `NodeEngine` is the default.
+
+To force a specific engine:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    import { NodeEngine } from '@robojs/server/engines'
+
+    export default {
+      engine: new NodeEngine()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    import { NodeEngine } from '@robojs/server/engines'
+
+    export default {
+      engine: new NodeEngine()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Custom engines
+
+Create a custom engine by extending `BaseEngine`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { BaseEngine } from '@robojs/server/engines'
+    import type { RouteHandler, NotFoundHandler, WebSocketHandler } from '@robojs/server'
+    import type { Server } from 'node:http'
+    import type { ViteDevServer } from 'vite'
+
+    export class MyEngine extends BaseEngine {
+      async init(options: { vite?: ViteDevServer }): Promise<void> {
+        // Initialize your server
+      }
+
+      async start(options: { hostname?: string; port: number }): Promise<void> {
+        // Start listening
+      }
+
+      async stop(): Promise<void> {
+        // Shut down
+      }
+
+      getHttpServer(): Server | null {
+        // Return the underlying HTTP server
+      }
+
+      isRunning(): boolean {
+        // Return whether the server is listening
+      }
+
+      async registerRoute(path: string, handler: RouteHandler): Promise<void> {
+        // Register a route handler
+      }
+
+      async registerWebsocket(path: string, handler: WebSocketHandler): Promise<void> {
+        // Register a WebSocket upgrade handler
+      }
+
+      async registerNotFound(handler: NotFoundHandler): Promise<void> {
+        // Register a 404 fallback handler
+      }
+
+      async setupVite(vite: ViteDevServer): Promise<void> {
+        // Integrate Vite middleware
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { BaseEngine } from '@robojs/server/engines'
+
+    export class MyEngine extends BaseEngine {
+      async init(options) {
+        // Initialize your server
+      }
+
+      async start(options) {
+        // Start listening
+      }
+
+      async stop() {
+        // Shut down
+      }
+
+      getHttpServer() {
+        // Return the underlying HTTP server
+      }
+
+      isRunning() {
+        // Return whether the server is listening
+      }
+
+      async registerRoute(path, handler) {
+        // Register a route handler
+      }
+
+      async registerWebsocket(path, handler) {
+        // Register a WebSocket upgrade handler
+      }
+
+      async registerNotFound(handler) {
+        // Register a 404 fallback handler
+      }
+
+      async setupVite(vite) {
+        // Integrate Vite middleware
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Use it:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    import { MyEngine } from './engines/my-engine.js'
+
+    export default {
+      engine: new MyEngine()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    import { MyEngine } from './engines/my-engine.js'
+
+    export default {
+      engine: new MyEngine()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## BaseEngine contract
+
+| Method | Description |
+|---|---|
+| `init(options)` | Called once during startup. Initialize the HTTP server and router. |
+| `start(options)` | Begin listening on the specified hostname and port. |
+| `stop()` | Shut down the server and clean up resources. |
+| `getHttpServer()` | Return the underlying `http.Server` instance (needed for Vite and WebSocket). |
+| `isRunning()` | Return whether the server is currently listening. |
+| `registerRoute(path, handler)` | Add a route handler for the given path. |
+| `registerWebsocket(path, handler)` | Register a WebSocket upgrade handler for the given path. |
+| `registerNotFound(handler)` | Set a fallback handler for unmatched routes. |
+| `setupVite(vite)` | Integrate a Vite dev server as middleware. |
+
+## WebSocket support
+
+Register WebSocket handlers through the engine:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Server } from '@robojs/server'
+
+    await Server.ready()
+    const engine = Server.get()
+
+    // Handle WebSocket upgrades on a specific path
+    engine?.registerWebsocket('/ws/chat', (req, socket, head) => {
+      // Upgrade the connection and handle messages
+    })
+
+    // Default handler for all unmatched WebSocket paths
+    engine?.registerWebsocket('default', (req, socket, head) => {
+      // Fallback WebSocket handler
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Server } from '@robojs/server'
+
+    await Server.ready()
+    const engine = Server.get()
+
+    // Handle WebSocket upgrades on a specific path
+    engine?.registerWebsocket('/ws/chat', (req, socket, head) => {
+      // Upgrade the connection and handle messages
+    })
+
+    // Default handler for all unmatched WebSocket paths
+    engine?.registerWebsocket('default', (req, socket, head) => {
+      // Fallback WebSocket handler
+    })
+    ```
+  </Tab>
+</Tabs>
+
+The Node engine supports path-specific and default WebSocket handlers. WebSocket paths are matched after stripping query parameters and plugin prefixes.
+
+## Custom 404 handler
+
+Register a fallback handler for unmatched routes:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Server } from '@robojs/server'
+
+    await Server.ready()
+    const engine = Server.get()
+
+    engine?.registerNotFound(async (request, reply) => {
+      // Delegate to another framework's router
+      await nextAppHandler(request.raw, reply.raw)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Server } from '@robojs/server'
+
+    await Server.ready()
+    const engine = Server.get()
+
+    engine?.registerNotFound(async (request, reply) => {
+      // Delegate to another framework's router
+      await nextAppHandler(request.raw, reply.raw)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+This is useful when integrating with frameworks like Next.js or Remix that have their own routing.
+
+## Imports
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Import engine classes
+    import { BaseEngine, NodeEngine, FastifyEngine } from '@robojs/server/engines'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Import engine classes
+    import { BaseEngine, NodeEngine, FastifyEngine } from '@robojs/server/engines'
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+	<Card title="Configuration" href="./configuration" description="See all server settings." />
+	<Card title="API reference" href="./api-reference" description="Full API documentation." />
+</Cards>

@@ -1,0 +1,299 @@
+---
+title: Adapters
+description: Built-in storage adapters for users, sessions, accounts, and passwords.
+---
+
+The plugin ships two storage adapters: Flashcore (zero-config default) and Prisma (for projects already using Prisma). Both implement the `PasswordAdapter` interface, which extends Auth.js's `Adapter` with password management methods.
+
+## Flashcore adapter
+
+### Setup
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+    ```
+  </Tab>
+</Tabs>
+
+The only required option is `secret`, used for hashing verification tokens. When no adapter is passed to the plugin config, Flashcore is created automatically from the resolved secret.
+
+### Storage namespaces
+
+| Namespace | Purpose |
+|---|---|
+| `auth:users` | User records |
+| `auth:usersByEmail` | Email-to-userId index |
+| `auth:accounts` | OAuth account records |
+| `auth:userAccounts` | Per-user account references |
+| `auth:sessions` | Session records |
+| `auth:verification` | Verification tokens (SHA-256 hashed) |
+| `auth:usersIndex` | Paginated user ID index |
+| `auth:password` | Password hash records |
+| `auth:passwordUserByEmail` | Password email-to-userId index |
+
+### Pagination
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { listUsers, listUserIds } from '@robojs/auth'
+
+    // Full user records (page 0, 500 per page)
+    const { users, page, pageCount, total } = await listUsers()
+
+    // User IDs only (lighter)
+    const { ids } = await listUserIds(2)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { listUsers, listUserIds } from '@robojs/auth'
+
+    // Full user records (page 0, 500 per page)
+    const { users, page, pageCount, total } = await listUsers()
+
+    // User IDs only (lighter)
+    const { ids } = await listUserIds(2)
+    ```
+  </Tab>
+</Tabs>
+
+Default page size is 500. Out-of-range pages return empty arrays with metadata.
+
+### Behavior notes
+
+- Email addresses are normalized to lowercase
+- User IDs auto-generated via `nanoid(21)` when not provided
+- Expired sessions are pruned on read
+- Verification tokens are hashed with SHA-256 before storage
+- Deleting a user cascades to accounts, sessions, passwords, and index entries
+
+## Prisma adapter
+
+### Setup
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { PrismaClient } from '@prisma/client'
+    import { createPrismaAdapter } from '@robojs/auth'
+
+    const prisma = new PrismaClient()
+    const adapter = createPrismaAdapter({
+      client: prisma,
+      secret: process.env.AUTH_SECRET!
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { PrismaClient } from '@prisma/client'
+    import { createPrismaAdapter } from '@robojs/auth'
+
+    const prisma = new PrismaClient()
+    const adapter = createPrismaAdapter({
+      client: prisma,
+      secret: process.env.AUTH_SECRET!
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+Requires `@auth/prisma-adapter` and `@prisma/client` installed in your project.
+</Callout>
+
+### Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `client` | `PrismaClient` | Required | Initialized Prisma client |
+| `secret` | `string` | Required | Token hashing secret |
+| `models.password` | `string` | `'password'` | Custom password model name |
+
+### Schema additions
+
+Add this model alongside the standard Auth.js Prisma schema:
+
+```prisma
+model Password {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String   @unique
+  hash      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+}
+```
+
+Run `npx prisma migrate dev --name add-auth-passwords` after updating the schema.
+
+<Callout type="info">
+PostgreSQL users can use `@db.Citext` on the `email` field for native case-insensitive lookups. Other databases rely on the adapter's `toLowerCase()` normalization.
+</Callout>
+
+### Pagination
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { listPrismaUsers, listPrismaUserIds } from '@robojs/auth'
+
+    const { users } = await listPrismaUsers(prisma)
+    const { ids } = await listPrismaUserIds(prisma, {
+      page: 1,
+      pageSize: 100,
+      orderBy: { createdAt: 'desc' },
+      where: { emailVerified: { not: null } }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { listPrismaUsers, listPrismaUserIds } from '@robojs/auth'
+
+    const { users } = await listPrismaUsers(prisma)
+    const { ids } = await listPrismaUserIds(prisma, {
+      page: 1,
+      pageSize: 100,
+      orderBy: { createdAt: 'desc' },
+      where: { emailVerified: { not: null } }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Both functions accept `page`, `pageSize`, `orderBy`, and `where` parameters. Default page size: 500.
+
+### Auto-rehashing
+
+The Prisma adapter automatically rehashes passwords on verify when Argon2 parameters change. The Flashcore adapter does not auto-rehash (manual migration needed).
+
+## PasswordAdapter interface
+
+Both adapters implement this interface, which extends Auth.js's `Adapter`:
+
+| Method | Description |
+|---|---|
+| `createUserPassword({ userId, email, hash })` | Store a password hash |
+| `getUserPassword(userId)` | Retrieve the password record |
+| `findUserIdByEmail(email)` | Case-insensitive email lookup |
+| `deleteUserPassword(userId)` | Remove a password record |
+| `resetUserPassword({ userId, hash })` | Replace a password hash |
+
+Validate at runtime:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { assertPasswordAdapter } from '@robojs/auth'
+
+    assertPasswordAdapter(myAdapter) // throws if methods are missing
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { assertPasswordAdapter } from '@robojs/auth'
+
+    assertPasswordAdapter(myAdapter) // throws if methods are missing
+    ```
+  </Tab>
+</Tabs>
+
+## Switching adapters
+
+<Tabs items={['Flashcore', 'Prisma']}>
+<Tab value="Flashcore">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default {
+      adapter,
+      providers: [EmailPassword({ adapter })]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default {
+      adapter,
+      providers: [EmailPassword({ adapter })]
+    }
+    ```
+  </Tab>
+</Tabs>
+</Tab>
+<Tab value="Prisma">
+    <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+      <Tab value="TypeScript">
+        ```ts title="config/plugins/robojs/auth.ts"
+            import { PrismaClient } from '@prisma/client'
+            import EmailPassword from '@robojs/auth/providers/email-password'
+            import { createPrismaAdapter } from '@robojs/auth'
+
+            const prisma = new PrismaClient()
+            const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+
+            export default {
+              adapter,
+              providers: [EmailPassword({ adapter })]
+            }
+        ```
+      </Tab>
+      <Tab value="JavaScript">
+        ```js title="config/plugins/robojs/auth.js"
+            import { PrismaClient } from '@prisma/client'
+            import EmailPassword from '@robojs/auth/providers/email-password'
+            import { createPrismaAdapter } from '@robojs/auth'
+
+            const prisma = new PrismaClient()
+            const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+
+            export default {
+              adapter,
+              providers: [EmailPassword({ adapter })]
+            }
+        ```
+      </Tab>
+    </Tabs>
+</Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./custom-adapters" title="Custom adapters">
+    Build your own storage adapter
+  </Card>
+  <Card href="./email-password" title="Email and password">
+    Credential-based authentication
+  </Card>
+  <Card href="./configuration" title="Configuration">
+    All plugin config options
+  </Card>
+</Cards>

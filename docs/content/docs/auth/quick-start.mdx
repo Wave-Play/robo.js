@@ -1,0 +1,233 @@
+---
+title: Quick start
+description: Get authentication running in your Robo project in minutes.
+---
+
+This guide walks through adding authentication to a Robo project with OAuth and email/password support.
+
+<Callout>
+Requires a Robo project with `@robojs/server` installed. If starting fresh, `npx create-robo` handles both.
+</Callout>
+
+<Steps>
+
+<Step>
+
+## Install the plugin
+
+Add the plugin to your project.
+
+```bash
+npx robo add @robojs/auth
+```
+
+The CLI installs the package, seeds a config file at `config/plugins/robojs/auth.ts`, and generates an `AUTH_SECRET` in your `.env` files.
+
+</Step>
+
+<Step>
+
+## Configure providers
+
+The seed file sets up the Flashcore adapter, Discord OAuth, and email/password authentication.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import Discord from '@robojs/auth/providers/discord'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default <AuthPluginOptions>{
+    	secret: process.env.AUTH_SECRET,
+    	appName: 'My App',
+    	adapter,
+    	providers: [
+    		Discord({
+    			clientId: process.env.DISCORD_CLIENT_ID!,
+    			clientSecret: process.env.DISCORD_CLIENT_SECRET!
+    		}),
+    		EmailPassword({ adapter })
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import Discord from '@robojs/auth/providers/discord'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default {
+    	secret: process.env.AUTH_SECRET,
+    	appName: 'My App',
+    	adapter,
+    	providers: [
+    		Discord({
+    			clientId: process.env.DISCORD_CLIENT_ID!,
+    			clientSecret: process.env.DISCORD_CLIENT_SECRET!
+    		}),
+    		EmailPassword({ adapter })
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Add the required environment variables to your `.env` file.
+
+```bash
+# .env
+AUTH_SECRET="your-generated-secret"
+DISCORD_CLIENT_ID="your-client-id"
+DISCORD_CLIENT_SECRET="your-client-secret"
+```
+
+The `AUTH_SECRET` is auto-generated during installation. For Discord OAuth, create an application at [discord.com/developers/applications](https://discord.com/developers/applications) and copy the client ID and secret from the OAuth2 tab.
+
+</Step>
+
+<Step>
+
+## Start Robo
+
+Start the development server.
+
+```bash
+npx robo dev
+```
+
+The plugin registers routes at `/api/auth/*`. Key endpoints:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/auth/providers` | List configured providers |
+| `GET /api/auth/session` | Current session |
+| `POST /api/auth/signin/:provider` | Sign in with a provider |
+| `POST /api/auth/signout` | Sign out |
+| `POST /api/auth/signup` | Register (email/password) |
+| `GET /api/auth/csrf` | CSRF token |
+
+</Step>
+
+<Step>
+
+## Sign in from the client
+
+Use the client helpers to authenticate users.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signIn, getSession } from '@robojs/auth/client'
+
+    // OAuth sign-in (redirects to Discord)
+    await signIn('discord')
+
+    // Email/password sign-in
+    await signIn('credentials', {
+    	email: 'user@example.com',
+    	password: 'securepass'
+    })
+
+    // Check session
+    const session = await getSession()
+    console.log(session?.user)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signIn, getSession } from '@robojs/auth/client'
+
+    // OAuth sign-in (redirects to Discord)
+    await signIn('discord')
+
+    // Email/password sign-in
+    await signIn('credentials', {
+    	email: 'user@example.com',
+    	password: 'securepass'
+    })
+
+    // Check session
+    const session = await getSession()
+    console.log(session?.user)
+    ```
+  </Tab>
+</Tabs>
+
+The `signIn` function handles CSRF tokens and redirects automatically.
+
+</Step>
+
+<Step>
+
+## Protect server routes
+
+Validate sessions in API routes using `getServerSession`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/protected.ts"
+    import { getServerSession } from '@robojs/auth'
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export default async (request: RoboRequest, reply: RoboReply) => {
+    	const session = await getServerSession(request)
+
+    	if (!session) {
+    		return reply.code(401).send({ error: 'Unauthorized' })
+    	}
+
+    	return { message: `Hello ${session.user?.name}` }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/protected.js"
+    import { getServerSession } from '@robojs/auth'
+
+    export default async (request, reply) => {
+    	const session = await getServerSession(request)
+
+    	if (!session) {
+    		return reply.code(401).send({ error: 'Unauthorized' })
+    	}
+
+    	return { message: `Hello ${session.user?.name}` }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The session contains user information from the configured provider.
+
+</Step>
+
+</Steps>
+
+## Environment variables
+
+Quick reference for required environment variables.
+
+| Variable | Purpose | Required |
+|---|---|---|
+| `AUTH_SECRET` | JWT signing and token hashing | Yes (auto-generated) |
+| `AUTH_URL` | Canonical app URL | No (defaults to localhost:3000) |
+| `DISCORD_CLIENT_ID` | Discord OAuth client ID | If using Discord |
+| `DISCORD_CLIENT_SECRET` | Discord OAuth secret | If using Discord |
+
+The `AUTH_URL` should be set to your production domain when deploying. In development, it defaults to `http://localhost:3000`.
+
+## Next steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="Explore all config options" />
+	<Card href="./email-password" title="Email and password" description="Signup, reset, and verification flows" />
+	<Card href="./oauth-providers" title="OAuth providers" description="Configure 80+ identity providers" />
+	<Card href="./session-management" title="Sessions" description="JWT, database, and multi-account sessions" />
+</Cards>

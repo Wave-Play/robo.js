@@ -1,0 +1,15 @@
+{
+  "title": "@robojs/giveaways",
+  "icon": "Gift",
+  "description": "Discord giveaways with automatic winners.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Guides---",
+    "commands",
+    "configuration",
+    "---Reference---",
+    "api",
+    "persistence"
+  ]
+}

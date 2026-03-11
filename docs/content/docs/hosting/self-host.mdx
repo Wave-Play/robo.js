@@ -1,0 +1,67 @@
+---
+title: Self-hosting
+description: Host and maintain your own server for Robo.js projects.
+---
+
+Robo.js can be self-hosted on any platform that supports Node.js. This gives you full control over your infrastructure and deployment process. You will need **[Node.js](https://nodejs.org)** v20 or newer installed on your server.
+
+## Running
+
+### Install dependencies
+
+Make sure all dependencies are installed on your server:
+
+```package-install
+npm install
+```
+
+### Build for production
+
+Compile your source code into an optimized production format. This is especially important for TypeScript projects:
+
+```bash
+robo build
+```
+
+### Set environment variables
+
+Configure all required environment variables on your server. See the **[Environment Variables](../framework/core/env-vars)** page for details. Set `NODE_ENV` to `"production"` for production mode.
+
+### Start in production mode
+
+Start your Robo server:
+
+```sh
+robo start
+```
+
+## Operational Considerations
+
+When self-hosting, you are responsible for server uptime, security, and updates. The following are handled automatically by **[RoboPlay](./roboplay)** but require manual setup when self-hosting.
+
+### CDN
+
+Use a CDN like **[Cloudflare](https://www.cloudflare.com/)** to cache assets, reduce server load, and improve response times.
+
+### Docker
+
+Containerizing with **Docker** ensures consistency across environments and simplifies scaling and updates. See the **[Docker Template](../../templates/discord-bots/docker-ts)** for a quick start.
+
+### Logs
+
+The **[Logger](../framework/core/logger)** writes to stdout by default, but you can configure it with custom drains to write to files or logging services. The **[`@robojs/better-stack`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack)** plugin integrates with **[Better Stack](https://betterstack.com/logs)** for log collection and analysis.
+
+### Recovery
+
+Unlike `robo dev`, `robo start` does not automatically restart on crashes. Use a process manager like **[PM2](https://pm2.keymetrics.io/)** to keep your Robo running in the background and restart it after failures.
+
+### TLS
+
+Set up a **[TLS certificate](https://letsencrypt.org/)** if you plan to serve your Robo over HTTPS, especially when using a custom domain.
+
+## Next Steps
+
+<Cards>
+  <Card href="./roboplay" title="RoboPlay" description="Deploy with one command instead." />
+  <Card href="../framework/core/env-vars" title="Environment Variables" description="Configure environment variables for production." />
+</Cards>

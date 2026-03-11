@@ -1,0 +1,25 @@
+{
+	"title": "@robojs/server",
+	"icon": "Server",
+	"description": "Web server with file-based routing.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Getting Started---",
+		"quick-start",
+		"routing",
+		"typed-endpoints",
+		"---Guides---",
+		"testing",
+		"tunnels",
+		"static-files",
+		"cors",
+		"---Reference---",
+		"configuration",
+		"api-reference",
+		"cli",
+		"---Advanced---",
+		"engines",
+		"openapi"
+	]
+}

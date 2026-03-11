@@ -1,0 +1,164 @@
+---
+title: MCP
+description: Model Context Protocol server integration for external tool access.
+---
+
+MCP tools are server-side proxied by OpenAI. The engine passes MCP configs in the tools array, OpenAI executes them remotely, and results flow into responses automatically. No local execution or special handling needed.
+
+## Configuration
+
+Add MCP servers to your plugin options via the `mcpServers` array:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	mcpServers: [
+    		{
+    			type: 'mcp',
+    			server_label: 'context7',
+    			server_url: 'https://mcp.context7.com/mcp',
+    			headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+    			allowed_tools: ['resolve-library-id', 'get-library-docs'],
+    			require_approval: 'never'
+    		}
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	mcpServers: [
+    		{
+    			type: 'mcp',
+    			server_label: 'context7',
+    			server_url: 'https://mcp.context7.com/mcp',
+    			headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+    			allowed_tools: ['resolve-library-id', 'get-library-docs'],
+    			require_approval: 'never'
+    		}
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+You can add multiple MCP servers. Each one must have a unique `server_label`.
+
+### MCPTool fields
+
+<TypeTable
+	type={{
+		type: { type: "'mcp'", description: "Must be 'mcp'.", default: 'Required' },
+		server_label: { type: 'string', description: 'Unique human-readable label identifying the MCP server.', default: 'Required' },
+		server_url: { type: 'string', description: 'Base URL of the MCP endpoint.', default: 'Required' },
+		headers: { type: 'Record<string, string>', description: 'HTTP headers sent with MCP requests (API keys, auth tokens, etc.).', default: 'undefined' },
+		allowed_tools: { type: 'string[]', description: 'Tool name whitelist. Omit to allow all tools from this server.', default: 'undefined' },
+		require_approval: { type: "'never' | 'always'", description: 'Whether tool calls require approval before execution.', default: "'never'" },
+	}}
+/>
+
+## Error handling
+
+Configure resilience for MCP tool failures via the `mcp` option:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	mcp: {
+    		gracefulDegradation: true,
+    		extraRetries: 1,
+    		baseDelayMs: 500,
+    		maxDelayMs: 2000
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	mcp: {
+    		gracefulDegradation: true,
+    		extraRetries: 1,
+    		baseDelayMs: 500,
+    		maxDelayMs: 2000
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+	type={{
+		gracefulDegradation: { type: 'boolean', description: 'Remove failing MCP tools and retry when they cause API failures.', default: 'true' },
+		extraRetries: { type: 'number', description: 'Extra retry attempts with exponential backoff before degrading.', default: '1' },
+		baseDelayMs: { type: 'number', description: 'Base delay in milliseconds for exponential backoff.', default: '500' },
+		maxDelayMs: { type: 'number', description: 'Maximum delay in milliseconds for exponential backoff.', default: '2000' },
+	}}
+/>
+
+## Graceful degradation
+
+When MCP tools cause API failures, the engine follows this sequence:
+
+1. Extra retries with exponential backoff (configurable via `extraRetries`, `baseDelayMs`, `maxDelayMs`).
+2. If retries still fail and `gracefulDegradation` is `true`, MCP tools are removed from the request and the engine retries without them.
+3. A status note is injected into the system prompt telling the AI that certain external tools were unavailable.
+4. The `degradedMcpServers` array in `ReplyHookContext` lists the affected server labels, so reply hooks can apply custom handling.
+
+This prevents entire requests from failing due to transient MCP server issues while keeping the AI transparent about tool unavailability.
+
+## Accessing MCP data
+
+Retrieve configured MCP servers at runtime with `AI.getMCPServers()`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/check-mcp.ts"
+    import { AI } from '@robojs/ai'
+
+    export default () => {
+    	const servers = AI.getMCPServers()
+    	return `${servers.length} MCP server(s) configured.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/check-mcp.js"
+    import { AI } from '@robojs/ai'
+
+    export default () => {
+    	const servers = AI.getMCPServers()
+    	return `${servers.length} MCP server(s) configured.`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Validation
+
+During `init()`, the engine validates every MCP config:
+
+- Checks for required fields (`type`, `server_label`, `server_url`).
+- Detects duplicate `server_label` values.
+- Validates `headers` is an object when provided.
+
+Invalid configs are logged with a warning and skipped. The engine continues initializing with the remaining valid servers.
+
+## Limitations
+
+MCP tools are only available in standard chat context (the `worker` path). They aren't available in realtime voice sessions.
+
+<Callout type="warn">
+Ensure environment variables for MCP API keys are set before starting the bot. Missing credentials won't crash the engine, but the MCP server will reject requests at runtime.
+</Callout>
+
+## Next steps
+
+<Cards>
+	<Card href="./hooks" title="Hooks" description="Intercept and customize the AI pipeline." />
+	<Card href="./web-api" title="Web API" description="HTTP chat endpoint for web integrations." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

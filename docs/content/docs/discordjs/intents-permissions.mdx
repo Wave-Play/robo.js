@@ -1,0 +1,270 @@
+---
+title: Intents & Permissions
+description: Automatic intent inference from events and permission aggregation from commands.
+---
+
+The plugin automatically infers which gateway intents your bot needs based on registered events, and aggregates permissions from command configurations.
+
+## Intent inference
+
+When your bot starts, the plugin checks which events you've registered and warns about any missing intents. For example, if you have a `messageCreate` handler but haven't enabled `GuildMessages`, you'll see a warning.
+
+### How it works
+
+Each Discord.js event maps to one or more required intents. The plugin maintains this mapping internally and checks your configured intents against it:
+
+| Event | Required Intent(s) |
+|-------|-------------------|
+| `messageCreate` | `GuildMessages`, `DirectMessages` |
+| `guildMemberAdd` | `GuildMembers` (privileged) |
+| `presenceUpdate` | `GuildPresences` (privileged) |
+| `messageReactionAdd` | `GuildMessageReactions` |
+| `voiceStateUpdate` | `GuildVoiceStates` |
+| `guildCreate` | `Guilds` |
+| `channelCreate` | `Guilds` |
+| `threadCreate` | `Guilds` |
+| `typingStart` | `GuildMessageTyping` |
+| `autoModerationRuleCreate` | `AutoModerationConfiguration` |
+| `autoModerationActionExecution` | `AutoModerationExecution` |
+| `guildScheduledEventCreate` | `GuildScheduledEvents` |
+
+<Callout type="info">
+This is a representative sample. The full mapping covers 42+ events. See the exported [`REQUIRED_INTENTS`](#required_intents) constant for the complete list.
+</Callout>
+
+For events that accept multiple intents (like `messageCreate`), having at least one is sufficient.
+
+### Configuring intents
+
+Set intents explicitly via `clientOptions.intents`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.mjs"
+    import { GatewayIntentBits } from 'discord.js'
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	clientOptions: {
+    		intents: [
+    			GatewayIntentBits.Guilds,
+    			GatewayIntentBits.GuildMessages,
+    			GatewayIntentBits.GuildMembers,
+    			GatewayIntentBits.MessageContent
+    		]
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    import { GatewayIntentBits } from 'discord.js'
+
+    export default {
+    	clientOptions: {
+    		intents: [
+    			GatewayIntentBits.Guilds,
+    			GatewayIntentBits.GuildMessages,
+    			GatewayIntentBits.GuildMembers,
+    			GatewayIntentBits.MessageContent
+    		]
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Privileged intents
+
+Some intents require explicit approval in the Discord Developer Portal:
+
+| Intent | Portal Toggle | Events |
+|--------|--------------|--------|
+| `GuildMembers` | Server Members Intent | `guildMemberAdd`, `guildMemberUpdate`, `guildMemberRemove`, `threadMembersUpdate` |
+| `GuildPresences` | Presence Intent | `presenceUpdate` |
+| `MessageContent` | Message Content Intent | Access to message content in `messageCreate`, `messageUpdate` |
+
+<Callout type="warn">
+Privileged intents must be enabled in both your code and the [Discord Developer Portal](https://discord.com/developers/applications). Bots in 100+ servers also need Discord approval.
+</Callout>
+
+## Permission aggregation
+
+The plugin aggregates `defaultMemberPermissions` from all your commands and context menus for use with the `robo invite` CLI command and permission utilities.
+
+### Setting permissions on commands
+
+```ts title="src/commands/ban.ts"
+import type { CommandConfig } from '@robojs/discordjs'
+
+export const config: CommandConfig = {
+	description: 'Ban a user',
+	defaultMemberPermissions: 'BanMembers'
+}
+```
+
+### Permission utilities
+
+The plugin exports utilities for working with permissions programmatically:
+
+```ts
+import {
+	getPermissionNames,
+	hasRequiredPermissions,
+	getMissingPermissions,
+	combinePermissions,
+	setGuildPermissionOverride
+} from '@robojs/discordjs'
+```
+
+#### `getPermissionNames(permissions)`
+
+Convert a permission bitfield to an array of permission names:
+
+```ts
+import { getPermissionNames } from '@robojs/discordjs'
+
+const names = getPermissionNames(268435456n)
+// ['ManageRoles']
+```
+
+#### `hasRequiredPermissions(userPermissions, requiredPermissions)`
+
+Check if a user has all required permissions:
+
+```ts
+import { hasRequiredPermissions } from '@robojs/discordjs'
+
+const canBan = hasRequiredPermissions(userBits, requiredBits)
+```
+
+#### `getMissingPermissions(userPermissions, requiredPermissions)`
+
+Get the names of permissions a user is missing:
+
+```ts
+import { getMissingPermissions } from '@robojs/discordjs'
+
+const missing = getMissingPermissions(userBits, requiredBits)
+// ['BanMembers', 'KickMembers']
+```
+
+#### `combinePermissions(...permissions)`
+
+Combine multiple permission bitfields:
+
+```ts
+import { combinePermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
+
+const combined = combinePermissions(
+	PERMISSION_FLAGS.BanMembers,
+	PERMISSION_FLAGS.KickMembers
+)
+```
+
+#### `setGuildPermissionOverride(permissions, commandKey, guildId, permissionBits)`
+
+Set guild-specific permission overrides for a command:
+
+```ts
+import { aggregateCommandPermissions, setGuildPermissionOverride, PERMISSION_FLAGS } from '@robojs/discordjs'
+
+const permissions = aggregateCommandPermissions(commands)
+setGuildPermissionOverride(permissions, 'ban', '123456789', PERMISSION_FLAGS.Administrator)
+```
+
+#### `aggregateContextPermissions(contextMenus)`
+
+Works the same way as `aggregateCommandPermissions` but for context menu commands. Accepts a record of context menu entries and returns aggregated permissions for each:
+
+```ts
+import { aggregateContextPermissions } from '@robojs/discordjs'
+
+const contextPermissions = aggregateContextPermissions(contextMenus)
+```
+
+#### `getEffectivePermissions(permissions, commandKey, guildId?)`
+
+Resolve the effective permissions for a command, accounting for guild-specific overrides. Returns the guild override if one exists, otherwise the default permissions:
+
+```ts
+import { aggregateCommandPermissions, getEffectivePermissions } from '@robojs/discordjs'
+
+const permissions = aggregateCommandPermissions(commands)
+
+// Get default permissions for 'ban'
+const defaultPerms = getEffectivePermissions(permissions, 'ban')
+
+// Get guild-specific permissions (falls back to default if no override)
+const guildPerms = getEffectivePermissions(permissions, 'ban', '123456789')
+```
+
+### Intent validation
+
+Validate intents programmatically using the exported utilities:
+
+```ts
+import { validateIntents, inferIntents, getIntentNames } from '@robojs/discordjs'
+
+// Validate configured intents against event requirements
+const result = validateIntents(configuredIntentsBitfield, ['messageCreate', 'guildMemberAdd'])
+if (!result.valid) {
+	console.log('Events missing intents:', result.missing)
+	console.log('Suggestions:', result.suggestions)
+}
+
+// Infer required intents from event names
+const required = inferIntents(['messageCreate', 'guildMemberAdd'])
+console.log('Required intents:', getIntentNames(required))
+```
+
+#### `checkIntents(client, events)`
+
+Check a live Discord.js `Client` against registered event handlers and log warnings for any missing intents. This is called automatically at startup, but you can also invoke it manually:
+
+```ts
+import { checkIntents } from '@robojs/discordjs'
+
+// client is your Discord.js Client instance
+// events is a record mapping event names to their handler arrays
+checkIntents(client, events)
+// Logs warnings for any events whose required intents are not configured
+```
+
+#### `REQUIRED_INTENTS`
+
+An exported constant that maps Discord event names to their required `GatewayIntentBits`. Events that accept multiple intents store them as an array:
+
+```ts
+import { REQUIRED_INTENTS } from '@robojs/discordjs'
+
+// Single intent
+REQUIRED_INTENTS.guildCreate // GatewayIntentBits.Guilds
+
+// Multiple possible intents
+REQUIRED_INTENTS.messageCreate // [GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages]
+```
+
+This is the same mapping used internally by `checkIntents`, `validateIntents`, and `inferIntents`.
+
+## `robo invite`
+
+Generate a bot invite link with the correct permissions:
+
+```bash
+npx robo invite
+```
+
+This aggregates `defaultMemberPermissions` from all your commands and context menus to generate an invite URL with the minimum required permissions.
+
+<Callout type="warn">
+This is experimental and may not generate the correct permissions. If you have issues, use the [Discord Developer Portal](https://discord.com/developers/applications) to generate an invite URL manually.
+</Callout>
+
+## Next steps
+
+<Cards>
+	<Card href="./events" title="Events" description="Gateway event handlers." />
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./configuration" title="Configuration" description="All plugin options." />
+</Cards>

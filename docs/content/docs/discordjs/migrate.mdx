@@ -1,0 +1,368 @@
+---
+title: Migration
+description: Migrate to @robojs/discordjs from Discord.js or older Robo.js versions.
+---
+
+Move an existing Discord bot to Robo.js with `@robojs/discordjs`, or update from the old coupled architecture to the new plugin-based system.
+
+## From Discord.js
+
+Three migration paths depending on your bot's complexity.
+
+### Full migration
+
+Replace manual `Client` setup with file-based routing entirely. Robo.js handles client creation, login, and command registration automatically.
+
+1. Install Robo.js and the Discord plugin
+2. Move command handlers into `src/commands/`
+3. Move event handlers into `src/events/`
+4. Transfer `clientOptions` to `config/plugins/robojs/discordjs.ts`
+5. Run `robo dev` to start your bot
+
+**Before (Discord.js):**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="index.ts"
+    import { Client, GatewayIntentBits } from 'discord.js'
+
+    const client = new Client({ intents: [GatewayIntentBits.Guilds] })
+
+    client.on('ready', () => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    })
+
+    client.on('interactionCreate', async (interaction) => {
+    	if (!interaction.isChatInputCommand()) return
+    	if (interaction.commandName === 'ping') {
+    		await interaction.reply('Pong!')
+    	}
+    })
+
+    client.login(process.env.DISCORD_TOKEN)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="index.js"
+    import { Client, GatewayIntentBits } from 'discord.js'
+
+    const client = new Client({ intents: [GatewayIntentBits.Guilds] })
+
+    client.on('ready', () => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    })
+
+    client.on('interactionCreate', async (interaction) => {
+    	if (!interaction.isChatInputCommand()) return
+    	if (interaction.commandName === 'ping') {
+    		await interaction.reply('Pong!')
+    	}
+    })
+
+    client.login(process.env.DISCORD_TOKEN)
+    ```
+  </Tab>
+</Tabs>
+
+**After (Robo.js):**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    export default () => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    export default () => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/ready.ts"
+    import type { EventConfig } from '@robojs/discordjs'
+    import type { Client } from 'discord.js'
+
+    export const config: EventConfig = {
+    	frequency: 'once'
+    }
+
+    export default (client: Client) => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/ready.js"
+    export const config = {
+    	frequency: 'once'
+    }
+
+    export default (client) => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds']
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Gradual migration
+
+Use `src/robo/start.ts` to keep existing code running while you migrate handlers incrementally. This is the recommended approach for large bots.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/robo/start.ts"
+    import { getClient } from '@robojs/discordjs'
+
+    export default () => {
+    	const client = getClient()
+
+    	// Keep existing handlers running while you migrate them one by one
+    	client.on('messageCreate', (message) => {
+    		if (message.content === '!hello') {
+    			message.reply('Hello from legacy handler!')
+    		}
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/robo/start.js"
+    import { getClient } from '@robojs/discordjs'
+
+    export default () => {
+    	const client = getClient()
+
+    	client.on('messageCreate', (message) => {
+    		if (message.content === '!hello') {
+    			message.reply('Hello from legacy handler!')
+    		}
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+New commands and events use the Robo.js file structure while existing ones continue running through `robo/start.ts`. As you migrate each handler to `src/events/` or `src/commands/`, remove it from the start file.
+
+<Callout type="info">
+You can also use the legacy `src/events/_start.ts` event for the same purpose, but `src/robo/start.ts` is the recommended approach for new migration efforts. See [Lifecycle](./lifecycle) for details on the difference.
+</Callout>
+
+### Custom entry point
+
+For advanced setups that need full control over the startup process, configure a custom entry point in `config/robo.ts`. This is useful for bots with complex initialization requirements that can't be decomposed into lifecycle files.
+
+## From older Robo.js (pre-v0.11)
+
+Existing Robo.js users migrating to v0.11 need to install the `@robojs/discordjs` plugin and update imports. Discord-specific functionality has moved from the core framework into a dedicated plugin.
+
+### Import changes
+
+| Before (old) | After (new) |
+|--------------|-------------|
+| `import { createCommandConfig } from 'robo.js'` | `import { createCommandConfig } from '@robojs/discordjs'` |
+| `import type { CommandResult } from 'robo.js'` | `import type { CommandResult } from '@robojs/discordjs'` |
+| `import type { CommandConfig } from 'robo.js'` | `import type { CommandConfig } from '@robojs/discordjs'` |
+| `import type { CommandOptions } from 'robo.js'` | `import type { CommandOptions } from '@robojs/discordjs'` |
+| `import { client } from 'robo.js'` | `import { getClient } from '@robojs/discordjs'` |
+
+### Configuration changes
+
+Discord-specific configuration moves from `config/robo.ts` to `config/plugins/robojs/discordjs.ts`:
+
+**Before:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.ts"
+    // old -- no longer used for Discord settings
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages']
+    	},
+    	sage: {
+    		defer: true
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages']
+    	},
+    	sage: {
+    		defer: true
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**After:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages']
+    	},
+    	sage: {
+    		defer: true
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds', 'GuildMessages']
+    	},
+    	sage: {
+    		defer: true
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Client access
+
+The `client` export no longer exists. Use `getClient()` instead:
+
+**Before:**
+
+```ts
+import { client } from 'robo.js'
+client.user?.setPresence({ status: 'idle' })
+```
+
+**After:**
+
+```ts
+import { getClient } from '@robojs/discordjs'
+const client = getClient()
+client.user?.setPresence({ status: 'idle' })
+```
+
+### Intent syntax
+
+Intents use PascalCase strings. If you were already using this format, no changes are needed.
+
+| Old format | New format |
+|-----------|------------|
+| `'GUILD_MESSAGES'` | `'GuildMessages'` |
+| `Intents.FLAGS.Guilds` | `'Guilds'` |
+| `GatewayIntentBits.GuildMessages` | `'GuildMessages'` |
+
+### Command migration
+
+Converting `client.on('interactionCreate', ...)` command routing to file-based commands:
+
+**Before:**
+
+```ts
+client.on('interactionCreate', async (interaction) => {
+	if (!interaction.isChatInputCommand()) return
+
+	switch (interaction.commandName) {
+		case 'ping':
+			await interaction.reply('Pong!')
+			break
+		case 'echo':
+			const text = interaction.options.getString('text')
+			await interaction.reply(text ?? 'Nothing to echo')
+			break
+	}
+})
+```
+
+**After:**
+
+```ts title="src/commands/ping.ts"
+export default () => 'Pong!'
+```
+
+```ts title="src/commands/echo.ts"
+import type { CommandConfig } from '@robojs/discordjs'
+
+export const config: CommandConfig = {
+	description: 'Echo a message',
+	options: [{ name: 'text', type: 'string', required: true }]
+}
+
+export default (interaction, options: { text: string }) => {
+	return options.text
+}
+```
+
+### Event migration
+
+Converting `client.on(event, ...)` to file-based events:
+
+**Before:**
+
+```ts
+client.on('guildMemberAdd', (member) => {
+	const channel = member.guild.systemChannel
+	channel?.send(`Welcome, ${member}!`)
+})
+```
+
+**After:**
+
+```ts title="src/events/guildMemberAdd.ts"
+import type { GuildMember } from 'discord.js'
+
+export default (member: GuildMember) => {
+	const channel = member.guild.systemChannel
+	channel?.send(`Welcome, ${member}!`)
+}
+```
+
+### `_start` / `_stop` events
+
+If you used `_start` or `_stop` events, consider migrating them to the recommended `robo/start.ts` and `robo/stop.ts` lifecycle files. See [Lifecycle](./lifecycle) for details.
+
+## Next steps
+
+<Cards>
+	<Card href="./lifecycle" title="Lifecycle" description="Plugin lifecycle and startup sequence." />
+	<Card href="./configuration" title="Configuration" description="All plugin options." />
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+</Cards>

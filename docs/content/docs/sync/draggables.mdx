@@ -1,0 +1,272 @@
+---
+title: Draggables
+description: Synchronized drag-and-drop with locking, interpolation, and bounds.
+---
+
+Create draggable elements that sync position across clients in real-time. The `useSyncDrag` hook handles gesture detection, locking, interpolation, and bounds. The `SyncDraggable` component wraps it in a declarative API.
+
+## SyncDraggable component
+
+The easiest way to create synchronized draggable elements.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { SyncDraggable } from '@robojs/sync'
+
+    function GameBoard() {
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <SyncDraggable
+            id={['piece', '1']}
+            initial={{ x: 0.5, y: 0.5 }}
+            interpolate={{ x: 0.2, y: 0.2 }}
+            bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
+          >
+            <div className="game-piece">Drag me</div>
+          </SyncDraggable>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { SyncDraggable } from '@robojs/sync'
+
+    function GameBoard() {
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <SyncDraggable
+            id={['piece', '1']}
+            initial={{ x: 0.5, y: 0.5 }}
+            interpolate={{ x: 0.2, y: 0.2 }}
+            bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
+          >
+            <div className="game-piece">Drag me</div>
+          </SyncDraggable>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `(string \| null)[]` | (required) | Key suffix for state sync |
+| `initial` | `T` | (required) | Initial state (must include `x`, `y`) |
+| `interpolate` | `{ [field]: number }` | `undefined` | Lerp factor per field (0-1) |
+| `throttle` | `number` | `16` | Milliseconds between updates |
+| `bounds` | `{ minX?, maxX?, minY?, maxY? }` | `undefined` | Position constraints |
+| `normalize` | `boolean` | `true` | Use 0-1 viewport coordinates |
+| `children` | `ReactNode \| (props) => ReactNode` | (required) | Content or render function |
+| `onDragStart` | `(state: T) => void` | `undefined` | Called when drag starts |
+| `onDrag` | `(state: T) => void` | `undefined` | Called on each drag update |
+| `onDragEnd` | `(state: T) => void` | `undefined` | Called when drag ends |
+| `onStateChange` | `(state: T, prev: T) => void` | `undefined` | Called on any state change |
+| `style` | `CSSProperties` | `undefined` | Wrapper styles |
+| `className` | `string` | `undefined` | Wrapper class |
+| `as` | `ElementType \| null` | `'div'` | Wrapper element |
+
+### Render props
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncDraggable
+      id={['card', cardId]}
+      initial={{ x: 0.1, y: 0.1 }}
+      interpolate={{ x: 0.15, y: 0.15 }}
+      onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
+    >
+      {({ state, isDragging, canInteract }) => (
+        <div
+          style={{
+            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
+            opacity: isDragging ? 0.8 : 1
+          }}
+        >
+          Card ({state.x.toFixed(2)}, {state.y.toFixed(2)})
+        </div>
+      )}
+    </SyncDraggable>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncDraggable
+      id={['card', cardId]}
+      initial={{ x: 0.1, y: 0.1 }}
+      interpolate={{ x: 0.15, y: 0.15 }}
+      onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
+    >
+      {({ state, isDragging, canInteract }) => (
+        <div
+          style={{
+            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
+            opacity: isDragging ? 0.8 : 1
+          }}
+        >
+          Card ({state.x.toFixed(2)}, {state.y.toFixed(2)})
+        </div>
+      )}
+    </SyncDraggable>
+    ```
+  </Tab>
+</Tabs>
+
+#### SyncDraggableRenderProps
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | `T` | Current position and data |
+| `isDragging` | `boolean` | You are dragging |
+| `isBeingDragged` | `boolean` | Anyone is dragging |
+| `canInteract` | `boolean` | Not locked by someone else |
+
+## useSyncDrag hook
+
+For full control without a wrapper component.
+
+### Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function useSyncDrag<T extends DragState, ClientData = unknown>(
+      key: (string | null)[],
+      initialState: T,
+      options?: DragOptions<T>
+    ): DragResult<T, ClientData>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function useSyncDrag(
+      key: (string | null)[],
+      initialState: T,
+      options?: DragOptions<T>
+    ): DragResult<T, ClientData>
+    ```
+  </Tab>
+</Tabs>
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `interpolate` | `{ [field]: number }` | `undefined` | Lerp factors for smooth remote updates |
+| `throttle` | `number` | `16` | Milliseconds between network updates |
+| `bounds` | `{ minX?, maxX?, minY?, maxY? }` | `undefined` | Position constraints |
+| `normalize` | `boolean` | `true` | Use 0-1 viewport coordinates |
+| `lockOnDrag` | `boolean` | `true` | Auto-lock when dragging starts |
+
+### Return value
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | `T` | Current state (interpolated for remote updates) |
+| `setState` | `(update) => void` | Update state |
+| `isDragging` | `boolean` | You are currently dragging |
+| `isBeingDragged` | `boolean` | Anyone is dragging (locked) |
+| `canInteract` | `boolean` | Not locked by someone else |
+| `dragHandlers` | `{ onMouseDown, onTouchStart }` | Spread onto draggable element |
+| `lock` | `LockContext` | Lock context for advanced usage |
+| `context` | `SyncContext` | Sync context |
+
+### Usage example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { useSyncDrag } from '@robojs/sync'
+
+    function DraggableBall({ id }: { id: string }) {
+      const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+        ['ball', id],
+        { x: 0.5, y: 0.5 },
+        {
+          interpolate: { x: 0.2, y: 0.2 },
+          bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }
+        }
+      )
+
+      return (
+        <div
+          {...dragHandlers}
+          style={{
+            position: 'absolute',
+            left: `${state.x * 100}%`,
+            top: `${state.y * 100}%`,
+            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+          }}
+        >
+          Ball
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { useSyncDrag } from '@robojs/sync'
+
+    function DraggableBall({ id }) {
+      const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+        ['ball', id],
+        { x: 0.5, y: 0.5 },
+        {
+          interpolate: { x: 0.2, y: 0.2 },
+          bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }
+        }
+      )
+
+      return (
+        <div
+          {...dragHandlers}
+          style={{
+            position: 'absolute',
+            left: `${state.x * 100}%`,
+            top: `${state.y * 100}%`,
+            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+          }}
+        >
+          Ball
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## How locking works
+
+- When `lockOnDrag` is true (default for both hook and component), the element is automatically locked when the user starts dragging and unlocked when they stop.
+- While locked, other clients see the element as "not-allowed" and can't interact with it.
+- The lock holder sees instant local updates. Other clients see interpolated movement.
+- If the lock holder disconnects, the lock is released automatically via the server's connection cleanup.
+
+## Interpolation
+
+Lerp factors control how smoothly remote updates are applied. Values range from 0 to 1:
+
+- `0.1` = very smooth, slower convergence
+- `0.3` = balanced
+- `1.0` = instant (no interpolation)
+
+The interpolation loop uses `requestAnimationFrame` and stops when all fields are within 0.001 of their target.
+
+## Touch support
+
+Both `useSyncDrag` and `SyncDraggable` handle touch events automatically. The `dragHandlers` object includes `onTouchStart`, and global `touchmove`/`touchend` listeners are registered during a drag.
+
+## Next steps
+
+<Cards>
+  <Card title="Cursors" description="Collaborative cursor tracking." href="cursors" />
+  <Card title="SyncBox" description="Declarative sync containers with more features." href="sync-box" />
+  <Card title="Presence" description="Track participants with heartbeat detection." href="presence" />
+</Cards>

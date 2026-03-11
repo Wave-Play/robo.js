@@ -1,0 +1,16 @@
+{
+  "title": "@robojs/analytics",
+  "icon": "BarChart",
+  "description": "Track usage with Google Analytics and more.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Guides---",
+    "google-analytics",
+    "plausible",
+    "custom-engines",
+    "---Reference---",
+    "configuration",
+    "api"
+  ]
+}

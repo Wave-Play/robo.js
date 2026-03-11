@@ -1,0 +1,470 @@
+---
+title: Voice
+description: Realtime voice conversations with transcription and playback.
+---
+
+Voice support is built into `@robojs/ai`. No separate plugin needed. Your bot can join Discord voice channels and have realtime spoken conversations with users, with optional transcript embeds posted to text channels.
+
+Voice requires a few optional dependencies that are loaded lazily -- they're only needed when a voice session actually starts.
+
+## Dependencies
+
+Install four packages alongside the plugin:
+
+```bash
+npm install @discordjs/voice prism-media opusscript ws
+```
+
+<Callout type="info">
+`opusscript` can be replaced with `@discordjs/opus` for better performance in production. `ws` is required for the OpenAI Realtime API WebSocket connection.
+</Callout>
+
+## Setup
+
+Add voice settings to your plugin config alongside an engine that supports realtime audio:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	engine: new OpenAiEngine({
+    		voice: {
+    			model: 'gpt-realtime',
+    			transcription: { language: 'en', model: 'gpt-4o-transcribe' }
+    		}
+    	}),
+    	voice: {
+    		playbackVoice: 'alloy',
+    		endpointing: 'server-vad',
+    		instructions: 'Keep spoken replies concise and under 10 seconds.',
+    		transcript: { enabled: true }
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	engine: new OpenAiEngine({
+    		voice: {
+    			model: 'gpt-realtime',
+    			transcription: { language: 'en', model: 'gpt-4o-transcribe' }
+    		}
+    	}),
+    	voice: {
+    		playbackVoice: 'alloy',
+    		endpointing: 'server-vad',
+    		instructions: 'Keep spoken replies concise and under 10 seconds.',
+    		transcript: { enabled: true }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `engine.voice` block configures the realtime model and transcription. The top-level `voice` block controls Discord-side behavior like playback voice, endpointing strategy, and transcript output.
+
+## Voice configuration
+
+### Top-level options
+
+<TypeTable
+	type={{
+		enabled: {
+			type: 'boolean',
+			description: 'Master toggle for voice support.',
+			default: 'true'
+		},
+		endpointing: {
+			type: "'server-vad' | 'manual'",
+			description: 'Voice activity detection strategy.',
+			default: "'server-vad'"
+		},
+		model: {
+			type: 'string',
+			description: 'Override the realtime model set on the engine.',
+			default: 'undefined'
+		},
+		playbackVoice: {
+			type: 'string | null',
+			description: 'TTS voice ID for spoken responses. Options include alloy, echo, ash, verse, and others.',
+			default: 'null'
+		},
+		maxConcurrentChannels: {
+			type: 'number',
+			description: 'Maximum simultaneous voice channels per guild.',
+			default: '2'
+		},
+		instructions: {
+			type: 'string',
+			description: 'Voice-specific system prompt appended to the base instructions.',
+			default: 'undefined'
+		}
+	}}
+/>
+
+### Capture config
+
+Nested under `capture`. Controls how user audio is processed before reaching the engine.
+
+<TypeTable
+	type={{
+		channels: {
+			type: 'number',
+			description: 'Audio channels. Mono is recommended for speech.',
+			default: '1'
+		},
+		sampleRate: {
+			type: 'number',
+			description: 'Target sample rate in Hz for engine input.',
+			default: '24000'
+		},
+		silenceDurationMs: {
+			type: 'number',
+			description: 'Milliseconds of silence before speech is considered finished.',
+			default: '300'
+		},
+		vadThreshold: {
+			type: 'number',
+			description: 'Voice activity detection threshold (0-1, based on RMS energy). Lower values are more sensitive.',
+			default: '0.01'
+		}
+	}}
+/>
+
+### Playback config
+
+Nested under `playback`. Controls how engine audio is sent to Discord.
+
+<TypeTable
+	type={{
+		sampleRate: {
+			type: 'number',
+			description: 'Playback sample rate in Hz. Discord expects 48000.',
+			default: '48000'
+		}
+	}}
+/>
+
+### Transcript config
+
+Nested under `transcript`. Controls transcript embed output.
+
+<TypeTable
+	type={{
+		enabled: {
+			type: 'boolean',
+			description: 'Post transcript embeds to the associated text channel.',
+			default: 'false'
+		},
+		targetChannelId: {
+			type: 'string | null',
+			description: 'Override the channel where transcript embeds are posted. Defaults to the text channel associated with the voice channel.',
+			default: 'null'
+		}
+	}}
+/>
+
+## Per-guild overrides
+
+Override any voice setting for specific guilds using the `perGuild` map:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	voice: {
+    		playbackVoice: 'alloy',
+    		perGuild: {
+    			'123456789012345678': {
+    				playbackVoice: 'verse',
+    				maxConcurrentChannels: 1
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	voice: {
+    		playbackVoice: 'alloy',
+    		perGuild: {
+    			'123456789012345678': {
+    				playbackVoice: 'verse',
+    				maxConcurrentChannels: 1
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Per-guild values are merged on top of the base voice config. Any option not specified in the guild override inherits the base value.
+
+## Endpointing strategies
+
+The `endpointing` option determines how the system detects when a user has finished speaking.
+
+### Server VAD (recommended)
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    endpointing: 'server-vad'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    endpointing: 'server-vad'
+    ```
+  </Tab>
+</Tabs>
+
+Server-managed voice activity detection. Audio subscriptions remain active and the engine determines turn boundaries automatically. This produces the most natural conversation flow -- users speak freely and the bot responds when it detects a pause.
+
+The `capture.silenceDurationMs` and `capture.vadThreshold` settings fine-tune sensitivity. Lower `vadThreshold` values pick up quieter speech but may trigger on background noise.
+
+### Manual
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    endpointing: 'manual'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    endpointing: 'manual'
+    ```
+  </Tab>
+</Tabs>
+
+Explicit speech end markers. Requires a `commit()` call to signal that the user has finished speaking and trigger a response. Suited for push-to-talk style interactions where you want precise control over turn boundaries.
+
+## Programmatic control
+
+The `AI` class exposes methods for managing voice sessions at runtime.
+
+### Joining and leaving
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { AI } from '@robojs/ai'
+
+    // Join a voice channel
+    await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
+
+    // Leave the voice channel
+    await AI.stopVoice({ guildId: guild.id })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { AI } from '@robojs/ai'
+
+    // Join a voice channel
+    await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
+
+    // Leave the voice channel
+    await AI.stopVoice({ guildId: guild.id })
+    ```
+  </Tab>
+</Tabs>
+
+### Runtime config changes
+
+Patch voice settings without restarting:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { AI } from '@robojs/ai'
+
+    // Change the playback voice globally
+    await AI.setVoiceConfig({
+    	patch: { playbackVoice: 'echo' }
+    })
+
+    // Change settings for a specific guild
+    await AI.setVoiceConfig({
+    	guildId: '123456789012345678',
+    	patch: { maxConcurrentChannels: 1 }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { AI } from '@robojs/ai'
+
+    // Change the playback voice globally
+    await AI.setVoiceConfig({
+    	patch: { playbackVoice: 'echo' }
+    })
+
+    // Change settings for a specific guild
+    await AI.setVoiceConfig({
+    	guildId: '123456789012345678',
+    	patch: { maxConcurrentChannels: 1 }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Status and metrics
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { AI } from '@robojs/ai'
+
+    const status = await AI.getVoiceStatus()
+    const metrics = AI.getVoiceMetrics()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { AI } from '@robojs/ai'
+
+    const status = await AI.getVoiceStatus()
+    const metrics = AI.getVoiceMetrics()
+    ```
+  </Tab>
+</Tabs>
+
+## Voice events
+
+Subscribe to voice lifecycle events for logging, analytics, or custom behavior:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { AI } from '@robojs/ai'
+
+    export default () => {
+    	AI.onVoiceEvent('session:start', (status) => {
+    		// Voice session started
+    	})
+
+    	AI.onVoiceEvent('session:stop', (payload) => {
+    		// payload.reason contains the disconnect reason
+    	})
+
+    	AI.onVoiceEvent('config:change', (payload) => {
+    		// payload.config contains the updated voice config
+    	})
+
+    	AI.onVoiceEvent('transcript:segment', (payload) => {
+    		// payload.segment.text contains the transcribed text
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { AI } from '@robojs/ai'
+
+    export default () => {
+    	AI.onVoiceEvent('session:start', (status) => {
+    		// Voice session started
+    	})
+
+    	AI.onVoiceEvent('session:stop', (payload) => {
+    		// payload.reason contains the disconnect reason
+    	})
+
+    	AI.onVoiceEvent('config:change', (payload) => {
+    		// payload.config contains the updated voice config
+    	})
+
+    	AI.onVoiceEvent('transcript:segment', (payload) => {
+    		// payload.segment.text contains the transcribed text
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Unsubscribe with `AI.offVoiceEvent()` using the same event name and handler reference.
+
+## Audio pipeline
+
+Understanding the audio pipeline helps with debugging and tuning.
+
+**Inbound (user to engine):**
+Discord Opus (48kHz stereo) -> decode -> mono conversion -> downsample to 24kHz -> VAD threshold check -> engine
+
+**Outbound (engine to user):**
+Engine output -> upsample to 48kHz -> Opus encode -> Discord playback
+
+The playback pipeline rebuilds automatically if any component fails mid-stream. Barge-in is supported: when a user starts speaking, any in-progress assistant playback is interrupted.
+
+## Reconnection
+
+Voice sessions reconnect automatically with exponential backoff, up to 3 retries. Transcript tails are persisted via Flashcore so conversation context can be restored after a reconnect.
+
+If all retries are exhausted, the session ends and a `session:stop` event fires with the failure reason.
+
+## Permissions
+
+The bot requires these Discord permissions for voice to work:
+
+| Permission | Purpose |
+| --- | --- |
+| `CONNECT` | Join voice channels |
+| `SPEAK` | Transmit audio in voice channels |
+| `SEND_MESSAGES` | Post transcript embeds to text channels |
+
+`SEND_MESSAGES` is only required when `transcript.enabled` is `true`.
+
+## Voice metrics
+
+`AI.getVoiceMetrics()` returns an object with runtime statistics:
+
+<TypeTable
+	type={{
+		activeSessions: {
+			type: 'number',
+			description: 'Current number of active voice sessions.'
+		},
+		realtimeReconnectAttempts: {
+			type: 'number',
+			description: 'Total reconnection attempts since the bot started.'
+		},
+		transcriptSegments: {
+			type: 'number',
+			description: 'Total transcript segments processed.'
+		},
+		failedFrameAppends: {
+			type: 'number',
+			description: 'Total failed audio frame operations.'
+		}
+	}}
+/>
+
+## Troubleshooting
+
+**No audio from the bot.** Verify all four dependencies are installed (`@discordjs/voice`, `prism-media`, `opusscript`, `ws`). Check that the bot has `CONNECT` and `SPEAK` permissions in the target voice channel.
+
+**Audio quality issues.** Adjust `capture.vadThreshold` -- lower values (closer to 0) are more sensitive and pick up quieter speech. Higher values filter out more background noise but may clip soft-spoken users.
+
+**Transcript embeds not appearing.** Confirm `transcript.enabled` is set to `true` in your voice config. Verify the bot has `SEND_MESSAGES` permission in the target text channel.
+
+**High latency or delayed responses.** Switch to `server-vad` endpointing if you're using `manual`. Server-side VAD has lower overhead and produces faster turn transitions.
+
+**Session disconnects frequently.** Check your network stability. The bot retries up to 3 times with exponential backoff. If the OpenAI Realtime API WebSocket is unstable, the `ws` package handles the connection -- make sure it's up to date.
+
+## Next steps
+
+<Cards>
+	<Card href="./conversations" title="Conversations" description="How the bot handles messages, threads, and context." />
+	<Card href="./token-usage" title="Token usage" description="Track and limit API consumption." />
+	<Card href="./configuration" title="Configuration" description="Full plugin and engine options reference." />
+</Cards>

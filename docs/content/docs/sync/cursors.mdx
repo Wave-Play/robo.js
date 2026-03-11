@@ -1,0 +1,254 @@
+---
+title: Cursors
+description: Real-time cursor tracking with useSyncCursor and SyncCursors.
+---
+
+Track and render cursor positions across clients in real-time. The `useSyncCursor` hook handles position broadcasting and throttling, while the `SyncCursors` component provides a ready-made cursor overlay.
+
+## SyncCursors component
+
+Drop-in component that renders all participant cursors automatically.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { SyncCursors } from '@robojs/sync'
+
+    function Activity() {
+      return (
+        <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+          <SyncCursors roomKey={['room', roomId]} />
+          {/* Your content */}
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { SyncCursors } from '@robojs/sync'
+
+    function Activity() {
+      return (
+        <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+          <SyncCursors roomKey={['room', roomId]} />
+          {/* Your content */}
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `roomKey` | `(string \| null)[]` | (required) | Room key for cursor sync |
+| `throttle` | `number` | `16` | Milliseconds between updates (~60fps) |
+| `renderCursor` | `(cursor: RemoteCursor) => ReactNode` | Default SVG arrow | Custom cursor renderer |
+| `defaultCursorStyle` | `CSSProperties` | `undefined` | Styles for each cursor wrapper |
+| `showLabels` | `boolean` | `true` | Show user labels next to cursors |
+| `labelKey` | `keyof ClientData \| (client) => string` | Auto-detect | Key or function for label text |
+| `colorFn` | `(clientId: string) => string` | Hash-based HSL | Generate cursor color from client ID |
+| `zIndex` | `number` | `9999` | Z-index for cursor container |
+
+### Custom cursor rendering
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncCursors
+      roomKey={['room', roomId]}
+      renderCursor={(cursor) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <CustomArrowIcon color={cursor.user.data?.color} />
+          <span>{cursor.user.data?.name}</span>
+        </div>
+      )}
+    />
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncCursors
+      roomKey={['room', roomId]}
+      renderCursor={(cursor) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <CustomArrowIcon color={cursor.user.data?.color} />
+          <span>{cursor.user.data?.name}</span>
+        </div>
+      )}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+### Label resolution
+
+When `labelKey` is not provided, labels are resolved in order: `data.name`, `data.username`, `data.displayName`, then the first 6 characters of `clientId`.
+
+## useSyncCursor hook
+
+For more control, use the hook directly. It gives you access to cursor data without rendering anything.
+
+### Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function useSyncCursor<ClientData = unknown>(
+      key: (string | null)[],
+      options?: CursorOptions
+    ): CursorResult<ClientData>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function useSyncCursor(
+      key: (string | null)[],
+      options?: CursorOptions
+    ): CursorResult<ClientData>
+    ```
+  </Tab>
+</Tabs>
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `throttle` | `number` | `16` | Milliseconds between updates |
+| `normalize` | `boolean` | `true` | Convert to 0-1 viewport coordinates |
+| `hideOnLeave` | `boolean` | `true` | Set `active=false` on mouse leave |
+| `inactiveTimeout` | `number` | `3000` | Milliseconds before removing inactive cursors |
+| `autoTrack` | `boolean` | `false` | Automatically track mouse movement |
+
+### Return value
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cursors` | `RemoteCursor[]` | All cursors including yours |
+| `remoteCursors` | `RemoteCursor[]` | Only other users' cursors |
+| `updatePosition` | `(pos: { x: number; y: number; active?: boolean }) => void` | Update your cursor position |
+| `clientId` | `string` | Your client ID |
+
+### Auto-tracking mode
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+
+    return (
+      <div>
+    {remoteCursors.map((cursor) => (
+      <div
+        key={cursor.clientId}
+        style={{
+          position: 'absolute',
+          left: `${cursor.position.x * 100}%`,
+          top: `${cursor.position.y * 100}%`
+        }}
+      >
+        {cursor.user.data?.name}
+      </div>
+    ))}
+      </div>
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+
+    return (
+      <div>
+    {remoteCursors.map((cursor) => (
+      <div
+        key={cursor.clientId}
+        style={{
+          position: 'absolute',
+          left: `${cursor.position.x * 100}%`,
+          top: `${cursor.position.y * 100}%`
+        }}
+      >
+        {cursor.user.data?.name}
+      </div>
+    ))}
+      </div>
+    )
+    ```
+  </Tab>
+</Tabs>
+
+### Manual tracking
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    const { remoteCursors, updatePosition } = useSyncCursor(['room', roomId])
+
+    useEffect(() => {
+      const handleMove = (e: MouseEvent) => {
+        updatePosition({
+          x: e.clientX / window.innerWidth,
+          y: e.clientY / window.innerHeight
+        })
+      }
+      window.addEventListener('mousemove', handleMove)
+      return () => window.removeEventListener('mousemove', handleMove)
+    }, [updatePosition])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    const { remoteCursors, updatePosition } = useSyncCursor(['room', roomId])
+
+    useEffect(() => {
+      const handleMove = (e) => {
+        updatePosition({
+          x: e.clientX / window.innerWidth,
+          y: e.clientY / window.innerHeight
+        })
+      }
+      window.addEventListener('mousemove', handleMove)
+      return () => window.removeEventListener('mousemove', handleMove)
+    }, [updatePosition])
+    ```
+  </Tab>
+</Tabs>
+
+## Performance
+
+- Cursor positions are sent as ephemeral broadcasts, not persisted state. Late joiners don't see existing cursor positions until the next movement.
+- Own cursor position is stored in a ref — no re-renders on your own movement.
+- Only remote cursor changes trigger React state updates.
+- Inactive cursors are automatically removed after `inactiveTimeout` milliseconds.
+
+## RemoteCursor type
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface RemoteCursor<ClientData> {
+      clientId: string
+      user: Client<ClientData>
+      position: { x: number; y: number; active: boolean }
+      isYou: boolean
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card title="Draggables" description="Synchronized drag-and-drop elements." href="draggables" />
+  <Card title="Presence" description="Track participants with heartbeat detection." href="presence" />
+  <Card title="SyncBox" description="Declarative sync containers." href="sync-box" />
+</Cards>

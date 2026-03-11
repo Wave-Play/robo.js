@@ -1,0 +1,287 @@
+---
+title: Routing
+description: "File-based routing, dynamic parameters, and HTTP method handling."
+---
+
+Routes are defined by the file structure inside `/src/api`. Each file becomes an endpoint, and the file path determines the URL.
+
+## File structure
+
+Paths map directly from files to URLs:
+
+- `src/api/health.ts` → `/api/health`
+- `src/api/auth/login.ts` → `/api/auth/login`
+- `src/api/users/[id].ts` → `/api/users/:id`
+- `src/api/files/[...path].ts` → `/api/files/*`
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="api" defaultOpen>
+      <File name="health.ts" />
+      <Folder name="auth" defaultOpen>
+        <File name="login.ts" />
+      </Folder>
+      <Folder name="users" defaultOpen>
+        <File name="index.ts" />
+        <File name="[id].ts" />
+      </Folder>
+      <Folder name="files" defaultOpen>
+        <File name="[...path].ts" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+## Route prefix
+
+Routes are prefixed with `/api` by default. Change it:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: '/v1' // Routes at /v1/health, /v1/users, etc.
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: '/v1' // Routes at /v1/health, /v1/users, etc.
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Or disable entirely:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: false // Routes at /health, /users, etc.
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: false // Routes at /health, /users, etc.
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Dynamic segments
+
+- `[param]` — Matches a single segment. Accessible via `request.params.param`.
+- `[...slug]` — Catch-all. Matches one or more segments.
+- `[[...slug]]` — Optional catch-all. Matches zero or more segments.
+- `index.ts` — Index route. Maps to the directory path itself.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users/[id].ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET(request: RoboRequest) {
+    	const { id } = request.params
+    	return { userId: id }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users/[id].js"
+
+    export function GET(request) {
+    	const { id } = request.params
+    	return { userId: id }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Named HTTP method exports
+
+Export functions named after HTTP methods. This is the recommended approach.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET() {
+    	return [{ id: '1', name: 'Alice' }]
+    }
+
+    export async function POST(request: RoboRequest) {
+    	const body = await request.json()
+    	return { id: '2', ...body }
+    }
+
+    export function DELETE(request: RoboRequest) {
+    	return { deleted: request.params.id }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users.js"
+
+    export function GET() {
+    	return [{ id: '1', name: 'Alice' }]
+    }
+
+    export async function POST(request) {
+    	const body = await request.json()
+    	return { id: '2', ...body }
+    }
+
+    export function DELETE(request) {
+    	return { deleted: request.params.id }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Supported methods: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`.
+
+**Automatic behaviors:**
+
+- `OPTIONS` requests auto-respond with a 204 and `Allow` header listing available methods
+- `HEAD` requests automatically use the `GET` handler if no `HEAD` export exists
+- Unsupported methods return `405 Method Not Allowed` with an `Allow` header
+
+## Default export (legacy)
+
+You can also export a default function that handles all methods:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/legacy.ts"
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export default (request: RoboRequest, reply: RoboReply) => {
+    	if (request.method !== 'GET') {
+    		reply.code(405).send('Method not allowed')
+    		return
+    	}
+    	return { data: 'hello' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/legacy.js"
+
+    export default (request, reply) => {
+    	if (request.method !== 'GET') {
+    		reply.code(405).send('Method not allowed')
+    		return
+    	}
+    	return { data: 'hello' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Mixed usage
+
+Combine both — named exports take priority, default is the fallback:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/mixed.ts"
+    export function GET() {
+    	return { data: 'from GET export' }
+    }
+
+    // Handles POST, PUT, DELETE, etc.
+    export default (request) => {
+    	return { data: 'from default export', method: request.method }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/mixed.js"
+    export function GET() {
+    	return { data: 'from GET export' }
+    }
+
+    // Handles POST, PUT, DELETE, etc.
+    export default (request) => {
+    	return { data: 'from default export', method: request.method }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Return values
+
+- Return an object → JSON response with 200
+- Return a string → text response with 200
+- Return a `Response` or `RoboResponse` → sent as-is
+- Throw an `Error` → 500 JSON response with error message
+- Throw a `RoboResponse` → sent as the response (useful for custom error status codes)
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/protected.ts"
+    import { RoboResponse } from '@robojs/server'
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET(request: RoboRequest) {
+    	if (!request.query.key) {
+    		throw RoboResponse.json({ error: 'API key required' }, { status: 401 })
+    	}
+    	return { data: 'authenticated' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/protected.js"
+    import { RoboResponse } from '@robojs/server'
+
+    export function GET(request) {
+    	if (!request.query.key) {
+    		throw RoboResponse.json({ error: 'API key required' }, { status: 401 })
+    	}
+    	return { data: 'authenticated' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Query parameters
+
+Access via `request.query`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/search.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET(request: RoboRequest) {
+    	const { page, limit } = request.query
+    	return { page, limit }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/search.js"
+
+    export function GET(request) {
+    	const { page, limit } = request.query
+    	return { page, limit }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+`request.query` returns only the first value per key. For multi-value parameters, use `new URL(request.url).searchParams` directly.
+
+## Next steps
+
+<Cards>
+	<Card title="Typed endpoints" description="Add Zod schemas for type safety and OpenAPI generation." href="./typed-endpoints" />
+	<Card title="API reference" description="Full RoboRequest, RoboReply, and RoboResponse documentation." href="./api-reference" />
+	<Card title="Testing" description="Unit test your routes without starting a server." href="./testing" />
+</Cards>

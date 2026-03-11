@@ -1,0 +1,227 @@
+---
+title: Typed endpoints
+description: "Define API endpoints with Zod schemas for TypeScript inference and OpenAPI generation."
+---
+
+The `define()` function lets you attach Zod schemas to your endpoints. You get full TypeScript inference for request bodies, query parameters, path parameters, and headers — plus automatic OpenAPI 3.1 spec generation at build time.
+
+## Basic usage
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users.ts"
+    import { define } from '@robojs/server'
+    import { z } from 'zod'
+
+    export const POST = define(
+    	{
+    		summary: 'Create a user',
+    		body: z.object({
+    			name: z.string(),
+    			email: z.string().email()
+    		}),
+    		response: {
+    			201: z.object({ id: z.string() })
+    		}
+    	},
+    	async (request) => {
+    		const body = await request.json() // Typed as { name: string, email: string }
+    		return { id: crypto.randomUUID() }
+    	}
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users.js"
+    import { define } from '@robojs/server'
+    import { z } from 'zod'
+
+    export const POST = define(
+    	{
+    		summary: 'Create a user',
+    		body: z.object({
+    			name: z.string(),
+    			email: z.string().email()
+    		}),
+    		response: {
+    			201: z.object({ id: z.string() })
+    		}
+    	},
+    	async (request) => {
+    		const body = await request.json() // Typed as { name: string, email: string }
+    		return { id: crypto.randomUUID() }
+    	}
+    )
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+	The body is NOT auto-parsed. Call `await request.json()` to get the typed value.
+</Callout>
+
+## Schema options
+
+<TypeTable
+	type={{
+		summary: {
+			type: 'string',
+			description: 'Short description for OpenAPI.'
+		},
+		description: {
+			type: 'string',
+			description: 'Detailed description for OpenAPI.'
+		},
+		tags: {
+			type: 'string[]',
+			description: 'OpenAPI tags for grouping endpoints.'
+		},
+		deprecated: {
+			type: 'boolean',
+			description: 'Mark endpoint as deprecated in OpenAPI.'
+		},
+		body: {
+			type: 'ZodType',
+			description: 'Request body schema.'
+		},
+		query: {
+			type: 'ZodObject',
+			description: 'Query parameter schema.'
+		},
+		params: {
+			type: 'ZodObject',
+			description: 'URL path parameter schema.'
+		},
+		headers: {
+			type: 'ZodObject',
+			description: 'Request header schema.'
+		},
+		response: {
+			type: 'Record<number, ZodType>',
+			description: 'Response schemas by status code.'
+		}
+	}}
+/>
+
+Supported status codes for `response`: `200`, `201`, `204`, `400`, `401`, `403`, `404`, `409`, `422`, `500`.
+
+## Full example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users/[id].ts"
+    import { define } from '@robojs/server'
+    import { z } from 'zod'
+
+    export const GET = define(
+    	{
+    		summary: 'Get user by ID',
+    		tags: ['users'],
+    		params: z.object({
+    			id: z.string().uuid()
+    		}),
+    		query: z.object({
+    			include: z.string().optional()
+    		}),
+    		headers: z.object({
+    			'x-api-key': z.string()
+    		}),
+    		response: {
+    			200: z.object({
+    				id: z.string(),
+    				name: z.string(),
+    				email: z.string()
+    			}),
+    			404: z.object({
+    				error: z.string()
+    			})
+    		}
+    	},
+    	async (request) => {
+    		const { id } = request.params // typed as { id: string }
+    		const { include } = request.query // typed as { include?: string }
+    		const apiKey = request.header('x-api-key') // typed as string
+
+    		return { id, name: 'Alice', email: 'alice@example.com' }
+    	}
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users/[id].js"
+    import { define } from '@robojs/server'
+    import { z } from 'zod'
+
+    export const GET = define(
+    	{
+    		summary: 'Get user by ID',
+    		tags: ['users'],
+    		params: z.object({
+    			id: z.string().uuid()
+    		}),
+    		query: z.object({
+    			include: z.string().optional()
+    		}),
+    		headers: z.object({
+    			'x-api-key': z.string()
+    		}),
+    		response: {
+    			200: z.object({
+    				id: z.string(),
+    				name: z.string(),
+    				email: z.string()
+    			}),
+    			404: z.object({
+    				error: z.string()
+    			})
+    		}
+    	},
+    	async (request) => {
+    		const { id } = request.params // typed as { id: string }
+    		const { include } = request.query // typed as { include?: string }
+    		const apiKey = request.header('x-api-key') // typed
+
+    		return { id, name: 'Alice', email: 'alice@example.com' }
+    	}
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## Plain exports still work
+
+You don't need `define()` for every endpoint. Plain exports work as before:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/health.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET(request: RoboRequest) {
+    	return { status: 'ok' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/health.js"
+
+    export function GET(request) {
+    	return { status: 'ok' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+These endpoints won't appear in the generated OpenAPI spec unless they use `define()`.
+
+## OpenAPI generation
+
+Run `robo build` to generate `.robo/openapi.json` from your typed endpoints. See [OpenAPI](./openapi.mdx) for configuration.
+
+## Next steps
+
+<Cards>
+	<Card title="OpenAPI" description="Configure OpenAPI spec generation." href="./openapi" />
+	<Card title="Routing" description="Learn about file-based routing patterns." href="./routing" />
+	<Card title="Testing" description="Unit test your typed endpoints." href="./testing" />
+</Cards>

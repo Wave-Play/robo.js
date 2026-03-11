@@ -1,0 +1,152 @@
+---
+title: Commands
+description: Slash commands for managing your Discord roadmap.
+---
+
+The plugin provides four slash commands under the `/roadmap` group. Setup and sync require Administrator permission. Add and edit require admin or an authorized role.
+
+## /roadmap setup
+
+Creates the roadmap forum structure and shows an interactive configuration panel. **Admin only.**
+
+Running this command creates a Discord category with forum channels for each workflow column, then displays a multi-page setup panel.
+
+### Overview page
+
+The setup panel's overview page shows:
+
+- Current access mode (public or private) with a toggle button
+- Authorized creator roles with a management button
+- Provider status and sync information
+
+### Provider settings page
+
+Click "Provider Settings" to access:
+
+- **Assignee mappings** — Map Jira display names to Discord users. Add, remove, or view all mappings.
+- **Column mappings** — Override status-to-column mappings per-guild. Map statuses to columns or set to "Track Only" (null).
+
+The setup command is idempotent. Running it again updates the existing panel without creating duplicate channels.
+
+## /roadmap sync
+
+Syncs cards from the provider to Discord. **Admin only.**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `dry-run` | boolean | No | Preview changes without applying them |
+
+The sync engine processes each card and determines the operation:
+
+- **Create** — New card with no existing thread
+- **Update** — Existing thread that needs content or metadata changes
+- **Archive** — Card moved to an archived column
+- **Skip** — Card in a track-only column or no changes needed
+
+### Progress and cancellation
+
+During sync, the command shows real-time progress with a cancel button. Only administrators or the user who started the sync can cancel.
+
+Cancellation stops after the current card finishes processing. The response shows partial stats:
+
+```
+Partial sync: 15/42 cards processed
+Created: 8 | Updated: 5 | Archived: 2 | Errors: 0
+```
+
+### Thread movement
+
+When a card's column changes, the sync engine:
+
+1. Creates a new thread in the target forum
+2. Locks and archives the old thread
+3. Posts a move notification in the old thread
+4. Links to the previous discussion in the new thread (if it had user messages)
+
+### Thread reuse
+
+If a card returns to a previously-visited column, the engine attempts to reuse the old thread by unarchiving and unlocking it, avoiding unnecessary thread creation.
+
+### Error handling
+
+Per-card errors don't abort the sync. After completion, a "View Errors" button appears if any cards failed. Click it to browse a detailed list of errors with card IDs, titles, and messages.
+
+## /roadmap add
+
+Creates a new card in the provider and syncs it to Discord. **Admin or authorized role.**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `title` | string | Yes | Card title |
+| `description` | string | No | Card description |
+| `column` | string (autocomplete) | No | Target column |
+| `labels` | string (autocomplete) | No | Comma-separated labels |
+| `issue-type` | string (autocomplete) | No | Issue type (Task, Bug, etc.) |
+
+```
+/roadmap add title:"Add dark mode" column:"Backlog" labels:"feature,ui"
+```
+
+The command creates the card in the provider, then runs a sync to create the corresponding Discord thread. Autocomplete suggestions are cached per-guild and refresh based on the `autocompleteCacheTtl` setting (default: 5 minutes).
+
+## /roadmap edit
+
+Updates an existing card in the provider and adjusts the Discord thread. **Admin or authorized role.**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `card` | string (autocomplete) | Yes | Card to edit (searches by title and key) |
+| `title` | string | No | New title |
+| `description` | string | No | New description |
+| `column` | string (autocomplete) | No | Move to column |
+| `labels` | string (autocomplete) | No | Updated labels (comma-separated) |
+
+```
+/roadmap edit card:"PROJ-123" column:"In Progress"
+```
+
+Changing the column triggers thread movement: the old thread is locked and archived, and a new thread is created in the target forum. Labels support comma-separated values for multi-selection.
+
+The card autocomplete has a 60-second per-guild cache.
+
+## Authorization
+
+### Permission levels
+
+| Command | Required permission |
+|---|---|
+| `/roadmap setup` | Administrator |
+| `/roadmap sync` | Administrator |
+| `/roadmap add` | Administrator or authorized role |
+| `/roadmap edit` | Administrator or authorized role |
+
+### Managing authorized roles
+
+Configure authorized roles through the `/roadmap setup` panel or programmatically:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { setAuthorizedCreatorRoles } from '@robojs/roadmap'
+
+    setAuthorizedCreatorRoles(guildId, ['role-id-1', 'role-id-2'])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { setAuthorizedCreatorRoles } from '@robojs/roadmap'
+
+    setAuthorizedCreatorRoles(guildId, ['role-id-1', 'role-id-2'])
+    ```
+  </Tab>
+</Tabs>
+
+When no roles are configured, only administrators can create and edit cards.
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Plugin options and Jira settings." />
+  <Card href="./column-mapping" title="Column mapping" description="Customize status-to-column mappings." />
+  <Card href="./api-reference" title="API reference" description="Use roadmap features programmatically." />
+</Cards>

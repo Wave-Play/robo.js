@@ -1,0 +1,167 @@
+---
+title: "README"
+icon: Translate
+description: Type-safe internationalization for Robo.js with MessageFormat 2 (MF2).
+---
+
+<PluginHero
+	name="@robojs/i18n"
+	description="Type-safe internationalization for Robo.js with MessageFormat 2 (MF2)."
+	icon={<Translate />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/i18n"
+	platforms={["Bots"]}
+/>
+
+Translate your Robo project with type-safe, file-based internationalization. Drop JSON files in `/locales`, and the plugin generates TypeScript types from your messages — giving you autocomplete for keys, inferred parameter types, and compile-time safety.
+
+Built on [MessageFormat 2 (MF2)](https://github.com/messageformat/messageformat), it supports plurals, numbers, dates, times, and nested parameters out of the box.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Key />} title="Type-safe Keys" description="Autocomplete and compile-time safety for all translation keys" />
+	<Feature icon={<Globe />} title="MessageFormat 2" description="Full MF2 syntax with plurals, numbers, dates, and times" />
+	<Feature icon={<Translate />} title="Pluralization" description="Automatic plural rules via MF2 annotations" />
+	<Feature icon={<Discord />} title="Discord Commands" description="Localize slash command names, descriptions, and options" />
+	<Feature icon={<Shield />} title="Strict Mode" description="Compile-time enforcement that all parameters are provided" />
+	<Feature icon={<Zap />} title="Auto-generated Types" description="TypeScript types generated from your locale files" />
+	<Feature icon={<Clock />} title="Date/Time Formatting" description="Locale-aware date and time formatting built in" />
+	<Feature icon={<FileStack />} title="File-based Locales" description="Drop JSON files in /locales and start translating" />
+</FeatureGrid>
+
+## Installation
+
+Add the plugin to an existing Robo:
+
+```bash
+npx robo add @robojs/i18n
+```
+
+Or start a new project with it preinstalled:
+
+```package-install
+npx create-robo my-project -p @robojs/i18n
+```
+
+## Type-safe translations
+
+The plugin scans your `/locales` directory and generates TypeScript types automatically. Keys, parameters, and return types are all inferred from your locale files.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { t } from '@robojs/i18n'
+
+    t('en-US', 'app:hello', { name: 'Robo' })  // "Hello Robo!"
+    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { t } from '@robojs/i18n'
+
+    t('en-US', 'app:hello', { name: 'Robo' })  // "Hello Robo!"
+    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+    ```
+  </Tab>
+</Tabs>
+
+## MessageFormat 2
+
+Full support for MF2 syntax including plurals, numbers, dates, and times. Parameter types are inferred from annotations like `:number`, `:date`, and `:time`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Pluralization
+    t('en-US', 'app:pets.count', { count: 1 }) // "You have 1 pet"
+    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+
+    // Date formatting
+    t('en-US', 'app:event', { date: new Date() })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Pluralization
+    t('en-US', 'app:pets.count', { count: 1 }) // "You have 1 pet"
+    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+
+    // Date formatting
+    t('en-US', 'app:event', { date: new Date() })
+    ```
+  </Tab>
+</Tabs>
+
+## Discord command localization
+
+Localize slash command names, descriptions, and options for all your supported locales using `createCommandConfig()`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { createCommandConfig } from '@robojs/i18n'
+
+    export const config = createCommandConfig({
+    	descriptionKey: 'commands:ping.desc',
+    	options: [
+    		{
+    			type: 'string',
+    			name: 'text',
+    			nameKey: 'commands:ping.arg.name',
+    			descriptionKey: 'commands:ping.arg.desc'
+    		}
+    	]
+    } as const)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { createCommandConfig } from '@robojs/i18n'
+
+    export const config = createCommandConfig({
+    	descriptionKey: 'commands:ping.desc',
+    	options: [
+    		{
+    			type: 'string',
+    			name: 'text',
+    			nameKey: 'commands:ping.arg.name',
+    			descriptionKey: 'commands:ping.arg.desc'
+    		}
+    	]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Strict mode
+
+Use `tr()` when you want compile-time enforcement that all parameters are provided. No accidental omissions.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { tr } from '@robojs/i18n'
+
+    tr('en-US', 'app:hello', { name: 'Robo' }) // OK
+    // tr('en-US', 'app:hello')                // compile error
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { tr } from '@robojs/i18n'
+
+    tr('en-US', 'app:hello', { name: 'Robo' }) // OK
+    // tr('en-US', 'app:hello')                // compile error
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+	<Card href="./quick-start" title="Quick start" description="Set up locale files and start translating." />
+	<Card href="./discord-commands" title="Discord commands" description="Localize slash command names and descriptions." />
+	<Card href="./configuration" title="Configuration" description="Plugin options, MF2 syntax, and type generation." />
+	<Card href="./api" title="API reference" description="Complete reference for all exported functions and types." />
+</Cards>

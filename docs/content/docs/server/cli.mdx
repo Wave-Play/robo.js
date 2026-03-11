@@ -1,0 +1,83 @@
+---
+title: CLI
+description: Command-line tools for managing tunnels and server development.
+---
+
+The server plugin extends the Robo CLI with tunnel management commands and a dev server tunnel flag.
+
+## `robo dev -t`
+
+Start the dev server with a Cloudflare tunnel:
+
+```bash
+npx robo dev -t
+```
+
+This starts your Robo in dev mode and creates a quick tunnel. The public URL is displayed in the terminal. Requires the `PORT` environment variable to be set (the tunnel needs to know which port to forward to).
+
+## `robo tunnel start`
+
+Start a standalone tunnel:
+
+```bash
+npx robo tunnel start
+```
+
+| Flag | Description | Default |
+|---|---|---|
+| `-p, --port <number>` | Port to tunnel | `PORT` env or `3000` |
+| `-u, --url <url>` | Custom URL to tunnel (overrides port) | — |
+| `-a, --attach` | Run in foreground (stops on Ctrl+C) | Detached (background) |
+| `-v, --verbose` | Show detailed tunnel output | — |
+
+```bash
+# Tunnel a specific port
+npx robo tunnel start -p 8080
+
+# Tunnel a custom URL
+npx robo tunnel start -u http://localhost:8080
+
+# Run in foreground
+npx robo tunnel start --attach
+
+# With verbose output
+npx robo tunnel start -v
+```
+
+Default mode is detached — the tunnel runs in the background and you can continue using the terminal.
+
+## `robo tunnel list`
+
+List all running tunnels:
+
+```bash
+npx robo tunnel list
+```
+
+Displays a table with tunnel ID, port, age, and public URL. Dead processes are automatically cleaned up.
+
+## `robo tunnel stop`
+
+Stop a running tunnel:
+
+```bash
+npx robo tunnel stop <id>
+```
+
+Stop all tunnels:
+
+```bash
+npx robo tunnel stop --all
+```
+
+| Flag | Description |
+|---|---|
+| `--all, -a` | Stop all running tunnels |
+| `--verbose, -v` | Show detailed output |
+
+## Next steps
+
+<Cards>
+	<Card title="Tunnels" href="./tunnels" description="Learn about tunnel configuration and providers." />
+	<Card title="Configuration" href="./configuration" description="See all server settings." />
+</Cards>

@@ -1,0 +1,16 @@
+{
+  "title": "@robojs/i18n",
+  "icon": "Translate",
+  "description": "Internationalization with MessageFormat 2.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quick-start",
+    "---Guides---",
+    "discord-commands",
+    "---Reference---",
+    "configuration",
+    "api"
+  ]
+}

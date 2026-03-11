@@ -1,0 +1,237 @@
+---
+title: Commands
+description: Complete reference for all giveaway slash commands
+---
+
+The plugin registers a `/giveaway` command group with nine subcommands. Commands are organized into three categories: giveaway management, information, and server settings.
+
+## Permissions
+
+Each command has its own permission requirements:
+
+| Command | Permission |
+|---|---|
+| `/giveaway start` | None (any user) |
+| `/giveaway end` | Manage Server or giveaway creator |
+| `/giveaway cancel` | Manage Server or giveaway creator |
+| `/giveaway reroll` | Manage Server |
+| `/giveaway list` | None (any user) |
+| `/giveaway info` | None (any user) |
+| `/giveaway settings get` | None (any user) |
+| `/giveaway settings set` | Manage Server |
+| `/giveaway settings reset` | Manage Server |
+
+The bot itself needs these Discord permissions:
+
+- Send Messages
+- Embed Links
+- Read Message History
+- Use Slash Commands
+
+## Giveaway management
+
+### `/giveaway start`
+
+Start a new giveaway.
+
+**Options:**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `prize` | string | Yes | Prize description displayed in the embed |
+| `duration` | string | Yes | Duration until end (`10m`, `1h`, `2d`) or Unix timestamp |
+| `winners` | integer | No | Number of winners (default: 1) |
+| `channel` | channel | No | Target channel (default: current channel) |
+| `allow_roles` | string | No | Comma-separated role IDs that can enter |
+| `deny_roles` | string | No | Comma-separated role IDs that cannot enter |
+| `min_account_age_days` | integer | No | Minimum account age in days |
+
+**Duration formats:**
+
+The `duration` option accepts three formats:
+
+- **Shorthand** -- `10m` (minutes), `1h` (hours), `2d` (days)
+- **Unix timestamp (seconds)** -- A 10-digit number like `1709251200`
+- **Epoch timestamp (milliseconds)** -- A 13-digit number like `1709251200000`
+
+Maximum duration is 365 days. Duration must be greater than zero.
+
+**Validation rules:**
+
+- `winners` must be at least 1 and cannot exceed the guild's `maxWinners` setting (default: 20)
+- Duration cannot exceed the guild's `maxDurationDays` setting (default: 30 days)
+- Target channel must be a text channel, announcement channel, or thread
+
+**Supported channel types:**
+
+- Text channels
+- Announcement (news) channels
+- Public threads
+- Private threads
+
+**Examples:**
+
+```
+/giveaway start prize: Discord Nitro duration: 1h
+/giveaway start prize: 3x Game Keys duration: 24h winners: 3
+/giveaway start prize: VIP Role duration: 2d allow_roles: 123456789,987654321
+/giveaway start prize: $100 Gift Card duration: 7d min_account_age_days: 30
+/giveaway start prize: Special Prize duration: 1709251200
+```
+
+The bot posts an embed with two buttons:
+
+- **Enter Giveaway** (or the custom button label from guild settings) -- Adds the user as an entrant
+- **Leave** -- Removes the user's entry
+
+Both buttons enforce a 3-second cooldown per user to prevent spam.
+
+### `/giveaway end`
+
+End an active giveaway immediately, triggering winner selection.
+
+**Options:**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `message_id` | string | Yes | Discord message ID of the giveaway |
+
+The bot selects winners, updates the embed (removes buttons, shows winners), posts a congratulations message in the channel, and sends DMs to winners if enabled in guild settings. The giveaway moves from the active list to the recent list.
+
+Requires **Manage Server** permission or being the user who started the giveaway.
+
+### `/giveaway cancel`
+
+Cancel an active giveaway without selecting winners.
+
+**Options:**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `message_id` | string | Yes | Discord message ID of the giveaway |
+
+The bot sets the giveaway status to `cancelled`, updates the embed to show "Giveaway Cancelled" with a red color, removes entry buttons, posts a cancellation announcement, and cleans up the scheduled job. No winners are selected.
+
+Requires **Manage Server** permission or being the user who started the giveaway.
+
+### `/giveaway reroll`
+
+Draw new winners from the remaining entrant pool of an ended giveaway.
+
+**Options:**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `message_id` | string | Yes | Discord message ID of the giveaway |
+| `count` | integer | No | Number of new winners (default: original winner count) |
+
+All previous winners (including prior rerolls) are excluded from the candidate pool. The giveaway embed updates to show both original winners and rerolled winners. If no eligible entrants remain, the bot reports that.
+
+Only works on giveaways with status `ended`. Requires **Manage Server** permission.
+
+## Information
+
+### `/giveaway list`
+
+View active and recent giveaways in the current server. Displays up to 5 active and 5 recent giveaways in an embed. No permission required.
+
+### `/giveaway info`
+
+Get details about a specific giveaway.
+
+**Options:**
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `message_id` | string | Yes | Discord message ID of the giveaway |
+
+Returns an ephemeral embed showing status, winner count, entry count, who started it, end timestamp, and winners (if the giveaway has ended). No permission required.
+
+## Server settings
+
+### `/giveaway settings get`
+
+View the current giveaway settings for the server. Displays all defaults, limits, and restrictions in an embed. No permission required.
+
+### `/giveaway settings set`
+
+Update giveaway settings for the server. All options are optional -- only provided values are changed.
+
+**Options:**
+
+| Option | Type | Description | Validation |
+|---|---|---|---|
+| `default_winners` | integer | Default number of winners | Must be at least 1, cannot exceed `max_winners` |
+| `default_duration` | string | Default duration string | Must match `Nm`, `Nh`, or `Nd` with value > 0 |
+| `button_label` | string | Custom entry button text | 1-80 characters |
+| `dm_winners` | boolean | Send DMs to winners | `true` or `false` |
+| `max_winners` | integer | Maximum allowed winners | 1-100, cannot be less than `default_winners` |
+
+Requires **Manage Server** permission.
+
+**Example:**
+
+```
+/giveaway settings set default_winners: 2 button_label: Join Now dm_winners: true max_winners: 10
+```
+
+### `/giveaway settings reset`
+
+Reset all guild settings to defaults. This deletes the stored settings from Flashcore, reverting to:
+
+| Setting | Default value |
+|---|---|
+| `defaults.winners` | `1` |
+| `defaults.duration` | `1h` |
+| `defaults.buttonLabel` | `Enter Giveaway` |
+| `defaults.dmWinners` | `true` |
+| `limits.maxWinners` | `20` |
+| `limits.maxDurationDays` | `30` |
+| `restrictions.allowRoleIds` | `[]` |
+| `restrictions.denyRoleIds` | `[]` |
+| `restrictions.minAccountAgeDays` | `null` |
+
+Requires **Manage Server** permission.
+
+## Entry validation
+
+When a user clicks **Enter Giveaway**, the bot checks:
+
+1. **Cooldown** -- 3-second rate limit per user across both Enter and Leave buttons
+2. **Status** -- Giveaway must be active
+3. **Duplicate** -- User cannot enter the same giveaway twice
+4. **Role allowlist** -- If `allowRoleIds` is non-empty, user must have at least one listed role
+5. **Role denylist** -- User must not have any role in `denyRoleIds`
+6. **Account age** -- If `minAccountAgeDays` is set, user's account must be old enough
+
+<Callout type="info">
+Eligibility is validated at entry time only. If a user's roles change after entering, they remain in the giveaway. Winners are drawn from the existing entry pool without re-validation.
+</Callout>
+
+## Troubleshooting
+
+### Commands not appearing
+
+1. Wait 1-2 minutes for Discord to sync slash commands
+2. Try typing `/` in a text channel to refresh the command list
+3. Run `npx robo build --force` and restart the bot
+
+### Giveaway not ending on time
+
+- Verify the bot is online and connected
+- Check terminal logs for scheduling errors
+- Consider installing `@robojs/cron` for more reliable scheduling
+
+### Winners not announced
+
+- Verify the bot can send messages in the giveaway channel
+- Check if the channel was deleted (the bot handles this gracefully but can't post announcements)
+- Look for error logs in the terminal
+
+## Next Steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Customize settings per server." />
+  <Card href="./api" title="REST API" description="HTTP endpoints for dashboards." />
+  <Card href="./persistence" title="Persistence" description="Data model and storage details." />
+</Cards>

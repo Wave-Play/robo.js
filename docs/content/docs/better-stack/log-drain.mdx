@@ -1,0 +1,264 @@
+---
+title: Log drain
+description: Forward your Robo's logs to Better Stack for centralized search and analysis.
+---
+
+Log integration forwards your Robo's log output to Better Stack's Logtail service. Logs appear in a searchable, color-coded dashboard with level filtering, making it easy to debug issues in production.
+
+## Better Stack setup
+
+<Steps>
+	<Step>
+		### Create a Logtail source
+
+		Log into your Better Stack account and navigate to the **Logtail** section. Click **Create Source** and select **Node.js** as the source type.
+	</Step>
+	<Step>
+		### Copy your credentials
+
+		After creating the source, copy the **source token** (a long alphanumeric string). Note the **ingesting host** if you need a specific region.
+	</Step>
+</Steps>
+
+## Configuration
+
+There are three ways to configure log integration, each with different trade-offs.
+
+### Method 1: Plugin config file
+
+The simplest approach. Add your credentials directly to the plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN',
+    	ingestingHost: 'in.logtail.com'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN',
+    	ingestingHost: 'in.logtail.com'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This method supports both log integration and [heartbeat monitoring](./heartbeat.mdx) in a single file.
+
+### Method 2: Environment variables
+
+Use environment variables to keep tokens out of version control:
+
+```bash title=".env"
+BETTER_STACK_SOURCE_TOKEN="YOUR_UNIQUE_SOURCE_TOKEN"
+BETTER_STACK_INGESTING_HOST="in.logtail.com"
+```
+
+Plugin config values take precedence over environment variables. If both are set, the plugin config wins.
+
+### Method 3: Direct drain
+
+For the earliest possible log capture — including logs during plugin initialization — create the drain directly in your Robo config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    import { createLogtailDrain } from '@robojs/better-stack'
+
+    export default {
+    	logger: {
+    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+    				: undefined
+    		})
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    import { createLogtailDrain } from '@robojs/better-stack'
+
+    export default {
+    	logger: {
+    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+    				: undefined
+    		})
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+The direct drain method does not support heartbeat monitoring. Use a separate plugin config file for heartbeat if needed.
+</Callout>
+
+### Combining methods
+
+Need both early log capture and heartbeat monitoring? Use the direct drain in `robo.mjs` for logs, and a plugin config for heartbeat only:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    import { createLogtailDrain } from '@robojs/better-stack'
+
+    export default {
+    	logger: {
+    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+    				: undefined
+    		})
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    import { createLogtailDrain } from '@robojs/better-stack'
+
+    export default {
+    	logger: {
+    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+    				: undefined
+    		})
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	heartbeat: {
+    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	heartbeat: {
+    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Don't set `sourceToken` in both locations — the plugin config runs after the Robo config, so it would replace the drain you already set.
+
+### Method comparison
+
+| Feature | Plugin config | Environment variables | Direct drain |
+| --- | --- | --- | --- |
+| Log integration | Yes | Yes | Yes |
+| Heartbeat monitoring | Yes | Yes | No |
+| Early log capture | No | No | Yes |
+| Secure tokens | No | Yes | Yes (with env vars) |
+| Setup complexity | Low | Medium | High |
+
+## Log level mapping
+
+Robo.js log levels map to Better Stack levels as follows:
+
+| Robo.js level | Better Stack level | Notes |
+| --- | --- | --- |
+| `trace` | _skipped_ | Too verbose for log aggregation |
+| `debug` | `debug` | Development debugging |
+| `info` | `info` | General information |
+| `wait` | `info` | Mapped to info |
+| `event` | `info` | Mapped to info |
+| `warn` | `warn` | Warnings |
+| `error` | `error` | Errors |
+
+The `trace` level is intentionally skipped — these logs are too verbose for a centralized logging service. Use `debug` level for logs you want to appear in Better Stack.
+
+<Callout type="info">
+Better Stack receives all logs regardless of your local logger level setting. The logger level only controls what's written to the console. This means Better Stack may contain more log entries than your console output.
+</Callout>
+
+## Regional hosts
+
+| Region | Ingesting host |
+| --- | --- |
+| US (default) | `in.logtail.com` |
+| EU (GDPR) | `in-eu.logtail.com` |
+
+Set the ingesting host via plugin config (`ingestingHost`) or environment variable (`BETTER_STACK_INGESTING_HOST`). Provide the hostname only — no `https://` prefix.
+
+## `createLogtailDrain`
+
+The plugin exports `createLogtailDrain` for creating a log drain directly.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function createLogtailDrain(
+    	sourceToken: string,
+    	options?: ConstructorParameters<typeof Logtail>[1]
+    ): LogDrain
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function createLogtailDrain(
+    	sourceToken: string,
+    	options?: ConstructorParameters<typeof Logtail>[1]
+    ): LogDrain
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+<TypeTable
+	type={{
+		sourceToken: { type: 'string', description: 'Logtail source token from Better Stack. Required.' },
+		options: { type: 'object', description: 'Logtail constructor options. Includes endpoint for custom ingesting hosts. See @logtail/node docs for all available options.', default: 'undefined' },
+	}}
+/>
+
+**Returns** a `LogDrain` function compatible with the Robo.js logger system.
+
+The drain handles two responsibilities:
+1. **Console output** — Writes to `stdout` (info, debug) or `stderr` (warn, error), respecting the logger's level setting.
+2. **Logtail forwarding** — Sends the log message to Better Stack with ANSI color fixes applied.
+
+### ANSI color handling
+
+Better Stack's log viewer renders ANSI color codes, but doesn't support all of them. The drain applies three fixes automatically:
+
+- **Magenta to blue** — Logtail doesn't support magenta (`ESC[35m`), so it's replaced with blue (`ESC[34m`).
+- **Bold reset normalization** — Bold reset codes (`ESC[22m`) are replaced with full reset (`ESC[0m`) for compatibility.
+- **Reset sequence injection** — Each color code gets a matching reset sequence to prevent color bleeding across log lines.
+
+These fixes only apply to the output sent to Better Stack. Console output retains the original ANSI codes.
+
+## Troubleshooting
+
+- **Logs not appearing** — Verify your `sourceToken` is correct. Check that the ingesting host matches your Better Stack region.
+- **Colors look wrong** — The plugin applies ANSI fixes automatically, but some color differences between console and Better Stack are expected (e.g., magenta appears as blue).
+- **Missing early logs** — The plugin config method only captures logs after plugin initialization. Use the [direct drain method](#method-3-direct-drain) to capture earlier logs.
+- **Duplicate drains** — Only one drain can be active at a time. If you set `sourceToken` in both the Robo config and plugin config, the plugin config replaces the earlier drain.
+
+## Next Steps
+
+<Cards>
+	<Card href="./heartbeat" title="Heartbeat" description="Set up uptime monitoring for your Robo." />
+	<Card href="./" title="Overview" description="See the full configuration reference." />
+	<Card href="../framework/core/logger" title="Logger" description="Learn about the Robo.js logging system." />
+</Cards>

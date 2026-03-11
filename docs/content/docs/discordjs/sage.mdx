@@ -1,0 +1,153 @@
+---
+title: Sage Mode
+description: Automatic defer, error handling, and ephemeral replies for commands and context menus.
+---
+
+Sage mode automatically handles interaction deferral and error handling. When a command takes longer than a configurable buffer, Sage defers the interaction so Discord doesn't time out. It also catches errors and shows user-friendly messages.
+
+## How it works
+
+When a command is invoked, Sage starts a race between your handler and a timer:
+
+1. **Timer starts** at `deferBuffer` milliseconds (default: 250ms)
+2. If your handler **returns before the timer**, the result is replied directly -- no defer needed
+3. If the **timer fires first**, the interaction is deferred automatically
+4. When your handler eventually returns, Sage edits the deferred reply with the result
+
+This means fast commands feel instant (no "thinking..." message), while slow commands don't time out.
+
+Sage also applies to **context menu** handlers (both user and message context menus), not just slash commands. Context menu handlers benefit from the same automatic deferral and error handling described above.
+
+<Callout>
+Sage's automatic deferral only activates for **async handlers** (functions that return a Promise). If your handler is synchronous and returns a value immediately, the defer mechanism is bypassed entirely -- the runtime checks whether the result is a Promise before scheduling a deferred reply.
+</Callout>
+
+## Configuration
+
+### Global Sage options
+
+Configure Sage globally in your plugin config:
+
+<TypeTable
+  type={{
+    defer: { type: "boolean", description: "Whether to automatically defer interactions.", default: "true" },
+    deferBuffer: { type: "number", description: "Time in ms to wait before deferring. Fast replies bypass defer.", default: "250" },
+    ephemeral: { type: "boolean", description: "Whether deferred/replied messages are ephemeral (only visible to the user).", default: "false" },
+    errorChannelId: { type: "string", description: "Channel ID to send error messages to. Reserved for future use.", default: "undefined" },
+    errorMessage: { type: "string", description: "Custom error message to show users. Reserved for future use.", default: "undefined" },
+    errorReplies: { type: "boolean", description: "Whether to show error replies to users.", default: "true" },
+  }}
+/>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	sage: {
+    		defer: true,
+    		deferBuffer: 250,
+    		ephemeral: false,
+    		errorReplies: true
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	sage: {
+    		defer: true,
+    		deferBuffer: 250,
+    		ephemeral: false,
+    		errorReplies: true
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Per-command overrides
+
+Override Sage for individual commands via their `config.sage`:
+
+```ts title="src/commands/secret.ts"
+import type { CommandConfig } from '@robojs/discordjs'
+
+export const config: CommandConfig = {
+	description: 'A secret command',
+	sage: {
+		ephemeral: true   // only this command is ephemeral
+	}
+}
+
+export default () => 'This is a secret!'
+```
+
+### Disabling Sage
+
+Disable Sage globally:
+
+```ts title="config/plugins/robojs/discordjs.mjs"
+export default {
+	sage: false
+}
+```
+
+Or per-command:
+
+```ts title="src/commands/manual.ts"
+export const config = {
+	sage: false
+}
+
+export default async (interaction) => {
+	await interaction.deferReply()
+	// Handle everything manually
+	await interaction.editReply('Done!')
+}
+```
+
+## Resolution chain
+
+Sage options are resolved with the following priority (highest first):
+
+1. `command.sage` -- per-command `config.sage`
+2. `plugin.sage` -- global `sage` in plugin config
+3. `plugin.timeouts.commandDeferral` -- alias for `deferBuffer`
+4. **Defaults** -- `{ defer: true, deferBuffer: 250, ephemeral: false, errorReplies: true }`
+
+Each level inherits unset values from the next. For example, if a command sets `sage: { ephemeral: true }` but doesn't set `deferBuffer`, it inherits `deferBuffer` from the plugin config or defaults.
+
+## Error handling
+
+When Sage is enabled and a command throws an error:
+
+- **Development mode**: The error's `.message` is sent as an ephemeral reply (stack traces are not included)
+- **Production mode**: No error reply is sent -- the error is silently swallowed from the user's perspective
+- Set `errorReplies: false` to suppress error replies entirely, even in development mode
+
+<Callout>
+For richer error forwarding with full stack traces sent to a configurable debug channel, use the [`@robojs/dev`](/docs/dev) plugin. That behavior is separate from Sage and works independently.
+</Callout>
+
+## Ephemeral mode
+
+When `ephemeral: true`, all deferred and replied messages are only visible to the user who triggered the interaction. This is useful for sensitive commands or admin tools.
+
+```ts
+export default {
+	sage: {
+		ephemeral: true
+	}
+}
+```
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./configuration" title="Configuration" description="All plugin options." />
+	<Card href="./command-registration" title="Command registration" description="How commands are registered with Discord." />
+</Cards>

@@ -1,0 +1,92 @@
+---
+title: Create Robo
+description: Start new Robo.js projects and plugins.
+---
+
+The `create-robo` interactive CLI scaffolds new Robo.js projects and plugins. It is a standalone tool that guides you through setup without adding any dependencies to your project.
+
+## New Robo
+
+Create a project named "my-awesome-robo":
+
+```package-install
+npx create-robo my-awesome-robo
+```
+
+<Callout type="warn" title="Yarn Node Linker Configuration">
+**Yarn** users will need to configure the nodeLinker by setting the `YARN_NODE_LINKER` variable to `node-modules`.
+
+<Accordions type="single">
+  <Accordion title="macOS & Linux">
+```bash
+YARN_NODE_LINKER=node-modules yarn create robo DeepThought -ts
+```
+  </Accordion>
+  <Accordion title="Windows Command Prompt">
+```bash
+set YARN_NODE_LINKER=node-modules && yarn create robo DeepThought -ts
+```
+  </Accordion>
+  <Accordion title="Windows Powershell">
+```bash
+$env:YARN_NODE_LINKER="node-modules"; yarn create robo DeepThought -ts
+```
+  </Accordion>
+</Accordions>
+</Callout>
+
+When using Windows you may encounter an npm error like this:
+```powershell
+npx : File C:\Program Files\nodejs\npx.ps1 cannot be loaded because running scripts is disabled on this system.
+```
+If you receive this error, see **[Windows Execution Policies](./win-exec-policies)** for a solution.
+
+The CLI walks you through three steps:
+
+1. TypeScript or JavaScript
+2. Select features (ESLint, Prettier, Plugins)
+3. Enter your Discord token and client ID (or press Enter to skip and edit `.env` later)
+
+## New Plugin
+
+To create a plugin project, run the CLI with the `--plugin` flag:
+
+```package-install
+npx create-robo my-awesome-plugin --plugin
+```
+
+This guides you through two steps:
+
+1. TypeScript or JavaScript
+2. Select features (ESLint, Prettier)
+
+## Options
+
+| Flag | Description |
+|------|-------------|
+| `-f`, `--features <features>` | Comma-separated list of features to include |
+| `--js`, `--javascript` | Create a Robo using JavaScript |
+| `-k`, `--kit` | Choose a kit to start with |
+| `-ni`, `--no-install` | Skip dependency installation |
+| `-nu`, `--no-update` | Skip the update check |
+| `-P`, `--plugin` | Create a plugin project instead of a Robo |
+| `-p`, `--plugins <plugins>` | Install plugins from the start (e.g., `@robojs/ai`) |
+| `-rv`, `--robo-version <version>` | Specify a Robo.js version to use |
+| `-t`, `--template <template>` | Create a Robo from an online template |
+| `--ts`, `--typescript` | Create a Robo using TypeScript |
+| `-v`, `--verbose` | Print more information for debugging |
+
+## Kits
+
+Kits are pre-defined feature and template combinations for common project types:
+
+- `activity` - Create a Discord Activity
+- `bot` - Create a Discord Bot
+- `web` - Create a Webapp
+
+## Next Steps
+
+<Cards>
+  <Card href="./robo" title="Robo CLI" description="Build, run, and manage your project." />
+  <Card href="/docs/framework/plugins/install" title="Installing Plugins" description="Add features to your Robo with one command." />
+</Cards>

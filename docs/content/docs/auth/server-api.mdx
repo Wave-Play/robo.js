@@ -1,0 +1,508 @@
+---
+title: Server API
+description: Server-side helpers for session validation, token extraction, runtime configuration, and storage utilities.
+---
+
+Server helpers are exported from both `@robojs/auth` and `@robojs/auth/server`. They provide session validation, token extraction, runtime configuration, and storage management.
+
+## Session helpers
+
+### `getServerSession(input?)`
+
+Fetches the current session. In local mode, calls the Auth.js handler directly. In proxy mode, fetches the upstream `/session` endpoint.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getServerSession(
+      input?: Request | Headers | [string, string][] | Record<string, string> | null
+    ): Promise<Session | null>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getServerSession(
+      input?: Request | Headers | [string, string][] | Record<string, string> | null
+    ): Promise<Session | null>
+    ```
+  </Tab>
+</Tabs>
+
+| Input type | Description |
+|---|---|
+| `Request` | Extracts cookies from the request |
+| `Headers` | Uses headers directly |
+| `Record<string, string>` | Plain header key-value pairs |
+| `null` / omitted | Empty headers (returns null) |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getServerSession } from '@robojs/auth'
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export default async (request: RoboRequest, reply: RoboReply) => {
+      const session = await getServerSession(request)
+      if (!session) return reply.code(401).send({ error: 'Unauthorized' })
+      return { user: session.user }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getServerSession } from '@robojs/auth'
+
+    export default async (request, reply) => {
+      const session = await getServerSession(request)
+      if (!session) return reply.code(401).send({ error: 'Unauthorized' })
+      return { user: session.user }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Throws `Error` if auth runtime has not been configured (plugin not started).
+
+### `getToken(input?, options?)`
+
+Extracts and optionally decodes the Auth.js session token. Behavior depends on session strategy and `raw` option.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getToken(
+      input?: Request | Headers | [string, string][] | Record<string, string> | null,
+      options?: { raw?: boolean }
+    ): Promise<JWT | string | Session | null>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getToken(
+      input?: Request | Headers | [string, string][] | Record<string, string> | null,
+      options?: { raw?: boolean }
+    ): Promise<JWT | string | Session | null>
+    ```
+  </Tab>
+</Tabs>
+
+| Strategy | `raw: false` (default) | `raw: true` |
+|---|---|---|
+| JWT | Decoded JWT payload | Raw cookie string |
+| Database | Session object (via getServerSession) | Raw cookie string |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getToken } from '@robojs/auth'
+
+    const token = await getToken(request)
+    console.log(token?.sub, token?.email)
+
+    // Raw cookie value
+    const raw = await getToken(request, { raw: true })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getToken } from '@robojs/auth'
+
+    const token = await getToken(request)
+    console.log(token?.sub, token?.email)
+
+    // Raw cookie value
+    const raw = await getToken(request, { raw: true })
+    ```
+  </Tab>
+</Tabs>
+
+Throws `Error` if JWT decoding is attempted without a configured secret.
+
+## Runtime configuration
+
+### `configureAuthRuntime(config, options)`
+
+Initializes the auth handler for local mode. Called automatically by the plugin during startup. Only use this for custom setups outside the normal plugin lifecycle.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function configureAuthRuntime(config: AuthConfig, options: ConfigureAuthRuntimeOptions): void
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function configureAuthRuntime(config, options): void
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+basePath: {
+  description: 'Auth route prefix',
+  type: 'string'
+},
+baseUrl: {
+  description: 'Canonical URL',
+  type: 'string'
+},
+cookieName: {
+  description: 'Session cookie name',
+  type: 'string'
+},
+secret: {
+  description: 'Auth.js signing secret',
+  type: 'string'
+},
+sessionStrategy: {
+  description: 'Session strategy',
+  type: '"jwt" | "database"'
+}
+  }}
+/>
+
+### `configureAuthProxyRuntime(options)`
+
+Configures upstream proxy mode. Called automatically when `upstream` is configured.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function configureAuthProxyRuntime(options: ConfigureAuthProxyRuntimeOptions): void
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function configureAuthProxyRuntime(options): void
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+localBasePath: {
+  description: 'Local route prefix',
+  type: 'string'
+},
+targetBasePath: {
+  description: 'Remote path (defaults to local)',
+  type: 'string | undefined'
+},
+baseUrl: {
+  description: 'Upstream URL',
+  type: 'string'
+},
+cookieName: {
+  description: 'Session cookie name',
+  type: 'string | undefined'
+},
+secret: {
+  description: 'Optional — enables local JWT decoding',
+  type: 'string | undefined'
+},
+sessionStrategy: {
+  description: 'Must match upstream',
+  type: '"jwt" | "database"'
+},
+headers: {
+  description: 'Extra proxy headers',
+  type: 'Record<string, string> | undefined'
+},
+fetch: {
+  description: 'Custom fetch',
+  type: 'FetchLike | undefined'
+}
+  }}
+/>
+
+### `createAuthRequestHandler(config)`
+
+Creates a Robo-compatible request handler from an Auth.js config. Useful for custom HTTP routers or activity setups.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function createAuthRequestHandler(config: AuthConfig): (req: RoboRequest, res: RoboReply) => Promise<Response>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function createAuthRequestHandler(config): (req, res) => Promise<Response>
+    ```
+  </Tab>
+</Tabs>
+
+## Configuration and validation
+
+### `normalizeAuthOptions(options)`
+
+Runs raw plugin config through Zod validation and applies defaults. Returns a `NormalizedAuthPluginOptions` object.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { normalizeAuthOptions } from '@robojs/auth'
+
+    const normalized = normalizeAuthOptions(rawConfig)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { normalizeAuthOptions } from '@robojs/auth'
+
+    const normalized = normalizeAuthOptions(rawConfig)
+    ```
+  </Tab>
+</Tabs>
+
+### `authPluginOptionsSchema`
+
+Zod schema for validating `AuthPluginOptions`. Strict mode — rejects unknown fields.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { authPluginOptionsSchema } from '@robojs/auth'
+
+    const result = authPluginOptionsSchema.safeParse(config)
+    if (!result.success) console.error(result.error)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { authPluginOptionsSchema } from '@robojs/auth'
+
+    const result = authPluginOptionsSchema.safeParse(config)
+    if (!result.success) console.error(result.error)
+    ```
+  </Tab>
+</Tabs>
+
+## Storage helpers
+
+### `listUsers(page?)`
+
+Paginate Flashcore-stored users. Default page size: 500.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function listUsers(page?: number): Promise<{
+      users: AdapterUser[]
+      page: number
+      pageCount: number
+      total: number
+    }>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function listUsers(page?: number): Promise<{
+      users: AdapterUser[]
+      page: number
+      pageCount: number
+      total: number
+    }>
+    ```
+  </Tab>
+</Tabs>
+
+### `listUserIds(page?)`
+
+Lighter variant — returns IDs only.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function listUserIds(page?: number): Promise<{
+      ids: string[]
+      page: number
+      pageCount: number
+      total: number
+    }>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function listUserIds(page?: number): Promise<{
+      ids: string[]
+      page: number
+      pageCount: number
+      total: number
+    }>
+    ```
+  </Tab>
+</Tabs>
+
+### `listPrismaUsers(client, options?)`
+
+Paginate Prisma-stored users with custom filtering and ordering.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function listPrismaUsers(client: PrismaClientLike, options?: {
+      page?: number
+      pageSize?: number
+      orderBy?: unknown
+      where?: unknown
+    }): Promise<{
+      users: AdapterUser[]
+      page: number
+      pageCount: number
+      total: number
+    }>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function listPrismaUsers(client: PrismaClientLike, options?: {
+      page?: number
+      pageSize?: number
+      orderBy?: unknown
+      where?: unknown
+    }): Promise<{
+      users: AdapterUser[]
+      page: number
+      pageCount: number
+      total: number
+    }>
+    ```
+  </Tab>
+</Tabs>
+
+### `listPrismaUserIds(client, options?)`
+
+Same as above but returns IDs only.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { listUsers, listPrismaUsers } from '@robojs/auth'
+
+    // Flashcore
+    const { users, total } = await listUsers(0)
+
+    // Prisma
+    const { users } = await listPrismaUsers(prisma, { page: 0, pageSize: 100 })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { listUsers, listPrismaUsers } from '@robojs/auth'
+
+    // Flashcore
+    const { users, total } = await listUsers(0)
+
+    // Prisma
+    const { users } = await listPrismaUsers(prisma, { page: 0, pageSize: 100 })
+    ```
+  </Tab>
+</Tabs>
+
+## Utilities
+
+### `getRequestPayload(request)`
+
+Parses and caches request body. Supports JSON and form data with mutation helpers. See [email and password](./email-password.mdx) for detailed usage.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function getRequestPayload(request: RoboRequest): Promise<RequestPayloadHandle>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function getRequestPayload(request): Promise<RequestPayloadHandle>
+    ```
+  </Tab>
+</Tabs>
+
+Returns a `RequestPayloadHandle` with these methods:
+
+- `get<T>()` — Retrieve typed payload object
+- `replace(data)` — Replace entire payload
+- `assign(partial)` — Merge partial data
+- `source` — Payload origin: `'json'`, `'form'`, or `'empty'`
+
+### `assertPasswordAdapter(adapter)`
+
+Validates that an adapter implements all `PasswordAdapter` methods. Throws with a descriptive message listing missing methods.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { assertPasswordAdapter } from '@robojs/auth'
+
+    assertPasswordAdapter(myAdapter) // throws if methods missing
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { assertPasswordAdapter } from '@robojs/auth'
+
+    assertPasswordAdapter(myAdapter) // throws if methods missing
+    ```
+  </Tab>
+</Tabs>
+
+### `authLogger`
+
+Forked logger instance with namespace `'auth'`. Import for consistent logging:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { authLogger } from '@robojs/auth'
+
+    authLogger.info('Custom auth logic executed')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { authLogger } from '@robojs/auth'
+
+    authLogger.info('Custom auth logic executed')
+    ```
+  </Tab>
+</Tabs>
+
+## Constants
+
+### `AUTH_ROUTES`
+
+Array of route definitions the plugin registers. Useful for documentation or custom routing.
+
+### `DEFAULT_BASE_PATH`
+
+Literal `'/api/auth'`.
+
+## Exported types
+
+Key server-side types available from `@robojs/auth`:
+
+- `AuthPluginOptions` — Plugin config shape
+- `ConfigureAuthRuntimeOptions` / `ConfigureAuthProxyRuntimeOptions` — Runtime setup
+- `PasswordAdapter` / `PasswordRecord` — Adapter contracts
+- `PrismaAdapterOptions` / `PrismaClientLike` — Prisma types
+- `RequestPayloadHandle` — Parsed request body handle
+
+Re-exported Auth.js types:
+
+- `Session`, `JWT`, `AuthConfig`, `Adapter`, `AdapterUser`, `AdapterSession`, `AdapterAccount`, `VerificationToken`
+
+## Next steps
+
+<Cards>
+  <Card title="Client API" href="./client-api">
+    Browser-side authentication helpers
+  </Card>
+  <Card title="Adapters" href="./adapters">
+    Flashcore and Prisma storage backends
+  </Card>
+  <Card title="Configuration" href="./configuration">
+    Full options reference
+  </Card>
+</Cards>

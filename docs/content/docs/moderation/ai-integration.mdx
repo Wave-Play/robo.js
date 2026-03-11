@@ -1,0 +1,54 @@
+---
+title: AI Integration
+description: Natural language moderation with @robojs/ai
+---
+
+Pair `@robojs/moderation` with [`@robojs/ai`](../ai/index.mdx) to control moderation through natural language. Instead of typing slash commands, mention the bot with a plain-language instruction and the AI maps it to the appropriate moderation command.
+
+## Setup
+
+Install both plugins:
+
+```bash
+npx robo add @robojs/moderation @robojs/ai
+```
+
+Configure `@robojs/ai` with your API key and preferences. See the [AI plugin documentation](../ai/index.mdx) for full setup instructions.
+
+## Usage
+
+Mention your bot with a moderation instruction:
+
+> _"@SageBot please ban @Baguette for spamming bread"_
+
+> _"@SageBot warn @User for posting links in the wrong channel"_
+
+> _"@SageBot kick @Troll reason: being disruptive"_
+
+The AI plugin reads the command metadata (descriptions, option names, types) from the moderation commands and routes the natural language request to the correct handler. The same permission checks apply — if the user doesn't have `BanMembers` permission, the AI can't execute a ban on their behalf.
+
+## How it works
+
+No special adapter code is needed. The moderation commands use standard Robo.js `CommandConfig` exports with descriptions and typed options. The AI plugin discovers these at runtime and uses them to understand which command to invoke.
+
+The AI:
+
+1. Parses the natural language request
+2. Identifies the matching moderation command
+3. Extracts parameters (user, reason, etc.)
+4. Executes the command with the same permission checks as a slash command
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Plugin options, intents, and permissions."
+  />
+</Cards>

@@ -1,0 +1,232 @@
+---
+title: REST API
+description: HTTP endpoints for dashboard integrations
+---
+
+The plugin provides REST API endpoints for managing giveaways and settings over HTTP. These activate when `@robojs/server` is installed.
+
+```bash
+npx robo add @robojs/server
+```
+
+<Callout type="warn">
+The API endpoints have no authentication. Any client that can reach the server can read and mutate giveaway data. Add your own access control if the server is exposed publicly.
+</Callout>
+
+## Giveaways
+
+### List giveaways
+
+```
+GET /api/giveaways/:guildId
+```
+
+Returns active and recent giveaways for a guild. Recent giveaways are capped at 20 in the response.
+
+**Response:**
+
+```json
+{
+  "active": [
+    {
+      "id": "01HQRS5F1GZ9J3YF7WXT7H2K2B",
+      "guildId": "123456789012345678",
+      "channelId": "987654321098765432",
+      "messageId": "111222333444555666",
+      "prize": "Discord Nitro",
+      "winnersCount": 1,
+      "endsAt": 1709251200000,
+      "startedBy": "444555666777888999",
+      "status": "active",
+      "entries": {},
+      "winners": [],
+      "rerolls": [],
+      "createdAt": 1709247600000,
+      "finalizedAt": null
+    }
+  ],
+  "recent": []
+}
+```
+
+### Get a giveaway
+
+```
+GET /api/giveaways/:guildId/giveaway/:id
+```
+
+Returns the full giveaway record. Returns `404` if not found or if the `guildId` doesn't match the giveaway's guild.
+
+**Response (success):**
+
+```json
+{
+  "id": "01HQRS5F1GZ9J3YF7WXT7H2K2B",
+  "guildId": "123456789012345678",
+  "prize": "Discord Nitro",
+  "status": "active",
+  "entries": { "444555666777888999": 1 },
+  "winners": [],
+  "rerolls": []
+}
+```
+
+**Response (not found):**
+
+```json
+{ "status": 404, "error": "Giveaway not found" }
+```
+
+### Mutate a giveaway
+
+```
+PATCH /api/giveaways/:guildId/giveaway/:id
+```
+
+Perform an action on a giveaway. The `action` field determines the operation.
+
+**Request body:**
+
+```json
+{ "action": "end" | "cancel" | "reroll", "count": 2 }
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `action` | string | Yes | One of `end`, `cancel`, or `reroll` |
+| `count` | number | No | Number of winners for reroll (1-50, default: original winner count) |
+
+**Action preconditions:**
+
+| Action | Required status | What it does |
+|---|---|---|
+| `end` | Not `ended` or `cancelled` | Selects winners, updates Flashcore, sends DMs, updates Discord message |
+| `cancel` | `active` | Sets status to `cancelled`, removes from active list |
+| `reroll` | `ended` | Selects new winners from remaining pool, updates Discord message |
+
+<Callout type="info">
+The `cancel` action via API updates Flashcore state but does not update the Discord message or post a cancellation announcement. The `/giveaway cancel` slash command does both. This is a behavioral difference between the two interfaces.
+</Callout>
+
+**Response (success):**
+
+```json
+{ "success": true }
+```
+
+**Response (reroll success):**
+
+```json
+{ "success": true, "winners": ["444555666777888999", "111222333444555666"] }
+```
+
+**Error responses:**
+
+| Status | Condition |
+|---|---|
+| `400` | Invalid JSON body, invalid action, wrong giveaway state, or invalid count |
+| `404` | Giveaway not found or guild mismatch |
+| `405` | HTTP method not supported |
+| `500` | Internal error (details included) |
+
+## Settings
+
+### Get guild settings
+
+```
+GET /api/giveaways/:guildId/settings
+```
+
+Returns the current guild settings. If no custom settings have been saved, returns the built-in defaults.
+
+**Response:**
+
+```json
+{
+  "defaults": {
+    "winners": 1,
+    "duration": "1h",
+    "buttonLabel": "Enter Giveaway",
+    "dmWinners": true
+  },
+  "limits": {
+    "maxWinners": 20,
+    "maxDurationDays": 30
+  },
+  "restrictions": {
+    "allowRoleIds": [],
+    "denyRoleIds": [],
+    "minAccountAgeDays": null
+  }
+}
+```
+
+### Update guild settings
+
+```
+PATCH /api/giveaways/:guildId/settings
+```
+
+Update guild settings with a partial object. The request body must include at least one of `defaults`, `limits`, or `restrictions`. Fields within each section are merged with the current settings (shallow merge per section).
+
+**Request body (partial update example):**
+
+```json
+{
+  "defaults": {
+    "winners": 3,
+    "buttonLabel": "Join Now"
+  },
+  "limits": {
+    "maxWinners": 50
+  }
+}
+```
+
+<Callout type="info">
+This is a **merge operation**, not a full replace. Only the fields you include are updated. Omitted fields within a section keep their current values.
+</Callout>
+
+**Validation rules:**
+
+| Field | Rule |
+|---|---|
+| `defaults.winners` | Integer, at least 1 |
+| `defaults.duration` | Matches `Nm`, `Nh`, or `Nd` with value > 0 |
+| `defaults.buttonLabel` | String, 1-80 characters |
+| `defaults.dmWinners` | Boolean |
+| `limits.maxWinners` | Integer, 1-100 |
+| `limits.maxDurationDays` | Integer, 1-365 |
+| `restrictions.allowRoleIds` | Array |
+| `restrictions.denyRoleIds` | Array |
+| `restrictions.minAccountAgeDays` | `null` or non-negative number |
+| Cross-field | `defaults.winners` cannot exceed `limits.maxWinners` after merge |
+
+**Response (success):**
+
+```json
+{
+  "success": true,
+  "settings": {
+    "defaults": { "winners": 3, "duration": "1h", "buttonLabel": "Join Now", "dmWinners": true },
+    "limits": { "maxWinners": 50, "maxDurationDays": 30 },
+    "restrictions": { "allowRoleIds": [], "denyRoleIds": [], "minAccountAgeDays": null }
+  }
+}
+```
+
+**Error responses:**
+
+| Status | Condition |
+|---|---|
+| `400` | Invalid JSON body, missing sections, or validation failure (specific error message included) |
+| `405` | HTTP method not supported |
+| `500` | Internal error |
+
+## Next Steps
+
+<Cards>
+  <Card href="./commands" title="Commands" description="Full slash command reference." />
+  <Card href="./configuration" title="Configuration" description="Settings management and defaults." />
+  <Card href="./persistence" title="Persistence" description="Data model and storage internals." />
+</Cards>

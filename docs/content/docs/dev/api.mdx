@@ -1,0 +1,397 @@
+---
+title: API reference
+description: Exported functions, constants, and types from @robojs/dev.
+---
+
+The plugin exports utilities you can use directly in your code. Import them from `@robojs/dev`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { DEBUG_MODE, sendDebugError, printErrorResponse, devLogger } from '@robojs/dev'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { DEBUG_MODE, sendDebugError, printErrorResponse, devLogger } from '@robojs/dev'
+    ```
+  </Tab>
+</Tabs>
+
+## `DEBUG_MODE`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const DEBUG_MODE: boolean
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const DEBUG_MODE: boolean
+    ```
+  </Tab>
+</Tabs>
+
+A constant that is `true` when the Robo is running in development mode (`robo dev`). Evaluated once at import time using `Mode.isDev()` from Robo.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { DEBUG_MODE } from '@robojs/dev'
+
+    if (DEBUG_MODE) {
+    	// Only runs during development
+    	devLogger.info('Debug mode is active')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { DEBUG_MODE } from '@robojs/dev'
+
+    if (DEBUG_MODE) {
+    	// Only runs during development
+    	devLogger.info('Debug mode is active')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## `sendDebugError`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    async function sendDebugError(error: unknown): Promise<boolean>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    async function sendDebugError(error): Promise<boolean>
+    ```
+  </Tab>
+</Tabs>
+
+Sends an error to the configured debug Discord channel as a rich embed with **Dismiss** and **Restart** buttons.
+
+**Parameters:**
+
+<TypeTable
+	type={{
+		error: {
+			type: 'unknown',
+			description: 'The error to forward. Uses .stack or .message if an Error instance, otherwise String().'
+		}
+	}}
+/>
+
+**Returns:** `true` if the error was sent successfully, `false` otherwise.
+
+The function returns `false` without throwing in these cases:
+- Not in development mode (`DEBUG_MODE` is `false`)
+- No debug channel configured (neither config nor env var)
+- Discord client not available or not ready
+- Channel not found or not a text channel
+- Message send fails
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { sendDebugError } from '@robojs/dev'
+
+    try {
+    	await riskyOperation()
+    } catch (error) {
+    	const sent = await sendDebugError(error)
+    	if (!sent) {
+    		console.error('Could not forward error to Discord:', error)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { sendDebugError } from '@robojs/dev'
+
+    try {
+    	await riskyOperation()
+    } catch (error) {
+    	const sent = await sendDebugError(error)
+    	if (!sent) {
+    		console.error('Could not forward error to Discord:', error)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## `handleDebugButton`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    async function handleDebugButton(interaction: ButtonInteraction): Promise<boolean>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    async function handleDebugButton(interaction): Promise<boolean>
+    ```
+  </Tab>
+</Tabs>
+
+Handles button interactions from debug error embeds. Checks if the button's `customId` starts with `__robo_debug_` and processes it.
+
+**Parameters:**
+
+<TypeTable
+	type={{
+		interaction: {
+			type: 'ButtonInteraction',
+			description: 'A Discord.js ButtonInteraction object.'
+		}
+	}}
+/>
+
+**Returns:** `true` if the button was a debug button and was handled, `false` otherwise.
+
+Two actions are supported:
+- **Dismiss** (`__robo_debug_dismiss`) — Deletes the error message
+- **Restart** (`__robo_debug_restart`) — Replies with "Restarting..." then triggers a process restart
+
+The plugin already registers an `interactionCreate` event handler that calls this function automatically. Use this directly only if you need custom button handling logic.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { handleDebugButton } from '@robojs/dev'
+
+    // In a custom interaction handler
+    if (interaction.isButton()) {
+    	const handled = await handleDebugButton(interaction)
+    	if (handled) return
+    	// Handle other buttons...
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { handleDebugButton } from '@robojs/dev'
+
+    // In a custom interaction handler
+    if (interaction.isButton()) {
+    	const handled = await handleDebugButton(interaction)
+    	if (handled) return
+    	// Handle other buttons...
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## `printErrorResponse`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    async function printErrorResponse(
+    	error: unknown,
+    	interaction: CommandInteraction | Message | ButtonInteraction
+    ): Promise<void>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    async function printErrorResponse(
+    	error: unknown,
+    	interaction: CommandInteraction | Message | ButtonInteraction
+    ): Promise<void>
+    ```
+  </Tab>
+</Tabs>
+
+Sends an error as a red embed reply. Handles all interaction states automatically.
+
+**Parameters:**
+
+<TypeTable
+	type={{
+		error: {
+			type: 'unknown',
+			description: 'The error to display. Uses .message if an Error instance, otherwise String().'
+		},
+		interaction: {
+			type: 'CommandInteraction | Message | ButtonInteraction',
+			description: 'The interaction or message to reply to.'
+		}
+	}}
+/>
+
+The function determines the best reply method based on the interaction state:
+
+| State | Method |
+|---|---|
+| `Message` object | `message.reply()` |
+| Deferred interaction | `editReply()` |
+| Already replied | `followUp()` (ephemeral) |
+| Fresh interaction | `reply()` (ephemeral) |
+
+Error messages are truncated to 4000 characters for Discord embed limits.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { printErrorResponse } from '@robojs/dev'
+
+    export default async function (interaction) {
+    	try {
+    		await someOperation()
+    	} catch (error) {
+    		await printErrorResponse(error, interaction)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { printErrorResponse } from '@robojs/dev'
+
+    export default async function (interaction) {
+    	try {
+    		await someOperation()
+    	} catch (error) {
+    		await printErrorResponse(error, interaction)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## `devLogger`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const devLogger: Logger
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const devLogger: Logger
+    ```
+  </Tab>
+</Tabs>
+
+The plugin's forked logger instance, created with `logger.fork('dev')`. All log messages are prefixed with the `dev` namespace.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { devLogger } from '@robojs/dev'
+
+    devLogger.info('Something happened')
+    devLogger.debug('Detailed info:', data)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { devLogger } from '@robojs/dev'
+
+    devLogger.info('Something happened')
+    devLogger.debug('Detailed info:', data)
+    ```
+  </Tab>
+</Tabs>
+
+## `DevPluginConfig`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { DevPluginConfig } from '@robojs/dev'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+TypeScript interface for the plugin's configuration options.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface DevPluginConfig {
+    	debugChannelId?: string
+    	errorPingRoleId?: string
+    	commands?: boolean
+    	enabledModes?: string[]
+    	errorForwarding?: boolean
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+	type={{
+		debugChannelId: {
+			type: 'string',
+			description: 'Discord channel ID for error forwarding.'
+		},
+		errorPingRoleId: {
+			type: 'string',
+			description: 'Role ID to ping on critical errors.'
+		},
+		commands: {
+			type: 'boolean',
+			description: 'Whether to enable /dev slash commands.',
+			default: 'true'
+		},
+		enabledModes: {
+			type: 'string[]',
+			description: 'Robo modes where dev tools are active.',
+			default: "['development']"
+		},
+		errorForwarding: {
+			type: 'boolean',
+			description: 'Whether to forward errors to the debug channel.',
+			default: 'true'
+		}
+	}}
+/>
+
+Use this type for autocomplete when writing plugin config files:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/dev.mjs"
+    /** @type {import('@robojs/dev').DevPluginConfig} */
+    export default {
+    	debugChannelId: '1234567890123456789'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/dev.mjs"
+    /** @type {import('@robojs/dev').DevPluginConfig} */
+    export default {
+    	debugChannelId: '1234567890123456789'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+	<Card href="./error-forwarding" title="Error forwarding" description="Set up automatic error capture." />
+	<Card href="./commands" title="Commands" description="All available slash commands." />
+	<Card href="./configuration" title="Configuration" description="Plugin options and environment variables." />
+</Cards>

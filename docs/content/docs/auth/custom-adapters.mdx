@@ -1,0 +1,377 @@
+---
+title: Custom adapters
+description: Build a custom storage adapter with password management support.
+---
+
+Any Auth.js-compatible adapter works with the plugin. To support email/password flows, extend it with the `PasswordAdapter` interface. The plugin validates the adapter at runtime via `assertPasswordAdapter`.
+
+## Auth.js adapter interface
+
+The base `Adapter` interface from Auth.js defines these methods:
+
+- `createUser(user)` — Create a user
+- `getUser(id)` — Get user by ID
+- `getUserByEmail(email)` — Get user by email
+- `getUserByAccount({ provider, providerAccountId })` — Get user by linked account
+- `updateUser(user)` — Update user
+- `deleteUser(userId)` — Delete user
+- `linkAccount(account)` — Link an OAuth account
+- `unlinkAccount({ provider, providerAccountId })` — Unlink account
+- `createSession(session)` — Create session
+- `getSessionAndUser(sessionToken)` — Get session and user
+- `updateSession(session)` — Update session
+- `deleteSession(sessionToken)` — Delete session
+- `createVerificationToken(token)` — Create verification token
+- `useVerificationToken({ identifier, token })` — Consume verification token
+
+See the [Auth.js adapter documentation](https://authjs.dev/guides/adapters/creating-a-database-adapter) for the full interface specification.
+
+## PasswordAdapter interface
+
+To support `EmailPassword`, add these 5 methods:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { Adapter } from '@robojs/auth'
+
+    interface PasswordAdapter extends Adapter {
+      createUserPassword(params: {
+        userId: string
+        email: string
+        hash: string
+      }): Promise<PasswordRecord>
+
+      getUserPassword(userId: string): Promise<PasswordRecord | null>
+
+      findUserIdByEmail(email: string): Promise<string | null>
+
+      deleteUserPassword(userId: string): Promise<void>
+
+      resetUserPassword(params: {
+        userId: string
+        hash: string
+      }): Promise<PasswordRecord | null>
+    }
+
+    interface PasswordRecord {
+      id: string
+      userId: string
+      email: string
+      hash: string
+      createdAt: string
+      updatedAt: string
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+## Implementation example
+
+Complete skeleton using a hypothetical database:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { nanoid } from 'nanoid'
+    import type { Adapter, AdapterUser, AdapterSession, PasswordAdapter } from '@robojs/auth'
+
+    function createMyAdapter(db: MyDatabase): PasswordAdapter {
+      return {
+        // --- Auth.js Adapter methods ---
+        async createUser(user) {
+          const id = nanoid(21)
+          const newUser = { ...user, id, emailVerified: user.emailVerified ?? null }
+          await db.users.insert(newUser)
+          return newUser as AdapterUser
+        },
+
+        async getUser(id) {
+          return db.users.findById(id) ?? null
+        },
+
+        async getUserByEmail(email) {
+          return db.users.findByEmail(email.toLowerCase()) ?? null
+        },
+
+        async getUserByAccount({ provider, providerAccountId }) {
+          const account = await db.accounts.findByProvider(provider, providerAccountId)
+          if (!account) return null
+          return db.users.findById(account.userId) ?? null
+        },
+
+        async updateUser(user) {
+          await db.users.update(user.id, user)
+          return db.users.findById(user.id) as AdapterUser
+        },
+
+        async deleteUser(userId) {
+          await db.passwords.deleteByUserId(userId)
+          await db.accounts.deleteByUserId(userId)
+          await db.sessions.deleteByUserId(userId)
+          await db.users.delete(userId)
+        },
+
+        async linkAccount(account) {
+          await db.accounts.insert(account)
+          return account
+        },
+
+        async unlinkAccount({ provider, providerAccountId }) {
+          await db.accounts.deleteByProvider(provider, providerAccountId)
+        },
+
+        async createSession(session) {
+          await db.sessions.insert(session)
+          return session as AdapterSession
+        },
+
+        async getSessionAndUser(sessionToken) {
+          const session = await db.sessions.findByToken(sessionToken)
+          if (!session) return null
+          if (new Date(session.expires) < new Date()) {
+            await db.sessions.delete(sessionToken)
+            return null
+          }
+          const user = await db.users.findById(session.userId)
+          if (!user) return null
+          return { session, user }
+        },
+
+        async updateSession(session) {
+          await db.sessions.update(session.sessionToken, session)
+          return db.sessions.findByToken(session.sessionToken)
+        },
+
+        async deleteSession(sessionToken) {
+          await db.sessions.delete(sessionToken)
+        },
+
+        async createVerificationToken(token) {
+          await db.verificationTokens.insert(token)
+          return token
+        },
+
+        async useVerificationToken({ identifier, token }) {
+          const stored = await db.verificationTokens.findAndDelete(identifier, token)
+          return stored ?? null
+        },
+
+        // --- PasswordAdapter methods ---
+        async createUserPassword({ userId, email, hash }) {
+          const record = {
+            id: nanoid(21),
+            userId,
+            email: email.toLowerCase(),
+            hash,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+          await db.passwords.insert(record)
+          return record
+        },
+
+        async getUserPassword(userId) {
+          return db.passwords.findByUserId(userId) ?? null
+        },
+
+        async findUserIdByEmail(email) {
+          const record = await db.passwords.findByEmail(email.toLowerCase())
+          return record?.userId ?? null
+        },
+
+        async deleteUserPassword(userId) {
+          await db.passwords.deleteByUserId(userId)
+        },
+
+        async resetUserPassword({ userId, hash }) {
+          const record = await db.passwords.findByUserId(userId)
+          if (!record) return null
+          record.hash = hash
+          record.updatedAt = new Date().toISOString()
+          await db.passwords.update(userId, record)
+          return record
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { nanoid } from 'nanoid'
+
+    function createMyAdapter(db) {
+      return {
+        // --- Auth.js Adapter methods ---
+        async createUser(user) {
+          const id = nanoid(21)
+          const newUser = { ...user, id, emailVerified: user.emailVerified ?? null }
+          await db.users.insert(newUser)
+          return newUser
+        },
+
+        async getUser(id) {
+          return db.users.findById(id) ?? null
+        },
+
+        async getUserByEmail(email) {
+          return db.users.findByEmail(email.toLowerCase()) ?? null
+        },
+
+        async getUserByAccount({ provider, providerAccountId }) {
+          const account = await db.accounts.findByProvider(provider, providerAccountId)
+          if (!account) return null
+          return db.users.findById(account.userId) ?? null
+        },
+
+        async updateUser(user) {
+          await db.users.update(user.id, user)
+          return db.users.findById(user.id)
+        },
+
+        async deleteUser(userId) {
+          await db.passwords.deleteByUserId(userId)
+          await db.accounts.deleteByUserId(userId)
+          await db.sessions.deleteByUserId(userId)
+          await db.users.delete(userId)
+        },
+
+        async linkAccount(account) {
+          await db.accounts.insert(account)
+          return account
+        },
+
+        async unlinkAccount({ provider, providerAccountId }) {
+          await db.accounts.deleteByProvider(provider, providerAccountId)
+        },
+
+        async createSession(session) {
+          await db.sessions.insert(session)
+          return session
+        },
+
+        async getSessionAndUser(sessionToken) {
+          const session = await db.sessions.findByToken(sessionToken)
+          if (!session) return null
+          if (new Date(session.expires) < new Date()) {
+            await db.sessions.delete(sessionToken)
+            return null
+          }
+          const user = await db.users.findById(session.userId)
+          if (!user) return null
+          return { session, user }
+        },
+
+        async updateSession(session) {
+          await db.sessions.update(session.sessionToken, session)
+          return db.sessions.findByToken(session.sessionToken)
+        },
+
+        async deleteSession(sessionToken) {
+          await db.sessions.delete(sessionToken)
+        },
+
+        async createVerificationToken(token) {
+          await db.verificationTokens.insert(token)
+          return token
+        },
+
+        async useVerificationToken({ identifier, token }) {
+          const stored = await db.verificationTokens.findAndDelete(identifier, token)
+          return stored ?? null
+        },
+
+        // --- PasswordAdapter methods ---
+        async createUserPassword({ userId, email, hash }) {
+          const record = {
+            id: nanoid(21),
+            userId,
+            email: email.toLowerCase(),
+            hash,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+          await db.passwords.insert(record)
+          return record
+        },
+
+        async getUserPassword(userId) {
+          return db.passwords.findByUserId(userId) ?? null
+        },
+
+        async findUserIdByEmail(email) {
+          const record = await db.passwords.findByEmail(email.toLowerCase())
+          return record?.userId ?? null
+        },
+
+        async deleteUserPassword(userId) {
+          await db.passwords.deleteByUserId(userId)
+        },
+
+        async resetUserPassword({ userId, hash }) {
+          const record = await db.passwords.findByUserId(userId)
+          if (!record) return null
+          record.hash = hash
+          record.updatedAt = new Date().toISOString()
+          await db.passwords.update(userId, record)
+          return record
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Validation
+
+Use `assertPasswordAdapter` to verify your adapter in development:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { assertPasswordAdapter } from '@robojs/auth'
+
+    const adapter = createMyAdapter(db)
+    assertPasswordAdapter(adapter) // throws if any PasswordAdapter method is missing
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { assertPasswordAdapter } from '@robojs/auth'
+
+    const adapter = createMyAdapter(db)
+    assertPasswordAdapter(adapter) // throws if any PasswordAdapter method is missing
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Run this check during development or in tests. It validates that all 5 password methods exist on the adapter. Missing methods throw a descriptive error listing exactly which ones are absent.
+</Callout>
+
+## Key implementation notes
+
+- Email lookups should be case-insensitive (normalize to lowercase)
+- Delete operations should cascade (deleting a user should clean up passwords, sessions, accounts)
+- `getSessionAndUser` should prune expired sessions
+- `PasswordRecord` must include `id`, `userId`, `email`, `hash`, `createdAt`, `updatedAt`
+- Password hashing is handled by the `PasswordHasher` — the adapter only stores and retrieves hashes
+
+## Next steps
+
+<Cards>
+  <Card href="./adapters" title="Adapters">
+    Built-in Flashcore and Prisma adapters
+  </Card>
+  <Card href="./email-password" title="Email and password">
+    Credential-based authentication
+  </Card>
+  <Card href="./configuration" title="Configuration">
+    All plugin config options
+  </Card>
+</Cards>

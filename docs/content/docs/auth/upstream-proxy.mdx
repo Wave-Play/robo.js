@@ -1,0 +1,168 @@
+---
+title: Upstream proxy
+description: Forward authentication routes to another Robo instance for shared auth across multiple apps.
+---
+
+When multiple Robo apps need the same auth backend, configure upstream proxy mode. All `/api/auth/*` routes are forwarded to a canonical Robo instance. `getServerSession` and `getToken` also proxy to the upstream service.
+
+## Basic setup
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    export default <AuthPluginOptions>{
+      basePath: '/api/auth',
+      upstream: {
+        baseUrl: process.env.AUTH_UPSTREAM_URL!,
+        headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+
+    export default {
+      basePath: '/api/auth',
+      upstream: {
+        baseUrl: process.env.AUTH_UPSTREAM_URL!,
+        headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+In proxy mode, no adapter, providers, or email config is needed locally. The upstream handles everything.
+
+## Configuration options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `baseUrl` | `string` | Required | Absolute URL of the upstream Robo instance |
+| `basePath` | `string` | Local `basePath` | Auth route prefix on the upstream |
+| `headers` | `Record<string, string>` | `{}` | Extra headers sent with every proxied request |
+| `cookieName` | `string` | `'authjs.session-token'` | Session cookie name matching the upstream |
+| `secret` | `string` | Local secret | Enables local JWT decoding without network calls |
+| `sessionStrategy` | `'jwt' \| 'database'` | Local strategy | Must match the upstream's strategy |
+| `fetch` | `FetchLike` | Global `fetch` | Custom fetch for retries, SSR, or edge runtimes |
+
+## How it works
+
+The proxy behavior works like this:
+
+- All Auth.js routes (`/providers`, `/session`, `/csrf`, `/signin/*`, `/signout`, `/callback/*`, etc.) forward requests to the upstream
+- Request headers are cleaned: `host`, `content-length`, `connection`, `accept-encoding` are removed
+- Custom `upstream.headers` are merged into every request
+- POST request bodies are forwarded
+- Cookies are preserved for session forwarding
+- `getServerSession()` proxies to the upstream `/session` endpoint
+- `getToken()` proxies to upstream (or decodes locally if `secret` is provided)
+
+## Local JWT decoding
+
+Providing `upstream.secret` enables local JWT decoding:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    upstream: {
+      baseUrl: 'https://auth.myapp.com',
+      secret: process.env.AUTH_SECRET,
+      sessionStrategy: 'jwt'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    upstream: {
+      baseUrl: 'https://auth.myapp.com',
+      secret: process.env.AUTH_SECRET,
+      sessionStrategy: 'jwt'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This cuts network traffic roughly in half — `getToken()` decodes locally instead of calling the upstream. Without a secret, call `getToken(request, { raw: true })` to get the raw cookie value, or use `getServerSession()` which always consults the upstream.
+
+## Cross-origin considerations
+
+<Callout type="warn">
+When the frontend and auth server run on different origins:
+
+- Set cookies with `SameSite=None; Secure` on the auth server
+- Add the frontend origin to your CORS allowlist
+- Set `AUTH_REDIRECT_PROXY_URL` for OAuth callback handling
+</Callout>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    // Frontend Robo app (proxy mode)
+    upstream: {
+      baseUrl: 'https://auth.myapp.com',
+      headers: { 'x-tenant': 'frontend-app' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    // Frontend Robo app (proxy mode)
+    upstream: {
+      baseUrl: 'https://auth.myapp.com',
+      headers: { 'x-tenant': 'frontend-app' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Client-side usage
+
+Client helpers work the same way in proxy mode. They hit the local proxy routes which forward to upstream:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signIn, getSession } from '@robojs/auth/client'
+
+    // These go through the local proxy to upstream
+    await signIn('discord')
+    const session = await getSession()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signIn, getSession } from '@robojs/auth/client'
+
+    // These go through the local proxy to upstream
+    await signIn('discord')
+    const session = await getSession()
+    ```
+  </Tab>
+</Tabs>
+
+For direct cross-origin calls (bypassing the proxy), use the `baseUrl` option:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.myapp.com' }, true)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.myapp.com' }, true)
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Full options reference" />
+  <Card href="./session-management" title="Sessions" description="Session strategies and multi-account switching" />
+  <Card href="./client-api" title="Client API" description="Browser-side helpers" />
+</Cards>

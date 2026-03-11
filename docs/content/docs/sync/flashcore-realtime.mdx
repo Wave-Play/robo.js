@@ -1,0 +1,239 @@
+---
+title: "Flashcore realtime"
+description: "Realtime subscriptions for Flashcore model changes."
+---
+
+Subscribe to Flashcore model changes in real-time. The `realtime` plugin tracks creates, updates, and deletes -- notifying subscribers when matching records change. It includes JSON Patch diffs, subscription limits, and automatic idle cleanup.
+
+<Callout type="info">
+This is a server-side feature. It runs in the Robo backend, not in the browser.
+</Callout>
+
+## Setup
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Flashcore } from 'robo.js'
+    import { realtime } from '@robojs/sync/flashcore'
+
+    await Flashcore.init({
+    	plugins: [realtime()]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Flashcore } from 'robo.js'
+    import { realtime } from '@robojs/sync/flashcore'
+
+    await Flashcore.init({
+    	plugins: [realtime()]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Configuration
+
+Pass a config object to customize limits and timeouts.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    realtime({
+    	maxSubscriptionsPerModel: 500,
+    	maxTotalSubscriptions: 5000,
+    	idleTimeout: 1800000,          // 30 minutes
+    	maxRecordsPerSubscription: 5000
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    realtime({
+    	maxSubscriptionsPerModel: 500,
+    	maxTotalSubscriptions: 5000,
+    	idleTimeout: 1800000,          // 30 minutes
+    	maxRecordsPerSubscription: 5000
+    })
+    ```
+  </Tab>
+</Tabs>
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `maxSubscriptionsPerModel` | `number` | `1000` | Maximum subscriptions per Flashcore model |
+| `maxTotalSubscriptions` | `number` | `10000` | Maximum total subscriptions across all models |
+| `idleTimeout` | `number` | `3600000` (1 hour) | Milliseconds before idle subscriptions are cleaned up |
+| `maxRecordsPerSubscription` | `number` | `10000` | Maximum records tracked per subscription |
+
+## Subscribing to model changes
+
+Once initialized, Flashcore models gain a `.subscribe()` method.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const unsubscribe = User.subscribe({
+    	where: { status: 'active' },
+    	callbacks: {
+    		onAdd: (user) => console.log('New active user:', user),
+    		onChange: (user, patches) => console.log('User changed:', user.id, patches),
+    		onRemove: (user) => console.log('User no longer active:', user),
+    		onComplete: () => console.log('Subscription ended')
+    	}
+    })
+
+    // Stop listening
+    unsubscribe()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const unsubscribe = User.subscribe({
+    	where: { status: 'active' },
+    	callbacks: {
+    		onAdd: (user) => console.log('New active user:', user),
+    		onChange: (user, patches) => console.log('User changed:', user.id, patches),
+    		onRemove: (user) => console.log('User no longer active:', user),
+    		onComplete: () => console.log('Subscription ended')
+    	}
+    })
+
+    // Stop listening
+    unsubscribe()
+    ```
+  </Tab>
+</Tabs>
+
+## Callback reference
+
+| Callback | Signature | When it fires |
+|----------|-----------|---------------|
+| `onAdd` | `(record: T) => void` | A new record matches the filter (created or updated into filter) |
+| `onChange` | `(record: T, patches: JSONPatch[]) => void` | A matching record is updated |
+| `onRemove` | `(record: T) => void` | A record no longer matches (deleted or updated out of filter) |
+| `onComplete` | `() => void` | Subscription ended (idle timeout or shutdown) |
+
+## JSON Patches
+
+The `onChange` callback receives an array of [RFC 6902](https://tools.ietf.org/html/rfc6902) JSON Patches describing what changed.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface JSONPatch {
+    	op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test'
+    	path: string
+    	value?: unknown
+    	from?: string
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+Example:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    onChange: (user, patches) => {
+    	for (const patch of patches) {
+    		if (patch.path === '/score' && patch.op === 'replace') {
+    			console.log('Score changed to:', patch.value)
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    onChange: (user, patches) => {
+    	for (const patch of patches) {
+    		if (patch.path === '/score' && patch.op === 'replace') {
+    			console.log('Score changed to:', patch.value)
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Subscription limits
+
+Exceeding configured limits throws a `SubscriptionLimitError`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { SubscriptionLimitError } from '@robojs/sync/flashcore'
+
+    try {
+    	User.subscribe({ where: { status: 'active' }, callbacks: { onAdd: () => {} } })
+    } catch (error) {
+    	if (error instanceof SubscriptionLimitError) {
+    		console.log('Limit exceeded:', error.type)
+    		// error.type: 'per-model' | 'total' | 'records'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { SubscriptionLimitError } from '@robojs/sync/flashcore'
+
+    try {
+    	User.subscribe({ where: { status: 'active' }, callbacks: { onAdd: () => {} } })
+    } catch (error) {
+    	if (error instanceof SubscriptionLimitError) {
+    		console.log('Limit exceeded:', error.type)
+    		// error.type: 'per-model' | 'total' | 'records'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Client extensions
+
+Query subscription counts from the Flashcore client:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const totalSubs = Flashcore.getSubscriptionCount()
+    const userSubs = Flashcore.getModelSubscriptionCount('User')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const totalSubs = Flashcore.getSubscriptionCount()
+    const userSubs = Flashcore.getModelSubscriptionCount('User')
+    ```
+  </Tab>
+</Tabs>
+
+## Idle cleanup
+
+Subscriptions are automatically cleaned up after `idleTimeout` (default: 1 hour). The cleanup check runs every 60 seconds. When a subscription is cleaned up, its `onComplete` callback fires.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./server-api"
+		title="Server API"
+		description="Direct server-side state manipulation."
+	/>
+	<Card
+		href="./server-handlers"
+		title="Server handlers"
+		description="File-based sync handlers with validation and RPC."
+	/>
+</Cards>

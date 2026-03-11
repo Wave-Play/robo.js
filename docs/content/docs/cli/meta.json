@@ -1,0 +1,16 @@
+{
+  "title": "CLI",
+  "icon": "Terminal",
+  "description": "CLI tools for managing your Robo.js projects",
+  "root": true,
+  "pages": [
+    "index",
+    "---Tools---",
+    "create-robo",
+    "robo",
+    "terminal",
+    "---Advanced---",
+    "extending",
+    "win-exec-policies"
+  ]
+}

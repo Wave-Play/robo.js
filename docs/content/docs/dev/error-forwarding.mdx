@@ -1,0 +1,170 @@
+---
+title: Error forwarding
+description: Automatically forward unhandled errors to a Discord channel with interactive buttons.
+---
+
+The plugin catches unhandled errors (uncaught exceptions and unhandled promise rejections) and forwards them to a Discord channel. Each error appears as a rich embed with the full stack trace and two action buttons: **Dismiss** and **Restart**.
+
+This only runs in development mode (`robo dev`). In production, the entire plugin is stripped from the build.
+
+## Setup
+
+Point the plugin to a Discord text channel. You can do this with an environment variable:
+
+```bash title=".env"
+DISCORD_DEBUG_CHANNEL_ID=1234567890123456789
+```
+
+Or through the plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The config option takes priority over the environment variable.
+
+## How it works
+
+The plugin registers an error hook at `src/robo/error.ts`. When the Robo framework catches an unhandled error, this hook fires and calls `sendDebugError()` which:
+
+1. Checks that the Robo is running in dev mode
+2. Reads the debug channel ID from config or env
+3. Gets the Discord client from `@robojs/discordjs`
+4. Sends a red embed to the channel with the error stack trace
+5. Attaches **Dismiss** and **Restart** action buttons
+
+If any step fails (no channel configured, client not ready, channel not found), the function returns `false` silently. Errors during forwarding don't crash the process.
+
+## Interactive buttons
+
+Each error embed includes two buttons:
+
+| Button | Action |
+|---|---|
+| **Dismiss** | Deletes the error message from the channel |
+| **Restart** | Replies with "Restarting..." then triggers a process restart |
+
+The restart behavior depends on how the Robo is running:
+
+- **`robo dev` mode** — Sends a `{ type: 'restart' }` IPC message to the parent process for a graceful restart
+- **Standalone** — Calls `process.exit(0)` and relies on a process manager to restart
+
+## Role pinging
+
+Notify your team when errors occur by configuring a role to ping:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789',
+    	errorPingRoleId: '987654321098765432'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789',
+    	errorPingRoleId: '987654321098765432'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+When an error is forwarded, the message includes a role mention (`<@&roleId>`) that pings all users with that role.
+
+## Programmatic usage
+
+You can also send errors to the debug channel from your own code:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { sendDebugError } from '@robojs/dev'
+
+    try {
+    	await riskyOperation()
+    } catch (error) {
+    	const sent = await sendDebugError(error)
+    	if (!sent) {
+    		console.error('Failed to forward error:', error)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { sendDebugError } from '@robojs/dev'
+
+    try {
+    	await riskyOperation()
+    } catch (error) {
+    	const sent = await sendDebugError(error)
+    	if (!sent) {
+    		console.error('Failed to forward error:', error)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+For replying to interactions with error embeds, use `printErrorResponse`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { printErrorResponse } from '@robojs/dev'
+
+    export default async function (interaction) {
+    	try {
+    		await someCommand(interaction)
+    	} catch (error) {
+    		await printErrorResponse(error, interaction)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { printErrorResponse } from '@robojs/dev'
+
+    export default async function (interaction) {
+    	try {
+    		await someCommand(interaction)
+    	} catch (error) {
+    		await printErrorResponse(error, interaction)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This handles all interaction states — deferred, already replied, or fresh — and sends an ephemeral red embed with the error message.
+
+See the [API reference](./api.mdx) for full function signatures.
+
+## Stack trace truncation
+
+Discord embeds have a 4000-character limit for descriptions. Stack traces longer than this are truncated automatically.
+
+## Next steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./commands" title="Commands" description="Dev commands for inspecting and managing your Robo." />
+	<Card href="./api" title="API reference" description="Use error forwarding programmatically." />
+</Cards>

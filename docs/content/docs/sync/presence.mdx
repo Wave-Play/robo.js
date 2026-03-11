@@ -1,0 +1,229 @@
+---
+title: Presence
+description: Track connected participants with heartbeat detection and stale status.
+---
+
+Track who's connected with custom presence data. `useSyncPresence` manages heartbeats, stale detection, and participant lists — ideal for lobbies, typing indicators, and user status displays.
+
+## Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function useSyncPresence<T = unknown, ClientData = unknown>(
+      key: (string | null)[],
+      options?: PresenceOptions<T>
+    ): PresenceResult<T, ClientData>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function useSyncPresence(
+      key: (string | null)[],
+      options?: PresenceOptions<T>
+    ): PresenceResult<T, ClientData>
+    ```
+  </Tab>
+</Tabs>
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `initialPresence` | `T` | `{}` | Initial presence data for this client |
+| `staleTimeout` | `number` | `5000` | Milliseconds before marking a user as stale |
+| `heartbeatInterval` | `number` | `2000` | Interval for sending heartbeat updates (ms) |
+
+## Return value
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `participants` | `Participant<T, ClientData>[]` | All participants (you first, then sorted by ID) |
+| `updatePresence` | `(update: Partial<T> \| ((prev: T) => T)) => void` | Update your presence data |
+| `clientId` | `string` | Your client ID |
+| `isHost` | `boolean` | Whether you're the host |
+| `context` | `SyncContext<ClientData>` | Full sync context |
+
+## Participant type
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface Participant<T, ClientData> {
+      clientId: string
+      user: Client<ClientData>
+      presence: T
+      isStale: boolean    // No heartbeat received recently
+      isYou: boolean      // Is this the current client
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+## Basic usage
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { useSyncPresence } from '@robojs/sync'
+
+    function Lobby() {
+      const { participants, updatePresence } = useSyncPresence(['room', roomId], {
+        initialPresence: { status: 'online', activity: 'idle' }
+      })
+
+      return (
+        <div>
+          <h2>Players ({participants.length})</h2>
+          <ul>
+            {participants.map((p) => (
+              <li key={p.clientId} style={{ opacity: p.isStale ? 0.5 : 1 }}>
+                {p.user.data?.name ?? p.clientId.slice(0, 6)}
+                {' — '}{p.presence.status}
+                {p.isStale && ' (away)'}
+                {p.isYou && ' (you)'}
+              </li>
+            ))}
+          </ul>
+          <button onClick={() => updatePresence({ status: 'ready' })}>Ready up</button>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { useSyncPresence } from '@robojs/sync'
+
+    function Lobby() {
+      const { participants, updatePresence } = useSyncPresence(['room', roomId], {
+        initialPresence: { status: 'online', activity: 'idle' }
+      })
+
+      return (
+        <div>
+          <h2>Players ({participants.length})</h2>
+          <ul>
+            {participants.map((p) => (
+              <li key={p.clientId} style={{ opacity: p.isStale ? 0.5 : 1 }}>
+                {p.user.data?.name ?? p.clientId.slice(0, 6)}
+                {' — '}{p.presence.status}
+                {p.isStale && ' (away)'}
+                {p.isYou && ' (you)'}
+              </li>
+            ))}
+          </ul>
+          <button onClick={() => updatePresence({ status: 'ready' })}>Ready up</button>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Updating presence
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    // Partial update
+    updatePresence({ activity: 'typing' })
+
+    // Updater function
+    updatePresence((prev) => ({ ...prev, score: prev.score + 1 }))
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    // Partial update
+    updatePresence({ activity: 'typing' })
+
+    // Updater function
+    updatePresence((prev) => ({ ...prev, score: prev.score + 1 }))
+    ```
+  </Tab>
+</Tabs>
+
+## Stale detection
+
+Presence uses a heartbeat system to detect inactive users:
+
+- Each client sends heartbeat updates at `heartbeatInterval` (default: every 2 seconds).
+- If a client's last heartbeat is older than `staleTimeout` (default: 5 seconds), they're marked as `isStale: true`.
+- Stale detection runs every second via an internal interval timer.
+- New clients without any presence data are NOT marked as stale — they only become stale after their first heartbeat ages out.
+
+## Typing indicator example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    function ChatInput() {
+      const { participants, updatePresence } = useSyncPresence(['chat', roomId], {
+        initialPresence: { typing: false },
+        staleTimeout: 3000,
+        heartbeatInterval: 1000
+      })
+
+      const typingUsers = participants.filter((p) => p.presence.typing && !p.isYou && !p.isStale)
+
+      return (
+        <div>
+          <input
+            onFocus={() => updatePresence({ typing: true })}
+            onBlur={() => updatePresence({ typing: false })}
+          />
+          {typingUsers.length > 0 && (
+            <p>{typingUsers.map((p) => p.user.data?.name).join(', ')} typing...</p>
+          )}
+        </div>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    function ChatInput() {
+      const { participants, updatePresence } = useSyncPresence(['chat', roomId], {
+        initialPresence: { typing: false },
+        staleTimeout: 3000,
+        heartbeatInterval: 1000
+      })
+
+      const typingUsers = participants.filter((p) => p.presence.typing && !p.isYou && !p.isStale)
+
+      return (
+        <div>
+          <input
+            onFocus={() => updatePresence({ typing: true })}
+            onBlur={() => updatePresence({ typing: false })}
+          />
+          {typingUsers.length > 0 && (
+            <p>{typingUsers.map((p) => p.user.data?.name).join(', ')} typing...</p>
+          )}
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## How it works
+
+Internally, `useSyncPresence` uses `useSyncState` with the key `[...key, '__presence']`. The state is a map of `clientId -> { presence, lastSeen }`. This means:
+
+- Presence data is persistent (late joiners see existing participants).
+- The state grows with each client. In long-running sessions, stale entries persist until the page refreshes.
+
+## Next steps
+
+<Cards>
+  <Card title="Cursors" description="Collaborative cursor tracking." href="cursors" />
+  <Card title="useSyncContext" description="Track clients without presence metadata." href="use-sync-context" />
+  <Card title="Server handlers" description="Add server-side validation and game logic." href="server-handlers" />
+</Cards>

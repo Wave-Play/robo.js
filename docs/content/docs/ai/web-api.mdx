@@ -1,0 +1,107 @@
+---
+title: Web API
+description: HTTP chat endpoint for web integrations.
+---
+
+The plugin ships a REST endpoint at `POST /api/ai/chat` for web-based AI interactions. It requires `@robojs/server` to be installed.
+
+## Prerequisites
+
+Install the server plugin if you haven't already:
+
+```bash
+npx robo add @robojs/server
+```
+
+## Endpoint reference
+
+| Property | Value |
+|----------|-------|
+| Method | `POST` |
+| Path | `/api/ai/chat` |
+| Request body | `{ messages: ChatMessage[] }` |
+| Response body | `{ message: string }` |
+
+The endpoint validates that at least one message is present. If no system message exists in the request and `instructions` is configured in the plugin options, a system message is injected automatically.
+
+## Usage example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const response = await fetch('/api/ai/chat', {
+    	method: 'POST',
+    	headers: { 'Content-Type': 'application/json' },
+    	body: JSON.stringify({
+    		messages: [{ role: 'user', content: 'What is Robo.js?' }]
+    	})
+    })
+    const data = await response.json()
+    console.log(data.message)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const response = await fetch('/api/ai/chat', {
+    	method: 'POST',
+    	headers: { 'Content-Type': 'application/json' },
+    	body: JSON.stringify({
+    		messages: [{ role: 'user', content: 'What is Robo.js?' }]
+    	})
+    })
+    const data = await response.json()
+    console.log(data.message)
+    ```
+  </Tab>
+</Tabs>
+
+The response resolves with the first reply chunk from the engine.
+
+## Custom endpoints
+
+You can build custom API routes using the `AI` singleton for more control over the request/response cycle:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/my-chat.ts"
+    import { AI } from '@robojs/ai'
+    import type { RoboRequest } from '@robojs/server'
+
+    export default async (req: RoboRequest) => {
+    	const { prompt } = await req.json<{ prompt: string }>()
+    	const reply = await AI.chatSync(
+    		[{ role: 'user', content: prompt }],
+    		{}
+    	)
+    	return { answer: reply.text ?? '' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/my-chat.js"
+    import { AI } from '@robojs/ai'
+
+    export default async (req) => {
+    	const { prompt } = await req.json()
+    	const reply = await AI.chatSync(
+    		[{ role: 'user', content: prompt }],
+    		{}
+    	)
+    	return { answer: reply.text ?? '' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+`AI.chatSync` returns a promise that resolves with the first reply. Use `AI.chat` instead when you need the streaming callback pattern with `onReply`.
+
+<Callout type="info">
+Custom endpoints follow the same file-based routing as `@robojs/server`. A file at `src/api/my-chat.ts` maps to `POST /api/my-chat`.
+</Callout>
+
+## Next steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+	<Card href="./conversations" title="Conversations" description="How the AI handles messages, threads, and replies." />
+</Cards>

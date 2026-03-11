@@ -1,0 +1,269 @@
+---
+title: Commands
+description: Full reference for all moderation slash commands and context menus
+---
+
+The plugin registers all commands under the `/mod` group. Context menu commands appear when right-clicking users or messages in Discord.
+
+## Moderation actions
+
+### `/mod ban`
+
+Ban a member from the server.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `member` | User | Yes | The member to ban |
+| `reason` | String | No | Reason for the ban |
+| `delete_messages` | Autocomplete | No | How much message history to delete |
+| `duration` | Autocomplete | No | How long the ban should last |
+| `anonymous` | Boolean | No | Execute the ban without revealing the moderator |
+
+**Required permission:** `BanMembers`
+
+The `delete_messages` option provides these choices:
+
+| Choice | Description |
+|--------|-------------|
+| Don't Delete Any | Keep all messages |
+| Previous Hour | Delete messages from the last hour |
+| Previous 6 Hours | Delete messages from the last 6 hours |
+| Previous 12 Hours | Delete messages from the last 12 hours |
+| Previous Day | Delete messages from the last day |
+| Previous 3 Days | Delete messages from the last 3 days |
+| Previous Week | Delete messages from the last week |
+
+The command persists the ban reason to Flashcore and logs the action to the moderator logs channel. The response includes an **Unban** button that moderators can click to reverse the ban.
+
+When **confirmation mode** is enabled, a modal appears asking the moderator to type "yes" before the ban executes.
+
+When **anonymous** is `true`, the ban embed is posted to the channel as a regular message (not attributed to any moderator), and the moderator receives an ephemeral confirmation.
+
+### `/mod kick`
+
+Remove a member from the server.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `member` | User | Yes | The member to kick |
+| `reason` | String | No | Reason for the kick |
+| `delete_messages` | Autocomplete | No | How much message history to delete |
+| `anonymous` | Boolean | No | Execute the kick without revealing the moderator |
+
+**Required permission:** `KickMembers`
+
+When `delete_messages` is specified, the plugin scans text channels and deletes up to 5 recent messages from the kicked user in the background. Messages older than 14 days are skipped (Discord API limitation). A 1-second delay between deletions avoids rate limits.
+
+The command prevents kicking yourself, the bot, or the server owner.
+
+### `/mod timeout`
+
+Temporarily mute a member.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `user` | User | Yes | The member to timeout |
+| `duration` | Integer | Yes | Timeout duration (predefined choices) |
+| `reason` | String | No | Reason for the timeout |
+
+**Required permission:** `ModerateMembers`
+
+Duration choices:
+
+| Choice | Value |
+|--------|-------|
+| 60 secs | 60 |
+| 5 mins | 300 |
+| 10 mins | 600 |
+| 1 hour | 3600 |
+| 1 day | 86400 |
+| 1 week | 604800 |
+
+### `/mod warn`
+
+Issue a warning and increment the member's strike count.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `member` | User | Yes | The member to warn |
+| `reason` | String | Yes | Reason for the warning |
+| `message` | String | No | Message ID that triggered the warning (creates a clickable link) |
+| `anonymous` | Boolean | No | Send the warning without revealing the moderator |
+
+**Required permission:** `ModerateMembers`
+
+Each warning increments the member's infraction count, which is persisted in Flashcore. The warning embed shows the current infraction count in its footer. In test mode, infractions are not incremented.
+
+### `/mod forgive`
+
+Clear a member's strikes and infractions.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `member` | User | Yes | The member to forgive |
+| `reason` | String | No | Reason for the forgiveness |
+| `anonymous` | Boolean | No | Send anonymously |
+
+**Required permission:** `ModerateMembers`
+
+Resets the member's infraction count to 0 in Flashcore.
+
+## Information and reporting
+
+### `/mod audit`
+
+View a member's moderation history.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `user` | User | Yes | The user to audit |
+
+**Required permission:** `ModerateMembers`
+
+Displays an embed with the user's avatar, ban status (active or banned with reason), infraction count, and join date. Includes a **Ban** or **Unban** button depending on the user's current status.
+
+### `/mod report`
+
+Submit a report to the moderator mail channel.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `member` | User | Yes | The member to report |
+| `reason` | String | Yes | Reason for the report |
+| `anonymous` | Boolean | No | Hide your identity from the report, even from moderators |
+| `evidence` | Attachment | No | Evidence to support the report |
+
+**Required permission:** None (any server member can use this)
+
+Sends a report embed to the configured moderator mail channel. The reporter always receives an ephemeral confirmation. When anonymous, the report shows "anonymous user" instead of the reporter's identity.
+
+Requires a moderator mail channel to be configured via `/mod setup`.
+
+### `/mod setup`
+
+Configure moderation settings for the server.
+
+**Required permission:** `ModerateMembers`
+
+Opens an interactive panel with:
+
+- **Channel select menus** for moderator logs and moderator mail
+- **Create channels** button to auto-create restricted channels
+- **Test mode** toggle — simulate actions without executing them
+- **Require confirmation** toggle — show a confirmation modal before destructive actions
+- **Lockdown mode** toggle — restrict all bot commands to moderators
+- **Reset settings** button — clear all channel assignments and disable toggles
+
+See [Moderation Channels](./moderation-channels.mdx) for details on the channel setup flow.
+
+## Rules commands
+
+### `/mod rules-msg set-rules`
+
+Opens a modal to configure the rules embed content.
+
+**Required permission:** `Administrator`
+
+The modal has three fields:
+
+| Field | Max Length | Required | Description |
+|-------|-----------|----------|-------------|
+| Title | 400 chars | Yes | Title for the rules embed |
+| Rules | 2000 chars | Yes | Rules text (embed description) |
+| Image URL | 400 chars | No | Image displayed in the embed |
+
+Values are persisted in Flashcore. After submission, a preview of the rules embed is shown.
+
+### `/mod rules-msg set-member-role`
+
+Set the role granted when users accept the rules.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `role` | Role | Yes | The role to assign on acceptance |
+
+**Required permission:** `Administrator`
+
+The role name is stored in Flashcore. Members who click the accept button on the rules message receive this role.
+
+### `/mod rules-msg send`
+
+Post the rules message with an accept button.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `button-text` | String | No | Custom text for the accept button (default: "I Accept") |
+
+**Required permission:** `Administrator`
+
+Sends the rules embed to the current channel with an accept button. Requires both rules content and a member role to be configured first. The channel is recorded as the rules channel for enforcement purposes.
+
+See [Rules System](./rules-system.mdx) for the complete workflow.
+
+## Context menu commands
+
+### Report Anonymously (Message)
+
+Right-click any message and select **Report Anonymously**. A modal prompts for the reason. The report is sent to the moderator mail channel with the message content, a link to the original message, and the reported member's info. The reporter's identity is always hidden.
+
+**Required permission:** None
+
+### Audit (User)
+
+Right-click any user and select **Audit**. Displays the same audit embed as `/mod audit` with ban status, infraction count, and a Ban/Unban button.
+
+**Required permission:** `ModerateMembers`
+
+## Ban/Unban buttons
+
+Audit embeds and ban confirmations include interactive buttons:
+
+- **Ban** — Bans the user, persists the ban record to Flashcore, and logs the action. Replaces itself with an Unban button.
+- **Unban** — Removes the ban from Discord, deletes the Flashcore ban record, and logs the action.
+
+Both buttons require `BanMembers` permission and respect test mode.
+
+## Anonymous mode
+
+Five commands support anonymous execution: `ban`, `kick`, `warn`, `forgive`, and `report`. When the `anonymous` option is `true`:
+
+1. The result embed is posted to the channel as a regular message (not attributed to any moderator)
+2. The moderator receives an ephemeral confirmation only they can see
+3. The moderator logs channel still records who performed the action
+
+## Test mode behavior
+
+When test mode is enabled via `/mod setup`:
+
+- No actual Discord actions are executed (no bans, kicks, timeouts, etc.)
+- Infraction counts are not modified
+- All actions are logged to the moderator logs channel with a `[TEST]` prefix
+- The moderator sees a yellow "Test mode" embed confirming no action was taken
+
+## Confirmation mode behavior
+
+When confirmation mode is enabled via `/mod setup`:
+
+- The `/mod ban` command shows a modal asking the moderator to type "yes" before executing
+- If the moderator types anything other than "yes", the action is cancelled
+- Other commands are not affected by confirmation mode
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./rules-system"
+    title="Rules System"
+    description="Set up rules acceptance and enforcement."
+  />
+  <Card
+    href="./moderation-channels"
+    title="Moderation Channels"
+    description="Configure logging and report channels."
+  />
+  <Card
+    href="./lockdown-mode"
+    title="Lockdown Mode"
+    description="Emergency command restriction."
+  />
+</Cards>

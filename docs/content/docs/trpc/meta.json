@@ -1,0 +1,14 @@
+{
+	"title": "@robojs/trpc",
+	"icon": "DiamondNodes",
+	"description": "Type-safe tRPC integration for Robo.js.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Guides---",
+		"server",
+		"client",
+		"---Reference---",
+		"configuration"
+	]
+}

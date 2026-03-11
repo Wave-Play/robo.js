@@ -1,0 +1,128 @@
+---
+title: "README"
+icon: Wrench
+description: Add maintenance mode to your Robo.js bot with automatic command blocking and persistent state.
+---
+
+<PluginHero
+	name="@robojs/maintenance"
+	description="Add maintenance mode to your Robo.js bot with automatic command blocking and persistent state."
+	icon={<Wrench />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-maintenance"
+	platforms={["Bots"]}
+/>
+
+Put your bot into maintenance mode without shutting it down. When enabled, all commands, context menus, and events are intercepted and users receive a configurable message. The plugin persists state across restarts, so maintenance mode survives reboots.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Terminal />} title="Slash Command Toggle" description="Enable or disable maintenance with /maintenance" />
+	<Feature icon={<Database />} title="Persistent State" description="Survives restarts via Flashcore storage" />
+	<Feature icon={<Lock />} title="Command Blocking" description="Intercepts all commands during maintenance" />
+	<Feature icon={<Shield />} title="Event Blocking" description="Silently blocks events while active" />
+	<Feature icon={<FileStack />} title="Exclusion Lists" description="Bypass specific commands, contexts, and events" />
+	<Feature icon={<FileText />} title="Custom Messages" description="Configurable maintenance reply to users" />
+	<Feature icon={<Key />} title="Self-bypass" description="The /maintenance command always works" />
+	<Feature icon={<Zap />} title="Flashcore Storage" description="Persistent key-value state under the hood" />
+</FeatureGrid>
+
+## Installation
+
+To install, run:
+
+```bash
+npx robo add @robojs/maintenance
+```
+
+Or create a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/maintenance
+```
+
+Once installed, the plugin's command, middleware, and lifecycle hook are registered automatically by Robo.js. No additional setup is required for basic usage.
+
+## The `/maintenance` command
+
+The plugin registers a single slash command:
+
+| Command | Option | Type | Required | Description |
+|---|---|---|---|---|
+| `/maintenance` | `enabled` | `boolean` | Yes | Whether to enable or disable maintenance mode |
+
+Toggle maintenance mode in Discord:
+
+- `/maintenance enabled:True` -- enables maintenance mode, replies with `"Maintenance mode enabled."`
+- `/maintenance enabled:False` -- disables maintenance mode, replies with `"Maintenance mode disabled."`
+
+The command persists the new state to [Flashcore](../framework/core/flashcore.mdx), so the setting survives bot restarts.
+
+<Callout type="info">
+The `/maintenance` command always works, even while maintenance mode is active. The plugin's middleware automatically bypasses its own commands to prevent lockout.
+</Callout>
+
+## How it works
+
+The plugin installs a [middleware](../bots/middleware.mdx) that runs before every handler in your Robo. When maintenance mode is active, the middleware checks each incoming handler and decides whether to block it.
+
+### What gets blocked
+
+When maintenance mode is enabled:
+
+- **Commands** -- Blocked. The user receives the maintenance message as a reply.
+- **Context menus** -- Blocked. The user receives the maintenance message as a reply.
+- **Events** -- Blocked silently (no message sent since events have no interaction to reply to).
+
+### What always passes through
+
+These are never blocked, regardless of maintenance state:
+
+- **Robo auto-generated handlers** -- Internal framework handlers always execute.
+- **This plugin's own handlers** -- The `/maintenance` command and `_start` lifecycle hook always work.
+- **Excluded items** -- Commands, context menus, and events listed in the exclude configuration arrays bypass maintenance mode.
+
+### Default exclusions
+
+The `_start` lifecycle event is excluded by default. This ensures the plugin can initialize on startup even if maintenance mode was persisted from a previous session.
+
+## Persistence
+
+Maintenance state is stored in [Flashcore](../framework/core/flashcore.mdx) under the key `__plugin_maintenance_enabled`. This means:
+
+- Enabling maintenance via the `/maintenance` command persists across restarts.
+- Disabling it also persists, so the bot won't unexpectedly return to maintenance mode.
+- The persisted Flashcore value takes **precedence** over the `maintenanceEnabled` config option. If you enabled maintenance via the command, setting `maintenanceEnabled: false` in your config won't override it -- you need to use the command (or clear the Flashcore key) to disable it.
+
+## Quick configuration
+
+Customize the maintenance message and exclude specific commands:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/maintenance.mjs"
+    export default {
+    	maintenanceMessage: 'We are performing scheduled maintenance. Please check back soon.',
+    	excludeCommands: ['ping', 'status']
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/maintenance.mjs"
+    export default {
+    	maintenanceMessage: 'We are performing scheduled maintenance. Please check back soon.',
+    	excludeCommands: ['ping', 'status']
+    }
+    ```
+  </Tab>
+</Tabs>
+
+With this config, `/ping` and `/status` continue to work during maintenance. All other commands return the custom message.
+
+## Next Steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="All config options, environment variables, and programmatic API." />
+	<Card href="../bots/middleware" title="Middleware" description="Learn how Robo.js middleware works." />
+	<Card href="../framework/core/flashcore" title="Flashcore" description="Persistent key-value storage used by this plugin." />
+</Cards>

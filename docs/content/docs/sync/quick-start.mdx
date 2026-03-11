@@ -1,0 +1,144 @@
+---
+title: Quick start
+description: Build a synced counter app in minutes.
+---
+
+Get a multiplayer counter running from scratch. This guide covers installation, provider setup, and your first `useSyncState` hook.
+
+## Prerequisites
+
+<Callout type="info">
+This guide assumes you have an existing Robo project. If not, create one first with `npx create-robo my-project`.
+</Callout>
+
+## Setup
+
+<Steps>
+	<Step>
+		### Install the plugin
+
+		```bash
+		npx robo add @robojs/sync
+		```
+
+		Also install `@robojs/server` if you haven't:
+
+		```bash
+		npx robo add @robojs/server
+		```
+	</Step>
+	<Step>
+		### Wrap your app
+
+		Add `SyncContextProvider` at the top of your component tree. Pass `clientData` to attach metadata visible to other clients.
+
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```tsx title="src/app/App.tsx"
+		    import { SyncContextProvider } from '@robojs/sync'
+
+		    export function App() {
+		    	return (
+		    		<SyncContextProvider clientData={{ name: 'Player1' }}>
+		    			<Counter />
+		    		</SyncContextProvider>
+		    	)
+		    }
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```jsx title="src/app/App.jsx"
+		    import { SyncContextProvider } from '@robojs/sync'
+
+		    export function App() {
+		    	return (
+		    		<SyncContextProvider clientData={{ name: 'Player1' }}>
+		    			<Counter />
+		    		</SyncContextProvider>
+		    	)
+		    }
+		    ```
+		  </Tab>
+		</Tabs>
+	</Step>
+	<Step>
+		### Create a synced component
+
+		Use `useSyncState` to share state across all connected clients. The third return value provides context about connected clients and host status.
+
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```tsx title="src/app/Counter.tsx"
+		    import { useSyncState } from '@robojs/sync'
+
+		    export function Counter() {
+		    	const [count, setCount, context] = useSyncState(0, ['counter'])
+
+		    	return (
+		    		<div>
+		    			<h1>Count: {count}</h1>
+		    			<button onClick={() => setCount(count + 1)}>Increment</button>
+		    			<p>Players: {context.clients.length}</p>
+		    			<p>{context.isHost ? 'You are the host' : 'Guest'}</p>
+		    		</div>
+		    	)
+		    }
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```jsx title="src/app/Counter.jsx"
+		    import { useSyncState } from '@robojs/sync'
+
+		    export function Counter() {
+		    	const [count, setCount, context] = useSyncState(0, ['counter'])
+
+		    	return (
+		    		<div>
+		    			<h1>Count: {count}</h1>
+		    			<button onClick={() => setCount(count + 1)}>Increment</button>
+		    			<p>Players: {context.clients.length}</p>
+		    			<p>{context.isHost ? 'You are the host' : 'Guest'}</p>
+		    		</div>
+		    	)
+		    }
+		    ```
+		  </Tab>
+		</Tabs>
+	</Step>
+	<Step>
+		### Run your project
+
+		```bash
+		npx robo dev
+		```
+
+		Open multiple browser tabs to see the counter sync in real-time. The first tab becomes the host.
+	</Step>
+</Steps>
+
+## How it works
+
+- `useSyncState` takes an initial value and a key array.
+- Components sharing the same key see the same state.
+- The third return value provides context: connected clients, host status, and messaging functions.
+- State syncs automatically via WebSocket. No manual handling needed.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./use-sync-state"
+		title="useSyncState"
+		description="Deep dive into the core sync hook."
+	/>
+	<Card
+		href="./use-sync-context"
+		title="useSyncContext"
+		description="Track connected clients and host status."
+	/>
+	<Card
+		href="./server-handlers"
+		title="Server handlers"
+		description="Add server-side validation and game logic."
+	/>
+</Cards>

@@ -1,0 +1,103 @@
+---
+title: Moderation Channels
+description: Configure dedicated channels for action logs and user reports
+---
+
+The plugin uses two dedicated channels for tracking moderation activity. Set them up through `/mod setup` to start receiving logs and reports.
+
+## Channel types
+
+### Moderator Logs
+
+Records every moderation action with timestamps and details:
+
+- Bans and unbans (including button-triggered)
+- Kicks
+- Warnings (with infraction count)
+- Timeouts
+- Forgiveness (strike clears)
+- Setting changes (mode toggles, channel assignments, resets)
+
+Each log entry is an embed with the action type, affected user, moderator who performed the action, reason, and timestamp. In test mode, entries are prefixed with `[TEST]`.
+
+Actions are only logged when the moderator logs channel is configured and the command was not executed in the logs channel itself (to avoid duplicates).
+
+### Moderator Mail
+
+Receives user reports from two sources:
+
+- `/mod report` slash command — includes the reported member, reason, optional evidence attachment, and reporter identity (or "anonymous user")
+- **Report Anonymously** context menu — includes the reported message content, a link to the original message, and the reason from the modal
+
+## Setting up channels
+
+### Option 1: Select existing channels
+
+Run `/mod setup` and use the dropdown menus to select existing text channels for logs and mail.
+
+When you select a channel, the plugin automatically ensures the bot has `ReadMessageHistory`, `SendMessages`, and `ViewChannel` permissions in that channel. If any are missing, the bot grants itself those permissions.
+
+### Option 2: Create channels automatically
+
+Click the **Create channels** button in the setup panel. The plugin creates two text channels:
+
+| Channel | Topic |
+|---------|-------|
+| `moderator-logs` | "Moderation actions will be logged here." |
+| `moderator-mail` | "Reports and appeals will be sent here." |
+
+Both channels are created with restricted permissions:
+
+| Entity | Permission |
+|--------|------------|
+| @everyone | ViewChannel denied |
+| Server owner | ViewChannel allowed |
+| Bot | ViewChannel allowed |
+| Any role with "moderator" in the name | ViewChannel allowed |
+| User who clicked the button | ViewChannel allowed |
+
+After creation, a role select menu appears. Select roles that should have access to the moderation channels — each selected role receives `ViewChannel` permission on both channels.
+
+### Resetting channels
+
+When both channels are configured, the **Create channels** button is replaced by a **Reset settings** button. Clicking it clears all channel assignments and disables confirmation mode and test mode.
+
+<Callout type="info">
+Resetting settings does not delete the channels — it only unlinks them from the plugin's configuration. The channels remain in your server.
+</Callout>
+
+## What gets logged
+
+Here's a summary of what appears in each channel:
+
+| Event | Moderator Logs | Moderator Mail |
+|-------|:-:|:-:|
+| `/mod ban` | Yes | — |
+| `/mod kick` | Yes | — |
+| `/mod warn` | Yes | — |
+| `/mod timeout` | Yes | — |
+| `/mod forgive` | Yes | — |
+| Ban/Unban buttons | Yes | — |
+| `/mod report` | Yes | Yes |
+| Report Anonymously | Yes | Yes |
+| Setting changes | Yes | — |
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./lockdown-mode"
+    title="Lockdown Mode"
+    description="Emergency command restriction."
+  />
+  <Card
+    href="./rules-system"
+    title="Rules System"
+    description="Set up rules acceptance and enforcement."
+  />
+</Cards>

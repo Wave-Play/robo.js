@@ -1,0 +1,160 @@
+---
+title: "useSyncContext"
+description: "Track connected clients and host status for a sync key."
+---
+
+Access room context without managing state. Track connected clients, determine host status, and react to join/leave events.
+
+## Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Key only
+    const context = useSyncContext<ClientData>(key)
+
+    // With event callbacks
+    useSyncContext<ClientData>(options, key)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Key only
+    const context = useSyncContext(key)
+
+    // With event callbacks
+    useSyncContext(options, key)
+    ```
+  </Tab>
+</Tabs>
+
+## Parameters
+
+Two call signatures. The first argument is either a key array or an options object.
+
+**SyncContextOptions:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `onConnect` | `(client: Client<ClientData>) => void` | Called when a client joins |
+| `onDisconnect` | `(client: Client<ClientData>) => void` | Called when a client leaves |
+
+## Return value
+
+Returns a `SyncContext` object.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clients` | `Client<ClientData>[]` | All connected clients for this key |
+| `clientId` | `string` | Your client ID |
+| `isHost` | `boolean` | Whether you're the room host |
+| `broadcast` | `(payload: unknown) => void` | Send ephemeral message to all |
+| `send` | `(clientId: string, payload: unknown) => void` | Send to specific client |
+
+## Basic usage
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { useSyncContext } from '@robojs/sync'
+
+    function PlayerList() {
+    	const { clients, clientId, isHost } = useSyncContext(['game', roomId])
+
+    	return (
+    		<div>
+    			<p>{isHost ? 'You are the host' : 'Guest'}</p>
+    			<ul>
+    				{clients.map((client) => (
+    					<li key={client.id}>
+    						{client.data?.name ?? client.id.slice(0, 6)}
+    						{client.id === clientId && ' (you)'}
+    					</li>
+    				))}
+    			</ul>
+    		</div>
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { useSyncContext } from '@robojs/sync'
+
+    function PlayerList() {
+    	const { clients, clientId, isHost } = useSyncContext(['game', roomId])
+
+    	return (
+    		<div>
+    			<p>{isHost ? 'You are the host' : 'Guest'}</p>
+    			<ul>
+    				{clients.map((client) => (
+    					<li key={client.id}>
+    						{client.data?.name ?? client.id.slice(0, 6)}
+    						{client.id === clientId && ' (you)'}
+    					</li>
+    				))}
+    			</ul>
+    		</div>
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Event callbacks
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    useSyncContext(
+    	{
+    		onConnect: (client) => console.log(`${client.data?.name} joined`),
+    		onDisconnect: (client) => console.log(`${client.data?.name} left`)
+    	},
+    	['game', roomId]
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    useSyncContext(
+    	{
+    		onConnect: (client) => console.log(`${client.data?.name} joined`),
+    		onDisconnect: (client) => console.log(`${client.data?.name} left`)
+    	},
+    	['game', roomId]
+    )
+    ```
+  </Tab>
+</Tabs>
+
+These are useful for notifications, sound effects, or updating UI when players join or leave.
+
+## Host determination
+
+The first client to subscribe to a key becomes the host. If the host disconnects, the next client takes over (server-managed). For explicit host control, use [SyncZone](./sync-zone.mdx) with `hostRules="explicit"`.
+
+## Messaging
+
+The `broadcast` and `send` functions from the context send ephemeral messages — they don't persist and aren't state. For persistent ephemeral messaging patterns, see [useSyncBroadcast](./use-sync-broadcast.mdx).
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./use-sync-broadcast"
+		title="useSyncBroadcast"
+		description="Ephemeral messaging with handlers."
+	/>
+	<Card
+		href="./use-sync-state"
+		title="useSyncState"
+		description="Combine context with shared state."
+	/>
+	<Card
+		href="./sync-zone"
+		title="SyncZone"
+		description="Hierarchical key prefixing and host control."
+	/>
+</Cards>

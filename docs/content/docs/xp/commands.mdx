@@ -1,0 +1,144 @@
+---
+title: Commands
+description: Complete slash command reference for the XP plugin.
+---
+
+The plugin registers slash commands for both users and admins. Admin commands require the Manage Guild permission by default, configurable via the `XP_ADMIN_PERMISSION` environment variable.
+
+## User commands
+
+These commands are available to all users without special permissions.
+
+### /rank
+
+View your rank card showing level, XP, progress bar, multipliers, and message counts.
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `user` | User | No | Target user. Defaults to yourself. |
+
+The rank card displays:
+- Current level and total XP
+- Progress bar toward the next level
+- Server rank position
+- Active multipliers (if any)
+- Message counts (`messages` and `xpMessages`)
+
+### /leaderboard
+
+View the paginated server leaderboard.
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `page` | Integer (1-100) | No | Page number. Defaults to 1. |
+
+<Callout type="info">
+When `leaderboard.public` is `false` (the default), this command requires admin permission. Set it to `true` in your config to make it available to everyone.
+</Callout>
+
+### /xp rewards
+
+View all configured role rewards with pagination. Always public -- no permissions required. Shows each reward's level requirement and associated role, sorted by level.
+
+## Admin commands
+
+All admin commands require the Manage Guild permission (or the permission set via `XP_ADMIN_PERMISSION`).
+
+### /xp give
+
+Award XP to a user.
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `user` | User | Yes | Target user |
+| `amount` | Integer (1-1,000,000) | Yes | Amount of XP to award |
+| `reason` | String | No | Reason for the award (included in events) |
+
+```
+/xp give @user 500 reason:contest winner
+```
+
+### /xp remove
+
+Remove XP from a user. XP is clamped at 0 (never goes negative).
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `user` | User | Yes | Target user |
+| `amount` | Integer (1-1,000,000) | Yes | Amount of XP to remove |
+| `reason` | String | No | Reason for the removal |
+
+### /xp set
+
+Set a user's XP to an exact value.
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `user` | User | Yes | Target user |
+| `amount` | Integer (0-1,000,000) | Yes | Total XP to set |
+| `reason` | String | No | Reason for the change |
+
+### /xp recalc
+
+Recalculate a user's level from their total XP and reconcile role rewards. Useful after changing the level curve or fixing data inconsistencies.
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `user` | User | Yes | Target user |
+
+### /xp config
+
+Opens an interactive configuration panel using Discord Components V2. Navigate settings through buttons, select menus, and modals without re-running the command.
+
+The panel has three categories:
+
+**General settings:**
+- Set cooldown (0-3600 seconds)
+- Set XP rate (0.1-10.0x)
+- Toggle public leaderboard
+
+**No-XP zones:**
+- Add/remove no-XP roles
+- Add/remove no-XP channels
+
+**Role rewards:**
+- Add role rewards at specific levels
+- Remove existing rewards
+- Switch between stack and replace modes
+- Toggle remove-on-loss behavior
+
+<Callout type="info">
+Component interactions expire after 15 minutes. If a button stops responding, run `/xp config` again.
+</Callout>
+
+### /xp multiplier
+
+Multiplier commands are managed via dedicated subcommands, separate from the `/xp config` UI.
+
+| Command | Description | Options |
+|---|---|---|
+| `/xp multiplier server <multiplier>` | Set server-wide XP multiplier | `multiplier` (0.1-10.0) |
+| `/xp multiplier role <role> <multiplier>` | Set role XP multiplier | `role`, `multiplier` (0.1-10.0) |
+| `/xp multiplier user <user> <multiplier>` | Set user XP multiplier | `user`, `multiplier` (0.1-10.0) |
+| `/xp multiplier remove-role <role>` | Remove a role multiplier | `role` |
+| `/xp multiplier remove-user <user>` | Remove a user multiplier | `user` |
+
+Multipliers combine multiplicatively: `effective = server * max(role) * user`.
+
+## Permission override
+
+Override the default Manage Guild permission by setting the `XP_ADMIN_PERMISSION` environment variable:
+
+```bash title=".env"
+XP_ADMIN_PERMISSION=Administrator
+```
+
+The value must be a valid `PermissionFlagsBits` key name (e.g., `Administrator`, `ManageGuild`, `ModerateMembers`).
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="All config options in detail." />
+  <Card href="./role-rewards" title="Role rewards" description="Stack vs replace modes and role management." />
+  <Card href="./events" title="Events" description="Listen to level-ups and XP changes programmatically." />
+</Cards>

@@ -1,0 +1,229 @@
+---
+title: REST API
+description: HTTP endpoints for external integrations, dashboards, and automation.
+---
+
+The plugin exposes REST API endpoints for programmatic access to roadmap data. These endpoints require `@robojs/server` as a dependency.
+
+```bash
+npx robo add @robojs/server
+```
+
+## Response format
+
+All endpoints return a consistent JSON format:
+
+**Success:**
+
+```json
+{
+  "success": true,
+  "data": { }
+}
+```
+
+**Error:**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable description",
+    "hint": "Suggested fix (optional)"
+  }
+}
+```
+
+## Error codes
+
+| Code | HTTP Status | Description |
+|---|---|---|
+| `MISSING_GUILD_ID` | 400 | Guild ID not provided in request |
+| `INVALID_REQUEST` | 400 | Invalid request body or parameters |
+| `PROVIDER_AUTH_FAILED` | 401 | Provider authentication failed |
+| `MISSING_PERMISSIONS` | 403 | Insufficient Discord permissions |
+| `GUILD_NOT_FOUND` | 404 | Guild not found or bot not a member |
+| `FORUM_NOT_SETUP` | 404 | Forums not configured (run `/roadmap setup` first) |
+| `CARD_NOT_FOUND` | 404 | Card not found in provider |
+| `METHOD_NOT_ALLOWED` | 405 | Wrong HTTP method for this endpoint |
+| `SYNC_FAILED` | 500 | Sync operation failed |
+| `CARD_CREATION_FAILED` | 500 | Card creation failed |
+| `CARD_UPDATE_FAILED` | 500 | Card update failed |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+| `PROVIDER_NOT_READY` | 503 | Provider not initialized |
+| `NETWORK_ERROR` | 503 | Network connectivity issue |
+
+## Health and provider
+
+### GET /api/roadmap/health
+
+Health check endpoint. Returns basic status information.
+
+```bash
+curl http://localhost:3000/api/roadmap/health
+```
+
+### GET /api/roadmap/provider/status
+
+Check if the provider is initialized and ready.
+
+```bash
+curl http://localhost:3000/api/roadmap/provider/status
+```
+
+### GET /api/roadmap/provider/info
+
+Get provider metadata (name, version, capabilities).
+
+```bash
+curl http://localhost:3000/api/roadmap/provider/info
+```
+
+### GET /api/roadmap/provider/cards
+
+Fetch cards from the provider. Supports a `limit` query parameter.
+
+```bash
+curl "http://localhost:3000/api/roadmap/provider/cards?limit=50"
+```
+
+### GET /api/roadmap/provider/columns
+
+Get all column definitions from the provider.
+
+```bash
+curl http://localhost:3000/api/roadmap/provider/columns
+```
+
+## Forum management
+
+### GET /api/roadmap/forum/:guildId
+
+Get the current forum setup for a guild, including category ID and forum channel IDs.
+
+```bash
+curl http://localhost:3000/api/roadmap/forum/123456789
+```
+
+### POST /api/roadmap/forum/:guildId/setup
+
+Create the roadmap forum structure for a guild. Idempotent.
+
+```bash
+curl -X POST http://localhost:3000/api/roadmap/forum/123456789/setup
+```
+
+### PUT /api/roadmap/forum/:guildId/access
+
+Toggle forum access mode between public and private.
+
+```bash
+curl -X PUT http://localhost:3000/api/roadmap/forum/123456789/access \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "public"}'
+```
+
+### PUT /api/roadmap/forum/:guildId/tags
+
+Update forum tags for a specific column.
+
+```bash
+curl -X PUT http://localhost:3000/api/roadmap/forum/123456789/tags \
+  -H "Content-Type: application/json" \
+  -d '{"column": "Backlog", "tags": ["feature", "bug", "enhancement"]}'
+```
+
+## Settings
+
+### GET /api/roadmap/settings/:guildId
+
+Get all roadmap settings for a guild.
+
+```bash
+curl http://localhost:3000/api/roadmap/settings/123456789
+```
+
+### PUT /api/roadmap/settings/:guildId
+
+Update roadmap settings for a guild (partial update).
+
+```bash
+curl -X PUT http://localhost:3000/api/roadmap/settings/123456789 \
+  -H "Content-Type: application/json" \
+  -d '{"isPublic": true, "threadTitleTemplate": "[{id}] {title}"}'
+```
+
+### GET /api/roadmap/settings/:guildId/posts
+
+Get all synced post mappings (card ID to thread ID).
+
+```bash
+curl http://localhost:3000/api/roadmap/settings/123456789/posts
+```
+
+## Sync operations
+
+### POST /api/roadmap/sync/:guildId
+
+Trigger a sync for a guild. Supports `dryRun` query parameter.
+
+```bash
+# Full sync
+curl -X POST http://localhost:3000/api/roadmap/sync/123456789
+
+# Dry run
+curl -X POST "http://localhost:3000/api/roadmap/sync/123456789?dryRun=true"
+```
+
+Returns sync statistics on completion.
+
+### GET /api/roadmap/sync/:guildId/status
+
+Get the last sync timestamp and status for a guild.
+
+```bash
+curl http://localhost:3000/api/roadmap/sync/123456789/status
+```
+
+## Card management
+
+### POST /api/roadmap/cards/:guildId
+
+Create a new card and sync it to Discord.
+
+```bash
+curl -X POST http://localhost:3000/api/roadmap/cards/123456789 \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New feature", "description": "Feature description", "column": "Backlog", "labels": ["feature"]}'
+```
+
+<Callout type="warn">
+This endpoint has no authentication by default. Implement authentication middleware (Discord OAuth, API keys, JWT) before exposing to the internet.
+</Callout>
+
+### GET /api/roadmap/cards/:guildId/:cardId
+
+Get details for a specific card, including its provider data and Discord thread info.
+
+```bash
+curl http://localhost:3000/api/roadmap/cards/123456789/PROJ-123
+```
+
+### PUT /api/roadmap/cards/:guildId/:cardId
+
+Update an existing card. Supports partial updates. Column changes trigger thread movement.
+
+```bash
+curl -X PUT http://localhost:3000/api/roadmap/cards/123456789/PROJ-123 \
+  -H "Content-Type: application/json" \
+  -d '{"column": "In Progress", "labels": ["feature", "wip"]}'
+```
+
+## Next steps
+
+<Cards>
+  <Card href="./api-reference" title="API reference" description="Programmatic API for direct use in code." />
+  <Card href="./recipes" title="Recipes" description="Common integration patterns." />
+  <Card href="./custom-providers" title="Custom providers" description="Build your own data source." />
+</Cards>

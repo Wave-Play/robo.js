@@ -1,0 +1,29 @@
+{
+	"title": "@robojs/discordjs",
+	"icon": "Discord",
+	"description": "Discord.js integration plugin for commands, events, and more.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Getting Started---",
+		"configuration",
+		"lifecycle",
+		"---Handlers---",
+		"commands",
+		"events",
+		"context-menus",
+		"middleware",
+		"---Interactions---",
+		"embeds",
+		"components",
+		"modals",
+		"---Features---",
+		"sage",
+		"command-registration",
+		"intents-permissions",
+		"---Advanced---",
+		"namespace-controllers",
+		"troubleshooting",
+		"migrate"
+	]
+}

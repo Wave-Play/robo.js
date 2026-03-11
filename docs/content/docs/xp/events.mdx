@@ -1,0 +1,268 @@
+---
+title: Events
+description: Listen to level-ups, level-downs, and XP changes with the event system.
+---
+
+The XP plugin emits events after every XP operation. Use these to build custom features like announcements, analytics, achievements, and more.
+
+All events are emitted **after** data is persisted to Flashcore, so listeners always see the latest state.
+
+## Event types
+
+Three events are available:
+
+### levelUp
+
+Fires when a user's level increases.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+    	console.log(`${userId} leveled up from ${oldLevel} to ${newLevel}`)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+    	console.log(`${userId} leveled up from ${oldLevel} to ${newLevel}`)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+**Payload:**
+
+<TypeTable
+  type={{
+    guildId: { type: 'string', description: 'Guild where the level-up occurred.' },
+    userId: { type: 'string', description: 'User who leveled up.' },
+    storeId: { type: 'string', description: "Store that triggered the event (e.g., 'default', 'reputation')." },
+    oldLevel: { type: 'number', description: 'Previous level.' },
+    newLevel: { type: 'number', description: 'New level. Always greater than oldLevel.' },
+    totalXp: { type: 'number', description: "User's total XP after the change." },
+  }}
+/>
+
+### levelDown
+
+Fires when a user's level decreases (e.g., from XP removal).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+    	console.log(`${userId} dropped from level ${oldLevel} to ${newLevel}`)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+    	console.log(`${userId} dropped from level ${oldLevel} to ${newLevel}`)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+**Payload:** Same shape as `levelUp`, but `newLevel` is always less than `oldLevel`.
+
+### xpChange
+
+Fires on every XP modification (add, remove, set, or message award).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason, storeId }) => {
+    	console.log(`${userId} XP changed by ${delta} (reason: ${reason})`)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason, storeId }) => {
+    	console.log(`${userId} XP changed by ${delta} (reason: ${reason})`)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+**Payload:**
+
+<TypeTable
+  type={{
+guildId: { type: 'string', description: 'Guild where the change occurred.' },
+userId: { type: 'string', description: 'User whose XP changed.' },
+storeId: { type: 'string', description: "Store that triggered the event." },
+oldXp: { type: 'number', description: 'XP before the change.' },
+newXp: { type: 'number', description: 'XP after the change.' },
+delta: { type: 'number', description: 'Amount of change. Can be negative.' },
+reason: { type: 'string | undefined', description: 'Optional reason provided by the caller.' },
+  }}
+/>
+
+## Listener API
+
+### on / off / once
+
+The generic event API supports registering, removing, and one-time listeners.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/xp'
+
+    // Persistent listener
+    events.on('levelUp', handler)
+
+    // One-time listener (removed after first trigger)
+    events.once('xpChange', handler)
+
+    // Remove a listener (must be the same function reference)
+    events.off('levelUp', handler)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/xp'
+
+    // Persistent listener
+    events.on('levelUp', handler)
+
+    // One-time listener (removed after first trigger)
+    events.once('xpChange', handler)
+
+    // Remove a listener (must be the same function reference)
+    events.off('levelUp', handler)
+    ```
+  </Tab>
+</Tabs>
+
+### Convenience methods
+
+Shorthand methods for common patterns:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    events.onLevelUp(handler)   // events.on('levelUp', handler)
+    events.onLevelDown(handler) // events.on('levelDown', handler)
+    events.onXPChange(handler)  // events.on('xpChange', handler)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    events.onLevelUp(handler)   // events.on('levelUp', handler)
+    events.onLevelDown(handler) // events.on('levelDown', handler)
+    events.onXPChange(handler)  // events.on('xpChange', handler)
+    ```
+  </Tab>
+</Tabs>
+
+## Emission order
+
+Both the core API and the message award handler emit events in this order:
+
+1. `levelUp` or `levelDown` (if level changed)
+2. `xpChange` (always)
+
+Design listeners to be order-agnostic when possible. If your listener needs data from both events, use `xpChange` alone since it fires for every operation.
+
+## Filtering by store
+
+When using [multi-store](./multi-store.mdx), all events include a `storeId` field. Filter events to respond only to specific stores.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp((event) => {
+    	if (event.storeId === 'reputation') {
+    		console.log('Reputation level up:', event.newLevel)
+    	} else if (event.storeId === 'default') {
+    		console.log('XP level up:', event.newLevel)
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp((event) => {
+    	if (event.storeId === 'reputation') {
+    		console.log('Reputation level up:', event.newLevel)
+    	} else if (event.storeId === 'default') {
+    		console.log('XP level up:', event.newLevel)
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Built-in listeners
+
+The plugin registers internal listeners at module load:
+
+- **`levelUp`** -- Reconciles role rewards (default store only)
+- **`levelDown`** -- Removes roles if `removeRewardOnXpLoss` is enabled (default store only)
+- **`xpChange`, `levelUp`, `levelDown`** -- Invalidates leaderboard cache (per-store, lazy)
+
+Role reward reconciliation only runs for the default store. Custom stores never trigger role changes.
+
+## Best practices
+
+- Register listeners in `src/events/_start/` files so they activate on Robo startup.
+- Use `async`/`await` in listeners. Errors in listeners are logged but do not propagate to the caller.
+- Include `reason` when calling XP operations to make analytics and audit logs more useful.
+- For heavy work (API calls, database writes), consider using a queue rather than processing inline.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start/xp-analytics.ts"
+    import { events } from '@robojs/xp'
+
+    events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+    	if (storeId !== 'default') return
+
+    	await analyticsService.track('xp_change', {
+    		guild: guildId,
+    		user: userId,
+    		amount: delta,
+    		reason
+    	})
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start/xp-analytics.js"
+    import { events } from '@robojs/xp'
+
+    events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+    	if (storeId !== 'default') return
+
+    	await analyticsService.track('xp_change', {
+    		guild: guildId,
+    		user: userId,
+    		amount: delta,
+    		reason
+    	})
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./api-reference" title="API reference" description="Full TypeScript API for XP operations." />
+  <Card href="./recipes" title="Recipes" description="Common integration patterns using events." />
+  <Card href="./multi-store" title="Multi-store" description="Run parallel progression systems." />
+</Cards>

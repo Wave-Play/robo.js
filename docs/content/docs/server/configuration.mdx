@@ -1,0 +1,249 @@
+---
+title: Configuration
+description: All configuration options for @robojs/server.
+---
+
+Configure the server plugin through a config file at `config/plugins/robojs/server.mjs` (or `.ts`). All fields are optional.
+
+## Complete example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	port: 3000,
+    	hostname: '0.0.0.0',
+    	prefix: '/api',
+    	maxPortAttempts: 10,
+    	cors: {
+    		origins: ['https://myapp.com'],
+    		credentials: true
+    	},
+    	tunnel: {
+    		enabled: false,
+    		provider: 'cloudflare'
+    	},
+    	openapi: {
+    		title: 'My API',
+    		version: '1.0.0'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	port: 3000,
+    	hostname: '0.0.0.0',
+    	prefix: '/api',
+    	maxPortAttempts: 10,
+    	cors: {
+    		origins: ['https://myapp.com'],
+    		credentials: true
+    	},
+    	tunnel: {
+    		enabled: false,
+    		provider: 'cloudflare'
+    	},
+    	openapi: {
+    		title: 'My API',
+    		version: '1.0.0'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Options reference
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `port` | `number` | `3000` (or `PORT` env) | Port the server listens on. |
+| `hostname` | `string` | `'localhost'` (or `ROBO_HOSTNAME` env) | Hostname to bind to. Use `'0.0.0.0'` for all interfaces. |
+| `prefix` | `string \| false \| null` | `'/api'` | URL prefix for API routes. Set to `false` or `null` to disable. |
+| `maxPortAttempts` | `number` | `10` | Max ports to try when the configured port is in use. Set to `1` to disable auto-increment. |
+| `cors` | `boolean \| CorsConfig` | `undefined` | CORS configuration. `true` enables permissive CORS. See [CORS](./cors.mdx). |
+| `engine` | `BaseEngine` | Auto-detected | Custom server engine. See [Engines](./engines.mdx). |
+| `vite` | `ViteDevServer` | Auto-created in dev | Pre-configured Vite dev server instance. |
+| `viteBuild` | `{ configFile: string }` | Auto-discovered | Vite config file path for production builds. |
+| `tunnel` | `TunnelConfig` | `undefined` | Tunnel configuration. See [Tunnels](./tunnels.mdx). |
+| `openapi` | `boolean \| OpenAPIConfig` | Enabled | OpenAPI spec generation settings. Set to `false` to disable. See [OpenAPI](./openapi.mdx). |
+| `pluginPrefixes` | `PluginPrefixMap` | `{}` | URL prefix mappings for plugin routes. |
+
+## Port auto-increment
+
+When the configured port is already in use, the server tries the next port automatically (up to `maxPortAttempts` attempts). A warning is logged:
+
+```
+[server] Port 3000 is in use. Using port 3001 instead.
+```
+
+To disable this behavior:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	port: 3000,
+    	maxPortAttempts: 1
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	port: 3000,
+    	maxPortAttempts: 1
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## CORS config
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Permissive (all origins)
+    cors: true
+
+    // Specific origins
+    cors: {
+    	origins: ['https://myapp.com', 'http://localhost:5173'],
+    	credentials: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Permissive (all origins)
+    cors: true
+
+    // Specific origins
+    cors: {
+    	origins: ['https://myapp.com', 'http://localhost:5173'],
+    	credentials: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+See [CORS](./cors.mdx) for details.
+
+## Tunnel config
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    tunnel: {
+    	enabled: true,
+    	provider: 'cloudflare',
+    	cloudflare: {
+    		domain: 'example.com',
+    		apiKey: 'your-api-key',
+    		zoneId: 'your-zone-id',
+    		accountId: 'your-account-id'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    tunnel: {
+    	enabled: true,
+    	provider: 'cloudflare',
+    	cloudflare: {
+    		domain: 'example.com',
+    		apiKey: 'your-api-key',
+    		zoneId: 'your-zone-id',
+    		accountId: 'your-account-id'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+See [Tunnels](./tunnels.mdx) for details.
+
+## OpenAPI config
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    openapi: {
+    	title: 'My API',
+    	version: '1.0.0',
+    	servers: [{ url: 'https://api.example.com' }]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    openapi: {
+    	title: 'My API',
+    	version: '1.0.0',
+    	servers: [{ url: 'https://api.example.com' }]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Set `openapi: false` to disable generation. See [OpenAPI](./openapi.mdx) for full options.
+
+## Plugin prefixes
+
+Scope plugin routes under URL prefixes:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    pluginPrefixes: {
+    	'@robojs/mock': '/mock',
+    	'@robojs/other': {
+    		api: '/other-api',
+    		static: '/other-static',
+    		exclusive: false
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    pluginPrefixes: {
+    	'@robojs/mock': '/mock',
+    	'@robojs/other': {
+    		api: '/other-api',
+    		static: '/other-static',
+    		exclusive: false
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+- Simple string: Both API and static assets under that prefix, exclusive mode.
+- Object: Separate API and static prefixes, with optional `exclusive` flag.
+- `exclusive: true` (default): Plugin routes are ONLY accessible under the prefix.
+- `exclusive: false`: Plugin routes are accessible both with and without the prefix.
+
+## Environment variables
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `PORT` | Server port | `3000` |
+| `ROBO_HOSTNAME` | Server hostname | `'localhost'` |
+| `CLOUDFLARE_DOMAIN` | Tunnel domain | — |
+| `CLOUDFLARE_API_KEY` | Cloudflare API key | — |
+| `CLOUDFLARE_ZONE_ID` | Cloudflare zone ID | — |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | — |
+| `CLOUDFLARE_TUNNEL_ID` | Tunnel ID (auto-populated) | — |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Tunnel token (auto-populated) | — |
+| `CLOUDFLARED_VERSION` | Cloudflared binary version | `'latest'` |
+
+## Next steps
+
+<Cards>
+	<Card title="Routing" href="./routing" description="Learn about file-based routing." />
+	<Card title="Engines" href="./engines" description="Understand server engines." />
+	<Card title="CORS" href="./cors" description="Configure cross-origin requests." />
+</Cards>

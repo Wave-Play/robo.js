@@ -1,0 +1,240 @@
+---
+title: "README"
+icon: BarChart
+description: Track usage patterns in your Robo with Google Analytics, Plausible, or custom providers.
+---
+
+<PluginHero
+	name="@robojs/analytics"
+	description="Track usage patterns in your Robo with Google Analytics, Plausible, or custom providers."
+	icon={<BarChart />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/analytics"
+	platforms={["Bots"]}
+/>
+
+Track usage patterns in your Robo with services like [Google Analytics](https://analytics.google.com), [Plausible](https://plausible.io), or a custom provider. Know how often commands are used, how many servers your bot joins, and more.
+
+The plugin provides a unified `Analytics` API that works the same regardless of which analytics service you use. Switch providers or use multiple at once without changing your tracking code.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<BarChart />} title="Google Analytics" description="Track events with GA4 Measurement Protocol" />
+	<Feature icon={<Globe />} title="Plausible" description="Privacy-focused, GDPR-compliant analytics" />
+	<Feature icon={<Waypoints />} title="Multi-Provider" description="Send events to multiple services at once" />
+	<Feature icon={<Zap />} title="Event Tracking" description="Track custom events with session and user context" />
+	<Feature icon={<FileText />} title="Page Views" description="Record screen and page view analytics" />
+	<Feature icon={<CPU />} title="Auto-Detection" description="Detects providers from environment variables" />
+	<Feature icon={<Blocks />} title="Seed Files" description="Pre-built middleware and tracking commands" />
+	<Feature icon={<Wrench />} title="Custom Engines" description="Build your own analytics provider" />
+</FeatureGrid>
+
+## Installation
+
+Add the plugin to your Robo:
+
+```bash
+npx robo add @robojs/analytics
+```
+
+Or create a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/analytics
+```
+
+## Quick start
+
+The plugin detects which analytics service to use based on environment variables in your `.env` file.
+
+<Tabs items={["Google Analytics", "Plausible"]}>
+  <Tab value="Google Analytics">
+    Add your Measurement ID and API Secret:
+
+    ```bash title=".env"
+    GOOGLE_ANALYTICS_MEASURE_ID="G-123456789"
+    GOOGLE_ANALYTICS_SECRET="your-api-secret"
+    ```
+
+    Find these values in your [Google Analytics Admin](https://analytics.google.com) under **Data Streams > Measurement Protocol API secrets**.
+  </Tab>
+  <Tab value="Plausible">
+    Add your site domain:
+
+    ```bash title=".env"
+    PLAUSIBLE_DOMAIN="example.com"
+    ```
+
+    [Plausible](https://plausible.io) is a privacy-focused alternative that does not use cookies and is GDPR-compliant by default.
+  </Tab>
+</Tabs>
+
+Start tracking events anywhere in your project:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Analytics } from '@robojs/analytics'
+
+    Analytics.event('button_click')
+    Analytics.view('Dashboard')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Analytics } from '@robojs/analytics'
+
+    Analytics.event('button_click')
+    Analytics.view('Dashboard')
+    ```
+  </Tab>
+</Tabs>
+
+That's it. The plugin handles initialization, service detection, and API calls automatically.
+
+### Auto-detection
+
+The plugin detects which engine to use at startup:
+
+| Environment variables set | Engine created |
+|---|---|
+| Both `GOOGLE_ANALYTICS_MEASURE_ID` and `PLAUSIBLE_DOMAIN` | `ManyEngines` (sends to both) |
+| Only `GOOGLE_ANALYTICS_MEASURE_ID` | `GoogleAnalytics` |
+| Only `PLAUSIBLE_DOMAIN` | `PlausibleAnalytics` |
+| Neither | Warning logged, analytics inactive |
+
+Set both to send events to multiple services automatically. No config file needed.
+
+### Which service to choose?
+
+| Service | Best for |
+|---|---|
+| **Plausible** | Privacy-focused, simple dashboards, GDPR compliance |
+| **Google Analytics** | Detailed funnels, audience segmentation, free tier |
+| **Custom** | Proprietary systems, niche providers |
+
+## Tracking events
+
+Use `Analytics.event()` to track any action. Include `sessionId` and `userId` when possible for better accuracy.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Analytics } from '@robojs/analytics'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	const sessionId = interaction.channelId ?? interaction.guildId
+
+    	// Track with session and user context
+    	Analytics.event('feature_used', {
+    		sessionId,
+    		userId: interaction.user.id,
+    		data: { feature: 'leaderboard' }
+    	})
+
+    	return 'Tracked.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Analytics } from '@robojs/analytics'
+
+    export default (interaction) => {
+    	const sessionId = interaction.channelId ?? interaction.guildId
+
+    	// Track with session and user context
+    	Analytics.event('feature_used', {
+    		sessionId,
+    		userId: interaction.user.id,
+    		data: { feature: 'leaderboard' }
+    	})
+
+    	return 'Tracked.'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Use `Analytics.view()` for page or screen views:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.view('Settings Page', {
+    	sessionId: interaction.channelId,
+    	userId: interaction.user.id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.view('Settings Page', {
+    	sessionId: interaction.channelId,
+    	userId: interaction.user.id
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Check if the plugin has been initialized before calling:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    if (Analytics.isReady()) {
+    	Analytics.event('safe_event')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    if (Analytics.isReady()) {
+    	Analytics.event('safe_event')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Seed files
+
+When you install the plugin with `npx robo add`, it can [seed](../framework/plugins/seed.mdx) your project with starter tracking code:
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="commands" defaultOpen>
+      <File name="test-analytics.ts" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="guildCreate.ts" />
+    </Folder>
+    <Folder name="middleware" defaultOpen>
+      <File name="track-commands.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+| File | What it does |
+|---|---|
+| `track-commands.ts` | Middleware that automatically tracks every slash command execution |
+| `guildCreate.ts` | Tracks `server_join` events when your bot joins a new server |
+| `test-analytics.ts` | Test command to verify your analytics integration works |
+
+The **track-commands middleware** is the most useful seed file. It intercepts every slash command, normalizes the name (replacing `/` and `-` with `_`), and sends it as an event with session and user context. No per-command tracking code needed.
+
+<Callout type="info">
+The `guildCreate` event requires the `Guilds` intent. Add it to your Robo config if you want server join tracking.
+</Callout>
+
+Delete `test-analytics.ts` after verifying your setup works.
+
+## Next Steps
+
+<Cards>
+  <Card href="./google-analytics" title="Google Analytics" description="Set up Google Analytics with your Robo." />
+  <Card href="./plausible" title="Plausible" description="Set up Plausible analytics." />
+  <Card href="./custom-engines" title="Custom engines" description="Build your own analytics provider." />
+  <Card href="./api" title="API reference" description="Full API documentation." />
+  <Card href="./configuration" title="Configuration" description="Plugin options and environment variables." />
+</Cards>

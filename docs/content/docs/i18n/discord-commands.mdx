@@ -1,0 +1,206 @@
+---
+title: "Discord commands"
+description: Localize slash command names, descriptions, and options across all supported locales.
+---
+
+The plugin provides `createCommandConfig()` as a drop-in replacement for the Robo.js version. It accepts locale keys instead of hardcoded strings and auto-populates `nameLocalizations` and `descriptionLocalizations` for every discovered locale.
+
+## Setting up locale files
+
+Store command metadata alongside your translations. Nested keys work well for organizing command names, descriptions, and option text.
+
+```json title="locales/en-US/commands.json"
+{
+	"hey": "Hey there, {$user.name}!",
+	"ping": {
+		"name": "ping",
+		"desc": "Measure latency",
+		"arg": {
+			"name": "text",
+			"desc": "Optional text to include"
+		}
+	}
+}
+```
+
+```json title="locales/es-ES/commands.json"
+{
+	"hey": "Hola, {$user.name}!",
+	"ping": {
+		"name": "ping",
+		"desc": "Medir latencia",
+		"arg": {
+			"name": "texto",
+			"desc": "Texto opcional para incluir"
+		}
+	}
+}
+```
+
+## Using `createCommandConfig()`
+
+Import `createCommandConfig` from `@robojs/i18n` instead of `robo.js`. Pass `nameKey` and `descriptionKey` to reference your locale keys.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    import { createCommandConfig, t } from '@robojs/i18n'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+    import type { CommandOptions } from 'robo.js'
+
+    export const config = createCommandConfig({
+    	nameKey: 'commands:ping.name',
+    	descriptionKey: 'commands:ping.desc',
+    	options: [
+    		{
+    			type: 'string',
+    			name: 'text',
+    			nameKey: 'commands:ping.arg.name',
+    			descriptionKey: 'commands:ping.arg.desc'
+    		}
+    	]
+    } as const)
+
+    export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+    	const user = { name: options.text ?? 'Robo' }
+    	return t(interaction, 'commands:hey', { user })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    import { createCommandConfig, t } from '@robojs/i18n'
+
+    export const config = createCommandConfig({
+    	nameKey: 'commands:ping.name',
+    	descriptionKey: 'commands:ping.desc',
+    	options: [
+    		{
+    			type: 'string',
+    			name: 'text',
+    			nameKey: 'commands:ping.arg.name',
+    			descriptionKey: 'commands:ping.arg.desc'
+    		}
+    	]
+    })
+
+    export default (interaction, options) => {
+    	const user = { name: options.text ?? 'Robo' }
+    	return t(interaction, 'commands:hey', { user })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+The `as const` assertion is required for TypeScript to correctly narrow option types in `CommandOptions<typeof config>`.
+</Callout>
+
+## What it produces
+
+At runtime, `createCommandConfig()` resolves all locale keys and builds a standard Robo.js command config with localizations:
+
+- `description` is set from the `defaultLocale` value of `descriptionKey`
+- `descriptionLocalizations` contains values for all discovered locales
+- Each option's `name` is set from its `nameKey` using the default locale
+- Each option gets `nameLocalizations` and `descriptionLocalizations`
+- `nameKey` and `descriptionKey` are stripped from the final output
+
+## Default locale
+
+The `defaultLocale` option controls which locale provides the primary `name` and `description` values. It defaults to `'en-US'`.
+
+Configure it in your plugin options:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/i18n.mjs"
+    export default {
+    	defaultLocale: 'es-ES'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/i18n.mjs"
+    export default {
+    	defaultLocale: 'es-ES'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Or in your Robo config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    export default {
+    	plugins: [
+    		['@robojs/i18n', {
+    			defaultLocale: 'es-ES'
+    		}]
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    export default {
+    	plugins: [
+    		['@robojs/i18n', {
+    			defaultLocale: 'es-ES'
+    		}]
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Options
+
+The `name` field on options is still required alongside `nameKey`. This helps TypeScript infer option types correctly for `CommandOptions<typeof config>`.
+
+The `descriptionKey` field is optional on both the top-level config and individual options. When omitted, no description or description localizations are generated for that level.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export const config = createCommandConfig({
+    	// No descriptionKey — description stays as-is (or undefined)
+    	description: 'A manually set description',
+    	options: [
+    		{
+    			type: 'string',
+    			name: 'text',
+    			nameKey: 'commands:ping.arg.name'
+    			// No descriptionKey — option description stays undefined
+    		}
+    	]
+    } as const)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const config = createCommandConfig({
+    	// No descriptionKey — description stays as-is (or undefined)
+    	description: 'A manually set description',
+    	options: [
+    		{
+    			type: 'string',
+    			name: 'text',
+    			nameKey: 'commands:ping.arg.name'
+    			// No descriptionKey — option description stays undefined
+    		}
+    	]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="Plugin options, MF2 syntax, and type generation." />
+	<Card href="./api" title="API reference" description="Complete reference for all exported functions and types." />
+	<Card href="./quick-start" title="Quick start" description="Set up locale files and start translating." />
+</Cards>

@@ -1,0 +1,56 @@
+---
+title: Windows Execution Policies
+description: How to change PowerShell execution policies to run scripts for Robo.js development.
+---
+
+PowerShell's execution policy controls the conditions under which PowerShell loads configuration files and runs scripts. This safety feature helps prevent the execution of malicious scripts, but it can also block legitimate development tools.
+
+<Callout type="warn">
+**Note:** Changing execution policies affects what scripts can run on your system. The `RemoteSigned` policy below is the safest option that still allows local development.
+</Callout>
+
+## Steps to Change the Execution Policy in PowerShell
+
+<div className='fd-steps [&_h3]:fd-step'>
+
+### Open PowerShell as Administrator
+
+### Check Current Execution Policy (optional)
+
+   You can check the current execution policy by running:
+
+   ```powershell
+   Get-ExecutionPolicy
+   ```
+
+### Change the Execution Policy
+
+   Set the policy to `RemoteSigned`, which allows locally created scripts to run but requires downloaded scripts to be signed by a trusted publisher:
+
+   ```powershell
+   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
+
+   This changes the execution policy for the current user only.
+
+### Confirm the Change
+
+   If prompted to confirm the change, type `Y` (Yes) and press Enter.
+
+### Verify the Change (optional)
+
+   You can verify that the execution policy has been changed by running:
+
+   ```powershell
+   Get-ExecutionPolicy -List
+   ```
+
+   This displays the execution policies for different scopes.
+</div>
+
+## Next Steps
+
+<Cards>
+  <Card href="./create-robo" title="Create Robo" description="Scaffold a new Robo.js project." />
+  <Card href="./robo" title="Robo CLI" description="Build, run, and manage your project." />
+</Cards>

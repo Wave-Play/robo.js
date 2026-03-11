@@ -1,0 +1,23 @@
+{
+  "title": "@robojs/xp",
+  "icon": "Trophy",
+  "description": "Leveling system with XP and role rewards.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quick-start",
+    "configuration",
+    "---Guides---",
+    "commands",
+    "events",
+    "role-rewards",
+    "custom-curves",
+    "multi-store",
+    "---Reference---",
+    "api-reference",
+    "rest-api",
+    "---Advanced---",
+    "recipes"
+  ]
+}

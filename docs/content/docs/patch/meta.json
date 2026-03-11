@@ -1,0 +1,7 @@
+{
+	"title": "@robojs/patch",
+	"icon": "Bandage",
+	"description": "Patches for Discord Activity platform issues.",
+	"root": true,
+	"pages": ["index", "---Reference---", "troubleshooting"]
+}

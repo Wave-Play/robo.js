@@ -1,0 +1,624 @@
+---
+title: Recipes
+description: Common integration patterns for building custom XP-based features.
+---
+
+The XP plugin is designed for extension. These recipes demonstrate common patterns using the event system and imperative API.
+
+## Level-up announcements
+
+Send a message when users level up. The plugin seeds a starter template at `seed/events/_start/level-announcements.ts` with rich embeds and customization options.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start/level-announcements.ts"
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+    import { EmbedBuilder } from 'discord.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
+    	const guild = await client.guilds.fetch(guildId)
+    	const member = await guild.members.fetch(userId)
+
+    	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+    	if (!channel?.isTextBased()) return
+
+    	const embed = new EmbedBuilder()
+    		.setTitle('Level Up')
+    		.setDescription(`${member} reached **Level ${newLevel}**.`)
+    		.addFields({ name: 'Total XP', value: totalXp.toLocaleString(), inline: true })
+    		.setColor(0x00ff00)
+    		.setThumbnail(member.displayAvatarURL())
+
+    	await channel.send({ embeds: [embed] })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start/level-announcements.js"
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+    import { EmbedBuilder } from 'discord.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
+    	const guild = await client.guilds.fetch(guildId)
+    	const member = await guild.members.fetch(userId)
+
+    	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+    	if (!channel?.isTextBased()) return
+
+    	const embed = new EmbedBuilder()
+    		.setTitle('Level Up')
+    		.setDescription(`${member} reached **Level ${newLevel}**.`)
+    		.addFields({ name: 'Total XP', value: totalXp.toLocaleString(), inline: true })
+    		.setColor(0x00ff00)
+    		.setThumbnail(member.displayAvatarURL())
+
+    	await channel.send({ embeds: [embed] })
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Contest bonus XP
+
+Award bonus XP to contest winners or event participants.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/contest-winner.ts"
+    import { XP } from '@robojs/xp'
+    import type { CommandResult } from 'robo.js'
+
+    export default async (interaction) => {
+    	const winner = interaction.options.getUser('user', true)
+    	const guildId = interaction.guildId
+
+    	const result = await XP.addXP(guildId, winner.id, 500, { reason: 'contest_winner' })
+
+    	if (result.leveledUp) {
+    		return `${winner} won the contest, earned 500 XP, and leveled up to ${result.newLevel}.`
+    	}
+    	return `${winner} won the contest and earned 500 XP.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/contest-winner.js"
+    import { XP } from '@robojs/xp'
+
+    export default async (interaction) => {
+    	const winner = interaction.options.getUser('user', true)
+    	const guildId = interaction.guildId
+
+    	const result = await XP.addXP(guildId, winner.id, 500, { reason: 'contest_winner' })
+
+    	if (result.leveledUp) {
+    		return `${winner} won the contest, earned 500 XP, and leveled up to ${result.newLevel}.`
+    	}
+    	return `${winner} won the contest and earned 500 XP.`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Moderation penalties
+
+Remove XP when users receive warnings or infractions.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/warn-issued.ts"
+    import { XP } from '@robojs/xp'
+
+    const penalties: Record<string, number> = {
+    	minor: 50,
+    	moderate: 200,
+    	severe: 500
+    }
+
+    export default async ({ userId, guildId, severity }: WarnEvent) => {
+    	const amount = penalties[severity] ?? 100
+    	const result = await XP.removeXP(guildId, userId, amount, {
+    		reason: `moderation_${severity}`
+    	})
+
+    	if (result.leveledDown) {
+    		console.log(`${userId} dropped to level ${result.newLevel} after ${severity} warning`)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/warn-issued.js"
+    import { XP } from '@robojs/xp'
+
+    const penalties = {
+    	minor: 50,
+    	moderate: 200,
+    	severe: 500
+    }
+
+    export default async ({ userId, guildId, severity }) => {
+    	const amount = penalties[severity] ?? 100
+    	const result = await XP.removeXP(guildId, userId, amount, {
+    		reason: `moderation_${severity}`
+    	})
+
+    	if (result.leveledDown) {
+    		console.log(`${userId} dropped to level ${result.newLevel} after ${severity} warning`)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Premium XP boost
+
+Give premium/booster users a 50% XP multiplier.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/premium-activated.ts"
+    import { config } from '@robojs/xp'
+
+    export default async ({ userId, guildId }: PremiumEvent) => {
+    	const guildConfig = await config.get(guildId)
+
+    	await config.set(guildId, {
+    		multipliers: {
+    			...guildConfig.multipliers,
+    			user: {
+    				...(guildConfig.multipliers?.user ?? {}),
+    				[userId]: 1.5
+    			}
+    		}
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/premium-activated.js"
+    import { config } from '@robojs/xp'
+
+    export default async ({ userId, guildId }) => {
+    	const guildConfig = await config.get(guildId)
+
+    	await config.set(guildId, {
+    		multipliers: {
+    			...guildConfig.multipliers,
+    			user: {
+    				...(guildConfig.multipliers?.user ?? {}),
+    				[userId]: 1.5
+    			}
+    		}
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Analytics tracking
+
+Forward XP events to an analytics service.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start/xp-analytics.ts"
+    import { events, XP } from '@robojs/xp'
+    import { logger } from 'robo.js'
+
+    events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+    	if (storeId !== 'default') return
+
+    	logger.info(`XP: ${userId} ${delta > 0 ? 'gained' : 'lost'} ${Math.abs(delta)} XP`, {
+    		guildId,
+    		userId,
+    		delta,
+    		reason
+    	})
+
+    	// Forward to external analytics
+    	await analyticsService.track('xp_change', {
+    		guild: guildId,
+    		user: userId,
+    		amount: delta,
+    		reason
+    	})
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start/xp-analytics.js"
+    import { events, XP } from '@robojs/xp'
+    import { logger } from 'robo.js'
+
+    events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+    	if (storeId !== 'default') return
+
+    	logger.info(`XP: ${userId} ${delta > 0 ? 'gained' : 'lost'} ${Math.abs(delta)} XP`, {
+    		guildId,
+    		userId,
+    		delta,
+    		reason
+    	})
+
+    	// Forward to external analytics
+    	await analyticsService.track('xp_change', {
+    		guild: guildId,
+    		user: userId,
+    		amount: delta,
+    		reason
+    	})
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Manual XP control
+
+Disable automatic XP earning and only award XP through admin commands or the API. Set the server multiplier to 0.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config, XP } from '@robojs/xp'
+
+    // Disable automatic XP for entire guild
+    await config.set(guildId, {
+    	multipliers: { server: 0 }
+    })
+
+    // Admin commands still work
+    await XP.addXP(guildId, userId, 1000, { reason: 'contest_winner' })
+    await XP.addXP(guildId, userId, 500, { reason: 'event_participation' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config, XP } from '@robojs/xp'
+
+    // Disable automatic XP for entire guild
+    await config.set(guildId, {
+    	multipliers: { server: 0 }
+    })
+
+    // Admin commands still work
+    await XP.addXP(guildId, userId, 1000, { reason: 'contest_winner' })
+    await XP.addXP(guildId, userId, 500, { reason: 'event_participation' })
+    ```
+  </Tab>
+</Tabs>
+
+The `messages` counter still increments (tracking activity), but `xpMessages` stays at 0 since no automatic XP is awarded.
+
+Use cases:
+- Contest-only XP systems
+- Event-based rewards (reactions, voice time)
+- Admin-reviewed XP grants
+- Temporary freeze during maintenance
+
+## Custom milestone rewards
+
+Trigger custom actions at specific level milestones.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start/custom-rewards.ts"
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
+    	if (storeId !== 'default') return
+
+    	const guild = await client.guilds.fetch(guildId)
+    	const member = await guild.members.fetch(userId)
+
+    	switch (newLevel) {
+    		case 10:
+    			await giveCustomBadge(member, 'veteran')
+    			break
+    		case 25:
+    			await unlockChannel(member, 'vip-lounge')
+    			break
+    		case 50:
+    			await grantPermission(member, 'create_events')
+    			break
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start/custom-rewards.js"
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
+    	if (storeId !== 'default') return
+
+    	const guild = await client.guilds.fetch(guildId)
+    	const member = await guild.members.fetch(userId)
+
+    	switch (newLevel) {
+    		case 10:
+    			await giveCustomBadge(member, 'veteran')
+    			break
+    		case 25:
+    			await unlockChannel(member, 'vip-lounge')
+    			break
+    		case 50:
+    			await grantPermission(member, 'create_events')
+    			break
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Multi-currency economy
+
+Award XP to multiple stores simultaneously for parallel progression systems.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/messageCreate/economy.ts"
+    import { XP } from '@robojs/xp'
+
+    export default async (message) => {
+    	const guildId = message.guildId
+    	const userId = message.author.id
+
+    	// Default store handles leveling + role rewards
+    	await XP.addXP(guildId, userId, 20, { reason: 'message' })
+
+    	// Server currency
+    	await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+    	// Premium currency for boosters
+    	if (message.member?.roles.cache.has(PREMIUM_ROLE_ID)) {
+    		await XP.addXP(guildId, userId, 5, {
+    			reason: 'premium_message',
+    			storeId: 'tokens'
+    		})
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/messageCreate/economy.js"
+    import { XP } from '@robojs/xp'
+
+    export default async (message) => {
+    	const guildId = message.guildId
+    	const userId = message.author.id
+
+    	// Default store handles leveling + role rewards
+    	await XP.addXP(guildId, userId, 20, { reason: 'message' })
+
+    	// Server currency
+    	await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+    	// Premium currency for boosters
+    	if (message.member?.roles.cache.has(PREMIUM_ROLE_ID)) {
+    		await XP.addXP(guildId, userId, 5, {
+    			reason: 'premium_message',
+    			storeId: 'tokens'
+    		})
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Reputation system
+
+Track multiple types of reputation independently.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/core/reputation.ts"
+    import { XP, events } from '@robojs/xp'
+
+    export async function awardHelpfulness(guildId: string, userId: string) {
+    	await XP.addXP(guildId, userId, 25, {
+    		reason: 'helped_member',
+    		storeId: 'helpfulness'
+    	})
+    }
+
+    export async function awardCreativity(guildId: string, userId: string) {
+    	await XP.addXP(guildId, userId, 50, {
+    		reason: 'created_content',
+    		storeId: 'creativity'
+    	})
+    }
+
+    // Listen for reputation level-ups
+    events.onLevelUp(({ userId, newLevel, storeId }) => {
+    	if (storeId === 'helpfulness') {
+    		console.log(`${userId} reached helpfulness level ${newLevel}`)
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/core/reputation.js"
+    import { XP, events } from '@robojs/xp'
+
+    export async function awardHelpfulness(guildId, userId) {
+    	await XP.addXP(guildId, userId, 25, {
+    		reason: 'helped_member',
+    		storeId: 'helpfulness'
+    	})
+    }
+
+    export async function awardCreativity(guildId, userId) {
+    	await XP.addXP(guildId, userId, 50, {
+    		reason: 'created_content',
+    		storeId: 'creativity'
+    	})
+    }
+
+    // Listen for reputation level-ups
+    events.onLevelUp(({ userId, newLevel, storeId }) => {
+    	if (storeId === 'helpfulness') {
+    		console.log(`${userId} reached helpfulness level ${newLevel}`)
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Seasonal battle pass
+
+Run time-limited progression with isolated stores.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/core/seasons.ts"
+    import { XP, config } from '@robojs/xp'
+
+    const CURRENT_SEASON = 'season3'
+
+    export async function awardSeasonalXP(guildId: string, userId: string, amount: number) {
+    	return XP.addXP(guildId, userId, amount, {
+    		reason: 'seasonal_activity',
+    		storeId: CURRENT_SEASON
+    	})
+    }
+
+    export async function getSeasonalProgress(guildId: string, userId: string) {
+    	const xp = await XP.getXP(guildId, userId, { storeId: CURRENT_SEASON })
+    	const level = await XP.getLevel(guildId, userId, { storeId: CURRENT_SEASON })
+    	return { xp, level, season: CURRENT_SEASON }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/core/seasons.js"
+    import { XP, config } from '@robojs/xp'
+
+    const CURRENT_SEASON = 'season3'
+
+    export async function awardSeasonalXP(guildId, userId, amount) {
+    	return XP.addXP(guildId, userId, amount, {
+    		reason: 'seasonal_activity',
+    		storeId: CURRENT_SEASON
+    	})
+    }
+
+    export async function getSeasonalProgress(guildId, userId) {
+    	const xp = await XP.getXP(guildId, userId, { storeId: CURRENT_SEASON })
+    	const level = await XP.getLevel(guildId, userId, { storeId: CURRENT_SEASON })
+    	return { xp, level, season: CURRENT_SEASON }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Old season data stays in its store indefinitely. Start a new season by using a new store ID. The default store (permanent progression) is unaffected.
+
+## Programmatic setup wizard
+
+Configure XP settings programmatically for new guilds (e.g., from a web dashboard or setup wizard).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/core/setup.ts"
+    import { config } from '@robojs/xp'
+
+    export async function setupGuild(guildId: string) {
+    	await config.set(guildId, {
+    		cooldownSeconds: 45,
+    		xpRate: 1.2,
+    		leaderboard: { public: true },
+    		noXpRoleIds: ['MUTED_ROLE_ID'],
+    		noXpChannelIds: ['BOT_COMMANDS_CHANNEL_ID'],
+    		roleRewards: [
+    			{ level: 5, roleId: 'BRONZE_ROLE_ID' },
+    			{ level: 10, roleId: 'SILVER_ROLE_ID' },
+    			{ level: 25, roleId: 'GOLD_ROLE_ID' }
+    		],
+    		rewardsMode: 'stack',
+    		multipliers: {
+    			server: 1.0,
+    			role: { 'BOOSTER_ROLE_ID': 2.0 }
+    		}
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/core/setup.js"
+    import { config } from '@robojs/xp'
+
+    export async function setupGuild(guildId) {
+    	await config.set(guildId, {
+    		cooldownSeconds: 45,
+    		xpRate: 1.2,
+    		leaderboard: { public: true },
+    		noXpRoleIds: ['MUTED_ROLE_ID'],
+    		noXpChannelIds: ['BOT_COMMANDS_CHANNEL_ID'],
+    		roleRewards: [
+    			{ level: 5, roleId: 'BRONZE_ROLE_ID' },
+    			{ level: 10, roleId: 'SILVER_ROLE_ID' },
+    			{ level: 25, roleId: 'GOLD_ROLE_ID' }
+    		],
+    		rewardsMode: 'stack',
+    		multipliers: {
+    			server: 1.0,
+    			role: { 'BOOSTER_ROLE_ID': 2.0 }
+    		}
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This uses the same API as the `/xp config` command, making it easy to build custom management interfaces.
+
+## XP efficiency tracking
+
+Monitor how many messages actually award XP versus total messages sent.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { XP } from '@robojs/xp'
+
+    const user = await XP.getUser(guildId, userId)
+    if (user && user.messages > 0) {
+    	const efficiency = ((user.xpMessages / user.messages) * 100).toFixed(1)
+    	console.log(`XP efficiency: ${efficiency}%`)
+    	console.log(`Total messages: ${user.messages}`)
+    	console.log(`XP messages: ${user.xpMessages}`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { XP } from '@robojs/xp'
+
+    const user = await XP.getUser(guildId, userId)
+    if (user && user.messages > 0) {
+    	const efficiency = ((user.xpMessages / user.messages) * 100).toFixed(1)
+    	console.log(`XP efficiency: ${efficiency}%`)
+    	console.log(`Total messages: ${user.messages}`)
+    	console.log(`XP messages: ${user.xpMessages}`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Expected ratios:
+- Active chatters with 60s cooldown: 10-30%
+- Users in no-XP channels frequently: 5-15%
+- Users with temporary no-XP role: varies
+
+## Next steps
+
+<Cards>
+  <Card href="./events" title="Events" description="Full event system documentation." />
+  <Card href="./multi-store" title="Multi-store" description="Parallel progression systems in detail." />
+  <Card href="./api-reference" title="API reference" description="Complete TypeScript API." />
+</Cards>

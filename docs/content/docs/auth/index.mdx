@@ -1,0 +1,129 @@
+---
+title: "README"
+icon: Lock
+description: Modern authentication for Robo.js powered by Auth.js with support for 80+ OAuth providers, email/password flows, and session management.
+---
+
+<PluginHero
+	name="@robojs/auth"
+	description="Modern authentication for Robo.js powered by Auth.js with support for 80+ OAuth providers, email/password flows, and session management."
+	icon={<Lock />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/auth"
+	platforms={["Activities", "Web"]}
+	requires={[{ name: "@robojs/server", href: "/docs/server", description: "HTTP routing for auth endpoints" }]}
+/>
+
+Modern authentication for Robo.js powered by Auth.js. Supports 80+ OAuth providers, email/password flows, session management, and upstream proxy mode.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Globe />} title="80+ OAuth Providers" description="Discord, Google, GitHub, Twitter, and many more" />
+	<Feature icon={<Lock />} title="Email/Password" description="Argon2id hashing, signup, reset, and verification" />
+	<Feature icon={<Shield />} title="Session Management" description="JWT or database-backed sessions" />
+	<Feature icon={<Database />} title="Flashcore Adapter" description="Zero-config storage out of the box" />
+	<Feature icon={<Server />} title="Prisma Adapter" description="Connect to your existing database" />
+	<Feature icon={<RefreshSync />} title="Proxy Mode" description="Share auth across multiple Robo apps" />
+	<Feature icon={<Zap />} title="Email System" description="Transactional emails with Resend and React Email" />
+	<Feature icon={<Key />} title="Multi-account" description="Switch between linked accounts seamlessly" />
+</FeatureGrid>
+
+## Installation
+
+Add the plugin to your project.
+
+```bash
+npx robo add @robojs/auth
+```
+
+Or start a new project with the plugin already installed.
+
+```package-install
+npx create-robo my-project -p @robojs/auth
+```
+
+The installer auto-generates a secure `AUTH_SECRET` in your `.env` files.
+
+## Quick configuration
+
+Create a plugin config file with your preferred auth providers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import Discord from '@robojs/auth/providers/discord'
+    import Google from '@robojs/auth/providers/google'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    export default <AuthPluginOptions>{
+    	secret: process.env.AUTH_SECRET,
+    	appName: 'My App',
+    	adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
+    		Google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
+    		EmailPassword({ adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }) })
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import Discord from '@robojs/auth/providers/discord'
+    import Google from '@robojs/auth/providers/google'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    export default {
+    	secret: process.env.AUTH_SECRET,
+    	appName: 'My App',
+    	adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
+    		Google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
+    		EmailPassword({ adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }) })
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## What you get
+
+- Drop-in Auth.js REST endpoints at `/api/auth/*` for providers, sign-in/out, callbacks, sessions, and CSRF.
+- 80+ OAuth providers including Discord, Google, GitHub, Twitter, and more.
+- Built-in email/password authentication with Argon2id hashing, signup flow, password reset, and email verification.
+- Two storage adapters: zero-config Flashcore (default) and Prisma for existing databases.
+- Typed client helpers for sign-in, sign-out, sessions, and multi-account switching.
+- Server utilities for session validation, token extraction, and runtime configuration.
+- Upstream proxy mode to share authentication across multiple Robo apps.
+- Transactional email system with Resend integration and React Email support.
+
+## Import paths
+
+The plugin exports helpers through multiple entry points.
+
+| Entry point | Purpose |
+| --- | --- |
+| `@robojs/auth` | Main entry: adapters, config, server helpers, client helpers |
+| `@robojs/auth/client` | Client-side helpers: `signIn`, `signOut`, `getSession`, etc. |
+| `@robojs/auth/server` | Server-side helpers: `getServerSession`, `getToken`, etc. |
+| `@robojs/auth/providers` | Auth.js provider re-exports |
+| `@robojs/auth/providers/*` | Individual provider imports |
+| `@robojs/auth/emails` | Email system: `createResendMailer` |
+| `@robojs/auth/types` | Type re-exports |
+
+<Callout>
+Requires `@robojs/server` (>=0.6.5). Optional peers: `@prisma/client`, `@react-email/components`.
+</Callout>
+
+## Next steps
+
+<Cards>
+	<Card href="./quick-start" title="Quick start" description="Get up and running in minutes" />
+	<Card href="./configuration" title="Configuration" description="All config options and env vars" />
+	<Card href="./email-password" title="Email and password" description="Signup, reset, and verification flows" />
+	<Card href="./client-api" title="Client API" description="Browser-side authentication helpers" />
+</Cards>

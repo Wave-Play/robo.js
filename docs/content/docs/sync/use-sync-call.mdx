@@ -1,0 +1,225 @@
+---
+title: "useSyncCall"
+description: "Make RPC calls to server-side sync handlers."
+---
+
+Call server-side methods and get typed results. `useSyncCall` sends RPC requests to sync handlers defined in `src/sync/`, enabling server-authoritative game logic, validation, and state mutations.
+
+## Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function useSyncCall(key: (string | null)[]): SyncCallFunction
+
+    type SyncCallFunction = <Payload = unknown, Result = unknown>(
+    	method: string,
+    	payload?: Payload
+    ) => Promise<CallResult<Result>>
+
+    interface CallResult<T = unknown> {
+    	success: boolean
+    	result?: T
+    	error?: string
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function useSyncCall(key)
+    // Returns: call(method, payload) => Promise<CallResult>
+    ```
+  </Tab>
+</Tabs>
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `key` | `(string \| null)[]` | Key matching a server-side sync handler |
+
+## Return value
+
+The hook returns an async `call` function. Each call returns a `CallResult`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether the call succeeded |
+| `result` | `T \| undefined` | Return value from the server handler |
+| `error` | `string \| undefined` | Error message if the call failed |
+
+## Basic usage
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { useSyncCall } from '@robojs/sync'
+
+    function GameControls() {
+    	const call = useSyncCall(['game', roomId, 'state'])
+
+    	const handleMove = async () => {
+    		const result = await call('move', { x: 10, y: 20 })
+    		if (!result.success) {
+    			console.error('Move rejected:', result.error)
+    		}
+    	}
+
+    	return <button onClick={handleMove}>Move</button>
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { useSyncCall } from '@robojs/sync'
+
+    function GameControls() {
+    	const call = useSyncCall(['game', roomId, 'state'])
+
+    	const handleMove = async () => {
+    		const result = await call('move', { x: 10, y: 20 })
+    		if (!result.success) {
+    			console.error('Move rejected:', result.error)
+    		}
+    	}
+
+    	return <button onClick={handleMove}>Move</button>
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Typed calls
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    interface MovePayload {
+    	x: number
+    	y: number
+    }
+    interface MoveResult {
+    	valid: boolean
+    	newPosition: { x: number; y: number }
+    }
+
+    const result = await call<MovePayload, MoveResult>('move', { x: 10, y: 20 })
+    if (result.success && result.result?.valid) {
+    	console.log('Moved to:', result.result.newPosition)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+
+    const result = await call('move', { x: 10, y: 20 })
+    if (result.success && result.result?.valid) {
+    	console.log('Moved to:', result.result.newPosition)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Server handler
+
+The key array maps to a file path under `src/sync/`. Any named export that isn't a reserved name (`schema`, `validate`, `transform`, `onUpdate`, `before`, `after`) becomes a callable RPC method.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/sync/game/[roomId]/state.ts"
+    import type { SyncCallContext } from '@robojs/sync/server'
+
+    export async function move(
+    	payload: { x: number; y: number },
+    	ctx: SyncCallContext
+    ) {
+    	const state = ctx.getState()
+    	ctx.setState({ ...state, x: payload.x, y: payload.y })
+    	return { valid: true, newPosition: { x: payload.x, y: payload.y } }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/sync/game/[roomId]/state.js"
+
+    export async function move(payload, ctx) {
+    	const state = ctx.getState()
+    	ctx.setState({ ...state, x: payload.x, y: payload.y })
+    	return { valid: true, newPosition: { x: payload.x, y: payload.y } }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Error handling
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    const result = await call('action', payload)
+
+    if (!result.success) {
+    	switch (result.error) {
+    		case 'timeout':
+    			// Server didn't respond within 30 seconds
+    			break
+    		case 'not_connected':
+    			// WebSocket is disconnected
+    			break
+    		case 'method_not_found':
+    			// No matching export in the handler
+    			break
+    		default:
+    			// Custom error from the handler
+    			console.error(result.error)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    const result = await call('action', payload)
+
+    if (!result.success) {
+    	switch (result.error) {
+    		case 'timeout':
+    			// Server didn't respond within 30 seconds
+    			break
+    		case 'not_connected':
+    			// WebSocket is disconnected
+    			break
+    		case 'method_not_found':
+    			// No matching export in the handler
+    			break
+    		default:
+    			// Custom error from the handler
+    			console.error(result.error)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Timeout
+
+Each call has a 30-second timeout. If the server doesn't respond, the promise resolves with `{ success: false, error: 'timeout' }`.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./server-handlers"
+		title="Server handlers"
+		description="Define server-side sync handlers and RPC methods."
+	/>
+	<Card
+		href="./schema-validation"
+		title="Schema validation"
+		description="Validate state updates with schemas."
+	/>
+	<Card
+		href="./middleware"
+		title="Middleware"
+		description="Intercept sync operations with before/after hooks."
+	/>
+</Cards>

@@ -1,0 +1,285 @@
+---
+title: REST API
+description: HTTP endpoints for building web dashboards and external integrations.
+---
+
+The XP plugin includes optional REST API endpoints for accessing XP data over HTTP. These are useful for building web dashboards, external integrations, or admin tools.
+
+<Callout type="info">
+Install `@robojs/server` to enable these endpoints. Without it, the API route files are ignored.
+</Callout>
+
+```bash
+npx robo add @robojs/server
+```
+
+## Response format
+
+All endpoints return JSON with a consistent structure.
+
+**Success:**
+
+```json
+{
+	"success": true,
+	"data": { ... }
+}
+```
+
+**Error:**
+
+```json
+{
+	"success": false,
+	"error": {
+		"code": "ERROR_CODE",
+		"message": "Human-readable error message"
+	}
+}
+```
+
+## Error codes
+
+| Code | HTTP Status | Description |
+|---|---|---|
+| `MISSING_GUILD_ID` | 400 | Guild ID parameter missing |
+| `GUILD_NOT_FOUND` | 404 | Guild not found or bot not a member |
+| `MISSING_USER_ID` | 400 | User ID parameter missing |
+| `USER_NOT_FOUND` | 404 | User has no XP record |
+| `METHOD_NOT_ALLOWED` | 405 | HTTP method not supported |
+| `INVALID_REQUEST` | 400 | Invalid request body or parameters |
+| `INVALID_AMOUNT` | 400 | Invalid XP amount |
+| `INVALID_CONFIG` | 400 | Invalid configuration |
+| `INVALID_LEVEL` | 400 | Invalid level value |
+| `INVALID_ROLE_ID` | 400 | Invalid Discord role ID |
+| `INVALID_MULTIPLIER` | 400 | Invalid multiplier value |
+| `DUPLICATE_REWARD` | 400 | Role reward already exists at level |
+| `REWARD_NOT_FOUND` | 404 | Role reward not found |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+## Endpoints
+
+### Health
+
+**GET** `/api/xp/health`
+
+Service health check. Returns Discord client and Flashcore status.
+
+```bash
+curl http://localhost:3000/api/xp/health
+```
+
+### Users
+
+**GET** `/api/xp/users/:guildId`
+
+List all tracked users in a guild with pagination.
+
+| Query Param | Type | Default | Description |
+|---|---|---|---|
+| `offset` | number | 0 | Starting position |
+| `limit` | number | 10 | Max users to return |
+
+**GET** `/api/xp/users/:guildId/:userId`
+
+Get a specific user's XP data and level progress.
+
+```json
+{
+	"success": true,
+	"data": {
+		"user": {
+			"xp": 5500,
+			"level": 10,
+			"messages": 423,
+			"xpMessages": 156,
+			"lastAwardedAt": 1234567890000
+		},
+		"progress": {
+			"level": 10,
+			"inLevel": 495,
+			"toNext": 1155
+		},
+		"percentage": 42.86
+	}
+}
+```
+
+**POST** `/api/xp/users/:guildId/:userId`
+
+Add XP to a user.
+
+```bash
+curl -X POST http://localhost:3000/api/xp/users/GUILD_ID/USER_ID \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100, "reason": "api_award"}'
+```
+
+**PUT** `/api/xp/users/:guildId/:userId`
+
+Set a user's XP to a specific value.
+
+```bash
+curl -X PUT http://localhost:3000/api/xp/users/GUILD_ID/USER_ID \
+  -H "Content-Type: application/json" \
+  -d '{"xp": 5000, "reason": "api_set"}'
+```
+
+**DELETE** `/api/xp/users/:guildId/:userId`
+
+Remove XP from a user.
+
+```bash
+curl -X DELETE http://localhost:3000/api/xp/users/GUILD_ID/USER_ID \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 50, "reason": "api_penalty"}'
+```
+
+### Recalculate
+
+**POST** `/api/xp/users/:guildId/:userId/recalc`
+
+Recalculate a user's level from their total XP.
+
+```bash
+curl -X POST http://localhost:3000/api/xp/users/GUILD_ID/USER_ID/recalc
+```
+
+### Leaderboard
+
+**GET** `/api/xp/leaderboard/:guildId`
+
+Paginated leaderboard for a guild.
+
+| Query Param | Type | Default | Description |
+|---|---|---|---|
+| `offset` | number | 0 | Starting position |
+| `limit` | number | 10 | Max entries to return |
+
+```json
+{
+	"success": true,
+	"data": {
+		"entries": [
+			{ "userId": "123...", "xp": 15000, "level": 15, "rank": 1 },
+			{ "userId": "456...", "xp": 12000, "level": 13, "rank": 2 }
+		],
+		"total": 150
+	}
+}
+```
+
+**GET** `/api/xp/leaderboard/:guildId/:userId`
+
+Get a specific user's rank position.
+
+```json
+{
+	"success": true,
+	"data": {
+		"rank": 42,
+		"total": 150
+	}
+}
+```
+
+### Guild configuration
+
+**GET** `/api/xp/config/:guildId`
+
+Get the current merged guild configuration.
+
+**PUT** `/api/xp/config/:guildId`
+
+Update guild configuration. Supports partial updates.
+
+```bash
+curl -X PUT http://localhost:3000/api/xp/config/GUILD_ID \
+  -H "Content-Type: application/json" \
+  -d '{"cooldownSeconds": 45, "xpRate": 1.5}'
+```
+
+### Global configuration
+
+**GET** `/api/xp/config/global`
+
+Get global configuration defaults.
+
+**PUT** `/api/xp/config/global`
+
+Update global defaults. Affects all guilds that haven't overridden specific fields.
+
+```bash
+curl -X PUT http://localhost:3000/api/xp/config/global \
+  -H "Content-Type: application/json" \
+  -d '{"cooldownSeconds": 45, "xpRate": 1.2}'
+```
+
+### Role rewards
+
+**GET** `/api/xp/config/:guildId/rewards`
+
+List all role rewards for a guild.
+
+**POST** `/api/xp/config/:guildId/rewards`
+
+Add a new role reward.
+
+```bash
+curl -X POST http://localhost:3000/api/xp/config/GUILD_ID/rewards \
+  -H "Content-Type: application/json" \
+  -d '{"level": 10, "roleId": "456789012345678901"}'
+```
+
+**DELETE** `/api/xp/config/:guildId/rewards`
+
+Remove a role reward by level.
+
+```bash
+curl -X DELETE http://localhost:3000/api/xp/config/GUILD_ID/rewards \
+  -H "Content-Type: application/json" \
+  -d '{"level": 10}'
+```
+
+### Multipliers
+
+**GET** `/api/xp/config/:guildId/multipliers`
+
+Get all multipliers (server, role, user) for a guild.
+
+**PUT** `/api/xp/config/:guildId/multipliers`
+
+Set or update multipliers.
+
+```bash
+curl -X PUT http://localhost:3000/api/xp/config/GUILD_ID/multipliers \
+  -H "Content-Type: application/json" \
+  -d '{"server": 2.0, "role": {"456...": 1.5}}'
+```
+
+**DELETE** `/api/xp/config/:guildId/multipliers`
+
+Remove specific multipliers.
+
+```bash
+curl -X DELETE http://localhost:3000/api/xp/config/GUILD_ID/multipliers \
+  -H "Content-Type: application/json" \
+  -d '{"role": ["456..."], "user": ["789..."]}'
+```
+
+### Statistics
+
+**GET** `/api/xp/stats/:guildId`
+
+Get aggregate XP statistics for a guild.
+
+```bash
+curl http://localhost:3000/api/xp/stats/GUILD_ID
+```
+
+## Next steps
+
+<Cards>
+  <Card href="./api-reference" title="API reference" description="TypeScript API for server-side code." />
+  <Card href="./configuration" title="Configuration" description="Configure the XP system." />
+</Cards>

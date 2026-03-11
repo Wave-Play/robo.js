@@ -1,0 +1,447 @@
+---
+title: API reference
+description: Complete API reference for @robojs/analytics.
+---
+
+## Analytics
+
+The global singleton for tracking events and views. Import it from `@robojs/analytics`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Analytics } from '@robojs/analytics'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Analytics } from '@robojs/analytics'
+    ```
+  </Tab>
+</Tabs>
+
+The `Analytics` object is frozen at runtime. It cannot be modified or extended.
+
+### `Analytics.event(name, options?)`
+
+Track a custom event.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.event(name: string, options?: EventOptions): Promise<void> | void
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.event(name, options): Promise<void> | void
+    ```
+  </Tab>
+</Tabs>
+
+| Parameter | Type | Description |
+|---|---|---|
+| `name` | `string` | Event name (e.g., `'button_click'`, `'purchase'`) |
+| `options` | `EventOptions` | Optional metadata for the event |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.event('feature_used', {
+    	sessionId: interaction.channelId,
+    	userId: interaction.user.id,
+    	data: { feature: 'leaderboard' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.event('feature_used', {
+    	sessionId: interaction.channelId,
+    	userId: interaction.user.id,
+    	data: { feature: 'leaderboard' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### `Analytics.view(page, options?)`
+
+Track a page or screen view.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.view(page: string, options?: ViewOptions): Promise<void> | void
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.view(page, options): Promise<void> | void
+    ```
+  </Tab>
+</Tabs>
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page` | `string` | Page or screen name (e.g., `'Dashboard'`, `'Settings'`) |
+| `options` | `ViewOptions` | Optional metadata for the view |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.view('Settings Page', {
+    	sessionId: interaction.channelId,
+    	userId: interaction.user.id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.view('Settings Page', {
+    	sessionId: interaction.channelId,
+    	userId: interaction.user.id
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### `Analytics.isReady()`
+
+Check whether an analytics engine has been initialized.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.isReady(): boolean
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.isReady(): boolean
+    ```
+  </Tab>
+</Tabs>
+
+Returns `true` after the plugin's `_start` lifecycle hook has successfully set an engine. Returns `false` if no engine is configured or the hook hasn't run yet.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    if (Analytics.isReady()) {
+    	Analytics.event('safe_event')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    if (Analytics.isReady()) {
+    	Analytics.event('safe_event')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Calling `Analytics.event()` or `Analytics.view()` before initialization throws a `TypeError`. Use `Analytics.isReady()` to guard against this.
+</Callout>
+
+---
+
+## EventOptions
+
+Options for `Analytics.event()`. All fields are optional.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface EventOptions {
+    	action?: string
+    	actionType?: string
+    	data?: unknown
+    	domain?: string
+    	label?: string
+    	name?: string
+    	referrer?: string
+    	revenue?: { currency: string; amount: number | string }
+    	sessionId?: string
+    	type?: string
+    	url?: string
+    	userId?: number | string
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+action: { type: 'string', description: 'Action identifier. Not used by built-in engines.' },
+actionType: { type: 'string', description: 'Action category. Not used by built-in engines.' },
+data: { type: 'unknown', description: 'Arbitrary payload. GA uses it as event params. Plausible uses it as props (max 30 fields).' },
+domain: { type: 'string', description: 'Domain override for Plausible. Not used by GA.' },
+label: { type: 'string', description: 'Event label. Not used by built-in engines.' },
+name: { type: 'string', description: 'Name override. Not used by built-in engines.' },
+referrer: { type: 'string', description: 'Referrer URL. Not used by built-in engines.' },
+revenue: { type: '{ currency: string; amount: number | string }', description: 'Revenue data. GA merges it into event params. Not used by Plausible.' },
+sessionId: { type: 'string', description: 'Session identifier. GA maps it to client_id. Random ID generated if omitted.' },
+type: { type: 'string', description: 'Event type. Not used by built-in engines.' },
+url: { type: 'string', description: 'URL override for Plausible. Not used by GA.' },
+userId: { type: 'number | string', description: 'User identifier. GA maps it to user_id. Not used by Plausible.' },
+  }}
+/>
+
+---
+
+## ViewOptions
+
+Options for `Analytics.view()`. Extends `EventOptions` with two additional fields.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface ViewOptions extends EventOptions {
+    	element?: string
+    	elementId?: string
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+element: { type: 'string', description: 'Element being viewed. Not used by built-in engines.' },
+elementId: { type: 'string', description: 'Element ID. Not used by built-in engines.' },
+  }}
+/>
+
+These fields exist for custom engine implementations that need element-level view tracking.
+
+---
+
+## GoogleAnalytics
+
+Google Analytics Measurement Protocol v4 engine.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { GoogleAnalytics } from '@robojs/analytics'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { GoogleAnalytics } from '@robojs/analytics'
+    ```
+  </Tab>
+</Tabs>
+
+### Constructor
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new GoogleAnalytics(options?: GoogleAnalyticsOptions)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new GoogleAnalytics(options?: GoogleAnalyticsOptions)
+    ```
+  </Tab>
+</Tabs>
+
+| Option | Type | Env var fallback | Description |
+|---|---|---|---|
+| `measureId` | `string` | `GOOGLE_ANALYTICS_MEASURE_ID` | GA4 Measurement ID (e.g., `G-XXXXXXXXX`) |
+| `token` | `string` | `GOOGLE_ANALYTICS_SECRET` | Measurement Protocol API Secret |
+
+Constructor options take priority over environment variables.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const ga = new GoogleAnalytics({
+    	measureId: 'G-XXXXXXXXX',
+    	token: 'your-api-secret'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const ga = new GoogleAnalytics({
+    	measureId: 'G-XXXXXXXXX',
+    	token: 'your-api-secret'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Methods
+
+Inherits `event(name, options?)` and `view(page, options?)` from `BaseEngine`.
+
+- **`event()`** sends a POST to `/mp/collect` with the event name and mapped parameters.
+- **`view()`** sends a `page_view` event with `page_title` set to the page name.
+
+---
+
+## PlausibleAnalytics
+
+Plausible Events API engine.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { PlausibleAnalytics } from '@robojs/analytics'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { PlausibleAnalytics } from '@robojs/analytics'
+    ```
+  </Tab>
+</Tabs>
+
+### Constructor
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new PlausibleAnalytics(domain?: string)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new PlausibleAnalytics(domain?: string)
+    ```
+  </Tab>
+</Tabs>
+
+| Parameter | Type | Env var fallback | Description |
+|---|---|---|---|
+| `domain` | `string` | `PLAUSIBLE_DOMAIN` | Site domain registered in Plausible |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const plausible = new PlausibleAnalytics('example.com')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const plausible = new PlausibleAnalytics('example.com')
+    ```
+  </Tab>
+</Tabs>
+
+### Methods
+
+Inherits `event(name, options?)` and `view(page, options?)` from `BaseEngine`.
+
+- **`event()`** sends a POST to `/api/event` with the event name and domain. Throws if `data` exceeds 30 fields.
+- **`view()`** sends a `pageview` event with a slugified URL built from the page name.
+
+---
+
+## ManyEngines
+
+Broadcasts events to multiple engines in parallel.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { ManyEngines } from '@robojs/analytics'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { ManyEngines } from '@robojs/analytics'
+    ```
+  </Tab>
+</Tabs>
+
+### Constructor
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new ManyEngines(...engines: BaseEngine[])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new ManyEngines(...engines: BaseEngine[])
+    ```
+  </Tab>
+</Tabs>
+
+Accepts any number of `BaseEngine` instances.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const multi = new ManyEngines(
+    	new GoogleAnalytics(),
+    	new PlausibleAnalytics('example.com')
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const multi = new ManyEngines(
+    	new GoogleAnalytics(),
+    	new PlausibleAnalytics('example.com')
+    )
+    ```
+  </Tab>
+</Tabs>
+
+### Methods
+
+Inherits `event(name, options?)` and `view(page, options?)` from `BaseEngine`.
+
+Both methods call the corresponding method on every engine via `Promise.all()`. If any engine rejects, the entire call rejects.
+
+---
+
+## BaseEngine
+
+Abstract base class for all analytics engines. Extend this to create custom providers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    abstract class BaseEngine {
+    	abstract event(name: string, options?: EventOptions): Promise<void> | void
+    	abstract view(page: string, options?: ViewOptions): Promise<void> | void
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    class BaseEngine {
+    	event(name, options) { /* abstract */ }
+    	view(page, options) { /* abstract */ }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+See [Custom engines](./custom-engines.mdx) for implementation details.
+
+## Next Steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Plugin options and environment variables." />
+  <Card href="./custom-engines" title="Custom engines" description="Build your own analytics provider." />
+</Cards>

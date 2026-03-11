@@ -1,0 +1,220 @@
+---
+title: Persistence
+description: Data model, storage layout, and scheduling internals
+---
+
+The plugin stores all giveaway data in Flashcore, Robo's built-in key-value persistence layer. Giveaway records, guild settings, active/recent lists, and cron job mappings all persist through restarts.
+
+## Data model
+
+### Giveaway
+
+Each giveaway is stored as a `Giveaway` object. Import the type from the main entry point or the `./types` subpath:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { Giveaway } from '@robojs/giveaways'
+    // or
+    import type { Giveaway } from '@robojs/giveaways/types'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // or
+    ```
+  </Tab>
+</Tabs>
+
+**Fields:**
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique identifier (ULID format, lexicographically sortable) |
+| `guildId` | `string` | Discord guild ID |
+| `channelId` | `string` | Channel where the giveaway message was posted |
+| `messageId` | `string` | Discord message ID of the giveaway embed |
+| `prize` | `string` | Prize description |
+| `winnersCount` | `number` | Number of winners to select |
+| `endsAt` | `number` | Epoch timestamp (ms) when the giveaway ends |
+| `startedBy` | `string` | User ID of the moderator who created the giveaway |
+| `status` | `'active' \| 'ended' \| 'cancelled'` | Current lifecycle state |
+| `allowRoleIds` | `string[]` | Role IDs allowed to enter (empty = all roles) |
+| `denyRoleIds` | `string[]` | Role IDs blocked from entering |
+| `minAccountAgeDays` | `number \| null` | Minimum account age in days, or `null` to disable |
+| `entries` | `Record<string, number>` | Map of user ID to entry weight (currently always `1`) |
+| `winners` | `string[]` | User IDs selected as winners |
+| `rerolls` | `string[][]` | Array of reroll batches (each batch is an array of winner IDs) |
+| `createdAt` | `number` | Epoch timestamp (ms) when the giveaway was created |
+| `finalizedAt` | `number \| null` | Epoch timestamp (ms) when ended or cancelled, or `null` if active |
+| `cronJobId` | `string \| null` | Cron job ID when scheduled via `@robojs/cron` (optional) |
+
+### GuildSettings
+
+Per-guild configuration. See [Configuration](./configuration.mdx) for the full interface and all field descriptions.
+
+### DEFAULT_SETTINGS
+
+The built-in fallback when no custom settings exist for a guild. Available from the `./types` subpath:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { DEFAULT_SETTINGS } from '@robojs/giveaways/types'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { DEFAULT_SETTINGS } from '@robojs/giveaways/types'
+    ```
+  </Tab>
+</Tabs>
+
+## Storage layout
+
+All data is stored in Flashcore using namespaced keys:
+
+| Namespace | Key | Value | Description |
+|---|---|---|---|
+| `['giveaways', 'data']` | Giveaway ID | `Giveaway` | Individual giveaway records |
+| `['giveaways', 'messages']` | Message ID | Giveaway ID (string) | Reverse index for looking up giveaways by Discord message ID |
+| `['giveaways', 'guilds', guildId, 'active']` | `'list'` | `string[]` | Array of active giveaway IDs for a guild |
+| `['giveaways', 'guilds', guildId, 'recent']` | `'list'` | `string[]` | Array of recent giveaway IDs (capped at 50) |
+| `['giveaways', 'guilds', guildId, 'settings']` | `'data'` | `GuildSettings` | Per-guild settings |
+| `['giveaways', 'cron']` | Job ID | Giveaway ID (string) | Maps cron job IDs to giveaway IDs |
+
+The message-to-giveaway index is how commands like `/giveaway end` and `/giveaway info` accept a `message_id` and find the right giveaway record.
+
+### Storage limits
+
+- **Recent giveaways** are capped at 50 per guild. Older entries are dropped when the list exceeds this limit.
+- **Active giveaways** have no hard cap.
+- **Entries** grow linearly with the number of participants (one key-value pair per entrant).
+
+## Giveaway lifecycle
+
+A giveaway moves through these states:
+
+```
+active → ended     (winner selection)
+active → cancelled (no winners selected)
+```
+
+Once a giveaway is `ended` or `cancelled`, it cannot return to `active`. The `finalizedAt` timestamp records when the transition happened.
+
+When a giveaway ends:
+1. Winners are selected from the entries using Fisher-Yates shuffle
+2. The giveaway record is updated with winners and `finalizedAt`
+3. The Discord embed is updated (buttons removed, winners shown)
+4. A congratulations message is posted in the channel
+5. The giveaway ID moves from the guild's active list to the recent list
+6. Winners receive DMs if `dmWinners` is enabled in guild settings
+7. The scheduled cron job (if any) is cleaned up
+
+When a giveaway is cancelled (via command):
+1. Status is set to `cancelled` with `finalizedAt` timestamp
+2. The Discord embed updates to show "Giveaway Cancelled" in red
+3. Buttons are removed from the message
+4. A cancellation announcement is posted
+5. The giveaway ID is removed from the active list
+6. The scheduled job is cancelled
+
+## Scheduling
+
+The plugin supports two scheduling modes. It detects `@robojs/cron` at runtime and uses it automatically if available.
+
+### With @robojs/cron
+
+When `@robojs/cron` is installed, the plugin creates a one-shot cron job for each giveaway. The cron expression is derived from the giveaway's `endsAt` timestamp with second-level precision. Cron jobs persist in Flashcore and survive restarts.
+
+Job IDs follow the format `giveaway:{giveawayId}`. The mapping from job ID to giveaway ID is stored under the `['giveaways', 'cron']` namespace.
+
+### Without @robojs/cron
+
+The plugin falls back to `setTimeout`. For giveaways longer than ~24.8 days (JavaScript's `setTimeout` maximum of 2^31-1 milliseconds), it creates cascading reschedules that fire at the maximum interval and check remaining time.
+
+In-memory timers are not persisted. On restart, the `ready` event handler recovers all active giveaways and reschedules them.
+
+## Recovery on restart
+
+When the bot starts (the Discord `ready` event fires), the plugin runs a recovery process:
+
+1. Initializes cron detection
+2. Iterates over all guilds the bot belongs to
+3. For each guild, loads the active giveaway ID list from Flashcore
+4. For each active giveaway:
+   - If `endsAt` has already passed, ends the giveaway immediately
+   - If still active and `@robojs/cron` is available, checks if the cron job still exists
+   - If the job is missing or cron is unavailable, reschedules via the appropriate method
+   - Updates the giveaway record if the `cronJobId` changed
+
+Recovery is per-guild. A failure in one guild does not prevent recovery in others -- each guild's recovery runs in its own try/catch block.
+
+## Winner selection
+
+Winners are selected using a Fisher-Yates shuffle on the entry pool. This provides unbiased, uniform random selection in O(n) time.
+
+The algorithm:
+1. Collect all user IDs from the entries map
+2. Shuffle the array using Fisher-Yates
+3. Take the first `min(winnersCount, totalEntrants)` elements
+
+For rerolls, all previous winners (original winners and all prior reroll batches) are excluded from the candidate pool before selection.
+
+The entries map uses `Record<string, number>` where the value is a weight. Currently all entries have weight `1`, but the data structure supports future weighted entry features.
+
+## Advanced: direct Flashcore access
+
+Since the storage layout is well-defined, it's possible to read giveaway data directly from Flashcore:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Flashcore } from 'robo.js'
+    import type { Giveaway } from '@robojs/giveaways'
+
+    // Read a specific giveaway
+    const giveaway = await Flashcore.get<Giveaway>('01HQRS5F1GZ9J3YF7WXT7H2K2B', {
+      namespace: ['giveaways', 'data']
+    })
+
+    // List active giveaway IDs for a guild
+    const activeIds = await Flashcore.get<string[]>('list', {
+      namespace: ['giveaways', 'guilds', '123456789012345678', 'active']
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Flashcore } from 'robo.js'
+
+    // Read a specific giveaway
+    const giveaway = await Flashcore.get('01HQRS5F1GZ9J3YF7WXT7H2K2B', {
+      namespace: ['giveaways', 'data']
+    })
+
+    // List active giveaway IDs for a guild
+    const activeIds = await Flashcore.get('list', {
+      namespace: ['giveaways', 'guilds', '123456789012345678', 'active']
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Writing directly to Flashcore bypasses the plugin's validation, scheduling, and Discord message updates. Use the exported API functions or slash commands for safe mutations.
+</Callout>
+
+## Architecture notes
+
+- **Single-instance only** -- In-memory cooldown maps and `setTimeout` handles are not shared across processes. Running multiple bot instances requires external coordination.
+- **Idempotent operations** -- `endGiveaway()` checks the giveaway status before acting. Calling it on an already-ended giveaway is a no-op.
+- **Circular dependency avoidance** -- The scheduler and giveaway utilities reference each other through dynamic `import()` calls to avoid circular module dependencies.
+
+## Next Steps
+
+<Cards>
+  <Card href="./commands" title="Commands" description="Full slash command reference." />
+  <Card href="./configuration" title="Configuration" description="Per-guild settings and defaults." />
+  <Card href="./api" title="REST API" description="HTTP endpoints for dashboards." />
+</Cards>

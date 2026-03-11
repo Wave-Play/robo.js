@@ -1,0 +1,778 @@
+---
+title: API reference
+description: Complete TypeScript API reference for the XP plugin.
+---
+
+All exports are available from the `@robojs/xp` package. The plugin exports `XP` (also aliased as `xp`), `config`, `events`, `leaderboard`, `math`, `rewards`, `constants`, `formatXP`, and `getXpLabel`.
+
+## XP manipulation
+
+The `XP` object (also exported as `xp`) provides methods for reading and modifying user XP.
+
+### XP.addXP
+
+Add XP to a user. Creates the user record if it doesn't exist.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { XP } from '@robojs/xp'
+
+    const result = await XP.addXP(guildId, userId, 100, { reason: 'contest_winner' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { XP } from '@robojs/xp'
+
+    const result = await XP.addXP(guildId, userId, 100, { reason: 'contest_winner' })
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `guildId` | `string` | Guild snowflake |
+| `userId` | `string` | User snowflake |
+| `amount` | `number` | XP to add (must be >= 0) |
+| `options.reason` | `string?` | Reason included in events |
+| `options.storeId` | `string?` | Store to use (default: `'default'`) |
+
+**Returns:** `XPChangeResult`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface XPChangeResult {
+    	oldXp: number
+    	newXp: number
+    	oldLevel: number
+    	newLevel: number
+    	leveledUp: boolean
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+XP is capped at the curve's `maxLevel` threshold if one is defined. Also available as `XP.add()`.
+
+### XP.removeXP
+
+Remove XP from a user. XP is clamped at 0.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = await XP.removeXP(guildId, userId, 50, { reason: 'moderation' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = await XP.removeXP(guildId, userId, 50, { reason: 'moderation' })
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:** Same as `addXP`.
+
+**Returns:** `XPRemoveResult`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface XPRemoveResult {
+    	oldXp: number
+    	newXp: number
+    	oldLevel: number
+    	newLevel: number
+    	leveledDown: boolean
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+Also available as `XP.remove()`.
+
+### XP.setXP
+
+Set a user's total XP to an exact value.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = await XP.setXP(guildId, userId, 5000, { reason: 'admin_adjustment' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = await XP.setXP(guildId, userId, 5000, { reason: 'admin_adjustment' })
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:** Same as `addXP`, but `amount` is the absolute XP value.
+
+**Returns:** `XPSetResult`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface XPSetResult {
+    	oldXp: number
+    	newXp: number
+    	oldLevel: number
+    	newLevel: number
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+Also available as `XP.set()`.
+
+### XP.recalc
+
+Recompute a user's level from their stored total XP and reconcile role rewards. Idempotent.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = await XP.recalc(guildId, userId)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = await XP.recalc(guildId, userId)
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `guildId` | `string` | Guild snowflake |
+| `userId` | `string` | User snowflake |
+| `options.storeId` | `string?` | Store to use (default: `'default'`) |
+
+**Returns:** `RecalcResult`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface RecalcResult {
+    	oldLevel: number
+    	newLevel: number
+    	totalXp: number
+    	reconciled: boolean // true if level was corrected
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+### XP.getXP
+
+Get a user's total XP. Returns `0` if the user has no record.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const xp = await XP.getXP(guildId, userId)
+    const repXp = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const xp = await XP.getXP(guildId, userId)
+    const repXp = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+    ```
+  </Tab>
+</Tabs>
+
+Also available as `XP.get()`.
+
+### XP.getLevel
+
+Get a user's current level. Returns `0` if the user has no record.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const level = await XP.getLevel(guildId, userId)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const level = await XP.getLevel(guildId, userId)
+    ```
+  </Tab>
+</Tabs>
+
+### XP.getUser
+
+Get the full user record. Returns `null` if the user has no record.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const user = await XP.getUser(guildId, userId)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const user = await XP.getUser(guildId, userId)
+    ```
+  </Tab>
+</Tabs>
+
+**Returns:** `UserXP | null`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface UserXP {
+    	xp: number          // Total XP accumulated
+    	level: number       // Current level
+    	lastAwardedAt: number // Unix timestamp (ms) of last XP award
+    	messages: number    // Total messages in guild text channels
+    	xpMessages: number  // Messages that actually awarded XP
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+The `messages` counter increments for all valid guild messages. The `xpMessages` counter only increments when XP is awarded (after cooldown, no-XP zone, and multiplier checks pass).
+
+## Configuration
+
+See [Configuration](./configuration.mdx) for full details on each config field.
+
+### config.get
+
+Get the merged config for a guild. Never returns null.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const repConfig = await config.get(guildId, { storeId: 'reputation' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const repConfig = await config.get(guildId, { storeId: 'reputation' })
+    ```
+  </Tab>
+</Tabs>
+
+### config.set
+
+Update guild config with partial values. Validates before persisting.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const updated = await config.set(guildId, {
+    	cooldownSeconds: 45,
+    	xpRate: 1.5
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const updated = await config.set(guildId, {
+    	cooldownSeconds: 45,
+    	xpRate: 1.5
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Returns the full merged config after the update.
+
+### config.validate
+
+Validate a partial config object without persisting.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const { valid, errors } = config.validate(partialConfig)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const { valid, errors } = config.validate(partialConfig)
+    ```
+  </Tab>
+</Tabs>
+
+Returns `{ valid: boolean, errors: string[] }`.
+
+### config.getGlobal / config.setGlobal
+
+Manage global defaults that apply to all guilds.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const globalConfig = await config.getGlobal()
+    await config.setGlobal({ xpRate: 1.5 })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const globalConfig = await config.getGlobal()
+    await config.setGlobal({ xpRate: 1.5 })
+    ```
+  </Tab>
+</Tabs>
+
+### config.getDefault
+
+Returns system defaults before any global or guild overrides.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const defaults = config.getDefault()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const defaults = config.getDefault()
+    ```
+  </Tab>
+</Tabs>
+
+## Leaderboard
+
+### leaderboard.get
+
+Get paginated leaderboard entries.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { leaderboard } from '@robojs/xp'
+
+    const result = await leaderboard.get(guildId, 0, 10)
+    // { entries: LeaderboardEntry[], total: number }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { leaderboard } from '@robojs/xp'
+
+    const result = await leaderboard.get(guildId, 0, 10)
+    // { entries: LeaderboardEntry[], total: number }
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `guildId` | `string` | -- | Guild snowflake |
+| `offset` | `number` | `0` | Starting position |
+| `limit` | `number` | `10` | Max entries to return |
+| `options.storeId` | `string?` | `'default'` | Store to query |
+
+**Returns:** `{ entries: LeaderboardEntry[], total: number }`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface LeaderboardEntry {
+    	userId: string
+    	xp: number
+    	level: number
+    	rank: number // 1-indexed
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+Results for offset + limit of 100 or less come from the cache (sub-10ms). Deeper pagination triggers a full dataset sort.
+
+### leaderboard.getRank
+
+Get a specific user's rank.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const rankInfo = await leaderboard.getRank(guildId, userId)
+    // { rank: 1, total: 150 } or null
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const rankInfo = await leaderboard.getRank(guildId, userId)
+    // { rank: 1, total: 150 } or null
+    ```
+  </Tab>
+</Tabs>
+
+Returns `null` if the user has no XP or XP is 0.
+
+### leaderboard.invalidateCache
+
+Manually invalidate the leaderboard cache.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    leaderboard.invalidateCache(guildId)
+    leaderboard.invalidateCache(guildId, { storeId: 'reputation' })
+    leaderboard.invalidateCache(guildId, { all: true }) // All stores
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    leaderboard.invalidateCache(guildId)
+    leaderboard.invalidateCache(guildId, { storeId: 'reputation' })
+    leaderboard.invalidateCache(guildId, { all: true }) // All stores
+    ```
+  </Tab>
+</Tabs>
+
+## Events
+
+See [Events](./events.mdx) for full documentation on the event system.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp(handler)
+    events.onLevelDown(handler)
+    events.onXPChange(handler)
+    events.on('levelUp', handler)
+    events.once('xpChange', handler)
+    events.off('levelUp', handler)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/xp'
+
+    events.onLevelUp(handler)
+    events.onLevelDown(handler)
+    events.onXPChange(handler)
+    events.on('levelUp', handler)
+    events.once('xpChange', handler)
+    events.off('levelUp', handler)
+    ```
+  </Tab>
+</Tabs>
+
+## Math utilities
+
+Pure math functions for level curve calculations. All functions accept an optional `LevelCurve` parameter to use a custom curve instead of the default quadratic.
+
+### math.xpNeededForLevel
+
+XP delta required to gain a specific level (from the previous level).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { math } from '@robojs/xp'
+
+    math.xpNeededForLevel(1)  // 155
+    math.xpNeededForLevel(10) // 1100
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { math } from '@robojs/xp'
+
+    math.xpNeededForLevel(1)  // 155
+    math.xpNeededForLevel(10) // 1100
+    ```
+  </Tab>
+</Tabs>
+
+### math.totalXpForLevel
+
+Cumulative XP required to reach the start of a level.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    math.totalXpForLevel(10) // 5675
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    math.totalXpForLevel(10) // 5675
+    ```
+  </Tab>
+</Tabs>
+
+### math.computeLevelFromTotalXp
+
+Compute level and progress from total XP.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const progress = math.computeLevelFromTotalXp(5500)
+    // { level: 9, inLevel: 925, toNext: 175 }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const progress = math.computeLevelFromTotalXp(5500)
+    // { level: 9, inLevel: 925, toNext: 175 }
+    ```
+  </Tab>
+</Tabs>
+
+**Returns:** `LevelProgress`
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface LevelProgress {
+    	level: number   // Current level
+    	inLevel: number // XP accumulated within the current level
+    	toNext: number  // XP needed for the next level (0 at maxLevel)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+### math.progressInLevel
+
+Get progress percentage within the current level.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const { current, needed, percentage } = math.progressInLevel(5500)
+    // { current: 925, needed: 1100, percentage: 84.09 }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const { current, needed, percentage } = math.progressInLevel(5500)
+    // { current: 925, needed: 1100, percentage: 84.09 }
+    ```
+  </Tab>
+</Tabs>
+
+### math.xpDeltaForLevelRange
+
+XP difference between two levels. Can be negative if `toLevel < fromLevel`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const delta = math.xpDeltaForLevelRange(5, 10) // XP needed from level 5 to 10
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const delta = math.xpDeltaForLevelRange(5, 10) // XP needed from level 5 to 10
+    ```
+  </Tab>
+</Tabs>
+
+### math.isValidLevel / math.isValidXp
+
+Validate level and XP values.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    math.isValidLevel(50)  // true
+    math.isValidLevel(-1)  // false
+    math.isValidXp(10000)  // true
+    math.isValidXp(-5)     // false
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    math.isValidLevel(50)  // true
+    math.isValidLevel(-1)  // false
+    math.isValidXp(10000)  // true
+    math.isValidXp(-5)     // false
+    ```
+  </Tab>
+</Tabs>
+
+## Rewards
+
+### rewards.reconcile
+
+Manually reconcile a user's roles based on their level and the guild config.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { rewards, config, XP } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const userLevel = await XP.getLevel(guildId, userId)
+
+    await rewards.reconcile(guildId, userId, userLevel, guildConfig)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { rewards, config, XP } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const userLevel = await XP.getLevel(guildId, userId)
+
+    await rewards.reconcile(guildId, userId, userLevel, guildConfig)
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `guildId` | `string` | Guild snowflake |
+| `userId` | `string` | User snowflake |
+| `newLevel` | `number` | User's current level |
+| `guildConfig` | `GuildConfig` | Full guild configuration |
+
+Also available as `rewards.reconcileRewards()` and as the top-level export `reconcileRewards()`.
+
+## Constants
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { constants } from '@robojs/xp'
+
+    constants.DEFAULT_COOLDOWN          // 60
+    constants.DEFAULT_XP_RATE           // 1.0
+    constants.DEFAULT_REWARDS_MODE      // 'stack'
+    constants.DEFAULT_REMOVE_ON_LOSS    // false
+    constants.DEFAULT_LEADERBOARD_PUBLIC // false
+    constants.DEFAULT_CURVE_A           // 5
+    constants.DEFAULT_CURVE_B           // 50
+    constants.DEFAULT_CURVE_C           // 100
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { constants } from '@robojs/xp'
+
+    constants.DEFAULT_COOLDOWN          // 60
+    constants.DEFAULT_XP_RATE           // 1.0
+    constants.DEFAULT_REWARDS_MODE      // 'stack'
+    constants.DEFAULT_REMOVE_ON_LOSS    // false
+    constants.DEFAULT_LEADERBOARD_PUBLIC // false
+    constants.DEFAULT_CURVE_A           // 5
+    constants.DEFAULT_CURVE_B           // 50
+    constants.DEFAULT_CURVE_C           // 100
+    ```
+  </Tab>
+</Tabs>
+
+The curve constants (`DEFAULT_CURVE_A`, `DEFAULT_CURVE_B`, `DEFAULT_CURVE_C`) are also available as individual named exports.
+
+## Utility functions
+
+### formatXP
+
+Format an XP value with thousands separators and an optional label.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { formatXP } from '@robojs/xp'
+
+    formatXP(1500)                // '1,500 XP'
+    formatXP(1500, 'Reputation')  // '1,500 Reputation'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { formatXP } from '@robojs/xp'
+
+    formatXP(1500)                // '1,500 XP'
+    formatXP(1500, 'Reputation')  // '1,500 Reputation'
+    ```
+  </Tab>
+</Tabs>
+
+### getXpLabel
+
+Extract the custom XP label from a guild config.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getXpLabel, config } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const label = getXpLabel(guildConfig) // 'XP' or custom label
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getXpLabel, config } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const label = getXpLabel(guildConfig) // 'XP' or custom label
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./rest-api" title="REST API" description="HTTP endpoints for web dashboards." />
+  <Card href="./events" title="Events" description="Event system for building custom features." />
+  <Card href="./recipes" title="Recipes" description="Common integration patterns." />
+</Cards>

@@ -1,0 +1,250 @@
+---
+title: Configuration
+description: Per-guild settings, defaults, and validation rules
+---
+
+Each Discord server gets its own set of giveaway settings. Settings control defaults for new giveaways, enforce limits, and apply entry restrictions. They persist in Flashcore and survive restarts.
+
+Settings can be managed three ways:
+
+- **Slash commands** -- `/giveaway settings get`, `/giveaway settings set`, `/giveaway settings reset`
+- **Imperative API** -- `getGuildSettings()` and `setGuildSettings()` exported from `@robojs/giveaways`
+- **REST API** -- `GET`/`PATCH /api/giveaways/:guildId/settings` (requires `@robojs/server`)
+
+When no custom settings have been saved for a guild, the plugin uses built-in defaults.
+
+## Settings reference
+
+### Defaults
+
+Control the default values for new giveaways.
+
+<TypeTable
+  type={{
+    'defaults.winners': { type: 'number', description: 'Default number of winners when not specified in /giveaway start.', default: '1' },
+    'defaults.duration': { type: 'string', description: 'Default duration string (e.g., "1h", "2d"). Currently unused since /giveaway start requires duration, but available for display and future use.', default: '"1h"' },
+    'defaults.buttonLabel': { type: 'string', description: 'Text displayed on the entry button. Must be 1-80 characters.', default: '"Enter Giveaway"' },
+    'defaults.dmWinners': { type: 'boolean', description: 'Whether winners receive a DM when selected.', default: 'true' },
+  }}
+/>
+
+### Limits
+
+Set upper bounds on giveaway parameters.
+
+<TypeTable
+  type={{
+    'limits.maxWinners': { type: 'number', description: 'Maximum number of winners allowed per giveaway. Range: 1-100.', default: '20' },
+    'limits.maxDurationDays': { type: 'number', description: 'Maximum giveaway duration in days. Range: 1-365.', default: '30' },
+  }}
+/>
+
+### Restrictions
+
+Guild-wide entry restrictions applied to all giveaways. Individual giveaways can also set their own restrictions via the `allow_roles`, `deny_roles`, and `min_account_age_days` options on `/giveaway start`.
+
+<TypeTable
+  type={{
+    'restrictions.allowRoleIds': { type: 'string[]', description: 'Role IDs allowed to enter. Empty array means all roles are allowed.', default: '[]' },
+    'restrictions.denyRoleIds': { type: 'string[]', description: 'Role IDs blocked from entering. Empty array means no roles are denied.', default: '[]' },
+    'restrictions.minAccountAgeDays': { type: 'number | null', description: 'Minimum Discord account age in days. Set to null to disable.', default: 'null' },
+  }}
+/>
+
+## Managing settings with commands
+
+View current settings:
+
+```
+/giveaway settings get
+```
+
+Update specific settings (only provided values change):
+
+```
+/giveaway settings set default_winners: 3 button_label: Join the Raffle dm_winners: false max_winners: 50
+```
+
+Reset everything to defaults:
+
+```
+/giveaway settings reset
+```
+
+All settings commands that modify data require **Manage Server** permission.
+
+## Managing settings with the API
+
+The plugin exports two functions for programmatic access:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+    ```
+  </Tab>
+</Tabs>
+
+### `getGuildSettings(guildId)`
+
+Returns the current settings for a guild. If no custom settings exist, returns the built-in defaults.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const settings = await getGuildSettings('123456789012345678')
+    console.log(settings.defaults.winners) // 1
+    console.log(settings.limits.maxWinners) // 20
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const settings = await getGuildSettings('123456789012345678')
+    console.log(settings.defaults.winners) // 1
+    console.log(settings.limits.maxWinners) // 20
+    ```
+  </Tab>
+</Tabs>
+
+### `setGuildSettings(guildId, settings)`
+
+Persists a complete settings object for the guild. This is a full overwrite, not a merge. Read first, modify, then write:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+
+    const guildId = '123456789012345678'
+    const current = await getGuildSettings(guildId)
+
+    await setGuildSettings(guildId, {
+      ...current,
+      defaults: {
+        ...current.defaults,
+        winners: 3,
+        buttonLabel: 'Join the Raffle'
+      },
+      limits: {
+        ...current.limits,
+        maxWinners: 50
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+
+    const guildId = '123456789012345678'
+    const current = await getGuildSettings(guildId)
+
+    await setGuildSettings(guildId, {
+      ...current,
+      defaults: {
+        ...current.defaults,
+        winners: 3,
+        buttonLabel: 'Join the Raffle'
+      },
+      limits: {
+        ...current.limits,
+        maxWinners: 50
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+`setGuildSettings()` does not validate the settings object. Make sure all required fields are present and values are within valid ranges.
+</Callout>
+
+## TypeScript types
+
+Import types from either the main entry point or the `./types` subpath:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { GuildSettings } from '@robojs/giveaways'
+    // or
+    import type { GuildSettings } from '@robojs/giveaways/types'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // or
+    ```
+  </Tab>
+</Tabs>
+
+The full `GuildSettings` interface:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface GuildSettings {
+      defaults: {
+        winners: number
+        duration: string
+        buttonLabel: string
+        dmWinners: boolean
+      }
+      limits: {
+        maxWinners: number
+        maxDurationDays: number
+      }
+      restrictions: {
+        allowRoleIds: string[]
+        denyRoleIds: string[]
+        minAccountAgeDays: number | null
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+## Validation rules
+
+When settings are updated via slash commands or the REST API, these validation rules apply:
+
+| Field | Rule |
+|---|---|
+| `defaults.winners` | Integer, at least 1, cannot exceed `limits.maxWinners` |
+| `defaults.duration` | Must match `Nm`, `Nh`, or `Nd` format with value > 0 |
+| `defaults.buttonLabel` | String, 1-80 characters |
+| `defaults.dmWinners` | Boolean |
+| `limits.maxWinners` | Integer, 1-100, cannot be less than `defaults.winners` |
+| `limits.maxDurationDays` | Integer, 1-365 |
+| `restrictions.allowRoleIds` | Array of strings |
+| `restrictions.denyRoleIds` | Array of strings |
+| `restrictions.minAccountAgeDays` | `null` or non-negative number |
+
+The slash command validates a subset of these fields (the ones it accepts as options). The REST API validates all fields comprehensively.
+
+## Discord intents
+
+The plugin requires these Discord gateway intents:
+
+- `Guilds`
+- `GuildMessages`
+
+These are declared in the plugin's config and should be enabled automatically.
+
+## Next Steps
+
+<Cards>
+  <Card href="./commands" title="Commands" description="Full slash command reference." />
+  <Card href="./api" title="REST API" description="HTTP endpoints for settings and giveaways." />
+  <Card href="./persistence" title="Persistence" description="How data is stored and recovered." />
+</Cards>

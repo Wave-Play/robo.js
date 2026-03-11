@@ -1,0 +1,138 @@
+---
+title: Middleware
+description: Intercept and modify handler execution with the middleware chain.
+---
+
+Middleware runs before every command, context menu, and event handler. Use it for logging, permission checks, rate limiting, or any cross-cutting concern. Middleware files live in `src/middleware/`.
+
+## File structure
+
+```
+src/
+└── middleware/
+    ├── logger.ts
+    └── rate-limit.ts
+```
+
+## Handler signature
+
+The default export receives a `MiddlewareData` object and can return a `MiddlewareResult` to abort or modify execution:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/logger.ts"
+    import type { MiddlewareData } from '@robojs/discordjs'
+
+    export default (data: MiddlewareData) => {
+    	console.log(`Handler: ${data.record.key} (${data.record.type})`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/logger.js"
+    export default (data) => {
+    	console.log(`Handler: ${data.record.key} (${data.record.type})`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### MiddlewareData
+
+The `data` argument contains:
+
+<TypeTable
+  type={{
+    "record.key": { type: "string", description: "The handler key (e.g., command name, event name)." },
+    "record.type": { type: "string", description: "The handler type (e.g., 'discordjs:commands', 'discordjs:events', 'discordjs:context')." },
+    "record.metadata": { type: "Record<string, unknown>", description: "Handler config metadata." },
+    payload: { type: "unknown[]", description: "Original arguments. For commands, the first element is the interaction." },
+  }}
+/>
+
+## Aborting execution
+
+Return `{ abort: true }` to prevent the handler from running:
+
+> The `MiddlewareResult` type also includes a `payload` field, but it is reserved for future use and is not currently consumed by the runtime. Only `abort` is checked.
+
+> **Error behavior:** If any middleware throws an error, the entire handler execution is aborted. Ensure middleware functions handle their own errors gracefully if you want execution to continue.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/admin-only.ts"
+    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (data: MiddlewareData): MiddlewareResult | void => {
+    	const interaction = data.payload[0] as ChatInputCommandInteraction
+
+    	if (interaction?.user && interaction.user.id !== 'YOUR_ADMIN_ID') {
+    		interaction.reply({ content: 'Admin only!', ephemeral: true })
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/admin-only.js"
+    export default (data) => {
+    	const interaction = data.payload[0]
+
+    	if (interaction?.user && interaction.user.id !== 'YOUR_ADMIN_ID') {
+    		interaction.reply({ content: 'Admin only!', ephemeral: true })
+    		return { abort: true }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Middleware config
+
+Export a `config` object to control execution order and enablement.
+
+<TypeTable
+  type={{
+    order: { type: "number", description: "Controls sort position in middleware.chain(). Lower values appear first. See Execution order below for details.", default: "0" },
+    enabled: { type: "boolean", description: "Whether the middleware is enabled. Checked at runtime in executeMiddleware() — use this for middleware control.", default: "true" },
+    description: { type: "string", description: "Handler description.", default: "undefined" },
+    disabled: { type: "boolean", description: "Inherited from BaseConfig. Has different semantics from enabled and is not the recommended way to control middleware. Use enabled instead.", default: "undefined" },
+    serverOnly: { type: "string | string[]", description: "Restrict to specific server IDs.", default: "undefined" },
+    timeout: { type: "number", description: "Execution timeout in milliseconds.", default: "undefined" },
+  }}
+/>
+
+```ts title="src/middleware/rate-limit.ts"
+import type { MiddlewareConfig } from '@robojs/discordjs'
+
+export const config: MiddlewareConfig = {
+	order: -10  // appears first in middleware.chain()
+}
+
+export default (data) => {
+	// Rate limiting logic
+}
+```
+
+## Execution order
+
+The `order` field is accepted in middleware config and stored in handler metadata. However, the runtime execution path does **not** sort middleware by `order` — it iterates in portal insertion order (the order files are indexed during build).
+
+The `middleware.chain()` namespace controller API **does** sort by `order`, so it controls the sequence returned when accessing the middleware chain programmatically:
+
+```
+order: -10  →  first in middleware.chain()
+order: 0    →  default
+order: 10   →  last in middleware.chain()
+```
+
+For runtime execution, the order depends on how middleware files are discovered and registered during the build step. If you need deterministic runtime ordering, verify your file structure and build output.
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./events" title="Events" description="Gateway event handlers." />
+	<Card href="/docs/bots/middleware" title="Bot middleware guide" description="Higher-level tutorial on middleware." />
+</Cards>

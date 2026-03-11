@@ -1,0 +1,126 @@
+---
+title: CORS
+description: "Enable cross-origin resource sharing for your API routes."
+---
+
+Cross-Origin Resource Sharing (CORS) controls which domains can access your API. The plugin includes built-in CORS support that handles preflight requests and response headers automatically.
+
+## Quick setup
+
+Enable permissive CORS (all origins allowed):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	cors: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	cors: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This sets `Access-Control-Allow-Origin: *` and handles `OPTIONS` preflight requests with a 204 response.
+
+## Origin allowlist
+
+Restrict access to specific origins:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	cors: {
+    		origins: ['https://myapp.com', 'http://localhost:5173']
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	cors: {
+    		origins: ['https://myapp.com', 'http://localhost:5173']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The server checks the `Origin` header against the allowlist. If it matches, the origin is echoed back in `Access-Control-Allow-Origin`. Non-matching origins receive no CORS headers.
+
+## Credentials
+
+Enable cookies and authorization headers:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	cors: {
+    		origins: ['https://myapp.com'],
+    		credentials: true
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	cors: {
+    		origins: ['https://myapp.com'],
+    		credentials: true
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+	When `credentials` is `true`, you must specify explicit origins. The wildcard `'*'` cannot be used with credentials per the CORS specification.
+</Callout>
+
+## What the plugin handles
+
+When CORS is enabled, the plugin automatically:
+
+- Sets `Access-Control-Allow-Origin` based on the requesting origin
+- Sets `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS`
+- Sets `Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With`
+- Responds to `OPTIONS` preflight requests with 204 (no content)
+- Sets `Access-Control-Allow-Credentials: true` when credentials are enabled
+
+## Configuration reference
+
+<TypeTable
+	type={{
+		cors: {
+			type: 'boolean | CorsConfig',
+			default: 'undefined',
+			description: 'Enable CORS. true for permissive, object for fine-grained control.'
+		},
+		origins: {
+			type: "string[] | '*'",
+			default: "'*'",
+			description: 'Allowed origins.'
+		},
+		credentials: {
+			type: 'boolean',
+			default: 'false',
+			description: 'Allow cookies and auth headers.'
+		}
+	}}
+/>
+
+## Next steps
+
+<Cards>
+	<Card title="Configuration" description="See all server configuration options." href="./configuration" />
+	<Card title="Routing" description="Learn about file-based routing." href="./routing" />
+</Cards>

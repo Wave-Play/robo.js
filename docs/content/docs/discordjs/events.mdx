@@ -1,0 +1,186 @@
+---
+title: Events
+description: Gateway event handlers with frequency control and concurrent execution.
+---
+
+Event handlers are created by placing files in the `src/events/` directory. The file name matches the Discord.js event name, and the default export is the handler function.
+
+## File structure
+
+```
+src/
+└── events/
+    ├── ready.ts              → client ready event
+    ├── messageCreate.ts      → message create event
+    └── guildMemberAdd.ts     → guild member add event
+```
+
+## Handler signature
+
+The default export receives the same arguments as the corresponding Discord.js event:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/messageCreate.ts"
+    import type { Message } from 'discord.js'
+
+    export default (message: Message) => {
+    	if (message.content === '!hello') {
+    		message.reply('Hello there!')
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/messageCreate.js"
+    export default (message) => {
+    	if (message.content === '!hello') {
+    		message.reply('Hello there!')
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Event config
+
+Export a `config` object to configure the event handler.
+
+<TypeTable
+  type={{
+    frequency: { type: "'always' | 'once'", description: "Whether the handler runs on every event or only the first occurrence. When set to 'once', the handler is disabled after its first execution and re-enables on restart.", default: "'always'" },
+    priority: { type: "number", description: "Accepted in config but does not currently affect execution order. All handlers run concurrently.", default: "0" },
+    description: { type: "string", description: "Handler description.", default: "undefined" },
+    disabled: { type: "boolean", description: "Whether the handler is disabled.", default: "undefined" },
+    serverOnly: { type: "string | string[]", description: "Restrict to specific server IDs.", default: "undefined" },
+    timeout: { type: "number", description: "Timeout in milliseconds. Only enforced for lifecycle events (_start, _stop), not regular Discord gateway events.", default: "undefined" },
+  }}
+/>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/ready.ts"
+    import type { EventConfig } from '@robojs/discordjs'
+    import type { Client } from 'discord.js'
+
+    export const config: EventConfig = {
+    	frequency: 'once'
+    }
+
+    export default (client: Client) => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/ready.js"
+    export const config = {
+    	frequency: 'once'
+    }
+
+    export default (client) => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Multiple handlers per event
+
+Create a directory with the event name and place multiple handler files inside. Each handler runs independently.
+
+```
+src/
+└── events/
+    └── messageCreate/
+        ├── log-messages.ts
+        └── auto-reply.ts
+```
+
+When multiple handlers exist for the same event, they run concurrently. Each handler runs independently and in parallel via `Promise.all`.
+
+## Priority field
+
+The `priority` field is accepted in `EventConfig` but does not currently affect execution order. The route processor stores only `frequency` in handler metadata, so `priority` values are not persisted. Even if they were, all handlers for an event run concurrently via `Promise.all`, so sort order would not determine execution sequence.
+
+```ts title="src/events/messageCreate/moderation.ts"
+import type { EventConfig } from '@robojs/discordjs'
+
+export const config: EventConfig = {
+	priority: -10  // accepted but has no effect on execution order
+}
+
+export default (message) => {
+	// Runs concurrently with all other messageCreate handlers
+}
+```
+
+If you need guaranteed ordering, use [middleware](./middleware) to run logic before event handlers, or call shared functions explicitly from a single handler.
+
+## Frequency control
+
+When `frequency: 'once'` is set, the handler is disabled at runtime after its first execution. Internally, this sets the handler record's `enabled` flag to `false`, preventing it from running again. The handler re-enables on restart since the flag is not persisted.
+
+This is useful for one-time setup logic like the `ready` event:
+
+```ts title="src/events/ready.ts"
+import type { EventConfig } from '@robojs/discordjs'
+import type { Client } from 'discord.js'
+
+export const config: EventConfig = {
+	frequency: 'once'
+}
+
+export default (client: Client) => {
+	console.log(`Logged in as ${client.user?.tag}`)
+}
+```
+
+## Plugin options argument
+
+If an event handler belongs to a plugin, `pluginOptions` is appended as an additional argument after the Discord.js event arguments. This allows plugin handlers to access their configuration at runtime.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/messageCreate.ts"
+    import type { Message } from 'discord.js'
+
+    interface MyPluginOptions {
+    	prefix: string
+    }
+
+    export default (message: Message, pluginOptions: MyPluginOptions) => {
+    	// message is from Discord.js
+    	// pluginOptions contains the plugin's config
+    	if (message.content.startsWith(pluginOptions.prefix)) {
+    		// handle prefixed message
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/messageCreate.js"
+    export default (message, pluginOptions) => {
+    	// message is from Discord.js
+    	// pluginOptions contains the plugin's config
+    	if (message.content.startsWith(pluginOptions.prefix)) {
+    		// handle prefixed message
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+For non-plugin handlers, this extra argument is `undefined`.
+
+## Intent requirements
+
+Events require specific gateway intents. The plugin infers required intents from your registered events automatically. If you use events that require privileged intents, you must enable them explicitly. See [Intents & permissions](./intents-permissions) for details.
+
+## Next steps
+
+<Cards>
+	<Card href="./intents-permissions" title="Intents & permissions" description="How intents are inferred and permissions aggregated." />
+	<Card href="./middleware" title="Middleware" description="Intercept and modify handler execution." />
+	<Card href="/docs/bots/events" title="Bot events guide" description="Higher-level tutorial on handling bot events." />
+</Cards>

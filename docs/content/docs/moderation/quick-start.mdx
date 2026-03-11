@@ -1,0 +1,110 @@
+---
+title: Quick Start
+description: Install and configure moderation in under 5 minutes
+---
+
+Get moderation running on your server in a few steps.
+
+## Prerequisites
+
+- A Robo.js project with a Discord bot ([Bots guide](../bots/index.mdx))
+- Bot added to your server with appropriate permissions
+
+<Callout type="info">
+The `MessageContent` privileged intent is required for the rules enforcement feature. Enable it in the [Discord Developer Portal](https://discord.com/developers/applications) under your application's Bot settings.
+</Callout>
+
+## Install
+
+<Steps>
+  <Step>
+    ### Add the plugin
+
+    ```bash
+    npx robo add @robojs/moderation
+    ```
+
+    This installs the package and registers the required intents and permissions automatically.
+  </Step>
+  <Step>
+    ### Start your Robo
+
+    ```bash
+    npx robo dev
+    ```
+
+    The moderation commands register with Discord on startup.
+  </Step>
+  <Step>
+    ### Run setup
+
+    In your Discord server, run:
+
+    ```
+    /mod setup
+    ```
+
+    This opens an interactive panel with channel selectors and feature toggles.
+  </Step>
+  <Step>
+    ### Configure channels
+
+    Use the dropdown menus to select existing channels for **Moderator Logs** and **Moderator Mail**, or click **Create channels** to have the plugin create them with restricted permissions.
+
+    - **Moderator Logs** receives a record of every moderation action (bans, kicks, warns, timeouts, forgives, setting changes).
+    - **Moderator Mail** receives user reports submitted via `/mod report` and the `Report Anonymously` context menu.
+  </Step>
+  <Step>
+    ### Try a command
+
+    Test the setup by auditing a user:
+
+    ```
+    /mod audit user:@someone
+    ```
+
+    You should see an embed with the user's status, infraction count, and a Ban/Unban button.
+  </Step>
+</Steps>
+
+## Optional: enable test mode
+
+Before using moderation commands on real members, toggle **Test mode** in the setup panel. Test mode simulates all actions without executing them — bans, kicks, and warns are logged with a `[TEST]` prefix but no actual Discord actions occur.
+
+## File structure
+
+After installation, the plugin registers its commands and events through Robo's file-based routing. No files are added to your project.
+
+The plugin config file is optional:
+
+<Files>
+  <Folder name="config" defaultOpen>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="moderation.mjs" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+See [Configuration](./configuration.mdx) for available options.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Plugin options, intents, and permissions."
+  />
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./moderation-channels"
+    title="Moderation Channels"
+    description="Configure logging and report channels."
+  />
+</Cards>

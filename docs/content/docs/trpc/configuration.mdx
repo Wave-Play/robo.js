@@ -1,0 +1,270 @@
+---
+title: Configuration
+description: Server prefix, seed files, API reference, and troubleshooting.
+---
+
+The `@robojs/trpc` plugin has no configuration options of its own. Its behavior is determined by [`@robojs/server`](../server/index.mdx)'s prefix setting and the files seeded into your project.
+
+## Server prefix
+
+The plugin detects `@robojs/server`'s `prefix` option at startup and registers the tRPC endpoint at `{prefix}/trpc`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: '/api' // default
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: '/api' // default
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Server prefix | tRPC endpoint |
+|---|---|
+| `/api` (default) | `/api/trpc` |
+| `/v1` | `/v1/trpc` |
+| `''` (empty) | `/trpc` |
+
+The client's `httpBatchLink` URL must match this endpoint. See the [client guide](./client.mdx) for details.
+
+## Seed files
+
+When installed via `npx robo add @robojs/trpc`, three files are seeded into your project:
+
+<Files>
+	<Folder name="src" defaultOpen>
+		<Folder name="robo" defaultOpen>
+			<Folder name="start" defaultOpen>
+				<File name="trpc.ts" />
+			</Folder>
+		</Folder>
+		<Folder name="trpc" defaultOpen>
+			<File name="client.ts" />
+			<File name="server.ts" />
+		</Folder>
+	</Folder>
+</Files>
+
+| File | Purpose |
+|---|---|
+| `src/trpc/server.ts` | Router definition with example query and mutation procedures. |
+| `src/trpc/client.ts` | Client setup with both React Query hooks and standalone client. |
+| `src/robo/start/trpc.ts` | Start hook that imports the server file to trigger router registration. |
+
+All three files are required for the plugin to function. The start hook is especially critical — without it, the router is never registered and all API calls fail.
+
+## Dependencies
+
+### Required
+
+| Package | Version | Purpose |
+|---|---|---|
+| `@robojs/server` | `>= 0.6.0` | Provides HTTP routing for the tRPC endpoint. |
+| `robo.js` | `>= 0.10.28` | Core framework for lifecycle hooks and plugin system. |
+
+### Optional
+
+| Package | Version | Purpose |
+|---|---|---|
+| `react` | `>= 18.0.0` | Only needed for `TRPCProvider` and React Query hooks. |
+| `zod` | Any | Recommended for input validation in procedures. |
+
+### Bundled
+
+These are included with the plugin — no need to install separately:
+
+| Package | Version |
+|---|---|
+| `@trpc/server` | 11.4.3 |
+| `@trpc/client` | 11.4.3 |
+| `@trpc/react-query` | 11.4.3 |
+| `@tanstack/react-query` | 5.84.1 |
+
+## API reference
+
+### Server exports
+
+Exported from `@robojs/trpc/server.js`:
+
+| Export | Type | Description |
+|---|---|---|
+| `initTRPC` | Object | Custom tRPC initializer. Call `.create()` to get a tRPC instance with automatic router registration. |
+
+### Client exports
+
+Exported from `@robojs/trpc`:
+
+**Components**
+
+| Export | Description |
+|---|---|
+| `TRPCProvider` | React component that wraps your app with tRPC and React Query providers. |
+
+**Client creation**
+
+| Export | Description |
+|---|---|
+| `createTRPCClient` | Create a standalone tRPC client (no React). |
+| `createTRPCReact` | Create React Query hooks for tRPC. |
+| `createTRPCQueryUtils` | Create query utility helpers for cache management. |
+
+**Links**
+
+| Export | Description |
+|---|---|
+| `httpBatchLink` | Batches multiple requests into one HTTP call. |
+| `httpBatchStreamLink` | Batch link with streaming support. |
+| `httpSubscriptionLink` | Server-sent events for subscriptions. |
+| `loggerLink` | Logs tRPC operations for debugging. |
+| `retryLink` | Retries failed operations. |
+| `splitLink` | Routes operations to different links conditionally. |
+| `wsLink` | WebSocket transport for subscriptions. |
+| `createWSClient` | Creates a WebSocket client instance. |
+
+**Error classes**
+
+| Export | Description |
+|---|---|
+| `TRPCError` | Throw typed errors in server procedures with HTTP status codes. |
+| `TRPCClientError` | Client-side error class for catching tRPC errors. |
+
+**Utilities**
+
+| Export | Description |
+|---|---|
+| `getMutationKey` | Get React Query mutation key for a tRPC mutation. |
+| `getQueryKey` | Get React Query query key for a tRPC query. |
+| `getUntypedClient` | Get the underlying untyped client from a typed client. |
+| `isTRPCClientError` | Type guard to check if an error is a tRPC client error. |
+
+**Types**
+
+| Export | Description |
+|---|---|
+| `Context` | Interface with `req: RoboRequest` and `res: RoboReply` available in procedures. |
+
+## Troubleshooting
+
+### "Router is not registered"
+
+This error means the tRPC router was never captured by the plugin. Common causes:
+
+**Wrong `initTRPC` import.** Import from `@robojs/trpc/server.js`, not `@trpc/server`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Correct
+    import { initTRPC } from '@robojs/trpc/server.js'
+
+    // Wrong — bypasses router registration
+    import { initTRPC } from '@trpc/server'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Correct
+    import { initTRPC } from '@robojs/trpc/server.js'
+
+    // Wrong — bypasses router registration
+    import { initTRPC } from '@trpc/server'
+    ```
+  </Tab>
+</Tabs>
+
+**Missing start hook.** Make sure `src/robo/start/trpc.ts` exists and imports your server file:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/robo/start/trpc.ts"
+    export default () => import('../../trpc/server.js')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/robo/start/trpc.js"
+    export default () => import('../../trpc/server.js')
+    ```
+  </Tab>
+</Tabs>
+
+**Router not called.** The server file must call `t.router()` — defining the router is what triggers registration.
+
+### 404 errors on tRPC calls
+
+The client URL doesn't match the server prefix. If `@robojs/server` uses a custom prefix, update the `httpBatchLink` URL:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // If server prefix is '/v1':
+    httpBatchLink({ url: '/v1/trpc' })
+
+    // If server prefix is '' (empty):
+    httpBatchLink({ url: '/trpc' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // If server prefix is '/v1':
+    httpBatchLink({ url: '/v1/trpc' })
+
+    // If server prefix is '' (empty):
+    httpBatchLink({ url: '/trpc' })
+    ```
+  </Tab>
+</Tabs>
+
+### TypeScript errors on client
+
+Make sure your server file exports the `AppRouter` type:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/trpc/server.ts"
+    export type AppRouter = typeof appRouter
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/trpc/server.js"
+
+    ```
+  </Tab>
+</Tabs>
+
+And the client imports it as a type:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/trpc/client.ts"
+    import type { AppRouter } from './server'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/trpc/client.js"
+
+    ```
+  </Tab>
+</Tabs>
+
+### Missing `@robojs/server`
+
+The plugin requires `@robojs/server` for HTTP routing. Install both together:
+
+```bash
+npx robo add @robojs/server @robojs/trpc
+```
+
+## Next Steps
+
+<Cards>
+	<Card href="./server" title="Server guide" description="Define procedures, handle errors, and split routers." />
+	<Card href="./client" title="Client guide" description="Set up React Query hooks or standalone clients." />
+	<Card href="../server" title="Server plugin" description="Learn about the web server powering tRPC routes." />
+</Cards>

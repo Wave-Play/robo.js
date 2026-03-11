@@ -1,0 +1,197 @@
+---
+title: 'Tunnels'
+description: 'Expose your local server to the internet with Cloudflare tunnels.'
+---
+
+Tunnels make your local server accessible from the internet. This is useful for testing webhooks, sharing dev previews, and developing Discord Activities that require HTTPS endpoints.
+
+## Quick tunnel
+
+The fastest way to get a public URL. No configuration needed.
+
+Using the CLI flag:
+
+```bash
+npx robo dev -t
+```
+
+Or as a standalone command:
+
+```bash
+npx robo tunnel start
+```
+
+This creates a temporary Cloudflare Quick Tunnel with a random `*.trycloudflare.com` URL. The URL changes each time you start a new tunnel.
+
+## Static tunnel
+
+For a persistent URL at your own domain, configure Cloudflare credentials:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	tunnel: {
+    		enabled: true,
+    		cloudflare: {
+    			domain: 'example.com',
+    			apiKey: 'your-api-key',
+    			zoneId: 'your-zone-id',
+    			accountId: 'your-account-id'
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	tunnel: {
+    		enabled: true,
+    		cloudflare: {
+    			domain: 'example.com',
+    			apiKey: 'your-api-key',
+    			zoneId: 'your-zone-id',
+    			accountId: 'your-account-id'
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Or use environment variables:
+
+```bash title=".env"
+CLOUDFLARE_DOMAIN=example.com
+CLOUDFLARE_API_KEY=your-api-key
+CLOUDFLARE_ZONE_ID=your-zone-id
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+```
+
+The plugin creates a tunnel at `robo.example.com` and automatically manages DNS records and tunnel credentials. On first run, it writes `CLOUDFLARE_TUNNEL_ID` and `CLOUDFLARE_TUNNEL_TOKEN` to your `.env` file for subsequent runs.
+
+## Managing tunnels
+
+List running tunnels:
+
+```bash
+npx robo tunnel list
+```
+
+Stop a specific tunnel:
+
+```bash
+npx robo tunnel stop <id>
+```
+
+Stop all tunnels:
+
+```bash
+npx robo tunnel stop --all
+```
+
+## Tunnel modes
+
+**Detached (default):** The tunnel runs in the background. Use `robo tunnel list` and `robo tunnel stop` to manage it.
+
+**Attached:** The tunnel runs in the foreground and stops when you press Ctrl+C:
+
+```bash
+npx robo tunnel start --attach
+```
+
+## CLI options
+
+Options for `robo tunnel start`:
+
+| Flag                | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `-p, --port <number>` | Port to tunnel (default: `PORT` env or 3000) |
+| `-u, --url <url>`   | Custom URL to tunnel                         |
+| `-a, --attach`      | Run in foreground mode                       |
+| `-v, --verbose`     | Show detailed output                         |
+
+## Custom providers
+
+Create your own tunnel provider by implementing the `TunnelProvider` interface:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { TunnelProvider, TunnelProviderConfig, TunnelInstance } from '@robojs/server'
+
+    const myProvider: TunnelProvider = {
+    	name: 'my-provider',
+    	isInstalled: () => true,
+    	install: async () => {},
+    	start: async (url: string, config?: TunnelProviderConfig): Promise<TunnelInstance> => {
+    		// Start your tunnel and return the instance
+    	},
+    	stop: async (instance: TunnelInstance) => {
+    		// Stop the tunnel
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    const myProvider = {
+    	name: 'my-provider',
+    	isInstalled: () => true,
+    	install: async () => {},
+    	start: async (url, config) => {
+    		// Start your tunnel and return the instance
+    	},
+    	stop: async (instance) => {
+    		// Stop the tunnel
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Use it in config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	tunnel: {
+    		enabled: true,
+    		provider: myProvider
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	tunnel: {
+    		enabled: true,
+    		provider: myProvider
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Environment variables
+
+| Variable                 | Description                                        |
+| ------------------------ | -------------------------------------------------- |
+| `CLOUDFLARE_DOMAIN`      | Domain for static tunnel                           |
+| `CLOUDFLARE_API_KEY`     | Cloudflare API bearer token                        |
+| `CLOUDFLARE_ZONE_ID`     | DNS zone ID                                        |
+| `CLOUDFLARE_ACCOUNT_ID`  | Account ID                                         |
+| `CLOUDFLARE_TUNNEL_ID`   | Tunnel ID (auto-populated)                         |
+| `CLOUDFLARE_TUNNEL_TOKEN`| Tunnel auth token (auto-populated)                 |
+| `CLOUDFLARED_VERSION`    | Cloudflared binary version (default: latest)       |
+
+## Next steps
+
+<Cards>
+	<Card title="CLI" description="Full CLI command reference." href="./cli" />
+	<Card title="Configuration" description="See all server settings." href="./configuration" />
+</Cards>

@@ -1,0 +1,255 @@
+---
+title: Hooks
+description: Intercept and customize the AI pipeline with chat and reply hooks.
+---
+
+Hooks let you intercept the AI pipeline at two points: before messages reach the engine (`chat` hook) and after the response is generated (`reply` hook). Use them for content filtering, response augmentation, analytics, or custom post-processing.
+
+## Registration
+
+Two ways to register hooks.
+
+### Via plugin config
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	hooks: {
+    		chat: async (ctx) => {
+    			// Preprocess messages
+    		},
+    		reply: (ctx) => {
+    			// Postprocess response
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	hooks: {
+    		chat: async (ctx) => {
+    			// Preprocess messages
+    		},
+    		reply: (ctx) => {
+    			// Postprocess response
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Via engine instance
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    const engine = new OpenAiEngine({ /* ... */ })
+
+    engine.on('chat', async (ctx) => {
+    	// Preprocess messages
+    })
+    engine.on('reply', (ctx) => {
+    	// Postprocess response
+    })
+
+    export default { engine }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    const engine = new OpenAiEngine({ /* ... */ })
+
+    engine.on('chat', async (ctx) => {
+    	// Preprocess messages
+    })
+    engine.on('reply', (ctx) => {
+    	// Postprocess response
+    })
+
+    export default { engine }
+    ```
+  </Tab>
+</Tabs>
+
+Unregister a hook with `engine.off('chat', handler)` or `engine.off('reply', handler)`.
+
+## Chat hook
+
+Runs before messages reach the engine. Use it to filter, modify, or inject messages.
+
+**Signature:** `(context: ChatHookContext) => Promise<void | ChatMessage[]> | void | ChatMessage[]`
+
+### ChatHookContext
+
+<TypeTable
+	type={{
+		channel: { type: 'TextBasedChannel | null', description: 'Discord text channel the message originated from.' },
+		member: { type: 'GuildMember | null', description: 'Guild member who sent the message.' },
+		messages: { type: 'ChatMessage[]', description: 'The message array. Mutate this directly or return a replacement.' },
+		user: { type: 'User | null', description: 'Discord user who sent the message.' },
+	}}
+/>
+
+You can either mutate `ctx.messages` in place or return a new `ChatMessage[]` array to replace it entirely.
+
+### Example -- content filtering
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	hooks: {
+    		chat: async (ctx) => {
+    			ctx.messages = ctx.messages.filter((m) => {
+    				if (typeof m.content === 'string') {
+    					return !m.content.includes('BLOCKED_WORD')
+    				}
+    				return true
+    			})
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	hooks: {
+    		chat: async (ctx) => {
+    			ctx.messages = ctx.messages.filter((m) => {
+    				if (typeof m.content === 'string') {
+    					return !m.content.includes('BLOCKED_WORD')
+    				}
+    				return true
+    			})
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Reply hook
+
+Runs after the engine generates a response. Use it to modify, replace, or augment the reply before it's sent to Discord.
+
+**Signature:** `(context: ReplyHookContext) => Promise<ChatReply | void> | ChatReply | void`
+
+### ReplyHookContext
+
+<TypeTable
+	type={{
+		channel: { type: 'TextBasedChannel | null', description: 'Discord text channel.' },
+		member: { type: 'GuildMember | null', description: 'Guild member.' },
+		user: { type: 'User | null', description: 'Discord user.' },
+		response: { type: 'ChatResult', description: 'The full ChatResult from the engine.' },
+		mcpCalls: { type: 'MCPCall[]', description: 'MCP tool calls made during this completion.' },
+		degradedMcpServers: { type: 'string[] | null', description: 'MCP servers that were removed due to persistent failures.' },
+	}}
+/>
+
+Return a `ChatReply` to override the response. Return nothing to keep the default.
+
+### ChatReply
+
+<TypeTable
+	type={{
+		text: { type: 'string', description: 'Response text content.' },
+		components: { type: "InteractionReplyOptions['components']", description: 'Discord UI components (buttons, selects, etc.).' },
+		embeds: { type: "InteractionReplyOptions['embeds']", description: 'Discord embed payloads.' },
+		files: { type: "InteractionReplyOptions['files']", description: 'File attachments.' },
+		flags: { type: "InteractionReplyOptions['flags']", description: 'Message flags.' },
+	}}
+/>
+
+### Example -- append footer
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    import type { ReplyHookContext, ChatReply } from '@robojs/ai'
+
+    export default {
+    	hooks: {
+    		reply: (ctx: ReplyHookContext): ChatReply | void => {
+    			const content = ctx.response.message?.content
+    			if (typeof content === 'string') {
+    				return { text: content + '\n\n*Powered by Sage*' }
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	hooks: {
+    		reply: (ctx) => {
+    			const content = ctx.response.message?.content
+    			if (typeof content === 'string') {
+    				return { text: content + '\n\n*Powered by Sage*' }
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Example -- MCP degradation handling
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	hooks: {
+    		reply: (ctx) => {
+    			if (ctx.degradedMcpServers?.length) {
+    				console.warn('Degraded MCP servers:', ctx.degradedMcpServers)
+    				const text = ctx.response.message?.content ?? ''
+    				return { text: text + '\n\nSome external tools were temporarily unavailable.' }
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	hooks: {
+    		reply: (ctx) => {
+    			if (ctx.degradedMcpServers?.length) {
+    				console.warn('Degraded MCP servers:', ctx.degradedMcpServers)
+    				const text = ctx.response.message?.content ?? ''
+    				return { text: text + '\n\nSome external tools were temporarily unavailable.' }
+    			}
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Execution order
+
+Hooks run sequentially in registration order. All `chat` hooks run before the engine call. All `reply` hooks run after. If multiple hooks are registered for the same event, they execute one at a time in the order they were added.
+
+For `reply` hooks, the first hook that returns a `ChatReply` wins. Subsequent reply hooks are skipped once a reply is returned.
+
+## Next steps
+
+<Cards>
+	<Card href="./custom-engines" title="Custom engines" description="Build your own AI provider." />
+	<Card href="./mcp" title="MCP" description="Model Context Protocol server integration." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

@@ -1,0 +1,69 @@
+---
+title: RoboPlay
+description: Deploy and manage your Robo.js projects seamlessly with RoboPlay.
+---
+
+**[RoboPlay](https://roboplay.dev)** is a hosting platform built for Robo.js by **[WavePlay](https://waveplay.com)**. It provides one-command deployment and management for your Robo projects.
+
+Looking to self-host instead? See the **[Self-Hosting](./self-host)** page.
+
+## Deploying
+
+Run a single command to deploy:
+
+```package-install
+npx robo deploy
+```
+
+This optimizes your project and hosts it on RoboPlay. First-time deployers are guided through a quick setup process. Run the same command anytime to push updates.
+
+## Features
+
+RoboPlay offers **Pods**, which are virtual private servers for your Robo.
+
+### Checking Status
+
+To check the status of RoboPlay and your deployed Robos:
+
+```package-install
+npx robo cloud status
+```
+
+This shows whether your Robos are running and reports any issues. You can also check the **[status page](https://status.roboplay.dev)** for updates.
+
+<Callout type="info">
+**Note:** Pods run independently from the main RoboPlay infrastructure, so your Robos stay up even if RoboPlay itself experiences downtime.
+</Callout>
+
+### Managing Pods
+
+Stop a pod to bring your Robo offline:
+
+```package-install
+npx robo cloud stop
+```
+
+Stopping a pod does not delete any data. Start it back up with:
+
+```package-install
+npx robo cloud start
+```
+
+Deploying again automatically starts your Robo.
+
+### Checking Logs
+
+View your Robo's runtime logs:
+
+```package-install
+npx robo cloud logs
+```
+
+This helps debug any issues that arise during runtime.
+
+## Next Steps
+
+<Cards>
+  <Card href="./self-host" title="Self-Hosting" description="Host and maintain it yourself." />
+  <Card href="/docs/cli/robo" title="Robo CLI" description="Full CLI command reference." />
+</Cards>

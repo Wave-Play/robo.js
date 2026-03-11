@@ -1,0 +1,304 @@
+---
+title: "Server API"
+description: "Direct server-side state manipulation with SyncServer."
+---
+
+Access and manipulate sync state from the server side. `SyncServer` provides zone handles for reading/writing state, overriding hosts, and sending messages -- useful in API routes, bot events, cron jobs, or any server-side code.
+
+## SyncServer
+
+Import from `@robojs/sync/server`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { SyncServer } from '@robojs/sync/server'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { SyncServer } from '@robojs/sync/server'
+    ```
+  </Tab>
+</Tabs>
+
+| Method | Description |
+|--------|-------------|
+| `start()` | Start the WebSocket server (called automatically on Robo startup) |
+| `getSocketServer()` | Get the underlying `ws.WebSocketServer` instance |
+| `getZone(key)` | Get a zone handle for direct state manipulation |
+
+## Server zones
+
+Get a zone handle to read and write state from the server.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const zone = SyncServer.getZone<GameState>(['game', 'room1'])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const zone = SyncServer.getZone(['game', 'room1'])
+    ```
+  </Tab>
+</Tabs>
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getState()` | `() => T \| undefined` | Get current state |
+| `setState(data)` | `(data: T) => void` | Set state and broadcast to all subscribers |
+| `setHost(clientId)` | `(clientId: string \| null) => void` | Override host (`null` clears) |
+| `getHost()` | `() => string \| undefined` | Get current host ID |
+| `getClients()` | `() => Client[]` | Get all subscribed clients |
+| `broadcast(payload)` | `(payload: unknown) => void` | Broadcast to all subscribers |
+| `send(clientId, payload)` | `(clientId: string, payload: unknown) => void` | Send to specific client |
+
+## Reading state
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const zone = SyncServer.getZone(['game', 'room1'])
+    const state = zone.getState()
+    const host = zone.getHost()
+    const clients = zone.getClients()
+
+    console.log('State:', state)
+    console.log('Host:', host)
+    console.log('Players:', clients.length)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const zone = SyncServer.getZone(['game', 'room1'])
+    const state = zone.getState()
+    const host = zone.getHost()
+    const clients = zone.getClients()
+
+    console.log('State:', state)
+    console.log('Host:', host)
+    console.log('Players:', clients.length)
+    ```
+  </Tab>
+</Tabs>
+
+## Writing state
+
+Updates broadcast automatically to all subscribed clients.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const zone = SyncServer.getZone(['game', 'room1'])
+
+    zone.setState({
+    	phase: 'playing',
+    	round: 2,
+    	startedAt: Date.now()
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const zone = SyncServer.getZone(['game', 'room1'])
+
+    zone.setState({
+    	phase: 'playing',
+    	round: 2,
+    	startedAt: Date.now()
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Host management
+
+Override or clear the host. Useful for admin actions or automated game management.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const zone = SyncServer.getZone(['game', 'room1'])
+
+    // Assign host
+    zone.setHost('client-abc')
+
+    // Clear host
+    zone.setHost(null)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const zone = SyncServer.getZone(['game', 'room1'])
+
+    // Assign host
+    zone.setHost('client-abc')
+
+    // Clear host
+    zone.setHost(null)
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+`setHost` verifies the target client is subscribed to the key. If the client isn't subscribed, the operation is silently ignored with a warning log.
+</Callout>
+
+## Sending messages
+
+Server broadcasts arrive on the client with `client.id === '__server__'`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const zone = SyncServer.getZone(['game', 'room1'])
+
+    // Broadcast to all subscribers
+    zone.broadcast({ event: 'countdown', seconds: 5 })
+
+    // Send to specific client
+    zone.send('client-abc', { message: 'You win' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const zone = SyncServer.getZone(['game', 'room1'])
+
+    // Broadcast to all subscribers
+    zone.broadcast({ event: 'countdown', seconds: 5 })
+
+    // Send to specific client
+    zone.send('client-abc', { message: 'You win' })
+    ```
+  </Tab>
+</Tabs>
+
+Client-side handling:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    useSyncBroadcast((payload, { client }) => {
+    	if (client.id === '__server__') {
+    		console.log('Server says:', payload)
+    	}
+    }, ['game', 'room1'])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    useSyncBroadcast((payload, { client }) => {
+    	if (client.id === '__server__') {
+    		console.log('Server says:', payload)
+    	}
+    }, ['game', 'room1'])
+    ```
+  </Tab>
+</Tabs>
+
+## Use cases
+
+### API route integration
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/game/reset.ts"
+    import { SyncServer } from '@robojs/sync/server'
+
+    export default function handler(req, res) {
+    	const zone = SyncServer.getZone(['game', req.query.roomId])
+    	zone.setState({ score: 0, phase: 'lobby' })
+    	zone.broadcast({ type: 'game_reset' })
+    	return { success: true }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/game/reset.js"
+    import { SyncServer } from '@robojs/sync/server'
+
+    export default function handler(req, res) {
+    	const zone = SyncServer.getZone(['game', req.query.roomId])
+    	zone.setState({ score: 0, phase: 'lobby' })
+    	zone.broadcast({ type: 'game_reset' })
+    	return { success: true }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Cron job
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { SyncServer } from '@robojs/sync/server'
+
+    setInterval(() => {
+    	const zone = SyncServer.getZone(['dashboard', 'stats'])
+    	zone.setState({
+    		serverTime: Date.now(),
+    		uptime: process.uptime()
+    	})
+    }, 5000)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { SyncServer } from '@robojs/sync/server'
+
+    setInterval(() => {
+    	const zone = SyncServer.getZone(['dashboard', 'stats'])
+    	zone.setState({
+    		serverTime: Date.now(),
+    		uptime: process.uptime()
+    	})
+    }, 5000)
+    ```
+  </Tab>
+</Tabs>
+
+### Raw WebSocket access
+
+For advanced scenarios, access the underlying `ws.WebSocketServer`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const wss = SyncServer.getSocketServer()
+    if (wss) {
+    	console.log('Connected clients:', wss.clients.size)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const wss = SyncServer.getSocketServer()
+    if (wss) {
+    	console.log('Connected clients:', wss.clients.size)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./server-handlers"
+		title="Server handlers"
+		description="File-based handlers with validation and RPC."
+	/>
+	<Card
+		href="./middleware"
+		title="Middleware"
+		description="Intercept operations with before/after hooks."
+	/>
+	<Card
+		href="./flashcore-realtime"
+		title="Flashcore realtime"
+		description="Realtime subscriptions for Flashcore models."
+	/>
+</Cards>

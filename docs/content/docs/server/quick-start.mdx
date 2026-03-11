@@ -1,0 +1,150 @@
+---
+title: Quick start
+description: Create your first API route and start serving requests in minutes.
+---
+
+Get a web server running in your Robo project with just a few files.
+
+<Callout type="info">
+	You need an existing Robo project. If you don't have one, run `npx create-robo my-project -p @robojs/server`.
+</Callout>
+
+## Setup
+
+<Steps>
+	<Step>
+		### Install the plugin
+
+		```bash
+		npx robo add @robojs/server
+		```
+	</Step>
+	<Step>
+		### Create an API route
+
+		<Files>
+			<Folder name="src" defaultOpen>
+				<Folder name="api" defaultOpen>
+					<File name="hello.ts" />
+				</Folder>
+			</Folder>
+		</Files>
+
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```ts title="src/api/hello.ts"
+		    				export function GET() {
+		    					return { message: 'Hello, world.' }
+		    				}
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```js title="src/api/hello.js"
+		    				export function GET() {
+		    					return { message: 'Hello, world.' }
+		    				}
+		    ```
+		  </Tab>
+		</Tabs>
+	</Step>
+	<Step>
+		### Start your Robo
+
+		```bash
+		npx robo dev
+		```
+
+		Visit `http://localhost:3000/api/hello` to see the response.
+	</Step>
+</Steps>
+
+## POST requests
+
+Export a `POST` function to handle POST requests at the same path. Use `request.json()` to parse the request body.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users.ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET() {
+    	return [{ id: '1', name: 'Alice' }]
+    }
+
+    export async function POST(request: RoboRequest) {
+    	const body = await request.json()
+    	return { created: true, user: body }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users.js"
+
+    export function GET() {
+    	return [{ id: '1', name: 'Alice' }]
+    }
+
+    export async function POST(request) {
+    	const body = await request.json()
+    	return { created: true, user: body }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Dynamic parameters
+
+Wrap a filename segment in brackets to create a dynamic route parameter. Access it via `request.params`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/users/[id].ts"
+    import type { RoboRequest } from '@robojs/server'
+
+    export function GET(request: RoboRequest) {
+    	return { id: request.params.id }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/users/[id].js"
+
+    export function GET(request) {
+    	return { id: request.params.id }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Visit `/api/users/123` to see `{ "id": "123" }`.
+
+## Configuration
+
+Server settings live in a plugin config file. Here's a minimal example that changes the port and enables CORS:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	port: 5000,
+    	cors: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	port: 5000,
+    	cors: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+	<Card title="Routing" href="./routing" description="Learn about file-based routing patterns." />
+	<Card title="Typed endpoints" href="./typed-endpoints" description="Add Zod schemas for type safety." />
+	<Card title="Configuration" href="./configuration" description="See all configuration options." />
+</Cards>

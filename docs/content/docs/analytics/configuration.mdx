@@ -1,0 +1,308 @@
+---
+title: Configuration
+description: Plugin options, environment variables, and auto-detection behavior.
+---
+
+Configure the analytics plugin through environment variables, a plugin config file, or both.
+
+## Environment variables
+
+The simplest way to configure the plugin. Add these to your `.env` file:
+
+### Google Analytics
+
+```bash title=".env"
+GOOGLE_ANALYTICS_MEASURE_ID="G-XXXXXXXXX"
+GOOGLE_ANALYTICS_SECRET="your-api-secret"
+```
+
+| Variable | Required | Description |
+|---|---|---|
+| `GOOGLE_ANALYTICS_MEASURE_ID` | Yes | GA4 Measurement ID (starts with `G-`) |
+| `GOOGLE_ANALYTICS_SECRET` | Yes | Measurement Protocol API Secret |
+
+### Plausible
+
+```bash title=".env"
+PLAUSIBLE_DOMAIN="example.com"
+```
+
+| Variable | Required | Description |
+|---|---|---|
+| `PLAUSIBLE_DOMAIN` | Yes | Site domain registered in Plausible |
+
+## Plugin options
+
+Create a config file for advanced setup. The only option is `engine`, which overrides auto-detection entirely.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    export default {
+    	engine: undefined // Optional: custom BaseEngine instance
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    export default {
+    	engine: undefined // Optional: custom BaseEngine instance
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+    engine: { type: 'BaseEngine', description: 'Custom analytics engine instance. Overrides environment variable auto-detection.', default: 'undefined' },
+  }}
+/>
+
+### Examples
+
+**Use Google Analytics with explicit credentials:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new GoogleAnalytics({
+    		measureId: 'G-XXXXXXXXX',
+    		token: 'your-api-secret'
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new GoogleAnalytics({
+    		measureId: 'G-XXXXXXXXX',
+    		token: 'your-api-secret'
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Use Plausible with explicit domain:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { PlausibleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new PlausibleAnalytics('example.com')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { PlausibleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new PlausibleAnalytics('example.com')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Use multiple services:**
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics, PlausibleAnalytics, ManyEngines } from '@robojs/analytics'
+
+    export default {
+    	engine: new ManyEngines(
+    		new GoogleAnalytics(),
+    		new PlausibleAnalytics()
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics, PlausibleAnalytics, ManyEngines } from '@robojs/analytics'
+
+    export default {
+    	engine: new ManyEngines(
+    		new GoogleAnalytics(),
+    		new PlausibleAnalytics()
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+When using `ManyEngines` in the config file, engine constructors still fall back to environment variables for their credentials.
+
+## Auto-detection
+
+When no `engine` is set in the config, the plugin reads environment variables at startup and creates the appropriate engine automatically.
+
+| Environment variables present | Engine created |
+|---|---|
+| `GOOGLE_ANALYTICS_MEASURE_ID` + `PLAUSIBLE_DOMAIN` | `ManyEngines(GoogleAnalytics, PlausibleAnalytics)` |
+| `GOOGLE_ANALYTICS_MEASURE_ID` only | `GoogleAnalytics` |
+| `PLAUSIBLE_DOMAIN` only | `PlausibleAnalytics` |
+| Neither | No engine. Warning logged. |
+
+This detection runs in the plugin's `_start` lifecycle hook. If a custom `engine` is provided in the config, auto-detection is skipped entirely.
+
+<Callout type="info">
+Setting both Google Analytics and Plausible environment variables automatically sends events to both services. No `ManyEngines` config needed.
+</Callout>
+
+## Initialization lifecycle
+
+The plugin initializes during the Robo `_start` lifecycle event:
+
+<Steps>
+  <Step>
+### Check for custom engine
+
+If `engine` is set in plugin options, use it directly. Skip to step 3.
+  </Step>
+  <Step>
+### Auto-detect from environment
+
+Check for `GOOGLE_ANALYTICS_MEASURE_ID` and `PLAUSIBLE_DOMAIN`. Create the appropriate engine(s) or log a warning if neither is set.
+  </Step>
+  <Step>
+### Freeze and activate
+
+The engine is frozen with `Object.freeze()` and stored in the `Analytics` singleton. `Analytics.isReady()` now returns `true`.
+  </Step>
+</Steps>
+
+After initialization, the `Analytics` object and its engine are immutable. They cannot be changed at runtime.
+
+## Seed files
+
+When installed with `npx robo add @robojs/analytics`, the plugin seeds three files into your project:
+
+| Seed file | Target path | Purpose |
+|---|---|---|
+| `track-commands.ts` | `src/middleware/track-commands.ts` | Middleware that tracks every slash command automatically |
+| `test-analytics.ts` | `src/commands/test-analytics.ts` | Test command to verify analytics integration |
+| `guildCreate.ts` | `src/events/guildCreate.ts` | Tracks `server_join` when the bot joins a new server |
+
+### Command tracking middleware
+
+The seeded middleware intercepts all slash commands and sends an event:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/track-commands.ts"
+    import { Analytics } from '@robojs/analytics'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+    import type { MiddlewareData } from 'robo.js'
+
+    export default async (data: MiddlewareData) => {
+    	const { payload, record } = data
+
+    	if (record.type === 'command') {
+    		const interaction = payload[0] as ChatInputCommandInteraction
+    		const name = record.key.replaceAll('/', '_').replaceAll('-', '_')
+
+    		Analytics.event(name, {
+    			data: { type: 'slash_command' },
+    			sessionId: interaction.channelId ?? interaction.guildId,
+    			userId: interaction.user?.id
+    		})
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/track-commands.js"
+    import { Analytics } from '@robojs/analytics'
+
+    export default async (data) => {
+    	const { payload, record } = data
+
+    	if (record.type === 'command') {
+    		const interaction = payload[0]
+    		const name = record.key.replaceAll('/', '_').replaceAll('-', '_')
+
+    		Analytics.event(name, {
+    			data: { type: 'slash_command' },
+    			sessionId: interaction.channelId ?? interaction.guildId,
+    			userId: interaction.user?.id
+    		})
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Command names are normalized: `/moderation/ban` becomes `moderation_ban`. This fires for every slash command without requiring per-command tracking code.
+
+### Server join tracking
+
+The seeded event handler requires the `Guilds` intent:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/guildCreate.ts"
+    import { Analytics } from '@robojs/analytics'
+    import type { Guild } from 'discord.js'
+
+    export default (guild: Guild) => {
+    	Analytics.event('server_join', {
+    		data: { name: guild.name, type: 'event' },
+    		sessionId: guild.id
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/guildCreate.js"
+    import { Analytics } from '@robojs/analytics'
+
+    export default (guild) => {
+    	Analytics.event('server_join', {
+    		data: { name: guild.name, type: 'event' },
+    		sessionId: guild.id
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Enable the intent in your Robo config if you want this tracking:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds']
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    export default {
+    	clientOptions: {
+    		intents: ['Guilds']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+  <Card href="./api" title="API reference" description="Full API documentation." />
+  <Card href="./custom-engines" title="Custom engines" description="Build your own analytics provider." />
+</Cards>

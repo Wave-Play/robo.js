@@ -1,0 +1,292 @@
+---
+title: "Quick start"
+description: Set up locale files and start translating with type-safe keys.
+---
+
+Get translations running in three steps: create locale files, run the plugin, and call `t()`.
+
+## Folder structure
+
+Create a `/locales` directory at your project root. Each subdirectory is a locale, and each `.json` file becomes a namespace.
+
+<Files>
+	<Folder name="locales" defaultOpen>
+		<Folder name="en-US" defaultOpen>
+			<File name="app.json" />
+			<File name="errors.json" />
+		</Folder>
+		<Folder name="es-ES" defaultOpen>
+			<File name="app.json" />
+			<File name="errors.json" />
+		</Folder>
+	</Folder>
+</Files>
+
+## Namespace rules
+
+Keys are automatically namespaced from the file path. The namespace is the folder path plus filename (without `.json`), followed by `:`.
+
+| File path | Namespace prefix |
+|-----------|-----------------|
+| `/locales/en-US/app.json` | `app:` |
+| `/locales/en-US/shared/common.json` | `shared/common:` |
+| `/locales/en-US/marketing/home/hero.json` | `marketing/home/hero:` |
+
+A key `"hello"` inside `app.json` becomes `app:hello`. A nested key `{"greetings": {"hello": "..."}}` becomes `app:greetings.hello`.
+
+## Creating locale files
+
+Each locale directory should have matching JSON files. Values are strings using [MessageFormat 2](https://github.com/messageformat/messageformat) syntax.
+
+```json title="locales/en-US/app.json"
+{
+	"hello": "Hello {$name}!",
+	"ping": "Pong!",
+	"pets.count": ".input {$count :number}\n.match $count\n  one {{You have {$count} pet}}\n  *   {{You have {$count} pets}}"
+}
+```
+
+```json title="locales/es-ES/app.json"
+{
+	"hello": "Hola {$name}!",
+	"ping": "Pong!",
+	"pets.count": ".input {$count :number}\n.match $count\n  one {{Tienes {$count} mascota}}\n  *   {{Tienes {$count} mascotas}}"
+}
+```
+
+<Callout>
+Values must be strings or arrays of strings. Non-JSON files are ignored. The plugin loads everything once at startup and generates TypeScript types from what it finds.
+</Callout>
+
+## Translating with `t()`
+
+The `t()` function formats a message by key. Parameter types are inferred from the message syntax.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { t } from '@robojs/i18n'
+
+    t('en-US', 'app:hello', { name: 'Robo' })     // "Hello Robo!"
+    t('en-US', 'app:ping')                         // "Pong!"
+    t('en-US', 'app:pets.count', { count: 3 })     // "You have 3 pets"
+    t('es-ES', 'app:pets.count', { count: 1 })     // "Tienes 1 mascota"
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { t } from '@robojs/i18n'
+
+    t('en-US', 'app:hello', { name: 'Robo' })     // "Hello Robo!"
+    t('en-US', 'app:ping')                         // "Pong!"
+    t('en-US', 'app:pets.count', { count: 3 })     // "You have 3 pets"
+    t('es-ES', 'app:pets.count', { count: 1 })     // "Tienes 1 mascota"
+    ```
+  </Tab>
+</Tabs>
+
+The first argument accepts multiple formats:
+
+| Input | Example |
+|-------|---------|
+| Locale string | `'en-US'` |
+| Object with `locale` | `{ locale: 'en-US' }` |
+| Object with `guildLocale` | `{ guildLocale: 'en-US' }` |
+| Discord Interaction | `interaction` (has both `locale` and `guildLocale`) |
+
+## Strict mode with `tr()`
+
+Use `tr()` when you want compile-time enforcement that all parameters are provided.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { tr } from '@robojs/i18n'
+
+    tr('en-US', 'app:hello', { name: 'Robo' })  // OK — params required
+    // tr('en-US', 'app:hello')                  // compile error — missing params
+
+    tr('en-US', 'app:ping')                      // OK — no params needed
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { tr } from '@robojs/i18n'
+
+    tr('en-US', 'app:hello', { name: 'Robo' })  // OK — params required
+    // tr('en-US', 'app:hello')                  // compile error — missing params
+
+    tr('en-US', 'app:ping')                      // OK — no params needed
+    ```
+  </Tab>
+</Tabs>
+
+If a key has parameters, they're required and non-undefined. If a key has no parameters, no params argument is accepted.
+
+## Curried translator with `withLocale()`
+
+Avoid passing the locale to every call by creating a curried translator.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { withLocale } from '@robojs/i18n'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	const t$ = withLocale(interaction)
+
+    	const greeting = t$('app:hello', { name: 'Robo' })
+    	const status = t$('app:ping')
+    	return `${greeting} — ${status}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { withLocale } from '@robojs/i18n'
+
+    export default (interaction) => {
+    	const t$ = withLocale(interaction)
+
+    	const greeting = t$('app:hello', { name: 'Robo' })
+    	const status = t$('app:ping')
+    	return `${greeting} — ${status}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Pass `{ strict: true }` for strict mode:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const tr$ = withLocale('en-US', { strict: true })
+    tr$('app:hello', { name: 'Robo' })  // OK — params required
+    // tr$('app:hello')                  // compile error
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const tr$ = withLocale('en-US', { strict: true })
+    tr$('app:hello', { name: 'Robo' })  // OK — params required
+    // tr$('app:hello')                  // compile error
+    ```
+  </Tab>
+</Tabs>
+
+## Nested keys
+
+Structure your locale JSON with nested objects instead of flat dotted keys.
+
+```json title="locales/en-US/app.json"
+{
+	"greetings": {
+		"hello": "Hello {$name}!"
+	}
+}
+```
+
+The key becomes `app:greetings.hello`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    t('en-US', 'app:greetings.hello', { name: 'Robo' })  // "Hello Robo!"
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    t('en-US', 'app:greetings.hello', { name: 'Robo' })  // "Hello Robo!"
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+A file can't contain both a literal dotted key and a nested object that flatten to the same path (e.g., `"greetings.hello": "..."` and `{"greetings": {"hello": "..."}}`). The build will throw a collision error.
+</Callout>
+
+## Nested parameters
+
+MF2 placeholders use dotted names like `{$user.name}`, but you can pass nested objects. They're flattened automatically.
+
+```json title="locales/en-US/app.json"
+{
+	"profile": "Hi {$user.name}! You have {$stats.count :number} points."
+}
+```
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    t('en-US', 'app:profile', {
+    	user: { name: 'Robo' },
+    	stats: { count: 42 }
+    })
+    // "Hi Robo! You have 42 points."
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    t('en-US', 'app:profile', {
+    	user: { name: 'Robo' },
+    	stats: { count: 42 }
+    })
+    // "Hi Robo! You have 42 points."
+    ```
+  </Tab>
+</Tabs>
+
+Dotted param keys like `{ 'user.name': 'Robo' }` also work.
+
+## Array messages
+
+Locale values can be arrays of strings. Each element is formatted with MF2, and `t()`/`tr()` return `string[]`.
+
+```json title="locales/en-US/app.json"
+{
+	"tips": ["Tip one: {$topic}", "Tip two"]
+}
+```
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    t('en-US', 'app:tips', { topic: 'i18n' })
+    // ["Tip one: i18n", "Tip two"]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    t('en-US', 'app:tips', { topic: 'i18n' })
+    // ["Tip one: i18n", "Tip two"]
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+Non-string arrays are ignored with a warning. If locales disagree on whether a key is a string or array, the return type falls back to `string`.
+</Callout>
+
+## CLI
+
+The plugin ships a CLI for regenerating types without running Robo.
+
+```bash
+npx i18n
+```
+
+This scans `/locales`, parses all JSON files, and writes `generated/types.d.ts`. Useful in CI pipelines or before type checking.
+
+```
+i18n:ready - Locales built in 3ms
+```
+
+## Next Steps
+
+<Cards>
+	<Card href="./discord-commands" title="Discord commands" description="Localize slash command names and descriptions." />
+	<Card href="./configuration" title="Configuration" description="Plugin options, MF2 syntax, and type generation." />
+	<Card href="./api" title="API reference" description="Complete reference for all exported functions and types." />
+</Cards>

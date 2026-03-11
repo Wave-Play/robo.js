@@ -1,0 +1,550 @@
+---
+title: Recipes
+description: Common authentication patterns — protected routes, invite codes, admin panels, and more.
+---
+
+Practical examples for common auth scenarios. Each recipe shows a complete, working pattern.
+
+## Protected API routes
+
+Guard any API route with session validation:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/dashboard.ts"
+    import { getServerSession } from '@robojs/auth'
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export default async (request: RoboRequest, reply: RoboReply) => {
+      const session = await getServerSession(request)
+
+      if (!session) {
+        return reply.code(401).send({ error: 'Unauthorized' })
+      }
+
+      return {
+        message: `Welcome back, ${session.user?.name}`,
+        email: session.user?.email
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/dashboard.js"
+    import { getServerSession } from '@robojs/auth'
+
+    export default async (request, reply) => {
+      const session = await getServerSession(request)
+
+      if (!session) {
+        return reply.code(401).send({ error: 'Unauthorized' })
+      }
+
+      return {
+        message: `Welcome back, ${session.user?.name}`,
+        email: session.user?.email
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Role-based access control
+
+Add roles via JWT/session callbacks:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    export default <AuthPluginOptions>{
+      callbacks: {
+        async jwt({ token, user }) {
+          if (user) {
+            token.role = user.role ?? 'user'
+          }
+          return token
+        },
+        async session({ session, token }) {
+          session.user.role = token.role as string
+          return session
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    export default {
+      callbacks: {
+        async jwt({ token, user }) {
+          if (user) {
+            token.role = user.role ?? 'user'
+          }
+          return token
+        },
+        async session({ session, token }) {
+          session.user.role = token.role
+          return session
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Then check roles in routes:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/admin.ts"
+    import { getServerSession } from '@robojs/auth'
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export default async (request: RoboRequest, reply: RoboReply) => {
+      const session = await getServerSession(request)
+
+      if (!session || session.user?.role !== 'admin') {
+        return reply.code(403).send({ error: 'Forbidden' })
+      }
+
+      return { adminData: '...' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/admin.js"
+    import { getServerSession } from '@robojs/auth'
+
+    export default async (request, reply) => {
+      const session = await getServerSession(request)
+
+      if (!session || session.user?.role !== 'admin') {
+        return reply.code(403).send({ error: 'Forbidden' })
+      }
+
+      return { adminData: '...' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Invite code gating
+
+Require invite codes during signup using route overrides:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter, getRequestPayload } from '@robojs/auth'
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default <AuthPluginOptions>{
+      adapter,
+      providers: [
+    EmailPassword({
+      adapter,
+      routes: {
+        signup: async ({ payload, defaultHandler }) => {
+          const body = payload.get<{ inviteCode?: string }>()
+
+          if (!body.inviteCode || body.inviteCode !== 'WELCOME2024') {
+            return new Response(JSON.stringify({ error: 'Invalid invite code' }), {
+              status: 403,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+
+          payload.assign({ inviteCode: body.inviteCode.trim().toUpperCase() })
+          return defaultHandler()
+        }
+      },
+      authorize: async (credentials, ctx) => {
+        const payload = await getRequestPayload(ctx.request)
+        const body = payload.get<{ inviteCode?: string }>()
+        if (!body.inviteCode) return null
+        return ctx.defaultAuthorize()
+      }
+    })
+      ]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter, getRequestPayload } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    export default {
+      adapter,
+      providers: [
+    EmailPassword({
+      adapter,
+      routes: {
+        signup: async ({ payload, defaultHandler }) => {
+          const body = payload.get()
+
+          if (!body.inviteCode || body.inviteCode !== 'WELCOME2024') {
+            return new Response(JSON.stringify({ error: 'Invalid invite code' }), {
+              status: 403,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+
+          payload.assign({ inviteCode: body.inviteCode.trim().toUpperCase() })
+          return defaultHandler()
+        }
+      },
+      authorize: async (credentials, ctx) => {
+        const payload = await getRequestPayload(ctx.request)
+        const body = payload.get()
+        if (!body.inviteCode) return null
+        return ctx.defaultAuthorize()
+      }
+    })
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Client-side:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { signUp } from '@robojs/auth/client'
+
+    await signUp({
+      email: 'user@example.com',
+      password: 'securepassword',
+      confirmPassword: 'securepassword',
+      inviteCode: 'WELCOME2024'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { signUp } from '@robojs/auth/client'
+
+    await signUp({
+      email: 'user@example.com',
+      password: 'securepassword',
+      confirmPassword: 'securepassword',
+      inviteCode: 'WELCOME2024'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Admin user listing
+
+Build an admin dashboard with paginated user lists:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/api/admin/users.ts"
+    import { getServerSession, listUsers } from '@robojs/auth'
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export default async (request: RoboRequest, reply: RoboReply) => {
+      const session = await getServerSession(request)
+      if (!session) return reply.code(401).send({ error: 'Unauthorized' })
+
+      const url = new URL(request.url, 'http://localhost')
+      const page = parseInt(url.searchParams.get('page') ?? '0')
+
+      const result = await listUsers(page)
+
+      return {
+    users: result.users.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      emailVerified: u.emailVerified
+    })),
+    page: result.page,
+    pageCount: result.pageCount,
+    total: result.total
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/api/admin/users.js"
+    import { getServerSession, listUsers } from '@robojs/auth'
+
+    export default async (request, reply) => {
+      const session = await getServerSession(request)
+      if (!session) return reply.code(401).send({ error: 'Unauthorized' })
+
+      const url = new URL(request.url, 'http://localhost')
+      const page = parseInt(url.searchParams.get('page') ?? '0')
+
+      const result = await listUsers(page)
+
+      return {
+    users: result.users.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      emailVerified: u.emailVerified
+    })),
+    page: result.page,
+    pageCount: result.pageCount,
+    total: result.total
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+For Prisma:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { listPrismaUsers } from '@robojs/auth'
+
+    const { users, total } = await listPrismaUsers(prisma, {
+      page: 0,
+      pageSize: 50,
+      orderBy: { createdAt: 'desc' },
+      where: { emailVerified: { not: null } }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { listPrismaUsers } from '@robojs/auth'
+
+    const { users, total } = await listPrismaUsers(prisma, {
+      page: 0,
+      pageSize: 50,
+      orderBy: { createdAt: 'desc' },
+      where: { emailVerified: { not: null } }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Multi-account switcher UI
+
+Build a session switcher component:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getSessions, switchSession, signIn, signOut } from '@robojs/auth/client'
+
+    async function renderSessionSwitcher() {
+      const sessions = await getSessions()
+      if (!sessions) return
+
+      for (const session of sessions) {
+        console.log(
+          `${session.name ?? session.email} ${session.isActive ? '(active)' : ''} ${session.isExpired ? '(expired)' : ''}`
+        )
+      }
+    }
+
+    async function switchToUser(userId: string) {
+      const result = await switchSession(userId)
+
+      if (!result.ok) {
+        if (result.error === 'session_expired') {
+          // Re-authenticate
+          await signIn('credentials', { email: '...', password: '...' })
+        }
+        return
+      }
+
+      console.log('Switched to:', result.session?.user?.name)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getSessions, switchSession, signIn, signOut } from '@robojs/auth/client'
+
+    async function renderSessionSwitcher() {
+      const sessions = await getSessions()
+      if (!sessions) return
+
+      for (const session of sessions) {
+        console.log(
+          `${session.name ?? session.email} ${session.isActive ? '(active)' : ''} ${session.isExpired ? '(expired)' : ''}`
+        )
+      }
+    }
+
+    async function switchToUser(userId) {
+      const result = await switchSession(userId)
+
+      if (!result.ok) {
+        if (result.error === 'session_expired') {
+          // Re-authenticate
+          await signIn('credentials', { email: '...', password: '...' })
+        }
+        return
+      }
+
+      console.log('Switched to:', result.session?.user?.name)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Custom password policy
+
+Enforce stricter password rules via route overrides:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    EmailPassword({
+      adapter,
+      routes: {
+        signup: async ({ payload, defaultHandler }) => {
+          const body = payload.get<{ password?: string }>()
+          const password = body.password ?? ''
+
+          if (password.length < 12) {
+            return new Response(JSON.stringify({ error: 'Password must be at least 12 characters' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+
+          if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+            return new Response(JSON.stringify({ error: 'Password must contain uppercase and numbers' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+
+          return defaultHandler()
+        },
+        passwordResetConfirm: async ({ payload, defaultHandler }) => {
+          const body = payload.get<{ newPassword?: string }>()
+          if ((body.newPassword?.length ?? 0) < 12) {
+            return new Response(JSON.stringify({ error: 'Password too short' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+          return defaultHandler()
+        }
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    EmailPassword({
+      adapter,
+      routes: {
+        signup: async ({ payload, defaultHandler }) => {
+          const body = payload.get()
+          const password = body.password ?? ''
+
+          if (password.length < 12) {
+            return new Response(JSON.stringify({ error: 'Password must be at least 12 characters' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+
+          if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+            return new Response(JSON.stringify({ error: 'Password must contain uppercase and numbers' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+
+          return defaultHandler()
+        },
+        passwordResetConfirm: async ({ payload, defaultHandler }) => {
+          const body = payload.get()
+          if ((body.newPassword?.length ?? 0) < 12) {
+            return new Response(JSON.stringify({ error: 'Password too short' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            })
+          }
+          return defaultHandler()
+        }
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Extending session data
+
+Add custom fields to sessions via callbacks:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    export default <AuthPluginOptions>{
+      callbacks: {
+        async jwt({ token, user, account }) {
+          // On initial sign-in, persist extra data in the JWT
+          if (user) {
+            token.userId = user.id
+          }
+          if (account) {
+            token.provider = account.provider
+            token.accessToken = account.access_token
+          }
+          return token
+        },
+        async session({ session, token }) {
+          // Make data available to the client
+          session.user.id = token.userId as string
+          session.provider = token.provider as string
+          return session
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    export default {
+      callbacks: {
+        async jwt({ token, user, account }) {
+          // On initial sign-in, persist extra data in the JWT
+          if (user) {
+            token.userId = user.id
+          }
+          if (account) {
+            token.provider = account.provider
+            token.accessToken = account.access_token
+          }
+          return token
+        },
+        async session({ session, token }) {
+          // Make data available to the client
+          session.user.id = token.userId
+          session.provider = token.provider
+          return session
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Full options reference" />
+  <Card href="./client-api" title="Client API" description="Browser-side helpers" />
+  <Card href="./server-api" title="Server API" description="Server-side utilities" />
+</Cards>

@@ -1,0 +1,158 @@
+---
+title: OpenAPI
+description: Generate OpenAPI 3.1 specs from your typed endpoints.
+---
+
+The plugin generates an OpenAPI 3.1 specification from your typed endpoints during `robo build`. Any endpoint created with `define()` and Zod schemas is automatically included in the spec.
+
+## How it works
+
+1. Define endpoints using `define()` with Zod schemas (see [Typed endpoints](./typed-endpoints.mdx)).
+2. Run `robo build`.
+3. The plugin scans all API routes, extracts schemas from handlers that use `define()`, converts Zod schemas to JSON Schema, and generates `.robo/openapi.json`.
+
+## Configuration
+
+Customize the generated spec through your plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+      openapi: {
+        title: 'My API',
+        version: '1.0.0',
+        description: 'Production REST API',
+        contact: {
+          name: 'API Support',
+          email: 'support@example.com'
+        },
+        license: {
+          name: 'MIT',
+          identifier: 'MIT'
+        },
+        servers: [
+          { url: 'https://api.example.com', description: 'Production' },
+          { url: 'http://localhost:3000', description: 'Development' }
+        ],
+        tags: [
+          { name: 'users', description: 'User management' },
+          { name: 'posts', description: 'Blog operations' }
+        ],
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          },
+          apiKey: {
+            type: 'apiKey',
+            in: 'header',
+            name: 'X-API-Key'
+          }
+        },
+        security: [{ bearerAuth: [] }]
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+      openapi: {
+        title: 'My API',
+        version: '1.0.0',
+        description: 'Production REST API',
+        contact: {
+          name: 'API Support',
+          email: 'support@example.com'
+        },
+        license: {
+          name: 'MIT',
+          identifier: 'MIT'
+        },
+        servers: [
+          { url: 'https://api.example.com', description: 'Production' },
+          { url: 'http://localhost:3000', description: 'Development' }
+        ],
+        tags: [
+          { name: 'users', description: 'User management' },
+          { name: 'posts', description: 'Blog operations' }
+        ],
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          },
+          apiKey: {
+            type: 'apiKey',
+            in: 'header',
+            name: 'X-API-Key'
+          }
+        },
+        security: [{ bearerAuth: [] }]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Configuration options
+
+| Option | Type | Description |
+|---|---|---|
+| `title` | `string` | API title. Default: `'API'`. |
+| `version` | `string` | API version. Default: `'1.0.0'`. |
+| `summary` | `string` | Brief API summary. |
+| `description` | `string` | Detailed API description. |
+| `termsOfService` | `string` | URL to terms of service. |
+| `contact` | `{ name?, url?, email? }` | Contact information. |
+| `license` | `{ name, identifier?, url? }` | License information. |
+| `servers` | `Array<{ url, description? }>` | Server URLs. |
+| `tags` | `Array<{ name, description? }>` | API tags for grouping. |
+| `securitySchemes` | `Record<string, SecurityScheme>` | Security scheme definitions. |
+| `security` | `SecurityRequirement[]` | Global security requirements. |
+| `externalDocs` | `{ url, description? }` | Link to external documentation. |
+
+## Disabling generation
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+      openapi: false
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+      openapi: false
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Route path conversion
+
+The generator converts Robo.js route patterns to OpenAPI path syntax:
+
+- `users/[id]` → `/users/{id}`
+- `files/[...path]` → `/files/{path}`
+- `docs/[[...slug]]` → `/docs/{slug}`
+
+## Schema conversion
+
+Zod schemas are converted to JSON Schema using Zod v4's built-in `z.toJSONSchema()` with `target: 'openapi-3.0'`. This ensures compatibility with standard OpenAPI tooling like Swagger UI, Redoc, and code generators.
+
+## Output
+
+The generated spec is written to `.robo/openapi.json` during `robo build`. You can serve it as a static file, use it with Swagger UI, or feed it to API code generators.
+
+## Next steps
+
+<Cards>
+	<Card title="Typed endpoints" href="./typed-endpoints" description="Define schemas with define() and Zod." />
+	<Card title="Configuration" href="./configuration" description="See all server settings." />
+</Cards>

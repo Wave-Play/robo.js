@@ -1,0 +1,31 @@
+---
+title: Hosting Overview
+icon: Rocket
+---
+
+Hosting your Robo.js project keeps it running 24/7 without relying on your local machine.
+
+## RoboPlay
+
+**[RoboPlay](https://roboplay.dev)** is a hosting platform built specifically for Robo.js projects. Deploying is a single command:
+
+```bash
+robo deploy
+```
+
+Run the same command anytime to push updates. See the **[RoboPlay](./roboplay)** page for full details.
+
+## Self-Hosting
+
+You can host on any platform that supports Node.js. Build with `robo build`, then start with `robo start`. See the **[Self-Hosting](./self-host)** page for setup instructions.
+
+<Callout type="warn">
+**Note:** When self-hosting, avoid using `robo dev` in production. It is not optimized for performance or security.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card href="./roboplay" title="RoboPlay" description="Deploy with as little as one command." />
+  <Card href="./self-host" title="Self-Hosting" description="Host and maintain it yourself." />
+</Cards>

@@ -1,0 +1,127 @@
+---
+title: Vision
+description: Image understanding with vision-capable models.
+---
+
+Vision-capable models automatically understand images attached to Discord messages. No extra configuration needed. Attach an image, mention the bot, and it processes the visual content alongside your text.
+
+## How it works
+
+When a user sends a message with an image attachment, the plugin checks whether the configured engine supports vision via `engine.supportedFeatures().vision`. If it does, the image URLs are included as structured content objects alongside the text. If it doesn't, the images are silently ignored and the model processes the text only.
+
+## Supported models
+
+The OpenAI engine detects vision capability by matching the model name against known patterns:
+
+- `gpt-4o` and variants (e.g., `gpt-4o-mini`)
+- `gpt-4.1` and variants
+- `gpt-5` and variants (including `gpt-5-codex`)
+- `o1` and `o3` series
+- Any model with `vision` or `omni` in the name
+
+This detection happens through the `isVisionCapableModel()` helper. Custom engines can override `supportedFeatures()` to signal vision support regardless of model naming.
+
+## Image processing
+
+When vision is supported, the plugin transforms a standard text message into a multimodal content array:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Internal representation (simplified)
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'alice: What is this?' },
+        { type: 'image_url', image_url: 'https://cdn.discordapp.com/attachments/.../photo.png' }
+      ]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Internal representation (simplified)
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'alice: What is this?' },
+        { type: 'image_url', image_url: 'https://cdn.discordapp.com/attachments/.../photo.png' }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Multiple attachments in a single message are all included. The user's display name is prefixed to the text for context.
+
+## Example conversation
+
+A typical vision interaction in Discord:
+
+1. User attaches an image of a chart and types: `@Sage what trends do you see here?`
+2. The plugin converts the attachment URL into an `image_url` content object.
+3. The model receives both the text prompt and the image.
+4. The response describes the chart's trends in plain text.
+
+No special syntax or commands required. It's the same mention or reply flow as any other conversation.
+
+## Programmatic usage
+
+Use `AI.chat()` directly with image content for custom integrations:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/analyze.ts"
+    import { AI } from '@robojs/ai'
+
+    export default async () => {
+    	const reply = await AI.chatSync(
+    		[
+    			{
+    				role: 'user',
+    				content: [
+    					{ type: 'text', text: 'What do you see in this image?' },
+    					{ type: 'image_url', image_url: 'https://example.com/photo.jpg' }
+    				]
+    			}
+    		],
+    		{ showTyping: false }
+    	)
+
+    	return reply.text
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/analyze.js"
+    import { AI } from '@robojs/ai'
+
+    export default async () => {
+    	const reply = await AI.chatSync(
+    		[
+    			{
+    				role: 'user',
+    				content: [
+    					{ type: 'text', text: 'What do you see in this image?' },
+    					{ type: 'image_url', image_url: 'https://example.com/photo.jpg' }
+    				]
+    			}
+    		],
+    		{ showTyping: false }
+    	)
+
+    	return reply.text
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `content` field accepts either a plain string or an array of content objects. When using the array form, include at least one `text` entry alongside any `image_url` entries.
+
+## Next steps
+
+<Cards>
+	<Card href="./web-search" title="Web search" description="Live web context with citation formatting." />
+	<Card href="./conversations" title="Conversations" description="How the bot handles messages and context." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

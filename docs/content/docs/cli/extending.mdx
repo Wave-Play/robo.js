@@ -1,0 +1,643 @@
+---
+title: Extending the CLI
+description: Add custom commands and extend existing ones with hooks.
+---
+
+Robo.js features an extensible CLI system that allows plugins and projects to add new commands and extend existing ones. Plugins can contribute their own subcommands to `npx robo`, and you can customize built-in commands with hooks.
+
+## Adding New Commands
+
+Create commands by placing files in `src/robo/cli/commands/`. These become available as subcommands of `npx robo`.
+
+### File Structure
+
+```
+src/robo/cli/commands/
+├── tunnel.ts         # npx robo tunnel
+└── db/
+    ├── index.ts      # npx robo db
+    ├── migrate.ts    # npx robo db migrate
+    └── seed.ts       # npx robo db seed
+```
+
+The file path determines the command name:
+- `tunnel.ts` → `npx robo tunnel`
+- `db/migrate.ts` → `npx robo db migrate`
+- `db/index.ts` → `npx robo db` (parent command)
+
+### Basic Command
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/hello.ts
+    export const config = {
+      description: 'Say hello'
+    }
+
+    export default () => {
+      console.log('Hello from my plugin!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/hello.mjs
+    export const config = {
+      description: 'Say hello'
+    }
+
+    export default () => {
+      console.log('Hello from my plugin!')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Command with Options
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/tunnel.ts
+    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+
+    export const config = createCliCommandConfig({
+      description: 'Start a tunnel to expose your local server',
+      options: [
+        { alias: '-p', name: '--port', description: 'Port to tunnel', type: 'number', default: 3000 },
+        { alias: '-s', name: '--subdomain', description: 'Custom subdomain', type: 'string' }
+      ]
+    } as const)
+
+    export default (ctx: CliContext<typeof config>) => {
+      const { port, subdomain } = ctx.options
+      console.log(`Starting tunnel on port ${port}...`)
+      if (subdomain) {
+        console.log(`Using subdomain: ${subdomain}`)
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/tunnel.mjs
+    import { createCliCommandConfig } from 'robo.js/cli.js'
+
+    export const config = createCliCommandConfig({
+      description: 'Start a tunnel to expose your local server',
+      options: [
+        { alias: '-p', name: '--port', description: 'Port to tunnel', type: 'number', default: 3000 },
+        { alias: '-s', name: '--subdomain', description: 'Custom subdomain', type: 'string' }
+      ]
+    })
+
+    export default (ctx) => {
+      const { port, subdomain } = ctx.options
+      console.log(`Starting tunnel on port ${port}...`)
+      if (subdomain) {
+        console.log(`Using subdomain: ${subdomain}`)
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Command Context
+
+Handlers receive a context object with:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `args` | `string[]` | Positional arguments |
+| `options` | `object` | Parsed option values |
+| `logger` | `Logger` | Logger instance (forked for plugins) |
+| `cwd` | `string` | Current working directory |
+| `argv` | `string[]` | Raw arguments after command |
+| `result` | `unknown` | Command result (in after hooks) |
+
+## Type-Safe Configuration
+
+Use `createCliCommandConfig` with `as const` for full TypeScript inference:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/serve.ts
+    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+
+    export const config = createCliCommandConfig({
+      description: 'Start development server',
+      options: [
+    { alias: '-p', name: '--port', description: 'Port', type: 'number', default: 3000 },
+    { alias: '-h', name: '--host', description: 'Host', type: 'string' },
+    { alias: '-v', name: '--verbose', description: 'Verbose', type: 'boolean', required: true }
+      ]
+    } as const)
+
+    export default (ctx: CliContext<typeof config>) => {
+      // TypeScript knows:
+      ctx.options.port    // number (has default)
+      ctx.options.host    // string | undefined (optional)
+      ctx.options.verbose // boolean (required)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/serve.mjs
+    import { createCliCommandConfig } from 'robo.js/cli.js'
+
+    export const config = createCliCommandConfig({
+      description: 'Start development server',
+      options: [
+    { alias: '-p', name: '--port', description: 'Port', type: 'number', default: 3000 },
+    { alias: '-h', name: '--host', description: 'Host', type: 'string' },
+    { alias: '-v', name: '--verbose', description: 'Verbose', type: 'boolean', required: true }
+      ]
+    })
+
+    export default (ctx) => {
+      ctx.options.port    // number (has default)
+      ctx.options.host    // string | undefined (optional)
+      ctx.options.verbose // boolean (required)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+**Note:** The `as const` assertion is required for TypeScript to infer literal types from your config.
+</Callout>
+
+## Option Types
+
+Options support three types with automatic parsing:
+
+| Type | Parsed As | Example |
+|------|-----------|---------|
+| `'string'` | `string` | `--name foo` → `'foo'` |
+| `'boolean'` | `boolean` | `--verbose` → `true` |
+| `'number'` | `number` | `--port 3000` → `3000` |
+
+### Option Properties
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    {
+      alias: '-p',           // Short flag
+      name: '--port',        // Long flag (used as key in ctx.options)
+      description: 'Port',   // Help text
+      type: 'number',        // Value type
+      default: 3000,         // Default value (makes option non-undefined)
+      required: true         // Error if not provided
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    {
+      alias: '-p',           // Short flag
+      name: '--port',        // Long flag (used in ctx.options)
+      description: 'Port',   // Help text
+      type: 'number',        // Value type
+      default: 3000,         // Default value (makes option non-undefined)
+      required: true         // Error if not provided
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Extending Existing Commands
+
+Extensions let you add options and hooks to existing commands. Place them in `src/robo/cli/extend/`.
+
+### Extension File Naming
+
+The filename (minus extension) determines which command is extended:
+
+| File | Extends |
+|------|---------|
+| `extend/dev.ts` | `robo dev` |
+| `extend/build.ts` | `robo build` |
+| `extend/cloud/status.ts` | `robo cloud status` |
+
+Use nested folders to extend subcommands.
+
+### Adding Options
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/extend/dev.ts
+    // Adds --tunnel option to `robo dev`
+
+    export const config = {
+      description: 'Tunnel extension for dev command',
+      options: [
+    { alias: '-t', name: '--tunnel', description: 'Enable tunneling', type: 'boolean' }
+      ]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/extend/dev.mjs
+    // Adds --tunnel option to `robo dev`
+
+    export const config = {
+      description: 'Tunnel extension for dev command',
+      options: [
+    { alias: '-t', name: '--tunnel', description: 'Enable tunneling', type: 'boolean' }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Before Hooks
+
+Before hooks run before the command handler. Return `false` to abort execution:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/extend/build.ts
+    import type { CliContext } from 'robo.js/cli.js'
+
+    export const config = {
+      description: 'Pre-build validation'
+    }
+
+    export async function before(ctx: CliContext) {
+      console.log('Running pre-build checks...')
+
+      const isValid = await validateProject()
+      if (!isValid) {
+        console.error('Build blocked: validation failed')
+        return false  // Aborts the command
+      }
+
+      return true  // Continue with command
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/extend/build.mjs
+
+    export const config = {
+      description: 'Pre-build validation'
+    }
+
+    export async function before(ctx) {
+      console.log('Running pre-build checks...')
+
+      const isValid = await validateProject()
+      if (!isValid) {
+        console.error('Build blocked: validation failed')
+        return false  // Aborts the command
+      }
+
+      return true  // Continue with command
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### After Hooks
+
+After hooks run after the command completes. Access the result via `ctx.result`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/extend/build.ts
+    import type { CliContext } from 'robo.js/cli.js'
+
+    export const config = {
+      description: 'Post-build notifications'
+    }
+
+    export async function after(ctx: CliContext) {
+      console.log('Build completed:', ctx.result)
+      await sendNotification('Build finished!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/extend/build.mjs
+
+    export const config = {
+      description: 'Post-build notifications'
+    }
+
+    export async function after(ctx) {
+      console.log('Build completed:', ctx.result)
+      await sendNotification('Build finished!')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Combined Example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/extend/dev.ts
+    import type { CliContext } from 'robo.js/cli.js'
+
+    export const config = {
+      description: 'Enhanced dev mode',
+      priority: 10,
+      options: [
+    { alias: '-t', name: '--tunnel', description: 'Enable tunnel', type: 'boolean' }
+      ]
+    }
+
+    export async function before(ctx: CliContext) {
+      if (ctx.options.tunnel) {
+    console.log('Tunnel mode enabled')
+      }
+      return true
+    }
+
+    export async function after(ctx: CliContext) {
+      if (ctx.options.tunnel) {
+    // Start tunnel after dev server is ready
+    await startTunnel()
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/extend/dev.mjs
+
+    export const config = {
+      description: 'Enhanced dev mode',
+      priority: 10,
+      options: [
+    { alias: '-t', name: '--tunnel', description: 'Enable tunnel', type: 'boolean' }
+      ]
+    }
+
+    export async function before(ctx) {
+      if (ctx.options.tunnel) {
+    console.log('Tunnel mode enabled')
+      }
+      return true
+    }
+
+    export async function after(ctx) {
+      if (ctx.options.tunnel) {
+    // Start tunnel after dev server is ready
+    await startTunnel()
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Priority Resolution
+
+When multiple sources define the same command or option, priority determines which wins:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    export const config = {
+      description: 'My command',
+      priority: 10  // Higher priority wins (default: 0)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const config = {
+      description: 'My command',
+      priority: 10  // Higher priority wins (default: 0)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Priority applies to:
+- Command definitions (higher priority command takes precedence)
+- Option conflicts (higher priority option value used)
+- Hook execution order (higher priority hooks run first)
+
+## Plugin Commands
+
+Plugins can contribute commands the same way. When a plugin is installed, its CLI commands become available:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/my-plugin/status.ts
+    // Available as: npx robo my-plugin status
+
+    export const config = {
+      description: 'Check plugin status'
+    }
+
+    export default () => {
+      console.log('Plugin is running!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/my-plugin/status.mjs
+    // Available as: npx robo my-plugin status
+
+    export const config = {
+      description: 'Check plugin status'
+    }
+
+    export default () => {
+      console.log('Plugin is running!')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Interactive Terminal Commands
+
+Terminal commands are a separate system from CLI commands. They provide `/`-prefixed commands inside the interactive terminal (available during `robo dev` and `robo start`).
+
+Place files in `src/robo/terminal/commands/` instead of `src/robo/cli/commands/`:
+
+| Feature | CLI Commands | Terminal Commands |
+|---------|-------------|-------------------|
+| Location | `src/robo/cli/commands/` | `src/robo/terminal/commands/` |
+| Invocation | `npx robo <command>` | `/<command>` in interactive terminal |
+| Config helper | `createCliCommandConfig` | `createTerminalCommandConfig` |
+| Context type | `CliContext` | `TerminalContext` |
+| Import from | `robo.js/cli.js` | `robo.js` |
+
+Terminal commands receive a `TerminalContext` with access to `runtime` (state and Flashcore), `config`, and a `write()` function for output. See the [Interactive Terminal](./terminal) page for full documentation and examples.
+
+## Priority Details
+
+When multiple sources define the same command, priority determines which one wins. Project-level commands automatically receive a `+100` priority boost over plugin commands, ensuring your local commands always take precedence.
+
+The `priority` field in your config is additive — it stacks on top of any automatic boost. For example, a project command with `priority: 10` has an effective priority of `110`, while a plugin command with `priority: 10` has an effective priority of `10`.
+
+This applies to both CLI commands (`src/robo/cli/commands/`) and terminal commands (`src/robo/terminal/commands/`).
+
+## CLI Manifest
+
+During `robo build`, all CLI commands, extensions, and terminal commands are indexed into a manifest at `.robo/manifest/cli/@.json`. This allows the CLI to load commands efficiently at startup without scanning the filesystem.
+
+If the manifest is missing (e.g., running without a build), the CLI falls back to runtime discovery by scanning directories directly.
+
+Use `robo cli --inspect` to view the contents of this manifest — it shows all registered commands, their sources, options, and which plugin provides each one.
+
+## Inspecting CLI Commands
+
+Use `robo cli --inspect` to see all registered commands and their sources:
+
+```bash
+npx robo cli --inspect
+```
+
+This shows:
+- All available commands
+- Which plugin provides each command
+- Registered extensions and hooks
+- Option configurations
+
+## Examples
+
+### Subcommand Hierarchy
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/db/index.ts
+    export const config = { description: 'Database commands' }
+    export default () => {
+      console.log('Use: db migrate, db seed, or db reset')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/db/index.mjs
+    export const config = { description: 'Database commands' }
+    export default () => {
+      console.log('Use: db migrate, db seed, or db reset')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/db/migrate.ts
+    export const config = { description: 'Run migrations' }
+    export default async () => {
+      await runMigrations()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/db/migrate.mjs
+    export const config = { description: 'Run migrations' }
+    export default async () => {
+      await runMigrations()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/commands/db/seed.ts
+    export const config = { description: 'Seed database' }
+    export default async () => {
+      await seedDatabase()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/commands/db/seed.mjs
+    export const config = { description: 'Seed database' }
+    export default async () => {
+      await seedDatabase()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Extension with Abort Logic
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/cli/extend/build.ts
+    export const config = {
+      description: 'Build safety checks'
+    }
+
+    export async function before(ctx) {
+      const hasChanges = await checkGitStatus()
+      if (hasChanges) {
+        console.error('Error: Uncommitted changes detected')
+        console.error('Please commit or stash changes before building')
+        return false
+      }
+
+      if (!ctx.options.dev) {
+        const branch = await getCurrentBranch()
+        if (branch !== 'main') {
+          console.warn(`Warning: Building from ${branch}, not main`)
+        }
+      }
+
+      return true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/cli/extend/build.mjs
+    export const config = {
+      description: 'Build safety checks'
+    }
+
+    export async function before(ctx) {
+      const hasChanges = await checkGitStatus()
+      if (hasChanges) {
+        console.error('Error: Uncommitted changes detected')
+        console.error('Please commit or stash changes before building')
+        return false
+      }
+
+      if (!ctx.options.dev) {
+        const branch = await getCurrentBranch()
+        if (branch !== 'main') {
+          console.warn(`Warning: Building from ${branch}, not main`)
+        }
+      }
+
+      return true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/cli/robo" title="Robo CLI Reference" description="Built-in command reference." />
+  <Card href="/docs/framework/plugins/create" title="Creating Plugins" description="Build plugins with CLI commands." />
+</Cards>

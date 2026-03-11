@@ -1,0 +1,106 @@
+---
+title: Web search
+description: Live web context with automatic citation formatting.
+---
+
+Enable web search to let the AI pull in live information from the web. Responses include inline citation markers and a sources footer with clickable links. All formatting is handled automatically.
+
+## Enabling web search
+
+Set `webSearch: true` on the OpenAI engine:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	engine: new OpenAiEngine({ webSearch: true })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	engine: new OpenAiEngine({ webSearch: true })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The engine adds a `web_search` tool to the OpenAI Responses API toolset. When the model decides a query benefits from live data, it triggers the search automatically.
+
+## How citations work
+
+When web search is active, the response pipeline processes citations in three steps:
+
+1. **Marker injection** -- `injectCitationMarkers()` reads URL annotations from the OpenAI response and inserts numbered markers like `[1]`, `[2]`, `[3]` at the corresponding positions in the text.
+2. **Deduplication** -- `createCitationContext()` groups citations by URL and title, assigning each unique source a sequential index.
+3. **Footer formatting** -- `formatSourcesLine()` builds a "Sources:" line with clickable markdown links. Labels are extracted from page titles or hostnames, capped at 60 characters via `sanitizeCitationLabel()`.
+
+No formatting code is needed on your end. The pipeline runs inside the engine before the response reaches Discord.
+
+## Example output
+
+A web-search-powered response looks like this in Discord:
+
+```
+The Robo.js framework supports Discord Activities, bots, and web
+servers with a plugin architecture [1]. Version 0.11 introduced
+native AI voice conversations and vision capabilities [2].
+
+Sources: [Robo.js Documentation](https://robojs.dev), [Release Notes](https://github.com/...)
+```
+
+Citation markers appear inline where the model referenced external sources. The footer collects all sources into a single line.
+
+## Combining with other features
+
+Web search pairs with other engine options. You can enable it alongside a custom model and temperature:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	engine: new OpenAiEngine({
+    		webSearch: true,
+    		chat: {
+    			model: 'gpt-4.1',
+    			temperature: 0.5
+    		}
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	engine: new OpenAiEngine({
+    		webSearch: true,
+    		chat: {
+    			model: 'gpt-4.1',
+    			temperature: 0.5
+    		}
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Web search is available in standard chat context only. It's not supported in voice sessions.
+</Callout>
+
+## Next steps
+
+<Cards>
+	<Card href="./vision" title="Vision" description="Image understanding with vision-capable models." />
+	<Card href="./mcp" title="MCP" description="External tool servers via Model Context Protocol." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

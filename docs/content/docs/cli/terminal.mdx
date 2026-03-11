@@ -1,0 +1,244 @@
+---
+title: Interactive Terminal
+description: Built-in and custom slash commands for the interactive terminal.
+---
+
+When running `robo dev` or `robo start` in a TTY environment, Robo.js launches an interactive terminal. Type `/` followed by a command name to inspect state, manage Flashcore, view environment variables, and more.
+
+The terminal activates automatically when all of these conditions are met:
+- `stdout` and `stdin` are TTY (not piped or redirected)
+- Terminal is at least 10 rows by 40 columns
+- Not running in CI (no `CI` environment variable)
+- `ROBO_NON_INTERACTIVE` environment variable is not set
+
+## Built-in Commands
+
+These commands are always available out of the box:
+
+| Command | Description |
+|---------|-------------|
+| `/help` | List all available commands |
+| `/clear` | Clear the log output |
+| `/restart` | Full rebuild and restart (dev mode only) |
+| `/state` | Inspect and modify runtime state |
+| `/flashcore` | Inspect and modify Flashcore storage |
+| `/env` | Show loaded environment variables |
+| `/status` | Show system status and info |
+| `/plugins` | List installed plugins |
+
+### `/state`
+
+Inspect and modify your Robo's runtime [state](/docs/framework/core/state).
+
+```
+/state                    List all state keys and values
+/state get <key>          Show a specific value
+/state set <key> <value>  Set a value (JSON or plain string)
+/state delete <key>       Remove a key
+/state forks              List registered state forks
+```
+
+### `/flashcore`
+
+Interact with [Flashcore](/docs/framework/core/flashcore) key-value storage directly.
+
+```
+/flashcore get <key>          Get a stored value
+/flashcore set <key> <value>  Set a value (JSON or plain string)
+/flashcore delete <key>       Delete a key
+/flashcore has <key>          Check if a key exists
+```
+
+### `/env`
+
+View loaded environment variables. Values with sensitive names (containing `TOKEN`, `SECRET`, `KEY`, etc.) are automatically masked.
+
+```
+/env                  List all .env variables (masked)
+/env get <key>        Show a specific variable (masked)
+/env get <key> --raw  Show the unmasked value
+```
+
+### `/status`
+
+Display system information including project name, Robo.js version, current mode, Node.js version, PID, uptime, plugin count, and Flashcore adapter type.
+
+### `/plugins`
+
+List installed plugins and their configuration status.
+
+```
+/plugins              List all installed plugins
+/plugins info <name>  Show details for a specific plugin
+```
+
+## Features
+
+The interactive terminal includes several quality-of-life features:
+
+- **Command history** — Use the up/down arrow keys to cycle through previously entered commands.
+- **Autocomplete hints** — As you type a `/` command, matching command names and descriptions appear as suggestions.
+- **Status indicator** — The input line shows the current Robo status (`ready`, `restarting`, `error`, `stopped`).
+- **Scroll regions** — Log output and the input line occupy separate regions, so your typing is never interrupted by log messages.
+
+## Custom Terminal Commands
+
+You can create your own `/` commands by placing files in `src/robo/terminal/commands/`. The file path determines the command name:
+
+```
+src/robo/terminal/commands/
+├── ping.ts           # /ping
+├── greet.ts          # /greet
+└── db/
+    ├── index.ts      # /db
+    ├── status.ts     # /db status
+    └── clear.ts      # /db clear
+```
+
+### Basic Example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/terminal/commands/ping.ts
+    import { createTerminalCommandConfig } from 'robo.js'
+    import type { TerminalContext } from 'robo.js'
+
+    export const config = createTerminalCommandConfig({
+      description: 'Check if Robo is responding',
+      options: [
+        { alias: '-c', name: '--count', description: 'Number of pings', type: 'number', default: 1 }
+      ]
+    } as const)
+
+    export default async function (ctx: TerminalContext<typeof config>) {
+      for (let i = 0; i < ctx.options.count; i++) {
+        ctx.write(`pong! (${i + 1}/${ctx.options.count})\n`)
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/terminal/commands/ping.mjs
+    import { createTerminalCommandConfig } from 'robo.js'
+
+    export const config = createTerminalCommandConfig({
+      description: 'Check if Robo is responding',
+      options: [
+        { alias: '-c', name: '--count', description: 'Number of pings', type: 'number', default: 1 }
+      ]
+    })
+
+    export default async function (ctx) {
+      for (let i = 0; i < ctx.options.count; i++) {
+        ctx.write(`pong! (${i + 1}/${ctx.options.count})\n`)
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Use `as const` in TypeScript for full type inference on `ctx.options`.
+</Callout>
+
+### Terminal Context
+
+Handlers receive a `TerminalContext` object with:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `args` | `string[]` | Positional arguments |
+| `options` | `object` | Parsed option values |
+| `config` | `Config` | Project configuration |
+| `runtime` | `RuntimeProvider` | Access to state and Flashcore |
+| `write` | `(text: string) => void` | Write text to stdout |
+
+The `runtime` property provides methods for interacting with state and Flashcore:
+
+| Method | Description |
+|--------|-------------|
+| `getState()` | Get the full state object |
+| `getStateValue(key)` | Get a specific state value |
+| `setStateValue(key, value)` | Set a state value |
+| `deleteStateKey(key)` | Delete a state key |
+| `flashcoreGet(key)` | Get a Flashcore value |
+| `flashcoreSet(key, value)` | Set a Flashcore value |
+| `flashcoreDelete(key)` | Delete a Flashcore key |
+| `flashcoreHas(key)` | Check if a Flashcore key exists |
+| `isRunning()` | Check if the Robo process is running |
+
+### Subcommands
+
+Nested folders create subcommand hierarchies. For example, `src/robo/terminal/commands/db/status.ts` becomes `/db status`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    // src/robo/terminal/commands/db/status.ts
+    import { createTerminalCommandConfig } from 'robo.js'
+    import type { TerminalContext } from 'robo.js'
+
+    export const config = createTerminalCommandConfig({
+      description: 'Show database status'
+    })
+
+    export default async function (ctx: TerminalContext<typeof config>) {
+      const isRunning = ctx.runtime?.isRunning() ?? false
+      ctx.write(`Database: ${isRunning ? 'connected' : 'disconnected'}\n`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // src/robo/terminal/commands/db/status.mjs
+    import { createTerminalCommandConfig } from 'robo.js'
+
+    export const config = createTerminalCommandConfig({
+      description: 'Show database status'
+    })
+
+    export default async function (ctx) {
+      const isRunning = ctx.runtime?.isRunning() ?? false
+      ctx.write(`Database: ${isRunning ? 'connected' : 'disconnected'}\n`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Plugin-Provided Commands
+
+Plugins can provide terminal commands the same way — by placing files in `src/robo/terminal/commands/` within their package. When a plugin is installed, its terminal commands become available automatically.
+
+Project-level commands receive a priority boost of `+100` over plugin commands, so your local commands always take precedence. If you need finer control, set the `priority` field in your config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```typescript
+    export const config = createTerminalCommandConfig({
+      description: 'My high-priority command',
+      priority: 200
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const config = createTerminalCommandConfig({
+      description: 'My high-priority command',
+      priority: 200
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Custom terminal commands cannot override built-in commands like `/help`, `/clear`, `/restart`, `/state`, `/flashcore`, `/env`, `/status`, or `/plugins`.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card href="./extending" title="Extending the CLI" description="Add custom commands and hooks." />
+  <Card href="./robo" title="Robo CLI Reference" description="Full command reference." />
+</Cards>

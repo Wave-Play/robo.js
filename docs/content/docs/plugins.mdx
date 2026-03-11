@@ -1,0 +1,182 @@
+---
+title: Plugins
+icon: Connect
+description: Extend your Robo with powerful plugins
+---
+
+**Robo Plugins** let you add features to your **Robo** with one command and integrate seamlessly thanks to the **[Robo File Structure](./framework/core/file-structure)**. What's more, anyone can **[create a plugin](./framework/plugins/create)**.
+
+```package-install
+npx robo add @robojs/server
+```
+
+## Official Plugins
+
+These are developed and maintained by the **Robo.js** team, ensuring optimal compatibility and functionality.
+
+### Infrastructure
+
+<Cards>
+  <Card
+    href="./discordjs"
+    title={<div className="flex items-center gap-2"><Discord size={18} /> <span>@robojs/discordjs</span></div>}
+    description="Commands, events, and client management for Discord."
+  />
+  <Card
+    href="./server"
+    title={<div className="flex items-center gap-2"><Server size={18} /> <span>@robojs/server</span></div>}
+    description="File-based HTTP routes and API endpoints."
+  />
+  <Card
+    href="./sync"
+    title={<div className="flex items-center gap-2"><RefreshSync size={18} /> <span>@robojs/sync</span></div>}
+    description="Real-time state synchronization across clients."
+  />
+  <Card
+    href="./patch"
+    title={<div className="flex items-center gap-2"><Bandage size={18} /> <span>@robojs/patch</span></div>}
+    description="Patches for Discord Activities and proxy fixes."
+  />
+</Cards>
+
+### AI & Bot Features
+
+<Cards>
+  <Card
+    href="./ai"
+    title={<div className="flex items-center gap-2"><Brain size={18} /> <span>@robojs/ai</span></div>}
+    description="Transform your Robo into a personalized AI chatbot with voice, vision, web search, and more."
+  />
+  <Card
+    href="./moderation"
+    title={<div className="flex items-center gap-2"><Shield size={18} /> <span>@robojs/moderation</span></div>}
+    description="Equip your bot with essential tools to manage and maintain your server."
+  />
+  <Card
+    href="./giveaways"
+    title={<div className="flex items-center gap-2"><Gift size={18} /> <span>@robojs/giveaways</span></div>}
+    description="One-click Discord giveaways with automatic winner selection and persistent storage."
+  />
+  <Card
+    href="./xp"
+    title={<div className="flex items-center gap-2"><Trophy size={18} /> <span>@robojs/xp</span></div>}
+    description="MEE6-parity XP and leveling system with role rewards and multipliers."
+  />
+  <Card
+    href="./maintenance"
+    title={<div className="flex items-center gap-2"><Wrench size={18} /> <span>@robojs/maintenance</span></div>}
+    description="Add a maintenance mode to your Robo."
+  />
+</Cards>
+
+### Utilities
+
+<Cards>
+  <Card
+    href="./analytics"
+    title={<div className="flex items-center gap-2"><BarChart size={18} /> <span>@robojs/analytics</span></div>}
+    description="Track user interactions and server activity with ease."
+  />
+  <Card
+    href="./auth"
+    title={<div className="flex items-center gap-2"><Lock size={18} /> <span>@robojs/auth</span></div>}
+    description="Auth.js powered sign-in, sessions, and verification flows."
+  />
+  <Card
+    href="./cron"
+    title={<div className="flex items-center gap-2"><Hourglass size={18} /> <span>@robojs/cron</span></div>}
+    description="Easily schedule and manage recurring tasks."
+  />
+  <Card
+    href="./i18n"
+    title={<div className="flex items-center gap-2"><Translate size={18} /> <span>@robojs/i18n</span></div>}
+    description="Safely translate your Robo and Discord slash commands."
+  />
+  <Card
+    href="./dev"
+    title={<div className="flex items-center gap-2"><Bug size={18} /> <span>@robojs/dev</span></div>}
+    description="Utilities to test Robo APIs, monitor resources, and replicate specific behaviors."
+  />
+  <Card
+    href="./better-stack"
+    title={<div className="flex items-center gap-2"><Activity size={18} /> <span>@robojs/better-stack</span></div>}
+    description="Visualize uptime and search logs in an appealing and searchable format."
+  />
+  <Card
+    href="./trpc"
+    title={<div className="flex items-center gap-2"><DiamondNodes size={18} /> <span>@robojs/trpc</span></div>}
+    description="Fully managed tRPC optimized for Robo.js."
+  />
+  <Card
+    href="./roadmap"
+    title={<div className="flex items-center gap-2"><Milestone size={18} /> <span>@robojs/roadmap</span></div>}
+    description="Sync project roadmaps from Jira to organized Discord forum channels."
+  />
+</Cards>
+
+## Community Plugins
+
+Innovative plugins crafted by the creative **[Robo.js Community](https://roboplay.dev/discord)**.
+
+<Cards>
+  <Card
+    href="https://www.npmjs.com/package/api-sync-robojs"
+    title="api-sync-robojs"
+    description="Real-time state sync across clients and server the simplest way possible."
+  />
+  <Card
+    href="https://www.npmjs.com/package/community-challenges"
+    title="community-challenges"
+    description="Submit your challenge ideas to the community challenges directly from your bot."
+  />
+  <Card
+    href="https://www.npmjs.com/package/discord-user-profile"
+    title="discord-user-profile"
+    description="Create your own user profile on a Discord server and share it. Allow anyone to do the same."
+  />
+  <Card
+    href="https://www.npmjs.com/package/emoji-reaction-plugin"
+    title="emoji-reaction-plugin"
+    description="Make your conversations fun and interactive with various emoji based reactions."
+  />
+  <Card
+    href="https://www.npmjs.com/package/robo-store"
+    title="robo-store"
+    description="A minimal eCommerce solution right into your Discord server and online presence."
+  />
+</Cards>
+
+## Managing Plugins
+
+Install, remove, or upgrade plugins with the **[Robo CLI](./cli/robo)**:
+
+```bash title="Install"
+npx robo add @robojs/ai @robojs/server
+```
+
+```bash title="Remove"
+npx robo remove @robojs/ai
+```
+
+```bash title="Upgrade"
+npx robo upgrade
+```
+
+Learn more about how plugins integrate with the framework in the **[Plugin System](./framework/plugins)** docs.
+
+## Build Your Own
+
+Eager to share a feature with everyone? Anyone can create and publish a **Robo Plugin**.
+
+<Cards>
+  <Card
+    href="./framework/plugins/create"
+    title={<div className="flex items-center gap-2"><Blocks size={18} /> <span>Creating Plugins</span></div>}
+    description="Make your own plugins for Robo.js."
+  />
+  <Card
+    href="./framework/plugins/seed"
+    title={<div className="flex items-center gap-2"><FileStack size={18} /> <span>Seed Files</span></div>}
+    description="Include starter files with your plugin."
+  />
+</Cards>

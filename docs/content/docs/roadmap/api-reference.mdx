@@ -1,0 +1,464 @@
+---
+title: API reference
+description: Programmatic API for provider access, sync operations, settings, and forum management.
+---
+
+All plugin functionality is importable from `@robojs/roadmap` for use in custom commands, events, or plugins.
+
+## Provider access
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getProvider, isProviderReady } from '@robojs/roadmap'
+
+    if (isProviderReady()) {
+      const provider = getProvider()
+      const cards = await provider.fetchCards()
+      const columns = await provider.getColumns()
+      const info = await provider.getProviderInfo()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getProvider, isProviderReady } from '@robojs/roadmap'
+
+    if (isProviderReady()) {
+      const provider = getProvider()
+      const cards = await provider.fetchCards()
+      const columns = await provider.getColumns()
+      const info = await provider.getProviderInfo()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Function | Returns | Description |
+|---|---|---|
+| `getProvider()` | `RoadmapProvider \| null` | Get the initialized provider instance |
+| `isProviderReady()` | `boolean` | Check if the provider is initialized |
+
+## Sync operations
+
+### syncRoadmap
+
+Sync all cards from the provider to Discord:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { syncRoadmap } from '@robojs/roadmap'
+    import type { SyncOptions } from '@robojs/roadmap'
+
+    const result = await syncRoadmap({
+      guild,
+      provider,
+      dryRun: false,
+      syncId: 'custom-id',
+      signal: abortController.signal,
+      onProgress: (update) => {
+        console.log(`${update.currentIndex + 1}/${update.totalCards}`)
+      }
+    })
+
+    console.log(result.stats)
+    // { total: 42, created: 10, updated: 30, archived: 2, errors: 0 }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { syncRoadmap } from '@robojs/roadmap'
+
+    const result = await syncRoadmap({
+      guild,
+      provider,
+      dryRun: false,
+      syncId: 'custom-id',
+      signal: abortController.signal,
+      onProgress: (update) => {
+        console.log(`${update.currentIndex + 1}/${update.totalCards}`)
+      }
+    })
+
+    console.log(result.stats)
+    // { total: 42, created: 10, updated: 30, archived: 2, errors: 0 }
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+guild: { type: 'Guild', description: 'Discord guild to sync to.', default: '—' },
+provider: { type: 'RoadmapProvider', description: 'Provider instance to fetch cards from.', default: '—' },
+dryRun: { type: 'boolean', description: 'Preview changes without applying them.', default: 'false' },
+syncId: { type: 'string', description: 'Unique identifier for tracking this sync.', default: 'undefined' },
+signal: { type: 'AbortSignal', description: 'Signal to cancel the sync mid-operation.', default: 'undefined' },
+onProgress: { type: '(update: SyncProgressUpdate) => void', description: 'Callback for real-time progress updates.', default: 'undefined' },
+  }}
+/>
+
+Returns a `SyncResult` with `cards`, `columns`, `syncedAt`, `stats`, and `errors`.
+
+### syncSingleCard
+
+Sync a single card and get its thread information:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { syncSingleCard } from '@robojs/roadmap'
+
+    const result = await syncSingleCard(card, guild, provider)
+    if (result) {
+      console.log(result.threadId, result.threadUrl)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { syncSingleCard } from '@robojs/roadmap'
+
+    const result = await syncSingleCard(card, guild, provider)
+    if (result) {
+      console.log(result.threadId, result.threadUrl)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Returns `{ threadId: string, threadUrl: string }` or `null` if the card was skipped.
+
+### SyncCanceledError
+
+Error class thrown when a sync is canceled via `AbortSignal`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { SyncCanceledError, syncRoadmap } from '@robojs/roadmap'
+
+    try {
+      await syncRoadmap({ guild, provider, signal })
+    } catch (error) {
+      if (error instanceof SyncCanceledError) {
+        console.log('Sync was canceled')
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { SyncCanceledError, syncRoadmap } from '@robojs/roadmap'
+
+    try {
+      await syncRoadmap({ guild, provider, signal })
+    } catch (error) {
+      if (error instanceof SyncCanceledError) {
+        console.log('Sync was canceled')
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Content formatting
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { formatCardContent, formatCardContentV2, formatThreadName } from '@robojs/roadmap'
+
+    // Plain text format (legacy)
+    const text = await formatCardContent(card, guildId, guild, 2000)
+
+    // Components v2 format (current)
+    const { flags, components } = await formatCardContentV2(card, guildId, guild)
+
+    // Thread name with template
+    const name = formatThreadName(card, guildId)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { formatCardContent, formatCardContentV2, formatThreadName } from '@robojs/roadmap'
+
+    // Plain text format (legacy)
+    const text = await formatCardContent(card, guildId, guild, 2000)
+
+    // Components v2 format (current)
+    const { flags, components } = await formatCardContentV2(card, guildId, guild)
+
+    // Thread name with template
+    const name = formatThreadName(card, guildId)
+    ```
+  </Tab>
+</Tabs>
+
+## Thread management
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { moveThreadToNewForum } from '@robojs/roadmap'
+
+    const newThread = await moveThreadToNewForum(
+      card,
+      existingThread,
+      targetForum,
+      appliedTags,
+      guildId
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { moveThreadToNewForum } from '@robojs/roadmap'
+
+    const newThread = await moveThreadToNewForum(
+      card,
+      existingThread,
+      targetForum,
+      appliedTags,
+      guildId
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## Settings management
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+      getSettings,
+      updateSettings,
+      canUserCreateCards,
+      getAuthorizedCreatorRoles,
+      setAuthorizedCreatorRoles,
+      getSyncedPostId,
+      setSyncedPost,
+      getThreadHistory,
+      addThreadToHistory,
+      getThreadForColumn
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+      getSettings,
+      updateSettings,
+      canUserCreateCards,
+      getAuthorizedCreatorRoles,
+      setAuthorizedCreatorRoles,
+      getSyncedPostId,
+      setSyncedPost,
+      getThreadHistory,
+      addThreadToHistory,
+      getThreadForColumn
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+</Tabs>
+
+| Function | Description |
+|---|---|
+| `getSettings(guildId)` | Get all settings for a guild |
+| `updateSettings(guildId, settings)` | Update partial settings |
+| `canUserCreateCards(guildId, roleIds, isAdmin)` | Check if a user can create cards |
+| `getAuthorizedCreatorRoles(guildId)` | Get authorized role IDs |
+| `setAuthorizedCreatorRoles(guildId, roleIds)` | Set authorized role IDs |
+| `getSyncedPostId(guildId, cardId)` | Get thread ID for a synced card |
+| `setSyncedPost(guildId, cardId, threadId)` | Map a card to a thread |
+| `getThreadHistory(guildId, cardId)` | Get thread movement history |
+| `addThreadToHistory(guildId, cardId, entry)` | Record a thread movement |
+| `getThreadForColumn(guildId, cardId, column)` | Find a historical thread for a column |
+
+### Assignee mappings
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+      getAssigneeMapping,
+      setAssigneeMapping,
+      removeAssigneeMapping,
+      getDiscordUserIdForJiraName
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+      getAssigneeMapping,
+      setAssigneeMapping,
+      removeAssigneeMapping,
+      getDiscordUserIdForJiraName
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+</Tabs>
+
+See [Assignee mapping](./assignee-mapping) for usage details.
+
+### Column mappings
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+      getColumnMapping,
+      setColumnMapping,
+      removeColumnMapping,
+      getCustomColumns,
+      setCustomColumns
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+      getColumnMapping,
+      setColumnMapping,
+      removeColumnMapping,
+      getCustomColumns,
+      setCustomColumns
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+</Tabs>
+
+See [Column mapping](./column-mapping) for usage details.
+
+## Forum management
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+      createOrGetRoadmapCategory,
+      toggleForumAccess,
+      getAllForumChannels,
+      getForumChannelForColumn,
+      getRoadmapCategory,
+      updateForumTagsForColumn
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+      createOrGetRoadmapCategory,
+      toggleForumAccess,
+      getAllForumChannels,
+      getForumChannelForColumn,
+      getRoadmapCategory,
+      updateForumTagsForColumn
+    } from '@robojs/roadmap'
+    ```
+  </Tab>
+</Tabs>
+
+| Function | Description |
+|---|---|
+| `createOrGetRoadmapCategory({ guild, columns })` | Create or get the roadmap category and forums |
+| `toggleForumAccess(guild, mode)` | Toggle between `'public'` and `'private'` access |
+| `getAllForumChannels(guild)` | Get a map of column names to forum channels |
+| `getForumChannelForColumn(guild, columnName)` | Get the forum channel for a specific column |
+| `getRoadmapCategory(guild)` | Get the roadmap category channel |
+| `updateForumTagsForColumn(guild, columnName, tagNames)` | Update forum tags (merge and dedupe) |
+
+## Date range helpers
+
+Fetch cards filtered by time range. Requires provider support for `fetchCardsByDateRange()`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import {
+      getCardsFromLastMonth,
+      getCardsFromLastWeek,
+      getCardsFromLastDays,
+      getCardsFromDateRange
+    } from '@robojs/roadmap'
+
+    const lastMonth = await getCardsFromLastMonth(provider)
+    const lastWeek = await getCardsFromLastWeek(provider)
+    const last30Days = await getCardsFromLastDays(provider, 30)
+
+    const custom = await getCardsFromDateRange(
+      provider,
+      '2025-01-01',
+      '2025-01-31',
+      'created'  // or 'updated' (default)
+    )
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import {
+      getCardsFromLastMonth,
+      getCardsFromLastWeek,
+      getCardsFromLastDays,
+      getCardsFromDateRange
+    } from '@robojs/roadmap'
+
+    const lastMonth = await getCardsFromLastMonth(provider)
+    const lastWeek = await getCardsFromLastWeek(provider)
+    const last30Days = await getCardsFromLastDays(provider, 30)
+
+    const custom = await getCardsFromDateRange(
+      provider,
+      '2025-01-01',
+      '2025-01-31',
+      'created'  // or 'updated' (default)
+    )
+    ```
+  </Tab>
+</Tabs>
+
+| Function | Parameters | Description |
+|---|---|---|
+| `getCardsFromLastMonth(provider, dateField?)` | provider, `'created'` or `'updated'` | Previous calendar month |
+| `getCardsFromLastWeek(provider, dateField?)` | provider, dateField | Last 7 days inclusive |
+| `getCardsFromLastDays(provider, days, dateField?)` | provider, number of days, dateField | Last N days inclusive |
+| `getCardsFromDateRange(provider, start, end, dateField?)` | provider, start date, end date, dateField | Custom date range |
+
+## Types
+
+Key types exported from `@robojs/roadmap`:
+
+| Type | Description |
+|---|---|
+| `RoadmapCard` | Card with id, title, description, labels, column, assignees, url, updatedAt, metadata |
+| `RoadmapColumn` | Column with id, name, order, archived, createForum |
+| `ColumnConfig` | Custom columns and status-to-column mappings |
+| `ProviderConfig` | Provider type and options |
+| `ProviderInfo` | Provider name, version, capabilities |
+| `CreateCardInput` | Input for creating cards (title, description, column, labels, issueType, assignees) |
+| `CreateCardResult` | Result with card, success, message |
+| `UpdateCardInput` | Partial input for updating cards |
+| `UpdateCardResult` | Result with card, success, message |
+| `SyncResult` | Sync result with cards, columns, syncedAt, stats, errors |
+| `SyncError` | Per-card error with cardId, cardTitle, errorMessage, errorType, cardUrl |
+| `SyncOptions` | Options for syncRoadmap (guild, provider, dryRun, syncId, signal, onProgress) |
+| `SyncProgressUpdate` | Progress callback data (currentIndex, totalCards, currentCard, stats, dryRun) |
+| `SyncData` | Active sync metadata (controller, startedBy, guildId, dryRun, startedAt) |
+| `DateRangeFilter` | Date filter with startDate, endDate, dateField |
+| `ThreadHistoryEntry` | History entry with threadId, column, forumId, movedAt, messageCount |
+| `RoadmapSettings` | Guild settings interface |
+| `RoadmapPluginOptions` | Plugin configuration interface |
+| `JiraProviderConfig` | Jira provider config type |
+| `ForumPermissionMode` | `'private' \| 'public'` |
+| `CreateRoadmapForumsOptions` | Options for createOrGetRoadmapCategory |
+| `ThreadOperation` | `'create' \| 'update' \| 'archive' \| 'skip'` |
+
+## Next steps
+
+<Cards>
+  <Card href="./rest-api" title="REST API" description="HTTP endpoints for external integrations." />
+  <Card href="./custom-providers" title="Custom providers" description="Build your own provider." />
+  <Card href="./recipes" title="Recipes" description="Common patterns and use cases." />
+</Cards>

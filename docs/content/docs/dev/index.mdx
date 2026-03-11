@@ -1,0 +1,93 @@
+---
+title: "README"
+icon: Bug
+description: Development tools that safely disappear in production.
+---
+
+<PluginHero
+	name="@robojs/dev"
+	description="Development tools that safely disappear in production."
+	icon={<Bug />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-devtools"
+	platforms={["Bots"]}
+/>
+
+Development utilities for forwarding errors to Discord, viewing logs, and checking Robo status. Install during development, and the plugin automatically strips itself from production builds.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Bug />} title="Error Forwarding" description="Send errors to a Discord channel with dismiss and restart buttons" />
+	<Feature icon={<Terminal />} title="Slash Commands" description="/dev commands for logs, status, and restart" />
+	<Feature icon={<Zap />} title="Auto-strip Production" description="Plugin disappears from builds automatically" />
+	<Feature icon={<Database />} title="Log Viewer" description="View recent Robo logs from Discord" />
+	<Feature icon={<Shield />} title="Debug Channel" description="Dedicated channel for error embeds and role pings" />
+</FeatureGrid>
+
+## Installation
+
+To install, run:
+
+```bash
+npx robo add @robojs/dev
+```
+
+Or create a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/dev
+```
+
+<Callout type="warn">
+This plugin is designed for development only. It strips itself from production builds automatically, but you can also remove it manually:
+
+```bash
+npx robo remove @robojs/dev
+```
+</Callout>
+
+## How it works
+
+The plugin hooks into Robo's build system with a transform that filters out all dev plugin entries when building for production. Run `robo build` and every command, event handler, and hook from this plugin disappears from the output. Zero runtime overhead in production.
+
+In development mode (`robo dev`), you get the full set of tools: slash commands for viewing logs, checking status, and restarting, plus error forwarding to a Discord channel.
+
+## Quick start
+
+The simplest setup is adding a debug channel for error forwarding. Set the `DISCORD_DEBUG_CHANNEL_ID` environment variable:
+
+```bash title=".env"
+DISCORD_DEBUG_CHANNEL_ID=1234567890123456789
+```
+
+When an unhandled error occurs, the plugin sends a rich embed to that channel with the full stack trace and interactive buttons to dismiss the error or restart the process.
+
+For more control, use the [plugin config](./configuration.mdx):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789',
+    	errorPingRoleId: '987654321098765432'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789',
+    	errorPingRoleId: '987654321098765432'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+	<Card href="./error-forwarding" title="Error forwarding" description="Forward errors to a Discord channel with interactive buttons." />
+	<Card href="./commands" title="Commands" description="View logs, check status, and restart your Robo." />
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./api" title="API reference" description="Exported functions, types, and utilities." />
+</Cards>

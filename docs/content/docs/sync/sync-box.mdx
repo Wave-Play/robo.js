@@ -1,0 +1,418 @@
+---
+title: SyncBox
+description: Declarative sync container with locking, interpolation, and optimistic updates.
+---
+
+`SyncBox` is a declarative component that synchronizes arbitrary state across clients. It wraps `useSyncState` with additional features: per-field throttling, exclusive locking, smooth interpolation for remote updates, optimistic state updates, and conflict resolution.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `(string \| null)[]` | (required) | Key suffix (combined with zone prefix) |
+| `initialState` | `T` | `undefined` | Initial state value |
+| `children` | `ReactNode \| (state, setState, status, context, lock?) => ReactNode` | `undefined` | Children or render function |
+| `throttle` | `number \| { [field]: number }` | `undefined` | Throttle setState calls (ms), global or per-field |
+| `lockable` | `boolean` | `false` | Enable exclusive ownership mode |
+| `interpolate` | `{ [field]: number }` | `undefined` | Lerp factor per field for smooth remote updates (0-1) |
+| `onStateChange` | `(state: T, prev: T \| undefined) => void` | `undefined` | Called when synced state changes |
+| `onSyncStatusChange` | `(status: SyncStatus) => void` | `undefined` | Called when sync status changes |
+| `onConflict` | `(local: T, remote: T) => T` | `undefined` | Resolve conflicts between optimistic and remote state |
+| `as` | `ElementType \| null` | `'div'` | Wrapper element (`null` for no wrapper) |
+| `style` | `CSSProperties` | `undefined` | Styles for wrapper |
+| `className` | `string` | `undefined` | Class name for wrapper |
+
+## Render function
+
+The recommended approach. Pass a function as children to access state, setter, sync status, context, and lock info.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { SyncBox } from '@robojs/sync'
+
+    function ScoreBoard() {
+      return (
+        <SyncBox id={['score']} initialState={{ red: 0, blue: 0 }}>
+          {(state, setState, status, context) => (
+            <div>
+              <p>Red: {state?.red} | Blue: {state?.blue}</p>
+              {status.synced ? null : <p>Loading...</p>}
+              <button onClick={() => setState({ red: (state?.red ?? 0) + 1 })}>
+                +Red
+              </button>
+            </div>
+          )}
+        </SyncBox>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { SyncBox } from '@robojs/sync'
+
+    function ScoreBoard() {
+      return (
+        <SyncBox id={['score']} initialState={{ red: 0, blue: 0 }}>
+          {(state, setState, status, context) => (
+            <div>
+              <p>Red: {state?.red} | Blue: {state?.blue}</p>
+              {status.synced ? null : <p>Loading...</p>}
+              <button onClick={() => setState({ red: (state?.red ?? 0) + 1 })}>
+                +Red
+              </button>
+            </div>
+          )}
+        </SyncBox>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The render function receives:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `T \| undefined` | Current synced state |
+| `setState` | `SyncBoxSetState<T>` | Update state with optional options |
+| `status` | `SyncStatus` | Sync status info |
+| `context` | `SyncContext` | Room context |
+| `lock` | `LockContext \| undefined` | Lock info (when `lockable=true`) |
+
+## Sync status
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `synced` | `boolean` | Initial state received from server |
+| `syncing` | `boolean` | Update in progress |
+| `stale` | `boolean` | State may be outdated |
+| `lastSyncedAt` | `number \| undefined` | Timestamp of last successful sync |
+
+## Throttling
+
+Control how often state updates are sent over the network.
+
+### Global throttle
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox id={['cursor']} initialState={{ x: 0, y: 0 }} throttle={16}>
+      {(state, setState) => (
+        <div onMouseMove={(e) => setState({ x: e.clientX, y: e.clientY })}>
+          Cursor: {state?.x}, {state?.y}
+        </div>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox id={['cursor']} initialState={{ x: 0, y: 0 }} throttle={16}>
+      {(state, setState) => (
+        <div onMouseMove={(e) => setState({ x: e.clientX, y: e.clientY })}>
+          Cursor: {state?.x}, {state?.y}
+        </div>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+### Per-field throttle
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox
+      id={['player']}
+      initialState={{ x: 0, y: 0, name: '' }}
+      throttle={{ x: 16, y: 16, name: 500 }}
+    >
+      {/* Position updates at 60fps, name updates at most every 500ms */}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox
+      id={['player']}
+      initialState={{ x: 0, y: 0, name: '' }}
+      throttle={{ x: 16, y: 16, name: 500 }}
+    >
+      {/* Position updates at 60fps, name updates at most every 500ms */}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+### Per-call throttle override
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    setState({ x: newX }, { throttle: 32 }) // Override for this specific call
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    setState({ x: newX }, { throttle: 32 }) // Override for this specific call
+    ```
+  </Tab>
+</Tabs>
+
+## Lockable mode
+
+Enable exclusive ownership — only one client can modify state at a time.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox id={['ball']} initialState={{ x: 0, y: 0 }} lockable>
+      {(state, setState, status, context, lock) => (
+    <div
+      onMouseDown={() => lock?.lock()}
+      onMouseUp={() => lock?.unlock()}
+      style={{
+        cursor: lock?.isLocked
+          ? lock.isLockHolder ? 'grabbing' : 'not-allowed'
+          : 'grab'
+      }}
+    >
+      Ball at {state?.x}, {state?.y}
+    </div>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox id={['ball']} initialState={{ x: 0, y: 0 }} lockable>
+      {(state, setState, status, context, lock) => (
+    <div
+      onMouseDown={() => lock?.lock()}
+      onMouseUp={() => lock?.unlock()}
+      style={{
+        cursor: lock?.isLocked
+          ? lock.isLockHolder ? 'grabbing' : 'not-allowed'
+          : 'grab'
+      }}
+    >
+      Ball at {state?.x}, {state?.y}
+    </div>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+### LockContext
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `isLocked` | `boolean` | Whether anyone holds the lock |
+| `lockedBy` | `string \| null` | Lock holder's client ID |
+| `isLockHolder` | `boolean` | Whether current client holds the lock |
+| `lock` | `() => void` | Acquire the lock |
+| `unlock` | `() => void` | Release the lock |
+
+## Interpolation
+
+Smooth out remote state updates with linear interpolation. Each field gets a lerp factor between 0 and 1 (lower = smoother but slower convergence).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox
+      id={['cursor']}
+      initialState={{ x: 0.5, y: 0.5 }}
+      interpolate={{ x: 0.15, y: 0.15 }}
+    >
+      {(state) => <Cursor x={state?.x} y={state?.y} />}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox
+      id={['cursor']}
+      initialState={{ x: 0.5, y: 0.5 }}
+      interpolate={{ x: 0.15, y: 0.15 }}
+    >
+      {(state) => <Cursor x={state?.x} y={state?.y} />}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+Interpolation only applies to remote updates. The lock holder (if using lockable mode) always sees instant updates.
+
+## Optimistic updates
+
+Apply state locally before the server confirms. Useful for responsive UIs where you want immediate feedback.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox id={['counter']} initialState={{ count: 0 }}>
+      {(state, setState) => (
+    <button onClick={() => setState({ count: (state?.count ?? 0) + 1 }, { optimistic: true })}>
+      {state?.count}
+    </button>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox id={['counter']} initialState={{ count: 0 }}>
+      {(state, setState) => (
+    <button onClick={() => setState({ count: (state?.count ?? 0) + 1 }, { optimistic: true })}>
+      {state?.count}
+    </button>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+### Conflict resolution
+
+When a remote update arrives during an optimistic update, the `onConflict` callback lets you decide which state wins.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox
+      id={['score']}
+      initialState={{ value: 0 }}
+      onConflict={(local, remote) => ({
+        value: Math.max(local.value, remote.value)
+      })}
+    >
+      {(state, setState) => (
+        <button onClick={() => setState({ value: (state?.value ?? 0) + 1 }, { optimistic: true })}>
+          Score: {state?.value}
+        </button>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox
+      id={['score']}
+      initialState={{ value: 0 }}
+      onConflict={(local, remote) => ({
+        value: Math.max(local.value, remote.value)
+      })}
+    >
+      {(state, setState) => (
+        <button onClick={() => setState({ value: (state?.value ?? 0) + 1 }, { optimistic: true })}>
+          Score: {state?.value}
+        </button>
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+## No wrapper element
+
+Use `as={null}` to render children directly without a wrapper `<div>`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    <SyncBox as={null} id={['input']} initialState={{ value: '' }}>
+      {(state, setState) => (
+        <input
+          value={state?.value ?? ''}
+          onChange={(e) => setState({ value: e.target.value })}
+        />
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    <SyncBox as={null} id={['input']} initialState={{ value: '' }}>
+      {(state, setState) => (
+        <input
+          value={state?.value ?? ''}
+          onChange={(e) => setState({ value: e.target.value })}
+        />
+      )}
+    </SyncBox>
+    ```
+  </Tab>
+</Tabs>
+
+## Imperative handle
+
+Access `SyncBox` state programmatically via a ref.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { useRef } from 'react'
+    import type { SyncBoxHandle } from '@robojs/sync'
+
+    function Controller() {
+      const boxRef = useRef<SyncBoxHandle<{ count: number }>>(null)
+
+      const reset = () => boxRef.current?.setState({ count: 0 })
+      const status = boxRef.current?.getSyncStatus()
+
+      return (
+        <>
+          <SyncBox ref={boxRef} id={['counter']} initialState={{ count: 0 }}>
+            {(state) => <p>{state?.count}</p>}
+          </SyncBox>
+          <button onClick={reset}>Reset</button>
+        </>
+      )
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { useRef } from 'react'
+
+    function Controller() {
+      const boxRef = useRef(null)
+
+      const reset = () => boxRef.current?.setState({ count: 0 })
+      const status = boxRef.current?.getSyncStatus()
+
+      return (
+        <>
+          <SyncBox ref={boxRef} id={['counter']} initialState={{ count: 0 }}>
+            {(state) => <p>{state?.count}</p>}
+          </SyncBox>
+          <button onClick={reset}>Reset</button>
+        </>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### SyncBoxHandle
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `getState()` | `() => T \| undefined` | Get current state |
+| `setState(...)` | `SyncBoxSetState<T>` | Update state |
+| `getSyncStatus()` | `() => SyncStatus` | Get sync status |
+| `lock` | `LockContext \| undefined` | Lock context (when `lockable=true`) |
+
+## Next steps
+
+<Cards>
+  <Card title="SyncZone" href="sync-zone" description="Hierarchical key prefixing for organized state." />
+  <Card title="Draggables" href="draggables" description="Synchronized drag-and-drop elements." />
+  <Card title="Server handlers" href="server-handlers" description="Add server-side validation and RPC." />
+</Cards>

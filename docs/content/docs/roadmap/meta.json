@@ -1,0 +1,24 @@
+{
+  "title": "@robojs/roadmap",
+  "icon": "Milestone",
+  "description": "Sync Jira roadmaps to Discord forums.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quick-start",
+    "provider-setup",
+    "---Guides---",
+    "commands",
+    "configuration",
+    "column-mapping",
+    "assignee-mapping",
+    "thread-templates",
+    "---Reference---",
+    "api-reference",
+    "rest-api",
+    "---Advanced---",
+    "custom-providers",
+    "recipes"
+  ]
+}

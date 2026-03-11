@@ -1,0 +1,70 @@
+---
+title: Cron expressions
+description: Learn the cron expression format used by @robojs/cron.
+---
+
+Cron expressions define when a job runs. The plugin uses the [croner](https://github.com/hexagon/croner) library, which supports a six-field format with seconds precision.
+
+## Format
+
+A cron expression consists of six fields separated by spaces:
+
+```
+┌──────── second (0-59)
+│ ┌────── minute (0-59)
+│ │ ┌──── hour (0-23)
+│ │ │ ┌── day of month (1-31)
+│ │ │ │ ┌ month (1-12)
+│ │ │ │ │ ┌ day of week (0-6, Sunday = 0)
+│ │ │ │ │ │
+* * * * * *
+```
+
+The seconds field is optional. When only five fields are provided, they represent `minute hour day-of-month month day-of-week` (the standard cron format).
+
+## Special characters
+
+| Character | Meaning | Example |
+|-----------|---------|---------|
+| `*` | Every value | `* * * * * *` — every second |
+| `*/N` | Every N units | `*/5 * * * * *` — every 5 seconds |
+| `N,M` | Specific values | `0,30 * * * * *` — at second 0 and 30 |
+| `N-M` | Range of values | `0-5 * * * * *` — seconds 0 through 5 |
+| `N-M/S` | Range with step | `0-30/10 * * * * *` — every 10 seconds from 0 to 30 |
+
+## Common examples
+
+| Expression | Schedule |
+|-----------|----------|
+| `* * * * * *` | Every second |
+| `*/5 * * * * *` | Every 5 seconds |
+| `*/30 * * * * *` | Every 30 seconds |
+| `0 * * * * *` | Every minute (at second 0) |
+| `0 */5 * * * *` | Every 5 minutes |
+| `0 */15 * * * *` | Every 15 minutes |
+| `0 */30 * * * *` | Every 30 minutes |
+| `0 0 * * * *` | Every hour |
+| `0 0 */2 * * *` | Every 2 hours |
+| `0 30 * * * *` | Every hour at minute 30 |
+| `0 0 0 * * *` | Daily at midnight |
+| `0 0 12 * * *` | Daily at noon |
+| `0 30 14 * * *` | Daily at 2:30 PM |
+| `0 0 9 * * 1-5` | Weekdays at 9 AM |
+| `0 0 0 * * 0` | Every Sunday at midnight |
+| `0 0 0 1 * *` | First of each month at midnight |
+| `0 0 0 1 1 *` | January 1 at midnight |
+
+## Tips
+
+- **Seconds precision.** Unlike standard Unix cron (five fields), this plugin supports a sixth field for seconds. Use it for sub-minute schedules.
+- **System timezone.** Jobs run in the system's local timezone. Keep this in mind when scheduling across time zones.
+- **Prefer Patterns.** For most schedules, the [Patterns](./patterns.mdx) helper is easier to read and less error-prone than raw expressions.
+- **Validate expressions.** Invalid expressions throw an error at job creation time. Use [Crontab Guru](https://crontab.guru/) to verify your expressions (note: Crontab Guru uses five-field format without seconds).
+
+## Next Steps
+
+<Cards>
+	<Card href="./patterns" title="Patterns" description="Use readable presets instead of writing expressions by hand." />
+	<Card href="./persistence" title="Persistence" description="Save jobs across restarts." />
+	<Card href="./api" title="API reference" description="Full reference for all exported symbols." />
+</Cards>

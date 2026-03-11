@@ -1,0 +1,287 @@
+---
+title: "README"
+icon: Hourglass
+description: Easily schedule and manage recurring tasks with cron expressions.
+---
+
+<PluginHero
+	name="@robojs/cron"
+	description="Easily schedule and manage recurring tasks with cron expressions."
+	icon={<Hourglass />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/cron"
+	platforms={["Bots", "Activities", "Web"]}
+/>
+
+Schedule recurring tasks with cron expressions. Run functions at specific times, persist jobs across restarts, and control them dynamically — all with a simple API.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Clock />} title="Cron Scheduling" description="Six-field cron expressions" />
+	<Feature icon={<Zap />} title="Simple API" description="One-liner job creation" />
+	<Feature icon={<FileText />} title="File-Based Jobs" description="Modular job handlers" />
+	<Feature icon={<Database />} title="Persistence" description="Survive restarts with Flashcore" />
+	<Feature icon={<Hourglass />} title="Job Control" description="Pause, resume, and stop" />
+	<Feature icon={<Blocks />} title="Pattern Presets" description="72+ readable schedule helpers" />
+</FeatureGrid>
+
+## Installation
+
+To add this plugin to your Robo.js project:
+
+```bash
+npx robo add @robojs/cron
+```
+
+Or create a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/cron
+```
+
+No configuration needed. The plugin works out of the box.
+
+## Quick start
+
+Import `Cron` and pass a cron expression with a callback. The job starts immediately.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { Cron } from '@robojs/cron'
+
+    export default () => {
+    	Cron('*/10 * * * * *', () => {
+    		console.log('This runs every 10 seconds')
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { Cron } from '@robojs/cron'
+
+    export default () => {
+    	Cron('*/10 * * * * *', () => {
+    		console.log('This runs every 10 seconds')
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `_start` event is a good place to register jobs that should run for the lifetime of your Robo.
+
+## Using patterns
+
+Don't want to memorize cron syntax? Use the `Patterns` helper for readable scheduling.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { Cron, Patterns } from '@robojs/cron'
+
+    export default () => {
+    	Cron(Patterns.EVERY_HOUR, () => {
+    		console.log('Hourly task')
+    	})
+
+    	Cron(Patterns.everyDayAt('14:30'), () => {
+    		console.log('Runs daily at 2:30 PM')
+    	})
+
+    	Cron(Patterns.everyWeekdayAt('09:00'), () => {
+    		console.log('Weekday morning task')
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { Cron, Patterns } from '@robojs/cron'
+
+    export default () => {
+    	Cron(Patterns.EVERY_HOUR, () => {
+    		console.log('Hourly task')
+    	})
+
+    	Cron(Patterns.everyDayAt('14:30'), () => {
+    		console.log('Runs daily at 2:30 PM')
+    	})
+
+    	Cron(Patterns.everyWeekdayAt('09:00'), () => {
+    		console.log('Weekday morning task')
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+`Patterns` includes 58 preset constants, 7 day-of-week constants, and 18 builder functions. See the full [Patterns reference](./patterns.mdx) for the complete list.
+
+## Job control
+
+`Cron` returns a job instance with methods to control execution.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const job = Cron('*/10 * * * * *', () => {
+    	console.log('Running...')
+    })
+
+    // Temporarily halt the job
+    job.pause()
+
+    // Resume after pausing
+    job.resume()
+
+    // Permanently stop the job
+    job.stop()
+
+    // Check the next scheduled run
+    const nextRun = job.nextRun()
+    console.log('Next run:', nextRun)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const job = Cron('*/10 * * * * *', () => {
+    	console.log('Running...')
+    })
+
+    // Temporarily halt the job
+    job.pause()
+
+    // Resume after pausing
+    job.resume()
+
+    // Permanently stop the job
+    job.stop()
+
+    // Check the next scheduled run
+    const nextRun = job.nextRun()
+    console.log('Next run:', nextRun)
+    ```
+  </Tab>
+</Tabs>
+
+## File-based jobs
+
+Instead of inline functions, point to a file that exports a default function. File-based jobs can be [persisted](./persistence.mdx) across restarts.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { Cron } from '@robojs/cron'
+
+    export default () => {
+    	// Path is relative to .robo/build/
+    	Cron('*/5 * * * * *', 'cron/cleanup.js')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { Cron } from '@robojs/cron'
+
+    export default () => {
+    	// Path is relative to .robo/build/
+    	Cron('*/5 * * * * *', 'cron/cleanup.js')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The job file must export a default function. It receives the job ID as its first argument.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/cron/cleanup.ts"
+    export default (jobId: string) => {
+    	console.log(`Running job ${jobId}`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/cron/cleanup.js"
+    export default (jobId) => {
+    	console.log(`Running job ${jobId}`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Files>
+	<Folder name="src" defaultOpen>
+		<Folder name="cron" defaultOpen>
+			<File name="cleanup.ts" />
+		</Folder>
+		<Folder name="events" defaultOpen>
+			<File name="_start.ts" />
+		</Folder>
+	</Folder>
+</Files>
+
+<Callout type="warn">
+Use relative paths without a leading slash. Paths like `cron/cleanup.js` resolve from `.robo/build/`. Leading slashes are stripped automatically.
+</Callout>
+
+## Persistence
+
+File-based jobs can be saved to survive restarts.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Cron } from '@robojs/cron'
+
+    const job = Cron('0 0 * * *', 'cron/daily-report.js')
+    await job.save('daily-report')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Cron } from '@robojs/cron'
+
+    const job = Cron('0 0 * * *', 'cron/daily-report.js')
+    await job.save('daily-report')
+    ```
+  </Tab>
+</Tabs>
+
+Retrieve or remove saved jobs at any time.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const job = Cron.get('daily-report')
+    console.log('Next run:', job?.nextRun())
+
+    // Full cleanup: stop execution, then remove persistence
+    job?.stop()
+    await Cron.remove('daily-report')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const job = Cron.get('daily-report')
+    console.log('Next run:', job?.nextRun())
+
+    // Full cleanup: stop execution, then remove persistence
+    job?.stop()
+    await Cron.remove('daily-report')
+    ```
+  </Tab>
+</Tabs>
+
+See [Persistence](./persistence.mdx) for the full guide on saving, restoring, and managing jobs.
+
+## Next Steps
+
+<Cards>
+	<Card href="./patterns" title="Patterns" description="Use readable presets and builders instead of raw cron syntax." />
+	<Card href="./persistence" title="Persistence" description="Save jobs across restarts and manage them dynamically." />
+	<Card href="./cron-expressions" title="Cron expressions" description="Learn the six-field cron format and special characters." />
+	<Card href="./api" title="API reference" description="Full reference for Cron, CronJob, and Patterns." />
+</Cards>

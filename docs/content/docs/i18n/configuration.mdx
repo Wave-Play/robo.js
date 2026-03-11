@@ -1,0 +1,243 @@
+---
+title: "Configuration"
+description: Plugin options, MF2 syntax reference, type generation, and error handling.
+---
+
+## Plugin options
+
+The plugin accepts a single configuration option.
+
+<TypeTable
+	type={{
+		defaultLocale: { type: 'string', description: 'The locale used as the primary default for createCommandConfig(). Controls which locale provides the top-level name and description values for Discord commands.', default: '"en-US"' },
+	}}
+/>
+
+Configure it via a plugin config file:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/i18n.mjs"
+    export default {
+    	defaultLocale: 'en-US'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/i18n.mjs"
+    export default {
+    	defaultLocale: 'en-US'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Or inline in your Robo config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    export default {
+    	plugins: [
+    		['@robojs/i18n', { defaultLocale: 'en-US' }]
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    export default {
+    	plugins: [
+    		['@robojs/i18n', { defaultLocale: 'en-US' }]
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+If no config is provided, `defaultLocale` falls back to `'en-US'` without a warning.
+
+## MF2 syntax reference
+
+The plugin supports these [MessageFormat 2](https://github.com/messageformat/messageformat) annotations. Parameter types are inferred automatically during type generation.
+
+| Annotation | Example | Inferred type |
+|-----------|---------|---------------|
+| Plain variable | `{$name}` | `string` |
+| `:number` | `{$count :number}` | `number` |
+| `:integer` | `{$count :integer}` | `number` |
+| `:decimal` | `{$amount :decimal}` | `number` |
+| `:cardinal` | `{$items :cardinal}` | `number` |
+| `:ordinal` | `{$rank :ordinal}` | `number` |
+| `:date` | `{$ts :date}` | `Date \| number` |
+| `:time` | `{$ts :time}` | `Date \| number` |
+| `:datetime` | `{$ts :datetime}` | `Date \| number` |
+
+### Date and time style options
+
+The `:date`, `:time`, and `:datetime` annotations support style options passed to `Intl.DateTimeFormat`.
+
+```
+{$ts :date style=short}
+{$ts :time style=medium}
+{$ts :datetime dateStyle=full timeStyle=short}
+```
+
+Available styles for `:date` and `:time`: `short`, `medium`, `long`, `full`. When omitted, `medium` is used.
+
+For `:datetime`, use `dateStyle` and `timeStyle` separately.
+
+### Pluralization
+
+Use `.match` blocks for plural-sensitive messages:
+
+```
+.input {$count :number}
+.match $count
+  one {{You have {$count} item}}
+  *   {{You have {$count} items}}
+```
+
+The plural category (`one`, `other`, `few`, `many`, etc.) follows the locale's CLDR plural rules.
+
+## Type generation
+
+On startup and when running `npx i18n`, the plugin scans `/locales/**/*.json` and generates a TypeScript declaration file with these types:
+
+| Type | Description |
+|------|-------------|
+| `Locale` | Union of all locale strings (e.g., `'en-US' \| 'es-ES'`) |
+| `LocaleKey` | Union of all namespaced keys (e.g., `'app:hello' \| 'app:pets.count'`) |
+| `LocaleParamsMap` | Map of each key to its parameter type |
+| `ParamsFor<K>` | Parameter type for a given key |
+| `ReturnOf<K>` | `string` for scalar keys, `string[]` for array keys |
+| `LocaleIsArrayMap` | Tracks whether each key returns an array |
+
+### Generated file location
+
+The types file is written to `generated/types.d.ts` inside the plugin package directory. Import the re-exported types from `@robojs/i18n` rather than referencing the generated file directly.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Do this
+    import type { Locale, LocaleKey, ParamsFor } from '@robojs/i18n'
+
+    // Don't reference the generated path directly
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Do this
+
+    // Don't reference the generated path directly
+    ```
+  </Tab>
+</Tabs>
+
+### When types are regenerated
+
+Types are regenerated in two scenarios:
+
+1. **Robo startup** — The `_start` lifecycle hook calls `loadLocales()`, which scans files and writes types.
+2. **CLI** — Running `npx i18n` triggers the same process.
+
+### Type widening
+
+When the same parameter appears with different annotations across locales, the type widens:
+
+| Locale A | Locale B | Resulting type |
+|----------|----------|---------------|
+| `number` | `number` | `number` |
+| `string` | `string` | `string` |
+| `number` | `string` | `number` |
+| Any `Date \| number` | Any | `Date \| number` |
+
+### Array vs string keys
+
+If all locales define a key as a string, `ReturnOf<K>` is `string`. If all define it as an array, `ReturnOf<K>` is `string[]`. If locales disagree, the return type falls back to `string`.
+
+## State management
+
+The plugin stores locale data in Robo.js State under the namespace `@robojs/i18n`.
+
+| State key | Type | Description |
+|-----------|------|-------------|
+| `localeKeys` | `string[]` | All discovered namespaced keys |
+| `localeNames` | `string[]` | All locale directory names |
+| `localeValues` | `Record<string, Record<string, string \| string[]>>` | Locale to key-value map |
+
+This state is ephemeral (in-memory only). Locale data is reloaded from disk on every Robo start.
+
+## Error reference
+
+### Runtime errors
+
+| Error | Condition | Thrown by |
+|-------|-----------|----------|
+| `Locales not loaded` | `t()` called before locales are loaded | `t()` |
+| `Locale "X" not found` | The resolved locale doesn't exist in loaded data | `t()` |
+| `Translation for key "X" not found in locale "Y"` | The namespaced key doesn't exist for the locale | `t()` |
+| `Invalid LocaleLike` | Input isn't a string or object with `locale`/`guildLocale` | `getLocale()` |
+| `Duplicate key after flattening` | A literal dotted key and nested object produce the same key | `loadLocales()` |
+| `No locales found` | No locale data in State when `createCommandConfig()` runs | `createCommandConfig()` |
+
+### Warnings (logged, not thrown)
+
+| Warning | Condition |
+|---------|-----------|
+| Non-string array skipped | Array value contains non-string elements |
+| Non-string value skipped | Locale JSON contains a non-string, non-array, non-object value |
+| MF2 parse failure | A message string has invalid MF2 syntax (key is skipped) |
+
+## Performance
+
+### Formatter cache
+
+Compiled `MessageFormat` instances are cached in memory, keyed by `(locale, key, message)`. The cache grows with each unique combination. Clear it during tests or hot reloads:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { clearFormatterCache } from '@robojs/i18n'
+    clearFormatterCache()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { clearFormatterCache } from '@robojs/i18n'
+    clearFormatterCache()
+    ```
+  </Tab>
+</Tabs>
+
+### Locale loading
+
+All locale JSON files are read synchronously at startup via `readFileSync`. The entire dataset is stored in memory through the State API. For most projects with a few hundred keys per locale, this is fast (single-digit milliseconds).
+
+### Bidi characters
+
+MessageFormat may insert Unicode bidi isolation characters (`\u2068`/`\u2069`) around interpolated values. These are invisible but can affect string comparisons in tests. Strip them when asserting:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const deBidi = (s: string) => s.replace(/\u2068|\u2069/g, '')
+    expect(deBidi(t('en-US', 'app:hello', { name: 'Robo' }))).toBe('Hello Robo!')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const deBidi = (s) => s.replace(/\u2068|\u2069/g, '')
+    expect(deBidi(t('en-US', 'app:hello', { name: 'Robo' }))).toBe('Hello Robo!')
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+	<Card href="./api" title="API reference" description="Complete reference for all exported functions and types." />
+	<Card href="./discord-commands" title="Discord commands" description="Localize slash command names and descriptions." />
+	<Card href="./quick-start" title="Quick start" description="Set up locale files and start translating." />
+</Cards>

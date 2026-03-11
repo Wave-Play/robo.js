@@ -1,0 +1,7 @@
+{
+  "title": "Hosting",
+  "icon": "Rocket",
+  "description": "Deploy and host your Robo.js projects",
+  "root": true,
+  "pages": ["index", "---Platforms---", "roboplay", "self-host"]
+}

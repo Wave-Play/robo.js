@@ -1,0 +1,460 @@
+---
+title: Seed commands
+description: Optional slash commands scaffolded during plugin installation.
+---
+
+Seed commands are offered during `npx robo add @robojs/ai`. They give you working slash commands out of the box, but they're optional. You can keep them, modify them, or delete them entirely.
+
+The bot works without seed commands. It responds to mentions, replies, DMs, and whitelisted channels regardless of whether any commands exist.
+
+## /ai chat
+
+Direct chat without mentioning the bot. Useful for quick prompts in any channel.
+
+- **File:** `src/commands/ai/chat.ts`
+- **Options:** `message` (string, required)
+
+Uses `AI.chatSync()` under the hood to get a synchronous response.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ai/chat.ts"
+    import { AI } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+    import type { CommandResult } from 'robo.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Chat with the AI directly.',
+    	options: [
+    		{
+    			name: 'message',
+    			description: 'Your message to the AI',
+    			type: 'string',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
+    	const message = interaction.options.getString('message', true)
+
+    	const reply = await AI.chatSync(
+    		[{ role: 'user', content: message }],
+    		{}
+    	)
+
+    	return reply.text ?? 'No response.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ai/chat.js"
+    import { AI } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+
+    export const config = createCommandConfig({
+    	description: 'Chat with the AI directly.',
+    	options: [
+    		{
+    			name: 'message',
+    			description: 'Your message to the AI',
+    			type: 'string',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction) => {
+    	const message = interaction.options.getString('message', true)
+
+    	const reply = await AI.chatSync(
+    		[{ role: 'user', content: message }],
+    		{}
+    	)
+
+    	return reply.text ?? 'No response.'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Example usage:**
+
+```
+/ai chat message:"What's the capital of France?"
+```
+
+## /ai imagine
+
+Text-to-image generation. Returns the generated image as a Discord attachment.
+
+- **File:** `src/commands/ai/imagine.ts`
+- **Options:** `prompt` (string, required)
+
+Uses `AI.generateImage()` and handles `TokenLimitError` if usage limits are configured.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ai/imagine.ts"
+    import { AI, TokenLimitError } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+    import { AttachmentBuilder } from 'discord.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Generate an image from a text prompt.',
+    	options: [
+    		{
+    			name: 'prompt',
+    			description: 'Describe the image you want',
+    			type: 'string',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction: ChatInputCommandInteraction) => {
+    	const prompt = interaction.options.getString('prompt', true)
+    	await interaction.deferReply()
+
+    	try {
+    		const result = await AI.generateImage({ prompt })
+    		const images = result.images ?? []
+    		const files = images.map((img, i) => {
+    			if ('base64' in img) {
+    				return new AttachmentBuilder(Buffer.from(img.base64, 'base64'), { name: `image-${i + 1}.png` })
+    			}
+    			// URL-based images would need to be fetched first
+    			return null
+    		}).filter(Boolean)
+
+    		await interaction.editReply({ files })
+    	} catch (error) {
+    		if (error instanceof TokenLimitError) {
+    			await interaction.editReply('Image generation limit reached. Try again later.')
+    			return
+    		}
+    		throw error
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ai/imagine.js"
+    import { AI, TokenLimitError } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+    import { AttachmentBuilder } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Generate an image from a text prompt.',
+    	options: [
+    		{
+    			name: 'prompt',
+    			description: 'Describe the image you want',
+    			type: 'string',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction) => {
+    	const prompt = interaction.options.getString('prompt', true)
+    	await interaction.deferReply()
+
+    	try {
+    		const result = await AI.generateImage({ prompt })
+    		const images = result.images ?? []
+    		const files = images.map((img, i) => {
+    			if ('base64' in img) {
+    				return new AttachmentBuilder(Buffer.from(img.base64, 'base64'), { name: `image-${i + 1}.png` })
+    			}
+    			return null
+    		}).filter(Boolean)
+
+    		await interaction.editReply({ files })
+    	} catch (error) {
+    		if (error instanceof TokenLimitError) {
+    			await interaction.editReply('Image generation limit reached. Try again later.')
+    			return
+    		}
+    		throw error
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Example usage:**
+
+```
+/ai imagine prompt:"A serene mountain landscape at sunset"
+```
+
+## /ai usage
+
+Token usage dashboard for server administrators. Shows daily, weekly, monthly, and lifetime totals along with any configured caps.
+
+- **File:** `src/commands/ai/usage.ts`
+- **Options:**
+  - `window` (string, optional) — `day`, `week`, `month`, or `lifetime`
+  - `model` (string, optional) — Filter by specific model
+  - `limit` (integer 1-20, optional) — Number of entries to show
+- **Permissions:** Requires Manage Server
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ai/usage.ts"
+    import { AI } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'View AI token usage statistics.',
+    	defaultMemberPermissions: 'ManageGuild',
+    	options: [
+    		{
+    			name: 'window',
+    			description: 'Time window to query',
+    			type: 'string',
+    			choices: [
+    				{ name: 'Day', value: 'day' },
+    				{ name: 'Week', value: 'week' },
+    				{ name: 'Month', value: 'month' },
+    				{ name: 'Lifetime', value: 'lifetime' }
+    			]
+    		},
+    		{
+    			name: 'model',
+    			description: 'Filter by model name',
+    			type: 'string'
+    		},
+    		{
+    			name: 'limit',
+    			description: 'Number of entries (1-20)',
+    			type: 'integer',
+    			min: 1,
+    			max: 20
+    		}
+    	]
+    })
+
+    export default async (interaction: ChatInputCommandInteraction) => {
+    	const window = interaction.options.getString('window') ?? 'month'
+    	const model = interaction.options.getString('model') ?? undefined
+    	const limit = interaction.options.getInteger('limit') ?? 10
+
+    	const summary = await AI.getUsageSummary({ window, model, limit })
+
+    	// Format and return the usage data as an embed or text
+    	const total = summary.results.reduce((sum, r) => sum + r.totals.total, 0)
+    	return `Token usage (${window}): ${total.toLocaleString()} tokens across ${summary.results.length} entries`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ai/usage.js"
+    import { AI } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+
+    export const config = createCommandConfig({
+    	description: 'View AI token usage statistics.',
+    	defaultMemberPermissions: 'ManageGuild',
+    	options: [
+    		{
+    			name: 'window',
+    			description: 'Time window to query',
+    			type: 'string',
+    			choices: [
+    				{ name: 'Day', value: 'day' },
+    				{ name: 'Week', value: 'week' },
+    				{ name: 'Month', value: 'month' },
+    				{ name: 'Lifetime', value: 'lifetime' }
+    			]
+    		},
+    		{
+    			name: 'model',
+    			description: 'Filter by model name',
+    			type: 'string'
+    		},
+    		{
+    			name: 'limit',
+    			description: 'Number of entries (1-20)',
+    			type: 'integer',
+    			min: 1,
+    			max: 20
+    		}
+    	]
+    })
+
+    export default async (interaction) => {
+    	const window = interaction.options.getString('window') ?? 'month'
+    	const model = interaction.options.getString('model') ?? undefined
+    	const limit = interaction.options.getInteger('limit') ?? 10
+
+    	const summary = await AI.getUsageSummary({ window, model, limit })
+
+    	// Format and return the usage data embed or text
+    	const total = summary.results.reduce((sum, r) => sum + r.totals.total, 0)
+    	return `Token usage (${window}): ${total.toLocaleString()} tokens across ${summary.results.length} entries`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Example usage:**
+
+```
+/ai usage window:week
+/ai usage model:gpt-4o limit:5
+```
+
+## /voice join
+
+Join a voice channel for realtime conversation. Requires voice dependencies to be installed.
+
+- **File:** `src/commands/voice/join.ts`
+- **Options:** `channel` (voice channel, required)
+
+Uses `AI.startVoice()` and catches `TokenLimitError` if voice usage limits are active.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/voice/join.ts"
+    import { AI, TokenLimitError } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Join a voice channel for AI conversation.',
+    	options: [
+    		{
+    			name: 'channel',
+    			description: 'The voice channel to join',
+    			type: 'channel',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction: ChatInputCommandInteraction) => {
+    	const channel = interaction.options.getChannel('channel', true)
+
+    	try {
+    		await AI.startVoice({
+    			guildId: interaction.guildId,
+    			channelId: channel.id,
+    			textChannelId: interaction.channelId
+    		})
+
+    		return `Joined <#${channel.id}>.`
+    	} catch (error) {
+    		if (error instanceof TokenLimitError) {
+    			return 'Voice session limit reached. Try again later.'
+    		}
+    		throw error
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/voice/join.js"
+    import { AI, TokenLimitError } from '@robojs/ai'
+    import { createCommandConfig } from 'robo.js'
+
+    export const config = createCommandConfig({
+    	description: 'Join a voice channel for AI conversation.',
+    	options: [
+    		{
+    			name: 'channel',
+    			description: 'The voice channel to join',
+    			type: 'channel',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction) => {
+    	const channel = interaction.options.getChannel('channel', true)
+
+    	try {
+    		await AI.startVoice({
+    			guildId: interaction.guildId,
+    			channelId: channel.id,
+    			textChannelId: interaction.channelId
+    		})
+
+    		return `Joined <#${channel.id}>.`
+    	} catch (error) {
+    		if (error instanceof TokenLimitError) {
+    			return 'Voice session limit reached. Try again later.'
+    		}
+    		throw error
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Example usage:**
+
+```
+/voice join channel:General
+```
+
+<Callout type="warn">
+Voice requires `@discordjs/voice`, `prism-media`, `ws`, and an Opus encoder (`opusscript` or `@discordjs/opus`). The plugin loads them lazily when a voice session starts, so they're only needed if you use voice features.
+</Callout>
+
+## Customizing seed commands
+
+Seed files are copied into your project's `src/commands` directory during installation. After that, they're yours. The plugin doesn't depend on them at runtime.
+
+You can:
+
+- **Edit** the seeded files to change behavior, add validation, or adjust responses.
+- **Delete** any commands you don't need.
+- **Write your own** commands using the `AI` singleton directly.
+
+The `AI` singleton is the primary API surface. Any command or event handler in your project can import it and call methods like `AI.chat()`, `AI.chatSync()`, `AI.generateImage()`, or `AI.startVoice()`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ask.ts"
+    import { AI } from '@robojs/ai'
+
+    export default async (interaction) => {
+    	const question = interaction.options.getString('question', true)
+    	const reply = await AI.chatSync(
+    		[{ role: 'user', content: question }],
+    		{}
+    	)
+
+    	return reply.text
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ask.js"
+    import { AI } from '@robojs/ai'
+
+    export default async (interaction) => {
+    	const question = interaction.options.getString('question', true)
+    	const reply = await AI.chatSync(
+    		[{ role: 'user', content: question }],
+    		{}
+    	)
+
+    	return reply.text
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./conversations" title="Conversations" description="How the AI handles messages, threads, and replies." />
+  <Card href="./voice" title="Voice" description="Realtime voice conversations with transcription." />
+  <Card href="./token-usage" title="Token usage" description="Track and limit token consumption." />
+</Cards>

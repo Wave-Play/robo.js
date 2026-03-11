@@ -1,0 +1,352 @@
+---
+title: API reference
+description: Full reference for Server, RoboRequest, RoboReply, RoboResponse, and utility functions.
+---
+
+Import types and utilities from the main package:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Server, RoboResponse, define, getServerEngine, ready } from '@robojs/server'
+    import type { RoboRequest, RoboReply, HttpMethod } from '@robojs/server'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Server, RoboResponse, define, getServerEngine, ready } from '@robojs/server'
+    ```
+  </Tab>
+</Tabs>
+
+## Server
+
+The `Server` object provides access to the server configuration, engine, and readiness state.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Server } from '@robojs/server'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Server } from '@robojs/server'
+    ```
+  </Tab>
+</Tabs>
+
+| Method | Return Type | Description |
+| --- | --- | --- |
+| `Server.config()` | `PluginConfig` | Returns the resolved plugin configuration. |
+| `Server.get()` | `BaseEngine \| undefined` | Returns the current server engine instance. |
+| `Server.ready()` | `Promise<void>` | Resolves when the server is ready to accept requests. |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Server } from '@robojs/server'
+
+    // Wait for the server to be ready
+    await Server.ready()
+
+    // Access the engine
+    const engine = Server.get()
+    const httpServer = engine?.getHttpServer()
+
+    // Read config
+    const { port, hostname } = Server.config()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Server } from '@robojs/server'
+
+    // Wait for the server to be ready
+    await Server.ready()
+
+    // Access the engine
+    const engine = Server.get()
+    const httpServer = engine?.getHttpServer()
+
+    // Read config
+    const { port, hostname } = Server.config()
+    ```
+  </Tab>
+</Tabs>
+
+## RoboRequest
+
+`RoboRequest` extends the [Web Request API](https://developer.mozilla.org/en-US/docs/Web/API/Request) with additional properties for handling route parameters and query strings.
+
+| Property/Method | Type | Description |
+| --- | --- | --- |
+| `params` | `Record<string, string>` | URL parameters from dynamic route segments. |
+| `query` | `Record<string, string \| string[]>` | Parsed query string parameters. |
+| `raw` | `IncomingMessage` | The underlying Node.js request object. |
+| `json()` | `Promise<unknown>` | Parse the request body as JSON. Inherited from Request. |
+| `method` | `string` | The HTTP method (GET, POST, etc.). |
+| `url` | `string` | The full request URL. |
+| `headers` | `Headers` | Request headers. |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { RoboRequest } from '@robojs/server'
+
+    export async function POST(request: RoboRequest) {
+    	const { id } = request.params
+    	const { page } = request.query
+    	const body = await request.json()
+    	const raw = request.raw // Node.js IncomingMessage
+
+    	return { id, page, body }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    export async function POST(request) {
+    	const { id } = request.params
+    	const { page } = request.query
+    	const body = await request.json()
+    	const raw = request.raw // Node.js IncomingMessage
+
+    	return { id, page, body }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+`request.query` returns only the first value per key. For multi-value query parameters, use `new URL(request.url).searchParams` directly.
+</Callout>
+
+## RoboReply
+
+`RoboReply` wraps the Node.js `ServerResponse` with a chainable API.
+
+| Property/Method | Type | Description |
+| --- | --- | --- |
+| `raw` | `ServerResponse` | The underlying Node.js response object. |
+| `hasSent` | `boolean` | Whether the response has already been sent. |
+| `code(statusCode)` | `RoboReply` | Set the HTTP status code. Returns `this` for chaining. |
+| `header(name, value)` | `RoboReply` | Set a response header. Returns `this` for chaining. |
+| `json(data)` | `RoboReply` | Send a JSON response. Returns `this` for chaining. |
+| `send(data)` | `RoboReply` | Send the response body. Returns `this` for chaining. |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { RoboRequest, RoboReply } from '@robojs/server'
+
+    export function GET(request: RoboRequest, reply: RoboReply) {
+    	reply.code(200).header('X-Custom', 'value').json({ message: 'Hello' })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    export function GET(request, reply) {
+    	reply.code(200).header('X-Custom', 'value').json({ message: 'Hello' })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Most of the time you don't need `reply` — just return a value from your handler and it's automatically sent as a response.
+
+## RoboResponse
+
+`RoboResponse` extends the [Web Response API](https://developer.mozilla.org/en-US/docs/Web/API/Response). Use it when you need to set custom status codes or headers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { RoboResponse } from '@robojs/server'
+
+    // JSON response with custom status
+    export function POST() {
+    	return RoboResponse.json({ id: '123' }, { status: 201 })
+    }
+
+    // Throwable response for error handling
+    export function GET(request: RoboRequest) {
+    	if (!request.query.token) {
+    		throw RoboResponse.json({ error: 'Token required' }, { status: 401 })
+    	}
+    	return { data: 'authenticated' }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { RoboResponse } from '@robojs/server'
+
+    // JSON response with custom status
+    export function POST() {
+    	return RoboResponse.json({ id: '123' }, { status: 201 })
+    }
+
+    // Throwable response for error handling
+    export function GET(request) {
+    	if (!request.query.token) {
+    		throw RoboResponse.json({ error: 'Token required' }, { status: 401 })
+    	}
+    	return { data: 'authenticated' }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Utility functions
+
+### getServerEngine
+
+Returns the server engine instance with optional type parameter:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getServerEngine } from '@robojs/server'
+
+    const engine = getServerEngine()
+    const httpServer = engine.getHttpServer()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getServerEngine } from '@robojs/server'
+
+    const engine = getServerEngine()
+    const httpServer = engine.getHttpServer()
+    ```
+  </Tab>
+</Tabs>
+
+### ready
+
+Standalone function equivalent to `Server.ready()`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { ready } from '@robojs/server'
+
+    await ready()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { ready } from '@robojs/server'
+
+    await ready()
+    ```
+  </Tab>
+</Tabs>
+
+### isPortAvailable
+
+Check if a port is available:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { isPortAvailable } from '@robojs/server'
+
+    const available = await isPortAvailable(3000)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { isPortAvailable } from '@robojs/server'
+
+    const available = await isPortAvailable(3000)
+    ```
+  </Tab>
+</Tabs>
+
+### findAvailablePort
+
+Find the next available port:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { findAvailablePort } from '@robojs/server'
+
+    const result = await findAvailablePort({
+    	port: 3000,
+    	hostname: 'localhost',
+    	maxAttempts: 10
+    })
+    // result: { port: 3001, wasIncremented: true, originalPort: 3000 }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { findAvailablePort } from '@robojs/server'
+
+    const result = await findAvailablePort({
+    	port: 3000,
+    	hostname: 'localhost',
+    	maxAttempts: 10
+    })
+    // result: { port: 3001, wasIncremented: true, originalPort: 3000 }
+    ```
+  </Tab>
+</Tabs>
+
+### define
+
+Create a typed endpoint with Zod schemas. See [Typed endpoints](./typed-endpoints.mdx).
+
+## Types
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type {
+    	RoboRequest,
+    	RoboReply,
+    	HttpMethod,
+    	RouteHandler,
+    	NotFoundHandler,
+    	WebSocketHandler,
+    	ForTestingOptions,
+    	FindAvailablePortOptions,
+    	FindAvailablePortResult,
+    	TunnelProvider,
+    	TunnelInstance,
+    	TunnelProviderConfig,
+    	TunnelConfig
+    } from '@robojs/server'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+
+    ```
+  </Tab>
+</Tabs>
+
+| Type | Description |
+| --- | --- |
+| `HttpMethod` | `'GET' \| 'POST' \| 'PUT' \| 'DELETE' \| 'PATCH' \| 'OPTIONS' \| 'HEAD'` |
+| `RouteHandler` | `(req: RoboRequest, res: RoboReply) => unknown \| Promise<unknown>` |
+| `NotFoundHandler` | Same as `RouteHandler`. Used for custom 404 handling. |
+| `WebSocketHandler` | `(req: IncomingMessage, socket: Duplex, head: Buffer) => void` |
+| `ForTestingOptions` | Options for `RoboRequest.forTesting()` |
+| `TunnelProvider` | Interface for custom tunnel providers |
+| `TunnelInstance` | Tunnel process reference with URL |
+| `TunnelConfig` | Tunnel configuration options |
+
+## Next steps
+
+<Cards>
+	<Card title="Routing" href="./routing" description="Learn about file-based routing." />
+	<Card title="Engines" href="./engines" description="Explore engine architecture and custom engines." />
+	<Card title="Testing" href="./testing" description="Test your API routes." />
+</Cards>

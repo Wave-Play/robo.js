@@ -1,0 +1,247 @@
+---
+title: Google Analytics
+description: Set up Google Analytics 4 with the Measurement Protocol.
+---
+
+The plugin uses the [Google Analytics Measurement Protocol v4](https://developers.google.com/analytics/devguides/collection/protocol/ga4) to send events server-side. No client-side scripts or cookies involved.
+
+## Setup
+
+<Steps>
+  <Step>
+    ### Get your credentials
+
+    In your [Google Analytics Admin](https://analytics.google.com), go to **Data Streams**, select your stream, then create a **Measurement Protocol API secret**.
+
+    You need two values:
+    - **Measurement ID** (e.g., `G-XXXXXXXXX`)
+    - **API Secret** (the Measurement Protocol secret you just created)
+  </Step>
+  <Step>
+    ### Add environment variables
+
+    ```bash title=".env"
+    GOOGLE_ANALYTICS_MEASURE_ID="G-XXXXXXXXX"
+    GOOGLE_ANALYTICS_SECRET="your-api-secret"
+    ```
+  </Step>
+  <Step>
+    ### Start tracking
+
+    <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+      <Tab value="TypeScript">
+        ```ts
+            import { Analytics } from '@robojs/analytics'
+
+            Analytics.event('command_used', {
+            	sessionId: interaction.channelId,
+            	userId: interaction.user.id
+            })
+        ```
+      </Tab>
+      <Tab value="JavaScript">
+        ```js
+            import { Analytics } from '@robojs/analytics'
+
+            Analytics.event('command_used', {
+            	sessionId: interaction.channelId,
+            	userId: interaction.user.id
+            })
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## How it works
+
+Each call to `Analytics.event()` or `Analytics.view()` sends a POST request to the Measurement Protocol endpoint:
+
+```
+https://www.google-analytics.com/mp/collect?measurement_id=G-XXX&api_secret=YYY
+```
+
+### Event mapping
+
+The plugin maps `EventOptions` fields to Google Analytics parameters:
+
+| EventOptions field | GA parameter | Notes |
+|---|---|---|
+| `sessionId` | `client_id` | Random 30-character ID generated if omitted |
+| `userId` | `user_id` | Optional user identifier |
+| `data` | `params` | Passed directly as event parameters |
+| `revenue` | Merged into `params` | `currency` and `amount` fields |
+
+Fields like `domain`, `url`, `referrer`, `action`, `actionType`, `label`, and `type` are not used by the Google Analytics engine. They exist in `EventOptions` for custom engine implementations.
+
+### Page views
+
+`Analytics.view()` sends a `page_view` event with the page name mapped to `page_title`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.view('Dashboard')
+    // Sends: { name: "page_view", params: { page_title: "Dashboard" } }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.view('Dashboard')
+    // Sends: { name: "page_view", params: { page_title: "Dashboard" } }
+    ```
+  </Tab>
+</Tabs>
+
+### Session tracking
+
+When you omit `sessionId`, the plugin generates a random 30-character alphanumeric `client_id` for each event. This means Google Analytics cannot correlate events from the same session.
+
+For accurate session tracking, always pass a consistent `sessionId`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Use channel ID or guild ID as session identifier
+    Analytics.event('button_click', {
+    	sessionId: interaction.channelId ?? interaction.guildId,
+    	userId: interaction.user.id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Use channel ID or guild ID identifier
+    Analytics.event('button_click', {
+    	sessionId: interaction.channelId ?? interaction.guildId,
+    	userId: interaction.user.id
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Revenue tracking
+
+Track revenue by including the `revenue` field. The `currency` and `amount` values are merged into the event parameters:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.event('purchase', {
+    	sessionId: interaction.guildId,
+    	userId: interaction.user.id,
+    	revenue: { currency: 'USD', amount: 4.99 },
+    	data: { item: 'premium_role' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.event('purchase', {
+    	sessionId: interaction.guildId,
+    	userId: interaction.user.id,
+    	revenue: { currency: 'USD', amount: 4.99 },
+    	data: { item: 'premium_role' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Custom event data
+
+The `data` field passes through as GA event `params`. Use it for any custom dimensions:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.event('level_up', {
+    	sessionId: interaction.guildId,
+    	userId: interaction.user.id,
+    	data: {
+    		level: 10,
+    		xp_earned: 500,
+    		time_played: '2h30m'
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.event('level_up', {
+    	sessionId: interaction.guildId,
+    	userId: interaction.user.id,
+    	data: {
+    		level: 10,
+    		xp_earned: 500,
+    		time_played: '2h30m'
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Programmatic configuration
+
+Instead of environment variables, pass credentials directly to the constructor:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new GoogleAnalytics({
+    		measureId: 'G-XXXXXXXXX',
+    		token: 'your-api-secret'
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new GoogleAnalytics({
+    		measureId: 'G-XXXXXXXXX',
+    		token: 'your-api-secret'
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Constructor options take priority over environment variables.
+
+| Option | Type | Env var fallback |
+|---|---|---|
+| `measureId` | `string` | `GOOGLE_ANALYTICS_MEASURE_ID` |
+| `token` | `string` | `GOOGLE_ANALYTICS_SECRET` |
+
+## Error handling
+
+The Google Analytics engine handles errors gracefully:
+
+- **Missing credentials**: Logs a warning and silently drops events. No errors thrown.
+- **API errors**: Logs the HTTP status code and response text. No errors thrown.
+- **Successful events**: Logged at `debug` level.
+
+Check your Robo logs for `[analytics]` messages when troubleshooting.
+
+## Troubleshooting
+
+**Events not appearing in GA dashboard**
+- Verify your Measurement ID starts with `G-` (GA4 format).
+- Check the API secret is correct and active.
+- GA4 can take up to 24 hours to display server-side events. Use GA4 DebugView for real-time verification.
+
+**Missing session data**
+- Always pass `sessionId` for accurate session tracking. Without it, each event gets a random `client_id`.
+
+## Next Steps
+
+<Cards>
+  <Card href="./plausible" title="Plausible" description="Set up Plausible as an alternative." />
+  <Card href="./custom-engines" title="Custom engines" description="Use multiple providers at once." />
+  <Card href="./api" title="API reference" description="Full API documentation." />
+</Cards>

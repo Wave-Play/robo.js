@@ -1,0 +1,230 @@
+---
+title: Plausible
+description: Set up Plausible for privacy-focused analytics.
+---
+
+The plugin uses the [Plausible Events API](https://plausible.io/docs/events-api) to send events server-side. Plausible is privacy-focused, cookie-free, and GDPR-compliant by default.
+
+## Setup
+
+<Steps>
+  <Step>
+    ### Register your domain
+
+    Create a site in your [Plausible dashboard](https://plausible.io). The domain you register (e.g., `example.com`) is used to identify your site in event payloads.
+  </Step>
+  <Step>
+    ### Add environment variable
+
+    ```bash title=".env"
+    PLAUSIBLE_DOMAIN="example.com"
+    ```
+  </Step>
+  <Step>
+    ### Start tracking
+
+    <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+      <Tab value="TypeScript">
+        ```ts
+            import { Analytics } from '@robojs/analytics'
+
+            Analytics.event('command_used', {
+            	data: { command: 'ping' }
+            })
+        ```
+      </Tab>
+      <Tab value="JavaScript">
+        ```js
+            import { Analytics } from '@robojs/analytics'
+
+            Analytics.event('command_used', {
+            	data: { command: 'ping' }
+            })
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## How it works
+
+Each call to `Analytics.event()` or `Analytics.view()` sends a POST request to the Plausible Events API:
+
+```
+https://plausible.io/api/event
+```
+
+### Event mapping
+
+The plugin maps `EventOptions` fields to the Plausible payload:
+
+| EventOptions field | Plausible field | Notes |
+|---|---|---|
+| `data` | `props` | Must be an object with 30 or fewer fields |
+| `domain` | `domain` | Overrides the configured domain per-event |
+| `url` | `url` | Defaults to `https://{domain}/` |
+
+Fields like `sessionId`, `userId`, `revenue`, `action`, `actionType`, `label`, and `type` are not used by the Plausible engine directly. Include them in `data` if you want them as custom properties.
+
+### Page views
+
+`Analytics.view()` sends a `pageview` event. The page name is converted to a URL-safe slug and appended to the domain:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.view('Settings Page')
+    // URL becomes: https://example.com/settings-page
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.view('Settings Page')
+    // URL becomes: https://example.com/settings-page
+    ```
+  </Tab>
+</Tabs>
+
+The slugification normalizes diacritics, removes special characters, and converts spaces to hyphens.
+
+### Custom properties
+
+Pass custom properties through the `data` field:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.event('feature_used', {
+    	data: {
+    		feature: 'leaderboard',
+    		guild_size: 'large',
+    		user_role: 'admin'
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.event('feature_used', {
+    	data: {
+    		feature: 'leaderboard',
+    		guild_size: 'large',
+    		user_role: 'admin'
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Plausible enforces a maximum of 30 custom properties per event. If `data` has more than 30 fields, the plugin throws an error. Keep your property count under this limit.
+</Callout>
+
+### Domain override
+
+Override the configured domain for a specific event:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.event('cross_site_action', {
+    	domain: 'other-site.com',
+    	data: { source: 'discord-bot' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.event('cross_site_action', {
+    	domain: 'other-site.com',
+    	data: { source: 'discord-bot' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### URL override
+
+Override the auto-generated URL:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Analytics.view('Custom Page', {
+    	url: 'https://example.com/custom/path'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Analytics.view('Custom Page', {
+    	url: 'https://example.com/custom/path'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Request headers
+
+The plugin sends hardcoded headers with each request:
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `application/json` |
+| `X-Forwarded-For` | `127.0.0.1` |
+| `User-Agent` | Hardcoded browser user agent string |
+
+These headers are required by the Plausible API. The `X-Forwarded-For` and `User-Agent` values are static since server-side events don't have a real browser context.
+
+## Programmatic configuration
+
+Instead of environment variables, pass the domain directly to the constructor:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { PlausibleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new PlausibleAnalytics('example.com')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { PlausibleAnalytics } from '@robojs/analytics'
+
+    export default {
+    	engine: new PlausibleAnalytics('example.com')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Constructor options take priority over the `PLAUSIBLE_DOMAIN` environment variable.
+
+## Error handling
+
+The Plausible engine handles errors as follows:
+
+- **Missing event name**: Logs an error and returns early. No exception thrown.
+- **Data exceeds 30 fields**: Throws an `Error`. This propagates to the caller.
+- **API errors**: Caught internally and logged as a warning.
+- **Missing domain**: No explicit validation. Results in malformed URLs.
+
+## Troubleshooting
+
+**Events not appearing in Plausible dashboard**
+- Verify the domain in your `.env` matches exactly what you registered in Plausible.
+- Domain mismatches cause events to be silently ignored by the Plausible API.
+
+**Error about exceeding 30 fields**
+- Reduce the number of properties in your `data` object. Split large payloads across multiple events if needed.
+
+## Next Steps
+
+<Cards>
+  <Card href="./google-analytics" title="Google Analytics" description="Set up Google Analytics instead." />
+  <Card href="./custom-engines" title="Custom engines" description="Build your own analytics provider." />
+  <Card href="./api" title="API reference" description="Full API documentation." />
+</Cards>

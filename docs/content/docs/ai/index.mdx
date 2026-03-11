@@ -1,0 +1,135 @@
+---
+title: "README"
+icon: Brain
+description: Transform your Robo into an AI-powered copilot with native voice, vision, web search, and more.
+---
+
+<PluginHero
+	name="@robojs/ai"
+	description="Transform your Robo into an AI-powered copilot with native voice, vision, web search, and more."
+	icon={<Brain />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai"
+	platforms={["Bots"]}
+	optional={[{ name: "@robojs/server", href: "/docs/server", description: "Enables /api/ai/chat endpoint" }]}
+/>
+
+Turn your Robo into an AI chatbot with native voice conversations, vision, web search with citations, natural language command execution, token tracking, and a pluggable engine architecture. Ships with OpenAI's Responses and Conversations APIs by default, but you can swap in any provider.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Brain />} title="AI Chat" description="Mentions, replies, DMs, and channel whitelists" />
+	<Feature icon={<Zap />} title="Voice" description="Realtime transcription and playback" />
+	<Feature icon={<Globe />} title="Web Search" description="Inline citations from the web" />
+	<Feature icon={<Terminal />} title="Commands" description="Natural language slash command execution" />
+	<Feature icon={<Shield />} title="Token Tracking" description="Usage limits and rate controls" />
+	<Feature icon={<Database />} title="Knowledge Sync" description="Vector stores from /documents" />
+	<Feature icon={<CPU />} title="Custom Engines" description="Swap in any AI provider" />
+	<Feature icon={<Waypoints />} title="Hooks" description="Pipeline customization points" />
+</FeatureGrid>
+
+## Installation
+
+```bash
+npx robo add @robojs/ai
+```
+
+Or scaffold a new project with the plugin already wired up:
+
+```package-install
+npx create-robo my-robo -p @robojs/ai
+```
+
+<Callout type="warn">
+Set `OPENAI_API_KEY` in your environment (or your provider's equivalent) so the default OpenAI engine can authenticate.
+</Callout>
+
+## Interaction patterns
+
+Users interact with your AI Robo in four ways:
+
+- **Mentions** -- Ping the bot anywhere: `@Sage what's the schedule?`
+- **Replies** -- Reply to any bot message to continue the thread.
+- **DMs** -- Message the bot directly.
+- **Whitelisted channels** -- Channels where the bot responds without a mention.
+
+Control where the bot can operate with `whitelist` and `restrict`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	whitelist: {
+    		channelIds: ['123456789012345678']
+    	},
+    	restrict: {
+    		channelIds: ['345678901234567890']
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	whitelist: {
+    		channelIds: ['123456789012345678']
+    	},
+    	restrict: {
+    		channelIds: ['345678901234567890']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+`restrict` always wins. If set, the bot ignores messages from channels not in the list -- even if they appear in the whitelist.
+</Callout>
+
+## Quick start
+
+A minimal configuration with custom instructions and engine settings:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	instructions: 'You are Sage, a friendly community mentor who answers succinctly.',
+    	engine: new OpenAiEngine({
+    		chat: {
+    			model: 'gpt-4.1-mini',
+    			temperature: 0.6,
+    			maxOutputTokens: 800
+    		}
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+    export default {
+    	instructions: 'You are Sage, a friendly community mentor who answers succinctly.',
+    	engine: new OpenAiEngine({
+    		chat: {
+    			model: 'gpt-4.1-mini',
+    			temperature: 0.6,
+    			maxOutputTokens: 800
+    		}
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+	<Card href="./conversations" title="Conversations" description="How the bot handles messages and context." />
+	<Card href="./voice" title="Voice" description="Realtime voice conversations." />
+	<Card href="./custom-engines" title="Custom engines" description="Build your own AI provider." />
+</Cards>

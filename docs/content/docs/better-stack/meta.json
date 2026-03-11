@@ -1,0 +1,7 @@
+{
+  "title": "@robojs/better-stack",
+  "icon": "Activity",
+  "description": "Uptime monitoring and log integration.",
+  "root": true,
+  "pages": ["index", "---Guides---", "heartbeat", "log-drain"]
+}

@@ -1,0 +1,125 @@
+---
+title: Rules System
+description: Set up rules acceptance and automatic enforcement
+---
+
+The rules system lets you post server rules with an accept button. Members who don't accept are prevented from participating — their messages are deleted and they receive a DM directing them to the rules channel.
+
+## How it works
+
+The rules system has three parts:
+
+1. **Rules message** — An embed with your rules and an "I Accept" button, posted to a channel of your choice
+2. **Role assignment** — Members who click the button receive a designated role
+3. **Message enforcement** — Messages from members without the role are deleted, and they receive a DM with a link to the rules channel
+
+## Setup
+
+Configure the rules system in three steps. All three commands require `Administrator` permission.
+
+<Steps>
+  <Step>
+    ### Set the rules content
+
+    ```
+    /mod rules-msg set-rules
+    ```
+
+    A modal opens with three fields:
+
+    | Field | Max Length | Required | Description |
+    |-------|-----------|----------|-------------|
+    | Title | 400 chars | Yes | Embed title (e.g., "Server Rules") |
+    | Rules | 2000 chars | Yes | The rules text, displayed as the embed description |
+    | Image URL | 400 chars | No | An image displayed at the bottom of the embed |
+
+    After submission, a preview of the rules embed is shown so you can verify the content before posting.
+  </Step>
+  <Step>
+    ### Set the member role
+
+    ```
+    /mod rules-msg set-member-role role:@Verified
+    ```
+
+    Choose the role that members receive when they accept the rules. This role should already exist in your server. Members without this role are subject to message enforcement.
+  </Step>
+  <Step>
+    ### Post the rules message
+
+    Navigate to the channel where you want the rules displayed, then run:
+
+    ```
+    /mod rules-msg send
+    ```
+
+    The rules embed is posted with an "I Accept" button. The channel is recorded as the rules channel for enforcement.
+
+    Optionally customize the button text:
+
+    ```
+    /mod rules-msg send button-text:Agree to Rules
+    ```
+  </Step>
+</Steps>
+
+## Acceptance flow
+
+When a member clicks the accept button:
+
+1. The plugin reads the configured member role from Flashcore
+2. If the member already has the role, they see a message that they've already accepted
+3. If they don't have the role, it's assigned to them and they receive a confirmation
+
+## Message enforcement
+
+After the rules system is configured, the plugin monitors all new messages:
+
+1. The message author is checked for the member role
+2. If they have the role or are an Administrator, the message is allowed
+3. If they don't have the role:
+   - Their message is **deleted**
+   - They receive a **DM** with a link to the rules channel, asking them to accept the rules
+   - If the DM fails (e.g., DMs disabled), the failure is logged and the message is still deleted
+
+<Callout type="warn">
+The `MessageContent` privileged intent must be enabled in the [Discord Developer Portal](https://discord.com/developers/applications) for message enforcement to work. Without it, the plugin cannot detect messages from unverified members.
+</Callout>
+
+## Updating rules
+
+To update the rules content, run `/mod rules-msg set-rules` again. The modal pre-fills with the existing values. After updating, run `/mod rules-msg send` to post the updated rules message.
+
+Previous rules messages remain in the channel but their accept buttons continue to work — clicking the button on any rules message assigns the configured role.
+
+## Data storage
+
+The rules system stores its data in Flashcore, namespaced by guild ID:
+
+| Key | Description |
+|-----|-------------|
+| `rules-title` | The rules embed title |
+| `rules-rules` | The rules embed content |
+| `rules-imageurl` | The rules embed image URL |
+| `member-role` | The role name assigned on acceptance |
+| `rules-channel` | The channel ID where rules were posted |
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./moderation-channels"
+    title="Moderation Channels"
+    description="Configure logging and report channels."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Plugin options, intents, and permissions."
+  />
+</Cards>

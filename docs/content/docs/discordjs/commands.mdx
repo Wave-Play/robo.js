@@ -1,0 +1,349 @@
+---
+title: Commands
+description: Slash command routing, options, autocomplete, subcommands, and type-safe configuration.
+---
+
+Slash commands are defined by creating files in the `src/commands/` directory. The file name becomes the command name, and the default export is the handler function.
+
+## File structure
+
+```
+src/
+└── commands/
+    ├── ping.ts          → /ping
+    ├── ban.ts           → /ban
+    └── settings/
+        ├── view.ts      → /settings view
+        └── update.ts    → /settings update
+```
+
+## Handler signature
+
+The default export receives a `ChatInputCommandInteraction` and an options object. Return a string, `InteractionReplyOptions`, or `void`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ping.ts"
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export default (interaction: ChatInputCommandInteraction) => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ping.js"
+    export default (interaction) => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The return type (`CommandResult`) can be:
+- `string` -- replied as a text message
+- `InteractionReplyOptions` -- replied with embeds, components, etc.
+- `MessagePayload` -- raw Discord.js message payload
+- `void` -- you handle the reply yourself
+
+## Command config
+
+Export a `config` object to configure the command. All fields are optional.
+
+<TypeTable
+  type={{
+    description: { type: "string", description: "Description shown in Discord's command picker.", default: "undefined" },
+    options: { type: "readonly CommandOption[]", description: "Command parameters/options.", default: "undefined" },
+    contexts: { type: "CommandContext[]", description: "Where the command can be used: 'Guild', 'BotDM', 'PrivateChannel'.", default: "Plugin defaults" },
+    integrationTypes: { type: "CommandIntegrationType[]", description: "Installation types: 'GuildInstall', 'UserInstall'.", default: "Plugin defaults" },
+    defaultMemberPermissions: { type: "string | number | bigint", description: "Permissions required to use the command.", default: "undefined" },
+    sage: { type: "false | SageOptions", description: "Per-command Sage override. See Sage mode.", default: "Plugin sage config" },
+    timeout: { type: "number", description: "Execution timeout in milliseconds.", default: "undefined" },
+    nsfw: { type: "boolean", description: "Whether the command is age-restricted.", default: "false" },
+    nameLocalizations: { type: "Record<string, string>", description: "Localized command names by locale code.", default: "undefined" },
+    descriptionLocalizations: { type: "Record<string, string>", description: "Localized descriptions by locale code.", default: "undefined" },
+    disabled: { type: "boolean", description: "Whether the handler is disabled.", default: "undefined" },
+    serverOnly: { type: "string | string[]", description: "Restrict to specific server IDs.", default: "undefined" },
+  }}
+/>
+
+<Callout>
+When `description` is omitted, the route processor fills in `'No description provided'` at build time. Discord's UI shows this fallback text in the command picker, but the type definition itself defaults to `undefined`.
+</Callout>
+
+<Callout type="warn">
+The `dmPermission` field also exists on `CommandConfig` but is **deprecated**. Use `contexts` instead to control where the command is available (e.g., `'Guild'`, `'BotDM'`, `'PrivateChannel'`).
+</Callout>
+
+## Options
+
+Define command parameters with the `options` array. Each option has a `name`, optional `type` (defaults to `'string'`), and other fields:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/greet.ts"
+    import type { CommandConfig } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+    import type { User } from 'discord.js'
+
+    export const config: CommandConfig = {
+    	description: 'Greet someone',
+    	options: [
+    		{ name: 'user', type: 'user', required: true },
+    		{ name: 'message', type: 'string', description: 'Custom greeting' }
+    	]
+    }
+
+    export default (interaction: ChatInputCommandInteraction, options: { user: User; message?: string }) => {
+    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/greet.js"
+    export const config = {
+    	description: 'Greet someone',
+    	options: [
+    		{ name: 'user', type: 'user', required: true },
+    		{ name: 'message', type: 'string', description: 'Custom greeting' }
+    	]
+    }
+
+    export default (interaction, options) => {
+    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Option types
+
+| Type | TypeScript Type | Description |
+|------|----------------|-------------|
+| `string` | `string` | Text input (default) |
+| `integer` | `number` | Whole number |
+| `number` | `number` | Decimal number |
+| `boolean` | `boolean` | True/false toggle |
+| `user` | `User` | Discord user |
+| `channel` | `GuildBasedChannel` | Server channel |
+| `member` | `GuildMember \| null` | Server member |
+| `role` | `Role` | Server role |
+| `attachment` | `Attachment` | File attachment |
+| `mention` | `GuildMember \| Role` | Mentionable entity |
+
+<Callout>
+The `member` option type is registered with Discord as a **User** option, but at extraction time Robo.js calls `getMember()` instead of `getUser()`, resolving to `GuildMember | null`. This means it only returns a value in guild contexts.
+</Callout>
+
+Each option also supports `nameLocalizations` and `descriptionLocalizations` fields (`Record<string, string>`), allowing per-locale overrides for option names and descriptions. These work the same as the top-level command localizations.
+
+### Choices
+
+Restrict input to specific values:
+
+```ts
+{
+	name: 'color',
+	type: 'string',
+	required: true,
+	choices: [
+		{ name: 'Red', value: 'red' },
+		{ name: 'Blue', value: 'blue' },
+		{ name: 'Green', value: 'green' }
+	]
+}
+```
+
+### Min/max constraints
+
+For `string` options, `min` and `max` control length. For `integer` and `number`, they control value range:
+
+```ts
+{ name: 'count', type: 'integer', min: 1, max: 100 }
+{ name: 'name', type: 'string', min: 2, max: 32 }
+```
+
+### Channel types
+
+Restrict channel options to specific channel types:
+
+```ts
+import { ChannelType } from 'discord.js'
+
+{
+	name: 'channel',
+	type: 'channel',
+	channelTypes: [ChannelType.GuildText, ChannelType.GuildVoice]
+}
+```
+
+<Callout type="warn">
+`autocomplete` and `choices` are **mutually exclusive** on a command option. This is a Discord limitation -- you can provide static choices or dynamic autocomplete, but not both on the same option.
+</Callout>
+
+## Type-safe configs with `createCommandConfig()`
+
+Use `createCommandConfig()` for full TypeScript inference on your options. TypeScript will infer the types of each option in your handler's `options` parameter, including literal types from choices.
+
+The `as const` assertion on the config object is required to preserve **literal types** from choices. Without it, TypeScript widens `'red' | 'blue'` to `string`, losing the exact value inference. With `as const`, `CommandOptions<typeof config>` can resolve choice values to their literal union type.
+
+`CommandOptions<typeof config>` maps over the config's `options` array to infer the handler's `options` parameter type. Required options (those with `required: true`) become non-optional properties, while all others become `T | undefined`. For options with `choices`, the resolved type is a union of the literal `value` fields rather than a plain `string` or `number`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/color.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
+    import type { CommandOptions } from '@robojs/discordjs'
+    import type { ChatInputCommandInteraction } from 'discord.js'
+
+    export const config = createCommandConfig({
+    	description: 'Pick a color',
+    	options: [
+    		{
+    			name: 'color',
+    			type: 'string',
+    			required: true,
+    			choices: [
+    				{ name: 'Red', value: 'red' },
+    				{ name: 'Blue', value: 'blue' }
+    			]
+    		},
+    		{ name: 'user', type: 'user', required: true }
+    	]
+    } as const)
+
+    // TypeScript knows: options.color is 'red' | 'blue', options.user is User
+    export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+    	return `${options.user.username} picked ${options.color}!`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/color.js"
+    export const config = {
+    	description: 'Pick a color',
+    	options: [
+    		{
+    			name: 'color',
+    			type: 'string',
+    			required: true,
+    			choices: [
+    				{ name: 'Red', value: 'red' },
+    				{ name: 'Blue', value: 'blue' }
+    			]
+    		},
+    		{ name: 'user', type: 'user', required: true }
+    	]
+    }
+
+    export default (interaction, options) => {
+    	return `${options.user.username} picked ${options.color}!`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Autocomplete
+
+Export an `autocomplete` function to provide dynamic suggestions. Discord gives you 3 seconds to respond.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/search.ts"
+    import type { CommandConfig } from '@robojs/discordjs'
+    import type { AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js'
+
+    export const config: CommandConfig = {
+    	description: 'Search for an item',
+    	options: [
+    		{ name: 'query', type: 'string', required: true, autocomplete: true }
+    	]
+    }
+
+    export const autocomplete = async (interaction: AutocompleteInteraction) => {
+    	const focused = interaction.options.getFocused()
+    	const items = ['Apple', 'Banana', 'Cherry'].filter(
+    		(item) => item.toLowerCase().includes(focused.toLowerCase())
+    	)
+    	return items.map((item) => ({ name: item, value: item }))
+    }
+
+    export default (interaction: ChatInputCommandInteraction, options: { query: string }) => {
+    	return `You searched for: ${options.query}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/search.js"
+    export const config = {
+    	description: 'Search for an item',
+    	options: [
+    		{ name: 'query', type: 'string', required: true, autocomplete: true }
+    	]
+    }
+
+    export const autocomplete = async (interaction) => {
+    	const focused = interaction.options.getFocused()
+    	const items = ['Apple', 'Banana', 'Cherry'].filter(
+    		(item) => item.toLowerCase().includes(focused.toLowerCase())
+    	)
+    	return items.map((item) => ({ name: item, value: item }))
+    }
+
+    export default (interaction, options) => {
+    	return `You searched for: ${options.query}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Subcommands and groups
+
+Nest directories to create subcommands. Two levels of nesting creates subcommand groups.
+
+### Subcommands (2-level)
+
+```
+src/commands/
+└── settings/
+    ├── view.ts       → /settings view
+    └── update.ts     → /settings update
+```
+
+### Subcommand groups (3-level)
+
+```
+src/commands/
+└── admin/
+    ├── user/
+    │   ├── ban.ts    → /admin user ban
+    │   └── kick.ts   → /admin user kick
+    └── server/
+        └── lock.ts   → /admin server lock
+```
+
+<Callout type="warn">
+Discord allows a maximum of 3 levels: command, subcommand group, and subcommand. You cannot nest deeper than this.
+</Callout>
+
+## Built-in `/help` command
+
+The plugin includes a built-in `/help` command that lists all registered commands with their descriptions. You can override it by creating your own `src/commands/help.ts`.
+
+The built-in implementation includes several features:
+
+- **Pagination** -- displays 20 commands per page with forward/back buttons when the list exceeds one page.
+- **Category filtering** -- a select menu lets users filter commands by category (derived from the top-level directory name, e.g., `/admin ban` falls under "admin").
+- **Autocomplete** -- both the `command` and `category` options support autocomplete, so users can search by typing partial names.
+- **Per-command detail view** -- passing a specific command name shows an embed with the command's description and all its options (type, required/optional, choices, autocomplete).
+- **Module awareness** -- commands belonging to disabled modules are automatically hidden from the list.
+- **Server restriction filtering** -- commands restricted to specific servers via `serverOnly` or a controller's `isEnabledForServer` are excluded when not applicable.
+
+## Next steps
+
+<Cards>
+	<Card href="./sage" title="Sage mode" description="How auto-defer and error handling work." />
+	<Card href="./context-menus" title="Context menus" description="User and message context menu commands." />
+	<Card href="./command-registration" title="Command registration" description="How commands are registered with Discord." />
+	<Card href="/docs/bots/commands" title="Bot commands guide" description="Higher-level tutorial on building bot commands." />
+</Cards>

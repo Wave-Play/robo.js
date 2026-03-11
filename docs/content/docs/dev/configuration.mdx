@@ -1,0 +1,116 @@
+---
+title: Configuration
+description: All plugin options and environment variables.
+---
+
+Configure the plugin by creating a config file at `config/plugins/robojs/dev.mjs` or by passing options inline in your Robo config.
+
+## Plugin options
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789',
+    	errorPingRoleId: '987654321098765432',
+    	commands: true,
+    	errorForwarding: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/dev.mjs"
+    export default {
+    	debugChannelId: '1234567890123456789',
+    	errorPingRoleId: '987654321098765432',
+    	commands: true,
+    	errorForwarding: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+	type={{
+		debugChannelId: {
+			type: 'string',
+			description: 'Discord channel ID where unhandled errors are forwarded. Falls back to the DISCORD_DEBUG_CHANNEL_ID environment variable.',
+			default: 'undefined'
+		},
+		errorPingRoleId: {
+			type: 'string',
+			description: 'Discord role ID to mention when errors are forwarded to the debug channel.',
+			default: 'undefined'
+		},
+		commands: {
+			type: 'boolean',
+			description: 'Whether to enable /dev slash commands.',
+			default: 'true'
+		},
+		enabledModes: {
+			type: 'string[]',
+			description: 'Robo modes where dev tools are active.',
+			default: "['development']"
+		},
+		errorForwarding: {
+			type: 'boolean',
+			description: 'Whether to forward errors to the debug channel.',
+			default: 'true'
+		}
+	}}
+/>
+
+## Environment variables
+
+| Variable | Description |
+|---|---|
+| `DISCORD_DEBUG_CHANNEL_ID` | Fallback channel ID for error forwarding. The `debugChannelId` config option takes priority. |
+
+```bash title=".env"
+DISCORD_DEBUG_CHANNEL_ID=1234567890123456789
+```
+
+## Inline configuration
+
+You can also pass options directly in your Robo config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    export default {
+    	plugins: [
+    		['@robojs/dev', {
+    			debugChannelId: '1234567890123456789',
+    			errorPingRoleId: '987654321098765432'
+    		}]
+    	]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    export default {
+    	plugins: [
+    		['@robojs/dev', {
+    			debugChannelId: '1234567890123456789',
+    			errorPingRoleId: '987654321098765432'
+    		}]
+    	]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Production behavior
+
+The plugin includes a build transform hook that automatically removes all dev plugin entries from production builds. When you run `robo build`, every command, event handler, and hook from this plugin is stripped from the output.
+
+This means you don't need to manually uninstall the plugin before deploying. The plugin safely disappears on its own.
+
+## Next steps
+
+<Cards>
+	<Card href="./error-forwarding" title="Error forwarding" description="Set up error capture and Discord notifications." />
+	<Card href="./commands" title="Commands" description="All available slash commands." />
+	<Card href="./api" title="API reference" description="Exported functions and types." />
+</Cards>

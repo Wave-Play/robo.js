@@ -1,0 +1,110 @@
+---
+title: "README"
+icon: Gift
+description: One-click Discord giveaways with automatic winner selection and persistent storage.
+---
+
+<PluginHero
+	name="@robojs/giveaways"
+	description="One-click Discord giveaways with automatic winner selection and persistent storage."
+	icon={<Gift />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/giveaways"
+	platforms={["Bots"]}
+	optional={[{ name: "@robojs/cron", href: "/docs/cron", description: "Persistent job scheduling" }, { name: "@robojs/server", href: "/docs/server", description: "REST API for dashboards" }]}
+/>
+
+Run giveaways in your Discord server with a single slash command. Members enter by clicking a button, and winners are selected automatically when time runs out. All data persists through restarts.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Gift />} title="Button Entry" description="Members enter and leave with a single click" />
+	<Feature icon={<Shield />} title="Fair Selection" description="Fisher-Yates shuffle for unbiased randomization" />
+	<Feature icon={<Database />} title="Persistent Storage" description="All data lives in Flashcore, survives restarts" />
+	<Feature icon={<Lock />} title="Role Restrictions" description="Allowlist or denylist roles per giveaway" />
+	<Feature icon={<Clock />} title="Account Age Limits" description="Filter alt accounts by minimum age" />
+	<Feature icon={<RefreshSync />} title="Reroll Winners" description="Draw new winners from the remaining pool" />
+	<Feature icon={<Wrench />} title="Per-guild Settings" description="Each server customizes defaults and limits" />
+	<Feature icon={<Server />} title="REST API" description="HTTP endpoints for dashboard integrations" />
+</FeatureGrid>
+
+## Quick start
+
+Add the plugin to your Robo:
+
+```package-install
+npx robo add @robojs/giveaways
+```
+
+Or start a new project with it pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/giveaways
+```
+
+Start a giveaway:
+
+```
+/giveaway start prize: Discord Nitro duration: 1h winners: 1
+```
+
+The bot posts an embed with **Enter Giveaway** and **Leave** buttons. Members click to enter or withdraw. When the timer expires, the bot selects random winners, updates the message, announces results in the channel, and optionally DMs each winner.
+
+## How it works
+
+<Steps>
+  <Step>
+    ### Create a giveaway
+
+    A moderator runs `/giveaway start` with a prize, duration, and optional restrictions. The bot creates a record in Flashcore, posts an embed with entry buttons, and schedules automatic ending.
+  </Step>
+  <Step>
+    ### Members enter
+
+    Users click **Enter Giveaway** to join. The bot validates role restrictions and account age, records the entry, and replies with an ephemeral confirmation. Users can click **Leave** to withdraw at any time.
+  </Step>
+  <Step>
+    ### Winners are selected
+
+    When the timer expires (or a moderator runs `/giveaway end`), the bot selects random winners from all entries, updates the embed, posts a congratulations message, and sends DMs to winners if enabled.
+  </Step>
+</Steps>
+
+## Optional integrations
+
+### Enhanced scheduling with @robojs/cron
+
+The plugin works without `@robojs/cron`, falling back to `setTimeout` for scheduling. Adding `@robojs/cron` provides persistent cron jobs with precise timing, which is recommended for production.
+
+```bash
+npx robo add @robojs/cron
+```
+
+No code changes needed. The plugin detects `@robojs/cron` at runtime and uses it automatically.
+
+| Capability | Without `@robojs/cron` | With `@robojs/cron` |
+|---|---|---|
+| Data persistence | Flashcore | Flashcore |
+| Timing accuracy | `setTimeout` cascading | Precise cron expressions |
+| Maximum duration | ~24.8 days per cycle | No practical limit |
+| Job persistence | In-memory only | Stored in Flashcore |
+| Recovery on restart | Re-schedules from saved data | Auto + validation |
+
+### REST API with @robojs/server
+
+Install the server plugin to enable HTTP endpoints for dashboard integrations:
+
+```bash
+npx robo add @robojs/server
+```
+
+This activates endpoints for listing giveaways, managing individual giveaways, and updating guild settings. See the [API reference](./api.mdx) for details.
+
+## Next Steps
+
+<Cards>
+  <Card href="./commands" title="Commands" description="Full reference for all slash commands." />
+  <Card href="./configuration" title="Configuration" description="Per-guild settings and defaults." />
+  <Card href="./api" title="REST API" description="HTTP endpoints for dashboards." />
+  <Card href="./persistence" title="Persistence" description="Data model, storage, and scheduling." />
+</Cards>

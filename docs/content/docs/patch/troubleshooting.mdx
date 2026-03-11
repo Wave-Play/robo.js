@@ -1,0 +1,83 @@
+---
+title: Troubleshooting
+description: Debug and resolve common issues with the @robojs/patch plugin.
+---
+
+Common issues and solutions when using `@robojs/patch`.
+
+## Verifying the patch is active
+
+The Discord Proxy patch logs diagnostic messages to the browser console:
+
+| Message | Meaning |
+| --- | --- |
+| `@robojs/patch: Applying patch for Discord Proxy` | Patch is active -- `fetch` and `WebSocket` are being rewritten |
+| `@robojs/patch: Not in Discord Activity, skipping patch` | Not running inside Discord -- patch is a no-op |
+
+If you don't see either message, the patch script is not loading. Check that the Vite plugin is configured or that `DiscordProxy.patch()` is called at the top of your entry file.
+
+For the entry point command patch, check your server terminal for messages from the `patch` logger:
+
+| Message | Meaning |
+| --- | --- |
+| `Successfully registered missing entry point command.` | Command was created |
+| Debug-level output showing existing commands | Command already exists, no action taken |
+| Warning with error details | Registration failed (check token, client ID, or API availability) |
+
+Set your Robo logger level to `debug` to see detailed entry point command diagnostics.
+
+## CSP errors persist after installing
+
+The proxy patch only rewrites URLs for recognized hosts:
+
+- `discordsays.com`
+- `discordsez.com`
+- `discordsays.localhost`
+- `discordsez.localhost`
+
+If you're seeing CSP errors for **external APIs** (third-party services, CDNs, etc.), the patch does not handle those. Configure URL mappings in the [Discord Developer Portal](https://discord.com/developers/applications) or route external requests through your own proxy server.
+
+## Patch not applying
+
+**Symptom**: `fetch` calls fail with CSP errors inside Discord, and the console shows no patch messages.
+
+**Possible causes**:
+
+1. **Vite plugin not configured** -- Verify `DiscordProxy.Vite()` is in your Vite config's `plugins` array.
+2. **Script loading order** -- The patch must run before Vite's HMR client. The Vite plugin handles this with `enforce: 'pre'` and synchronous script injection. If using the function call method, make sure `DiscordProxy.patch()` is the first thing that runs.
+3. **Missing UMD bundle** -- In dev mode, the Vite plugin injects a script tag pointing to `node_modules/@robojs/patch/.robo/public/discord-proxy-patch.umd.js`. If this file is missing, the patch won't load. Reinstall the package to regenerate it.
+4. **Not inside Discord** -- The patch only activates when `frame_id` is present in the URL query parameters. Test inside Discord's Activity iframe, not a standalone browser tab.
+
+## Entry point command not registering
+
+**Symptom**: The Activity launch button is missing, and no success message appears in server logs.
+
+**Possible causes**:
+
+1. **Missing environment variables** -- Both `DISCORD_CLIENT_ID` and `DISCORD_TOKEN` must be set in your `.env` file. If either is missing, the patch is silently skipped.
+2. **Wrong token type** -- Use your bot token, not the OAuth2 client secret.
+3. **API rate limits** -- Frequent restarts can hit Discord's rate limits for command registration. The patch makes minimal API calls (one GET, optionally one POST), but rapid dev restarts may trigger rate limiting.
+4. **Command already exists** -- If a type-4 command is already registered, the patch exits silently. Check your commands in the [Discord Developer Portal](https://discord.com/developers/applications) under your application's "Commands" section.
+
+## Double-patching URLs
+
+If URLs are getting `/.proxy` prepended twice, this usually means both the patch and the Discord SDK's `patchUrlMappings` are rewriting the same URLs.
+
+The Vite plugin method prevents this by tracking SDK mappings. If you're using the function call method (`DiscordProxy.patch()`), the patch cannot detect SDK-mapped prefixes and may double-patch.
+
+**Solution**: Switch to the Vite plugin method, or ensure `DiscordProxy.patch()` runs before the SDK's `patchUrlMappings`.
+
+## HMR not working in Discord
+
+Hot Module Replacement requires WebSocket connections, which must go through Discord's proxy. If HMR breaks:
+
+1. Confirm the patch is active (check browser console for the applying message).
+2. Use the Vite plugin method -- it injects the patch before Vite's HMR client initializes.
+3. The function call method may execute too late if Vite's HMR client connects first.
+
+## Next Steps
+
+<Cards>
+	<Card href="./index" title="@robojs/patch" description="Overview, installation, and usage." />
+	<Card href="../activities/proxy" title="Discord Proxy" description="Learn how proxy routing works in Activities." />
+</Cards>

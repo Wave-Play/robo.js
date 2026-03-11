@@ -1,0 +1,408 @@
+---
+title: Robo CLI
+description: Full command reference for the Robo.js CLI.
+---
+
+The Robo.js CLI provides commands for developing, building, deploying, and managing your project. All commands are run via `npx robo` (or your package manager's equivalent).
+
+## Global Options
+
+These flags are available on most commands:
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+| `--help` | `-h` | Show available options for the command |
+| `--version` | `-V` | Output the Robo.js version number |
+
+## Running
+
+### `robo dev`
+
+The primary way to run your Robo during development. Watches for file changes and automatically rebuilds, similar to `nodemon`. This command runs `build` behind the scenes and updates bot commands on each restart.
+
+When running in a TTY, `robo dev` launches an [interactive terminal](./terminal) where you can type `/` commands to inspect state, manage Flashcore, and more.
+
+```bash
+npx robo dev
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--hmr` | `-H` | Enable hot module replacement for handlers (experimental) |
+| `--instance-id` | `-id` | Specify the instance ID to use |
+| `--log-level` | `-l` | Set the log level (`debug`, `info`, `warn`, `error`) |
+| `--mode` | `-m` | Specify the mode(s) to run in (`dev`, `beta`, `prod`, etc.) |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo start`
+
+Runs your Robo in production after running `build`. Use this when self-hosting instead of deploying to RoboPlay.
+
+Like `dev`, this also launches an [interactive terminal](./terminal) in TTY environments.
+
+```bash
+npx robo start
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--instance-id` | `-id` | Specify the instance ID to use |
+| `--log-level` | `-l` | Set the log level (`debug`, `info`, `warn`, `error`) |
+| `--mode` | `-m` | Specify the mode(s) to run in (`dev`, `beta`, `prod`, etc.) |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+## Building
+
+### `robo build`
+
+Prepares your project for production by compiling source files, generating a manifest, and registering any command updates. Run this before using `start`.
+
+```bash
+npx robo build
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--dev` | `-d` | Build for development |
+| `--mode` | `-m` | Specify the mode(s) to build for |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+| `--watch` | `-w` | Watch for changes and rebuild automatically |
+
+### `robo build plugin`
+
+Works similarly to `build`, but optimizes your source files to be published as a plugin via npm.
+
+```bash
+npx robo build plugin
+```
+
+## Plugin Management
+
+### `robo add`
+
+Installs a plugin from npm and registers it with your Robo. You can also install plugins from a local directory.
+
+```bash
+npx robo add @robojs/server
+npx robo add @robojs/ai @robojs/cron
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--force` | `-f` | Forcefully install and register packages |
+| `--no-seed` | `-ns` | Skip seeding starter files from the plugin |
+| `--silent` | `-s` | Suppress all output |
+| `--trigger` | `-t` | Setup hook trigger context (`add` or `create`) |
+| `--verbose` | `-v` | Print additional debugging information |
+| `--yes` | `-y` | Auto-accept seed files without prompting |
+
+### `robo remove`
+
+Uninstalls a plugin from your Robo and removes its config file.
+
+```bash
+npx robo remove @robojs/server
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--force` | `-f` | Forcefully remove and unregister packages |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo sync`
+
+Syncs the Robo with the latest plugins and configurations. Useful after manually editing plugin configs or adding plugins without `robo add`.
+
+```bash
+npx robo sync
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo upgrade`
+
+Upgrades Robo.js and all installed plugins to the latest version.
+
+```bash
+npx robo upgrade
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--force` | `-f` | Forcefully install updates |
+| `--no-self-check` | `-ns` | Skip checking for Sage CLI updates |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+## Hosting
+
+### `robo deploy`
+
+Bundles your Robo's source files and deploys to [RoboPlay](/docs/hosting/roboplay).
+
+```bash
+npx robo deploy
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo login`
+
+Sign in to your RoboPlay account. Links the current project to a Robo Pod for deployment.
+
+```bash
+npx robo login
+```
+
+### `robo logout`
+
+Sign out of your RoboPlay account.
+
+```bash
+npx robo logout
+```
+
+### `robo cloud`
+
+Manage your cloud deployments on RoboPlay. This command has the following subcommands:
+
+#### `robo cloud status`
+
+Check your RoboPlay session status, Robo Pods, and connectivity.
+
+```bash
+npx robo cloud status
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--credentials` | `-creds` | Output session file in base64 format (copies to clipboard) |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+#### `robo cloud start`
+
+Start your linked Robo Pod.
+
+```bash
+npx robo cloud start
+```
+
+#### `robo cloud stop`
+
+Stop your linked Robo Pod.
+
+```bash
+npx robo cloud stop
+```
+
+#### `robo cloud logs`
+
+View your Robo's remote logs from RoboPlay.
+
+```bash
+npx robo cloud logs
+```
+
+## Database
+
+The `robo db` commands manage [Flashcore](/docs/framework/core/flashcore) database schemas, migrations, and integrity. These require Flashcore to be initialized (your Robo must have been run at least once).
+
+### `robo db status`
+
+Show schema checksums, tracking status, and pending migrations for all registered models.
+
+```bash
+npx robo db status
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db diff`
+
+Show a visual schema diff between stored and current versions. Highlights safe vs. breaking changes.
+
+```bash
+npx robo db diff
+npx robo db diff --model User
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--model` | `-m` | Diff a specific model |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db history`
+
+Show schema version history, including checksums, change counts, and migration names.
+
+```bash
+npx robo db history
+npx robo db history --namespace myapp --limit 50
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--namespace` | `-n` | Show history for a specific namespace |
+| `--limit` | `-l` | Maximum number of entries to show (default: 20) |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db export`
+
+Export your schema to markdown or JSON format for documentation or inspection.
+
+```bash
+npx robo db export
+npx robo db export --format json --output schema.json
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--format` | `-f` | Output format: `md` (default) or `json` |
+| `--output` | `-o` | File path to write to (prints to stdout if omitted) |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db migrate`
+
+Run pending database migrations with lock management and rollback on failure.
+
+```bash
+npx robo db migrate
+npx robo db migrate --dry-run
+npx robo db migrate --rollback my-migration
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--dry-run` | `-d` | Show what would be migrated without applying changes |
+| `--force-unlock` | `-f` | Force release a stuck migration lock |
+| `--target` | `-t` | Run migrations up to (and including) this target |
+| `--rollback` | `-r` | Roll back a specific migration by name |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db check`
+
+Run integrity checks on Flashcore data structures including catalogs, filters, indexes, and unique constraints.
+
+```bash
+npx robo db check
+npx robo db check --model User --check indexes
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--model` | `-m` | Check a specific model |
+| `--check` | `-c` | Specific check type: `filter`, `indexes`, `unique`, `catalog`, or `all` (default) |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db repair`
+
+Repair Flashcore data structures by rebuilding filters, indexes, and unique constraints.
+
+```bash
+npx robo db repair
+npx robo db repair --model User --rebuild all
+npx robo db repair --dry-run
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--model` | `-m` | Repair a specific model |
+| `--rebuild` | `-r` | Structures to rebuild: `filter`, `indexes`, `unique`, or `all` (comma-separated) |
+| `--dry-run` | `-d` | Show what would be repaired without making changes |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db rebuild-indexes`
+
+Convenience command to rebuild all indexes. Equivalent to `robo db repair --rebuild=indexes`.
+
+```bash
+npx robo db rebuild-indexes
+npx robo db rebuild-indexes --model User --all
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--model` | `-m` | Rebuild indexes for a specific model |
+| `--all` | `-a` | Also rebuild filter and unique indexes |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+### `robo db clear`
+
+Clear data from Flashcore models. Requires `--confirm` to execute as a safety measure.
+
+```bash
+npx robo db clear --confirm
+npx robo db clear --model User --confirm --keep-schema
+```
+
+<Callout type="warn">
+This command permanently deletes data. Use `--keep-schema` to preserve schema metadata while clearing records.
+</Callout>
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--model` | `-m` | Clear a specific model |
+| `--namespace` | `-n` | Clear models in a specific namespace |
+| `--confirm` | `-c` | Skip confirmation prompt (**required** to execute) |
+| `--keep-schema` | `-k` | Preserve schema metadata, only clear records |
+| `--silent` | `-s` | Suppress all output |
+| `--verbose` | `-v` | Print additional debugging information |
+
+## Introspection
+
+### `robo cli`
+
+Inspect CLI commands and extensions registered by plugins and your project.
+
+```bash
+npx robo cli --inspect
+npx robo cli --inspect build
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--inspect` | `-i` | Show all registered CLI commands and extensions |
+
+Pass a command name after `--inspect` to view details for that specific command.
+
+## Other
+
+### `robo help`
+
+Display help for the CLI or a specific command.
+
+```bash
+npx robo help
+npx robo build --help
+```
+
+## Next Steps
+
+<Cards>
+  <Card href="./terminal" title="Interactive Terminal" description="Built-in and custom slash commands." />
+  <Card href="./extending" title="Extending the CLI" description="Add custom commands and hooks." />
+  <Card href="/docs/hosting/roboplay" title="RoboPlay" description="Deploy your Robo with one command." />
+</Cards>

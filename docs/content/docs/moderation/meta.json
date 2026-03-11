@@ -1,0 +1,19 @@
+{
+  "title": "@robojs/moderation",
+  "description": "Comprehensive Discord server moderation tools",
+  "icon": "Shield",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quick-start",
+    "configuration",
+    "---Features---",
+    "commands",
+    "rules-system",
+    "moderation-channels",
+    "lockdown-mode",
+    "---Integrations---",
+    "ai-integration"
+  ]
+}

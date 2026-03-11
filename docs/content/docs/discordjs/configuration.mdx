@@ -1,0 +1,263 @@
+---
+title: Configuration
+description: Plugin options, client settings, and environment variables for @robojs/discordjs.
+---
+
+The Discord plugin is configured through a file at `config/plugins/robojs/discordjs.mjs` (or `.ts`). You only need to specify the options you want to change.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	sage: {
+    		defer: true,
+    		ephemeral: false
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	sage: {
+    		defer: true,
+    		ephemeral: false
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Plugin options
+
+<TypeTable
+  type={{
+    autoRegisterCommands: { type: "boolean | string[]", description: "Whether to register commands with Discord API during builds. Pass an array of mode names to restrict (e.g., ['production']).", default: "true" },
+    clientOptions: { type: "ClientOptions", description: "Discord.js Client constructor options (intents, partials, etc.).", default: "undefined" },
+    defaults: { type: "CommandDefaults", description: "Default configuration applied to all commands and context menus.", default: "undefined" },
+    sage: { type: "false | SageOptions", description: "Sage auto-defer/reply configuration. Set to false to disable entirely.", default: "{ defer: true, deferBuffer: 250, ephemeral: false, errorReplies: true }" },
+    testServers: { type: "string[]", description: "Guild IDs to register commands as guild commands instead of global.", default: "undefined" },
+    timeouts: { type: "TimeoutConfig", description: "Timeout configuration for various operations.", default: "See TimeoutConfig defaults" },
+  }}
+/>
+
+### Client options
+
+Configure the Discord.js `Client` constructor. The most common use is setting gateway intents:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import { GatewayIntentBits } from 'discord.js'
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	clientOptions: {
+    		intents: [
+    			GatewayIntentBits.Guilds,
+    			GatewayIntentBits.GuildMessages,
+    			GatewayIntentBits.MessageContent
+    		]
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    import { GatewayIntentBits } from 'discord.js'
+
+    export default {
+    	clientOptions: {
+    		intents: [
+    			GatewayIntentBits.Guilds,
+    			GatewayIntentBits.GuildMessages,
+    			GatewayIntentBits.MessageContent
+    		]
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout>
+The plugin automatically infers required intents from your registered events. You only need to set `clientOptions.intents` for privileged intents or when you want explicit control. See [Intents & permissions](./intents-permissions) for details.
+</Callout>
+
+### Command defaults
+
+Set defaults applied to all commands and context menus. Individual commands can override these values.
+
+<TypeTable
+  type={{
+    contexts: { type: "('Guild' | 'BotDM' | 'PrivateChannel')[]", description: "Interaction contexts where commands are available.", default: "['Guild', 'BotDM', 'PrivateChannel']" },
+    integrationTypes: { type: "('GuildInstall' | 'UserInstall')[]", description: "Installation types for commands.", default: "['GuildInstall', 'UserInstall']" },
+    defaultMemberPermissions: { type: "string | number | bigint", description: "Default permissions required to use commands.", default: "undefined" },
+  }}
+/>
+
+### Timeout configuration
+
+<TypeTable
+  type={{
+    autocomplete: { type: "number", description: "Autocomplete response timeout in milliseconds.", default: "3000" },
+    commandDeferral: { type: "number", description: "Time before auto-deferring commands in milliseconds. Alias for sage.deferBuffer.", default: "250" },
+    commandRegistration: { type: "number", description: "Command registration timeout in milliseconds.", default: "30000" },
+  }}
+/>
+
+<Callout>
+The defer buffer timing follows a priority chain: a command-level `sage.deferBuffer` takes highest priority, then the plugin-level `sage.deferBuffer`, then `timeouts.commandDeferral`. If none are set, the default is **250ms**.
+</Callout>
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DISCORD_TOKEN` | Yes | Bot token from the Discord Developer Portal. |
+| `DISCORD_CLIENT_ID` | Yes | Application client ID from the Discord Developer Portal. |
+| `DISCORD_CLIENT_SECRET` | No | Application client secret (needed for OAuth2 flows). |
+| `DISCORD_GUILD_ID` | No | Register commands as guild commands for this server (faster updates during development). |
+| `DISCORD_REST_API` | No | Custom REST API base URL (used with `@robojs/mock` for testing). |
+| `DISCORD_FORCE_REGISTER` | No | Set to `true` to force re-register all commands. |
+| `ROBO_MOCK_MODE` | No | Set to `true` to enable mock mode (registers commands at runtime). |
+
+```bash title=".env"
+DISCORD_TOKEN="your-bot-token"
+DISCORD_CLIENT_ID="your-client-id"
+```
+
+## Complete config example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import { GatewayIntentBits } from 'discord.js'
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	autoRegisterCommands: true,
+    	clientOptions: {
+    		intents: [
+    			GatewayIntentBits.Guilds,
+    			GatewayIntentBits.GuildMessages,
+    			GatewayIntentBits.GuildMembers,
+    			GatewayIntentBits.MessageContent
+    		]
+    	},
+    	defaults: {
+    		contexts: ['Guild', 'BotDM'],
+    		integrationTypes: ['GuildInstall'],
+    		defaultMemberPermissions: undefined
+    	},
+    	sage: {
+    		defer: true,
+    		deferBuffer: 250,
+    		ephemeral: false,
+    		errorReplies: true
+    	},
+    	testServers: ['123456789012345678'],
+    	timeouts: {
+    		autocomplete: 3000,
+    		commandDeferral: 250,
+    		commandRegistration: 30000
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    import { GatewayIntentBits } from 'discord.js'
+
+    export default {
+    	autoRegisterCommands: true,
+    	clientOptions: {
+    		intents: [
+    			GatewayIntentBits.Guilds,
+    			GatewayIntentBits.GuildMessages,
+    			GatewayIntentBits.GuildMembers,
+    			GatewayIntentBits.MessageContent
+    		]
+    	},
+    	defaults: {
+    		contexts: ['Guild', 'BotDM'],
+    		integrationTypes: ['GuildInstall'],
+    		defaultMemberPermissions: undefined
+    	},
+    	sage: {
+    		defer: true,
+    		deferBuffer: 250,
+    		ephemeral: false,
+    		errorReplies: true
+    	},
+    	testServers: ['123456789012345678'],
+    	timeouts: {
+    		autocomplete: 3000,
+    		commandDeferral: 250,
+    		commandRegistration: 30000
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Client access
+
+You can access the underlying Discord.js `Client` instance anywhere in your project using exported helpers:
+
+```ts
+import { getClient, hasClient } from '@robojs/discordjs'
+
+// Check if client is available before accessing
+if (hasClient()) {
+	const client = getClient()
+	// Use the Discord.js client
+}
+```
+
+- `getClient()` returns the Discord.js `Client` instance.
+- `hasClient()` returns a boolean indicating whether the client has been initialized.
+
+## Type re-exports
+
+The plugin re-exports common Discord.js types for convenience. However, prefer importing these directly from `discord.js`:
+
+| Type | Description |
+|------|-------------|
+| `AutocompleteInteraction` | Autocomplete interaction for command options |
+| `ChatInputCommandInteraction` | Slash command interaction |
+| `Client` | Discord.js client instance |
+| `ClientEvents` | Map of all client event names to their argument types |
+| `ClientOptions` | Discord.js Client constructor options |
+| `ContextMenuCommandInteraction` | Base context menu interaction |
+| `Guild` | Discord guild (server) |
+| `GuildMember` | Guild member |
+| `Interaction` | Base interaction type |
+| `Message` | Discord message |
+| `MessageContextMenuCommandInteraction` | Message context menu interaction |
+| `Role` | Discord role |
+| `TextChannel` | Text channel |
+| `User` | Discord user |
+| `UserContextMenuCommandInteraction` | User context menu interaction |
+| `VoiceChannel` | Voice channel |
+
+Plugin-specific types like `CommandConfig`, `EventConfig`, `MiddlewareData`, and `DiscordConfig` should always be imported from `@robojs/discordjs`.
+
+## Logger
+
+The plugin exposes a forked logger for Discord-specific logging:
+
+```ts
+import { discordLogger } from '@robojs/discordjs'
+
+discordLogger.info('Custom Discord log message')
+```
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing, options, and type-safe configs." />
+	<Card href="./sage" title="Sage mode" description="How auto-defer and error handling work." />
+	<Card href="./intents-permissions" title="Intents & permissions" description="Intent inference and permission aggregation." />
+</Cards>

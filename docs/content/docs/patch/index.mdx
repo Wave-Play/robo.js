@@ -1,0 +1,259 @@
+---
+title: "README"
+icon: Bandage
+description: Lightweight patches for common platform-specific issues in Discord Activities and more.
+---
+
+<PluginHero
+	name="@robojs/patch"
+	description="Lightweight patches for common platform-specific issues in Discord Activities and more."
+	icon={<Bandage />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/patch"
+	platforms={["Activities"]}
+	deprecated={true}
+/>
+
+A collection of lightweight patches for platform-specific issues in Discord Activities. The plugin addresses Content Security Policy (CSP) violations and missing entry point commands that can affect Activity functionality.
+
+<Callout type="warn">
+Modern Robo.js projects (v0.11+) and the latest Discord SDK handle these issues automatically. This plugin is primarily useful for legacy projects or older SDK versions. See [Migration](#migration) for removal steps.
+</Callout>
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Globe />} title="Discord Proxy" description="Patches fetch and WebSocket to route through Discord's proxy" />
+	<Feature icon={<Rocket />} title="Entry Point Command" description="Auto-registers the missing launch command on startup" />
+	<Feature icon={<Shield />} title="CSP Fix" description="Resolves Content Security Policy violations inside Discord" />
+	<Feature icon={<Blocks />} title="Vite Plugin" description="Injects patches before HMR for earliest possible fix" />
+	<Feature icon={<Zap />} title="Auto-detection" description="Only activates inside Discord Activity context" />
+	<Feature icon={<Wrench />} title="Custom Prefix" description="Override the default proxy prefix per request" />
+</FeatureGrid>
+
+## Installation
+
+To add this plugin to your Robo.js project:
+
+```bash
+npx robo add @robojs/patch
+```
+
+Or install it as a standalone package in non-Robo.js projects:
+
+```package-install
+npm install @robojs/patch
+```
+
+## Discord Proxy
+
+**Problem**: When running a [Discord Activity](../activities/index.mdx) inside Discord's iframe, the Content Security Policy blocks requests that do not go through Discord's proxy. This breaks API calls, WebSocket connections, and Vite's Hot Module Replacement (HMR).
+
+**What it does**: Patches the global `fetch` and `WebSocket` APIs to automatically prepend `/.proxy` to internal request URLs. This ensures all requests conform to Discord's CSP policy.
+
+**When it runs**: Only inside Discord (detected via the `frame_id` query parameter that Discord injects into the Activity iframe URL). Outside Discord, nothing is patched.
+
+### Method 1: Vite plugin (recommended)
+
+The Vite plugin injects the patch before Vite's HMR client loads, ensuring the earliest possible patching. It also tracks URL mappings from `@discord/embedded-app-sdk` to avoid double-patching.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/vite.mjs"
+    import { DiscordProxy } from '@robojs/patch'
+    import { defineConfig } from 'vite'
+
+    export default defineConfig({
+    	plugins: [DiscordProxy.Vite()]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/vite.mjs"
+    import { DiscordProxy } from '@robojs/patch'
+    import { defineConfig } from 'vite'
+
+    export default defineConfig({
+    	plugins: [DiscordProxy.Vite()]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+This file is located at `/config/vite.mjs` in Robo.js projects or `vite.config.ts` in standard Vite projects.
+</Callout>
+
+The Vite plugin uses `enforce: 'pre'` to run before other plugins. It injects a synchronous `<script>` tag into `<head>` that executes the patch before any other scripts, including Vite's HMR client. In production builds, the patch script is emitted as `assets/discord-proxy-patch.umd.js`.
+
+### Method 2: Function call
+
+For non-Vite projects, call the patch function at the top of your entry file, before any other imports that use `fetch` or `WebSocket`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { DiscordProxy } from '@robojs/patch'
+
+    DiscordProxy.patch()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { DiscordProxy } from '@robojs/patch'
+
+    DiscordProxy.patch()
+    ```
+  </Tab>
+</Tabs>
+
+This method does not track SDK URL mappings. If you're also using `@discord/embedded-app-sdk`, the Vite plugin method is preferred.
+
+### How it works
+
+| Global | Behavior |
+| --- | --- |
+| `fetch` | Wraps the native fetch to prepend `/.proxy` to internal URLs before sending |
+| `WebSocket` | Proxies the WebSocket constructor to patch the URL on connection |
+
+The patch detects Discord Activity context by checking for `frame_id` in the URL query parameters. Only requests to recognized proxy hosts are rewritten:
+
+- `discordsays.com`
+- `discordsez.com`
+- `discordsays.localhost` (for local development with [@robojs/mock](../mock/index.mdx))
+- `discordsez.localhost`
+
+URLs that already start with `/.proxy` or with a prefix mapped by the Discord SDK are left unchanged.
+
+### Custom prefix
+
+The patched `fetch` accepts an optional `prefix` property in the request options to override the default `/.proxy` prefix.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Default prefix (/.proxy)
+    await fetch('/api/data')
+
+    // Custom prefix
+    await fetch('/api/data', { prefix: '/.custom-proxy' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Default prefix (/.proxy)
+    await fetch('/api/data')
+
+    // Custom prefix
+    await fetch('/api/data', { prefix: '/.custom-proxy' })
+    ```
+  </Tab>
+</Tabs>
+
+The `prefix` property is stripped from the options before passing to the native `fetch`, so it never reaches the browser's implementation.
+
+<Callout type="warn">
+External API requests are not patched by this plugin. If you experience CSP issues with third-party services, configure URL mappings in the [Discord Developer Portal](https://discord.com/developers/applications) or set up your own proxy server.
+</Callout>
+
+## Discord Entry Point Command
+
+**Problem**: Older Discord Activities or apps that share the same Discord application for both bots and activities may lose the Primary Entry Point command (type 4). Without this command, the Activity's launch button disappears.
+
+**What it does**: On Robo startup, checks whether the entry point command exists. If missing, automatically registers it via the Discord API. This runs as a `_start` lifecycle event -- no manual invocation needed.
+
+**Requirements**: Set both environment variables in your `.env` file:
+
+```bash title=".env"
+DISCORD_CLIENT_ID="your_application_id"
+DISCORD_TOKEN="your_bot_token"
+```
+
+If either variable is missing, the patch is silently skipped. If registration fails, the error is logged as a warning without crashing the app.
+
+<Callout type="info">
+The `DISCORD_TOKEN` must be your bot token, not the OAuth2 client secret.
+</Callout>
+
+The command is registered with:
+
+| Field | Value |
+| --- | --- |
+| Name | `launch` |
+| Type | Primary Entry Point (type 4) |
+| Contexts | Guild, Bot DM, Private Channel |
+| Integration types | Guild Install, User Install |
+| Handler | Activity launcher |
+
+## When to use this plugin
+
+| Scenario | Recommendation |
+| --- | --- |
+| New Robo.js project (v0.11+) | Not needed -- issues are handled by the framework |
+| Latest `@discord/embedded-app-sdk` | Not needed -- SDK includes built-in proxy mapping |
+| Older Robo.js project (< v0.11) | Install until you can upgrade |
+| Older Discord SDK (< 1.0) | Install until you can upgrade the SDK |
+| Custom build system with CSP issues | Install and use the function call method |
+
+## Migration
+
+To remove `@robojs/patch` from your project:
+
+<Steps>
+	<Step>
+		### Verify prerequisites
+
+		Make sure you're on Robo.js 0.11+ and the latest `@discord/embedded-app-sdk`. Test your Activity inside Discord without the plugin before uninstalling.
+	</Step>
+	<Step>
+		### Remove the package
+
+		```bash
+		npm uninstall @robojs/patch
+		```
+	</Step>
+	<Step>
+		### Clean up Vite config
+
+		Remove the import and plugin entry from your Vite config:
+
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+		  <Tab value="TypeScript">
+		    ```ts title="config/vite.mjs"
+		    				import { defineConfig } from 'vite'
+
+		    				export default defineConfig({
+		    					plugins: []
+		    				})
+		    ```
+		  </Tab>
+		  <Tab value="JavaScript">
+		    ```js title="config/vite.mjs"
+		    				import { defineConfig } from 'vite'
+
+		    				export default defineConfig({
+		    					plugins: []
+		    				})
+		    ```
+		  </Tab>
+		</Tabs>
+	</Step>
+	<Step>
+		### Remove direct calls
+
+		Delete any `DiscordProxy.patch()` imports and invocations from entry files.
+	</Step>
+	<Step>
+		### Test in Discord
+
+		Run a clean build and verify your Activity works inside Discord. Check the browser console for CSP errors and confirm the launch button still appears.
+	</Step>
+</Steps>
+
+If issues arise after removal, reinstall the plugin and open an issue on the [Robo.js GitHub](https://github.com/Wave-Play/robo.js) with your versions and error details.
+
+## Next Steps
+
+<Cards>
+	<Card href="./troubleshooting" title="Troubleshooting" description="Debug common issues with the patch plugin." />
+	<Card href="../activities/proxy" title="Discord Proxy" description="Learn how proxy routing works in Activities." />
+</Cards>

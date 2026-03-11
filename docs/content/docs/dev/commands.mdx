@@ -1,0 +1,38 @@
+---
+title: Commands
+description: Slash commands for inspecting status, viewing logs, and restarting your Robo.
+---
+
+The plugin provides a `/dev` group of slash commands for core development utilities. All commands use ephemeral responses with auto-deferral, so only you see the output.
+
+## Commands
+
+### `/dev status`
+
+View the current state of your Robo.
+
+Displays an embed with:
+- **Uptime** — How long the process has been running
+- **Memory** — Heap used vs. heap total in MB
+- **Node.js** — The running Node.js version
+- **Guilds** — Number of cached guilds (shown when a Discord client is available)
+
+### `/dev logs`
+
+View recent Robo logs.
+
+Reads stored log entries from Flashcore and displays them in a code block. Returns "No logs available." if no logs have been stored.
+
+### `/dev restart`
+
+Restart the Robo process.
+
+Sends "Restarting..." then triggers a restart. In `robo dev` mode, this uses IPC to gracefully restart. Otherwise, it calls `process.exit(0)` for a process manager to pick up.
+
+## Next steps
+
+<Cards>
+	<Card href="./error-forwarding" title="Error forwarding" description="Automatic error capture and Discord notifications." />
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./api" title="API reference" description="Exported functions and types." />
+</Cards>

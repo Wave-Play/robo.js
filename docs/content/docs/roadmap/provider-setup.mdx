@@ -1,0 +1,249 @@
+---
+title: Provider setup
+description: Configure the Jira provider with credentials, JQL filtering, and custom fields.
+---
+
+The plugin ships with a built-in Jira provider that connects to Jira Cloud via REST API v3. Configuration follows a three-level precedence: explicit config properties, plugin options, then environment variables.
+
+## Environment variables
+
+The simplest setup uses environment variables. The plugin checks these automatically when no provider is configured explicitly.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `JIRA_URL` | Yes | — | Jira Cloud base URL (e.g., `https://company.atlassian.net`) |
+| `JIRA_EMAIL` | Yes | — | Atlassian account email |
+| `JIRA_API_TOKEN` | Yes | — | Jira API token ([create one here](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)) |
+| `JIRA_PROJECT_KEY` | For card creation | — | Project key (e.g., `PROJ`) |
+| `JIRA_JQL` | No | Default JQL | Custom JQL filter |
+| `JIRA_MAX_RESULTS` | No | `100` | Max results per API page (1-1000) |
+| `JIRA_DEFAULT_ISSUE_TYPE` | No | `Task` | Default issue type for new cards |
+| `JIRA_DISCORD_USER_ID_FIELD_ID` | No | — | Custom field ID containing Discord User IDs |
+
+```bash title=".env"
+JIRA_URL="https://company.atlassian.net"
+JIRA_EMAIL="team@example.com"
+JIRA_API_TOKEN="ATATT3xFfGF0..."
+JIRA_PROJECT_KEY="PROJ"
+JIRA_JQL="labels = public"
+JIRA_MAX_RESULTS="50"
+JIRA_DEFAULT_ISSUE_TYPE="Story"
+```
+
+## Config file setup
+
+For more control, configure the provider in your plugin config file:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    import { JiraProvider } from '@robojs/roadmap'
+
+    export default {
+      provider: new JiraProvider({
+        type: 'jira',
+        options: {
+          url: process.env.JIRA_URL,
+          email: process.env.JIRA_EMAIL,
+          apiToken: process.env.JIRA_API_TOKEN,
+          projectKey: process.env.JIRA_PROJECT_KEY,
+          jql: 'project = PROJ AND labels = public',
+          maxResults: 50,
+          defaultIssueType: 'Story'
+        }
+      })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    import { JiraProvider } from '@robojs/roadmap'
+
+    export default {
+      provider: new JiraProvider({
+        type: 'jira',
+        options: {
+          url: process.env.JIRA_URL,
+          email: process.env.JIRA_EMAIL,
+          apiToken: process.env.JIRA_API_TOKEN,
+          projectKey: process.env.JIRA_PROJECT_KEY,
+          jql: 'project = PROJ AND labels = public',
+          maxResults: 50,
+          defaultIssueType: 'Story'
+        }
+      })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+You can also pass a plain config object instead of a provider instance:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    export default {
+      provider: {
+        type: 'jira',
+        options: {
+          url: process.env.JIRA_URL,
+          email: process.env.JIRA_EMAIL,
+          apiToken: process.env.JIRA_API_TOKEN,
+          projectKey: process.env.JIRA_PROJECT_KEY
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    export default {
+      provider: {
+        type: 'jira',
+        options: {
+          url: process.env.JIRA_URL,
+          email: process.env.JIRA_EMAIL,
+          apiToken: process.env.JIRA_API_TOKEN,
+          projectKey: process.env.JIRA_PROJECT_KEY
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## JQL filtering
+
+JQL (Jira Query Language) controls which issues the plugin fetches. The default JQL fetches public Epics:
+
+```
+(issuetype = Epic AND (labels NOT IN ("Private") OR labels IS EMPTY)) OR labels IN ("Public")
+```
+
+Common JQL patterns:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Public cards only
+    jql: 'project = PROJ AND labels = public'
+
+    // Exclude private cards
+    jql: 'project = PROJ AND labels != private'
+
+    // Active cards only (not resolved)
+    jql: 'project = PROJ AND resolution = Unresolved'
+
+    // Cards updated in last 30 days
+    jql: 'project = PROJ AND updated >= -30d'
+
+    // Multiple projects
+    jql: 'project IN (PROJ, OTHER) AND labels = roadmap'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Public cards only
+    jql: 'project = PROJ AND labels = public'
+
+    // Exclude private cards
+    jql: 'project = PROJ AND labels != private'
+
+    // Active cards only (not resolved)
+    jql: 'project = PROJ AND resolution = Unresolved'
+
+    // Cards updated in last 30 days
+    jql: 'project = PROJ AND updated >= -30d'
+
+    // Multiple projects
+    jql: 'project IN (PROJ, OTHER) AND labels = roadmap'
+    ```
+  </Tab>
+</Tabs>
+
+See the [Atlassian JQL documentation](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/) for the full query language reference.
+
+## Discord User ID custom field
+
+Map Jira issues directly to Discord users by storing Discord User IDs in a Jira custom field. This bypasses the standard assignee mapping system.
+
+<Steps>
+  <Step>
+    ### Create a custom field in Jira
+
+    Create a text custom field in your Jira project (e.g., "Discord User ID").
+  </Step>
+  <Step>
+    ### Find the field ID
+
+    Note the custom field ID (e.g., `customfield_10042`). You can find this in the Jira field configuration or via the REST API.
+  </Step>
+  <Step>
+    ### Configure the plugin
+
+    ```bash title=".env"
+    JIRA_DISCORD_USER_ID_FIELD_ID="customfield_10042"
+    ```
+
+    Or in the config file:
+
+    <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+      <Tab value="TypeScript">
+        ```ts
+            options: {
+              discordUserIdFieldId: 'customfield_10042'
+            }
+        ```
+      </Tab>
+      <Tab value="JavaScript">
+        ```js
+            options: {
+              discordUserIdFieldId: 'customfield_10042'
+            }
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step>
+    ### Add Discord User IDs to issues
+
+    Enter a Discord User ID (17-19 digit number) in the custom field on Jira issues.
+  </Step>
+</Steps>
+
+When this field is set, it takes priority over the standard Jira assignee mapping. Invalid IDs are logged and ignored, falling back to the assignee mapping.
+
+## Configuration precedence
+
+The provider resolves configuration from multiple sources in this order:
+
+1. **Pre-instantiated provider** in `pluginOptions.provider` (a `RoadmapProvider` instance)
+2. **Config object** in `pluginOptions.provider` (a `ProviderConfig` with `type` and `options`)
+3. **Environment variables** (`JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`)
+4. **No provider** — plugin loads but stays inactive
+
+If the provider can't initialize (invalid credentials, network issues), the plugin loads but remains inactive. Commands check `isProviderReady()` and show guidance when the provider isn't configured.
+
+## Jira provider options
+
+<TypeTable
+  type={{
+    url: { type: 'string', description: 'Jira Cloud base URL', default: 'process.env.JIRA_URL' },
+    email: { type: 'string', description: 'Atlassian account email', default: 'process.env.JIRA_EMAIL' },
+    apiToken: { type: 'string', description: 'Jira API token', default: 'process.env.JIRA_API_TOKEN' },
+    projectKey: { type: 'string', description: 'Jira project key for card creation', default: 'process.env.JIRA_PROJECT_KEY' },
+    jql: { type: 'string', description: 'JQL query to filter issues', default: 'Default JQL (public Epics)' },
+    maxResults: { type: 'number', description: 'Max results per API page (1-1000)', default: '100' },
+    defaultIssueType: { type: 'string', description: 'Default issue type for new cards', default: '"Task"' },
+    discordUserIdFieldId: { type: 'string', description: 'Jira custom field ID for Discord User IDs', default: 'undefined' },
+    columnConfig: { type: 'ColumnConfig', description: 'Custom columns and status-to-column mappings', default: 'undefined' },
+  }}
+/>
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Plugin options and column mapping." />
+  <Card href="./column-mapping" title="Column mapping" description="Customize status-to-column mappings." />
+  <Card href="./assignee-mapping" title="Assignee mapping" description="Map provider names to Discord users." />
+</Cards>

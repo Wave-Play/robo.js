@@ -1,0 +1,201 @@
+---
+title: Conversations
+description: How the AI bot handles messages, context, and interaction patterns.
+---
+
+The AI plugin processes Discord messages through multiple channels, builds multi-turn context from reply chains, and normalizes mentions for clean model input. This page covers how conversations flow from trigger to response.
+
+## Interaction patterns
+
+Users can reach your AI bot in four ways:
+
+- **Mentions** -- Tag the bot anywhere in a message: `@Sage what's the weather?`
+- **Replies** -- Reply to any bot message to continue the thread. No mention needed.
+- **Whitelisted channels** -- All messages in configured channels are processed without a mention.
+- **Direct Messages** -- Every DM is processed automatically.
+
+The plugin checks these conditions in order. If the message doesn't match any of them, it's ignored.
+
+## Channel restrictions
+
+Use `restrict` and `whitelist` together to control where the bot operates.
+
+`restrict` limits the bot to an explicit list of channels. If set, the bot ignores messages from every other channel, even whitelisted ones. `whitelist` marks channels where the bot responds to all messages without requiring a mention.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	restrict: {
+    		channelIds: ['345678901234567890']
+    	},
+    	whitelist: {
+    		channelIds: ['123456789012345678']
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	restrict: {
+    		channelIds: ['345678901234567890']
+    	},
+    	whitelist: {
+    		channelIds: ['123456789012345678']
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+`restrict` always takes precedence. If a channel appears in the whitelist but not in the restrict list, the bot won't respond there.
+</Callout>
+
+## Runtime channel management
+
+Add or remove channels at runtime without restarting the bot.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/toggle-channel.ts"
+    import { AI } from '@robojs/ai'
+
+    // Whitelist management
+    AI.addWhitelistChannel('123456789012345678')
+    AI.removeWhitelistChannel('123456789012345678')
+
+    // Restrict management
+    AI.addRestrictChannel('345678901234567890')
+    AI.removeRestrictChannel('345678901234567890')
+
+    // Query current lists
+    const whitelisted = AI.getWhitelistChannels() // string[]
+    const restricted = AI.getRestrictChannels()   // string[]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/toggle-channel.js"
+    import { AI } from '@robojs/ai'
+
+    // Whitelist management
+    AI.addWhitelistChannel('123456789012345678')
+    AI.removeWhitelistChannel('123456789012345678')
+
+    // Restrict management
+    AI.addRestrictChannel('345678901234567890')
+    AI.removeRestrictChannel('345678901234567890')
+
+    // Query current lists
+    const whitelisted = AI.getWhitelistChannels() // string[]
+    const restricted = AI.getRestrictChannels()   // string[]
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Runtime changes take effect immediately for new messages but are not persisted across restarts. The config file is the source of truth on startup.
+</Callout>
+
+## Surrounding context
+
+When the bot is mentioned in a regular channel (not whitelisted, not a DM), it fetches recent messages for additional context. This helps the model understand what the conversation is about without the user repeating everything.
+
+Context is injected as a separate system message framed as: "Recent channel conversation for reference. Only use this context if directly relevant to the user's question." Messages already present in the reply chain are excluded automatically.
+
+Configure this behavior in the plugin options:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	context: {
+    		enabled: true,
+    		depth: 8
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	context: {
+    		enabled: true,
+    		depth: 8
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+	type={{
+		enabled: {
+			type: 'boolean',
+			description: 'Fetch recent channel messages for context when the bot is mentioned.',
+			default: 'true'
+		},
+		depth: {
+			type: 'number',
+			description: 'Number of recent messages to fetch for context.',
+			default: '8'
+		}
+	}}
+/>
+
+Disable context entirely with `context: { enabled: false }`.
+
+## Reply chain resolution
+
+When a user replies to a bot message, the plugin walks the reply chain to build conversation history. This enables coherent multi-turn conversations without the user re-explaining prior turns.
+
+Two modes govern how history is loaded:
+
+- **Channel mode** -- Used in whitelisted channels and DMs. Fetches recent messages from the channel.
+- **Reference mode** -- Used in regular channels. Follows the reply reference chain up to a depth limit.
+
+The mode is selected automatically based on where the message originates. No configuration needed.
+
+## Mention normalization
+
+Discord mentions like `<@123456789012345678>` aren't useful to the AI model. The plugin converts them to readable usernames before sending the message (e.g., `@alice`). When the model mentions a user by name in its response, the plugin converts it back to a proper Discord mention using `replaceUsernamesWithIds()`.
+
+Role mentions (`<@&id>`) are converted to `@RoleName` and channel mentions (`<#id>`) to `#channel-name` using the same process.
+
+## Message chunking
+
+Discord enforces a 2000-character limit per message. When the AI's response exceeds this, the plugin splits it into multiple messages at paragraph and word boundaries to preserve readability. Each chunk is sent as a reply to the previous one, forming a clean thread.
+
+## Knowledge base (Insights)
+
+Drop files into the `/documents` directory at the root of your project. On startup, the engine syncs them to an OpenAI vector store using hash-based diffing, so only changed files are uploaded.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.mjs"
+    export default {
+    	insight: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    export default {
+    	insight: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Insights are enabled by default. Disable them with `insight: false`.
+
+For better recall, mention key documents in your `instructions` so the model knows to reference them when relevant.
+
+## Next steps
+
+<Cards>
+	<Card href="./voice" title="Voice" description="Realtime voice conversations." />
+	<Card href="./command-execution" title="Command execution" description="Natural language mapped to slash commands." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

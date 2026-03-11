@@ -1,0 +1,224 @@
+---
+title: Custom engines
+description: Build custom analytics providers or use multiple services at once.
+---
+
+The plugin supports any analytics service through the `BaseEngine` class. Extend it to integrate providers like Mixpanel, Amplitude, PostHog, or your own backend.
+
+## Creating a custom engine
+
+Extend `BaseEngine` and implement the `event()` and `view()` methods:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/engines/my-engine.ts"
+    import { BaseEngine } from '@robojs/analytics'
+    import type { EventOptions, ViewOptions } from '@robojs/analytics'
+
+    export class MyEngine extends BaseEngine {
+    	private apiKey: string
+
+    	constructor(apiKey: string) {
+    		super()
+    		this.apiKey = apiKey
+    	}
+
+    	async event(name: string, options?: EventOptions): Promise<void> {
+    		await fetch('https://api.my-analytics.com/track', {
+    			method: 'POST',
+    			headers: {
+    				'Authorization': `Bearer ${this.apiKey}`,
+    				'Content-Type': 'application/json'
+    			},
+    			body: JSON.stringify({
+    				event: name,
+    				properties: options?.data,
+    				userId: options?.userId,
+    				sessionId: options?.sessionId,
+    				timestamp: Date.now()
+    			})
+    		})
+    	}
+
+    	async view(page: string, options?: ViewOptions): Promise<void> {
+    		await this.event('page_view', {
+    			...options,
+    			data: { page, ...((options?.data as Record<string, unknown>) ?? {}) }
+    		})
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/engines/my-engine.js"
+    import { BaseEngine } from '@robojs/analytics'
+
+    export class MyEngine extends BaseEngine {
+    	constructor(apiKey) {
+    		super()
+    		this.apiKey = apiKey
+    	}
+
+    	async event(name, options) {
+    		await fetch('https://api.my-analytics.com/track', {
+    			method: 'POST',
+    			headers: {
+    				'Authorization': `Bearer ${this.apiKey}`,
+    				'Content-Type': 'application/json'
+    			},
+    			body: JSON.stringify({
+    				event: name,
+    				properties: options?.data,
+    				userId: options?.userId,
+    				sessionId: options?.sessionId,
+    				timestamp: Date.now()
+    			})
+    		})
+    	}
+
+    	async view(page, options) {
+    		await this.event('page_view', {
+    			...options,
+    			data: { page, ...((options?.data) ?? {}) }
+    		})
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Register it in your plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { MyEngine } from '../src/engines/my-engine.js'
+
+    export default {
+    	engine: new MyEngine(process.env.MY_ANALYTICS_KEY)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { MyEngine } from '../src/engines/my-engine.js'
+
+    export default {
+    	engine: new MyEngine(process.env.MY_ANALYTICS_KEY)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### The BaseEngine contract
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    abstract class BaseEngine {
+    	abstract event(name: string, options?: EventOptions): Promise<void> | void
+    	abstract view(page: string, options?: ViewOptions): Promise<void> | void
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    class BaseEngine {
+    	event(name, options) { /* abstract */ }
+    	view(page, options) { /* abstract */ }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Both methods can be synchronous or asynchronous. The `Analytics` singleton delegates directly to your implementation.
+
+### Best practices
+
+- **Catch errors internally.** Log failures instead of throwing. Unhandled errors from your engine can disrupt your bot's event flow.
+- **Use the analytics logger.** Import `analyticsLogger` for consistent log formatting:
+  <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+    <Tab value="TypeScript">
+      ```ts
+        import { analyticsLogger } from '@robojs/analytics/src/core/loggers.js'
+        analyticsLogger.debug('Event sent successfully')
+      ```
+    </Tab>
+    <Tab value="JavaScript">
+      ```js
+        import { analyticsLogger } from '@robojs/analytics/src/core/loggers.js'
+        analyticsLogger.debug('Event sent successfully')
+      ```
+    </Tab>
+  </Tabs>
+
+Events are sent to all engines simultaneously using `Promise.all()`. Each engine handles its own errors independently.
+
+### Mixing built-in and custom engines
+
+Combine built-in engines with your own:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
+    import { MyEngine } from '../src/engines/my-engine.js'
+
+    export default {
+    	engine: new ManyEngines(
+    		new GoogleAnalytics(),
+    		new MyEngine(process.env.MY_ANALYTICS_KEY)
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/analytics.mjs"
+    import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
+    import { MyEngine } from '../src/engines/my-engine.js'
+
+    export default {
+    	engine: new ManyEngines(
+    		new GoogleAnalytics(),
+    		new MyEngine(process.env.MY_ANALYTICS_KEY)
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Auto-detection shortcut
+
+If you set both `GOOGLE_ANALYTICS_MEASURE_ID` and `PLAUSIBLE_DOMAIN` in your `.env`, the plugin automatically creates a `ManyEngines` wrapping both services. No config file needed.
+
+<Callout type="info">
+When using `ManyEngines`, make sure each engine catches its own errors. If one engine throws (e.g., Plausible's 30-field limit), the `Promise.all()` rejects and may mask successful calls to other engines.
+</Callout>
+
+## EventOptions reference
+
+Both `event()` and `view()` accept an options object. Each engine decides which fields to use:
+
+| Field | Type | GoogleAnalytics | Plausible | Custom |
+|---|---|---|---|---|
+| `sessionId` | `string` | `client_id` | Not used | Up to you |
+| `userId` | `number \| string` | `user_id` | Not used | Up to you |
+| `data` | `unknown` | Event `params` | `props` (max 30) | Up to you |
+| `domain` | `string` | Not used | Override domain | Up to you |
+| `url` | `string` | Not used | Override URL | Up to you |
+| `revenue` | `{ currency, amount }` | Merged into `params` | Not used | Up to you |
+| `action` | `string` | Not used | Not used | Up to you |
+| `actionType` | `string` | Not used | Not used | Up to you |
+| `label` | `string` | Not used | Not used | Up to you |
+| `name` | `string` | Not used | Not used | Up to you |
+| `referrer` | `string` | Not used | Not used | Up to you |
+| `type` | `string` | Not used | Not used | Up to you |
+
+Fields marked "Up to you" are available for your custom engine to consume however you want.
+
+## Next Steps
+
+<Cards>
+  <Card href="./api" title="API reference" description="Full API documentation." />
+  <Card href="./configuration" title="Configuration" description="Plugin options and environment variables." />
+</Cards>

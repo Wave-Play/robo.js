@@ -1,0 +1,238 @@
+---
+title: Role rewards
+description: Automatically assign Discord roles based on user level.
+---
+
+Role rewards grant Discord roles when users reach specific levels. The plugin handles role assignment, removal, and conflict resolution automatically.
+
+## How it works
+
+Configure level-to-role mappings via `/xp config` or the API. When a user's level changes, the plugin reconciles their roles based on the configured rewards and mode.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { config } from '@robojs/xp'
+
+    await config.set(guildId, {
+    	roleRewards: [
+    		{ level: 5, roleId: '111111111111111111' },
+    		{ level: 10, roleId: '222222222222222222' },
+    		{ level: 25, roleId: '333333333333333333' },
+    		{ level: 50, roleId: '444444444444444444' }
+    	]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { config } from '@robojs/xp'
+
+    await config.set(guildId, {
+    	roleRewards: [
+    		{ level: 5, roleId: '111111111111111111' },
+    		{ level: 10, roleId: '222222222222222222' },
+    		{ level: 25, roleId: '333333333333333333' },
+    		{ level: 50, roleId: '444444444444444444' }
+    	]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Reward modes
+
+### Stack mode (default)
+
+Users keep all role rewards from previous levels. A level 25 user has the level 5, 10, and 25 roles.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await config.set(guildId, { rewardsMode: 'stack' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await config.set(guildId, { rewardsMode: 'stack' })
+    ```
+  </Tab>
+</Tabs>
+
+### Replace mode
+
+Users only keep the highest qualifying role. A level 25 user has only the level 25 role -- lower rewards are removed.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await config.set(guildId, { rewardsMode: 'replace' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await config.set(guildId, { rewardsMode: 'replace' })
+    ```
+  </Tab>
+</Tabs>
+
+Replace mode is useful when rewards represent tiers (Bronze, Silver, Gold) where only the current tier should be visible.
+
+## Remove on XP loss
+
+By default, users keep their role rewards even if they lose levels (e.g., from `/xp remove`). Enable `removeRewardOnXpLoss` to remove roles when users drop below the required level.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await config.set(guildId, { removeRewardOnXpLoss: true })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await config.set(guildId, { removeRewardOnXpLoss: true })
+    ```
+  </Tab>
+</Tabs>
+
+In stack mode, roles above the user's new level are removed. In replace mode, the user's role is updated to match their new highest qualifying level.
+
+## Managing rewards via commands
+
+Use `/xp config` and navigate to the **Role Rewards** category:
+
+- **Add reward** -- Select a role and enter the level requirement (1-1000)
+- **Remove reward** -- Choose from a list of configured rewards to remove
+- **Set mode** -- Switch between stack and replace
+- **Toggle remove-on-loss** -- Enable/disable role removal on level loss
+
+## Reconciliation
+
+Role reconciliation runs automatically when:
+- A user levels up (via message XP or admin commands)
+- A user levels down (via XP removal)
+- An admin runs `/xp recalc @user`
+
+### Manual reconciliation
+
+Trigger reconciliation programmatically when needed (e.g., after changing reward configuration):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { rewards, config, XP } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const userLevel = await XP.getLevel(guildId, userId)
+
+    await rewards.reconcile(guildId, userId, userLevel, guildConfig)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { rewards, config, XP } from '@robojs/xp'
+
+    const guildConfig = await config.get(guildId)
+    const userLevel = await XP.getLevel(guildId, userId)
+
+    await rewards.reconcile(guildId, userId, userLevel, guildConfig)
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+The `reconcile` function requires 4 arguments: `guildId`, `userId`, `newLevel`, and `guildConfig`. Pass the full guild config and the user's current level.
+</Callout>
+
+## Permission requirements
+
+The bot needs these permissions for role rewards to work:
+
+1. **Manage Roles** -- Required to add/remove roles
+2. **Role hierarchy** -- The bot's highest role must be above all reward roles
+3. **Not managed** -- Cannot assign managed roles (e.g., Nitro Booster, integration-managed)
+
+The plugin checks all three conditions before each role operation. Failed operations are logged but don't throw errors, so other rewards still process.
+
+## Default store only
+
+Role rewards only trigger for the default store. Custom stores (e.g., `'reputation'`, `'coins'`) never grant or remove Discord roles, even if they have `roleRewards` configured.
+
+This prevents conflicts where multiple progression systems would compete over the same roles. If you need role rewards for a custom store, build a custom listener:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
+    	if (storeId !== 'reputation') return
+
+    	const guild = await client.guilds.fetch(guildId)
+    	const member = await guild.members.fetch(userId)
+
+    	if (newLevel >= 10) {
+    		await member.roles.add('REPUTATION_ROLE_ID')
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
+    	if (storeId !== 'reputation') return
+
+    	const guild = await client.guilds.fetch(guildId)
+    	const member = await guild.members.fetch(userId)
+
+    	if (newLevel >= 10) {
+    		await member.roles.add('REPUTATION_ROLE_ID')
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Duplicate handling
+
+If the same role appears at multiple levels, the plugin keeps only the highest level entry. This is deduplicated automatically during reconciliation.
+
+## Troubleshooting
+
+### Roles not being granted
+
+1. Check that the bot has the **Manage Roles** permission
+2. Verify the bot's highest role is above all reward roles in the server settings
+3. Confirm the reward roles aren't managed (integration or boost roles)
+4. Run `/xp recalc @user` to force reconciliation
+
+### Roles not removed after level loss
+
+Check that `removeRewardOnXpLoss` is enabled:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const guildConfig = await config.get(guildId)
+    console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const guildConfig = await config.get(guildId)
+    console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Full config reference including reward settings." />
+  <Card href="./commands" title="Commands" description="Using /xp config to manage rewards." />
+  <Card href="./multi-store" title="Multi-store" description="Why rewards only work with the default store." />
+</Cards>

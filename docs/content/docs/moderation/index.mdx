@@ -1,0 +1,89 @@
+---
+title: "README"
+icon: Shield
+description: Comprehensive Discord server moderation tools with audit, ban, kick, warning, and reporting commands
+---
+
+<PluginHero
+	name="@robojs/moderation"
+	description="Equip your bot with essential tools to manage and maintain your server."
+	icon={<Shield />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-modtools"
+	platforms={["Bots"]}
+	optional={[{ name: "@robojs/ai", href: "/docs/ai", description: "Natural language moderation" }]}
+/>
+
+A moderation suite for Discord servers built on Robo.js. Ban, kick, warn, timeout, audit, and report members through slash commands and context menus — with dedicated logging channels, a rules acceptance system, lockdown mode, and AI-powered natural language moderation.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Terminal />} title="Slash Commands" description="Ban, kick, warn, timeout, forgive, audit, report, and setup" />
+	<Feature icon={<Zap />} title="Context Menus" description="Right-click to audit a user or report a message" />
+	<Feature icon={<BookText />} title="Rules System" description="Post rules with an accept button, auto-delete unverified messages" />
+	<Feature icon={<FileText />} title="Mod Channels" description="Dedicated channels for action logs and user reports" />
+	<Feature icon={<TestTube />} title="Test Mode" description="Simulate moderation actions without executing them" />
+	<Feature icon={<Lock />} title="Lockdown" description="Restrict all bot commands to moderators only" />
+	<Feature icon={<Key />} title="Anonymous Mode" description="Execute moderation actions without revealing the moderator" />
+	<Feature icon={<Database />} title="Infraction Tracking" description="Persistent strike counts and ban records per user" />
+	<Feature icon={<Brain />} title="AI Integration" description="Pair with @robojs/ai for natural language moderation" />
+</FeatureGrid>
+
+## Installation
+
+Add the plugin to your Robo:
+
+```bash
+npx robo add @robojs/moderation
+```
+
+Or create a new project with it pre-installed:
+
+```package-install
+npx create-robo my-bot -p @robojs/moderation
+```
+
+The plugin automatically registers required Discord intents and bot permissions when installed.
+
+## How it works
+
+Run `/mod setup` after installing the plugin. This opens an interactive panel where you configure moderation log channels and toggle features like test mode, confirmation mode, and lockdown.
+
+Once configured, moderators use `/mod` commands to take action. Every action is logged to your moderator logs channel. Users can submit reports via `/mod report` or the right-click context menu, which land in your moderator mail channel.
+
+The plugin persists infraction counts, ban records, and server settings across restarts using Robo's built-in storage.
+
+## Recommended learning path
+
+1. [Quick Start](./quick-start) — Install and configure in under 5 minutes
+2. [Configuration](./configuration) — Plugin options, intents, and permissions
+3. [Commands](./commands) — Full reference for all slash and context menu commands
+4. [Rules System](./rules-system) — Set up rules acceptance and enforcement
+5. [Moderation Channels](./moderation-channels) — Configure logging and reports
+6. [Lockdown Mode](./lockdown-mode) — Emergency command restriction with the `getLockdown` API
+7. [AI Integration](./ai-integration) — Natural language moderation with `@robojs/ai`
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./quick-start"
+    title="Quick Start"
+    description="Install and configure moderation in under 5 minutes."
+  />
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Plugin options, intents, and permissions."
+  />
+  <Card
+    href="./rules-system"
+    title="Rules System"
+    description="Set up rules acceptance and enforcement."
+  />
+</Cards>

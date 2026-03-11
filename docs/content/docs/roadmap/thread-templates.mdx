@@ -1,0 +1,98 @@
+---
+title: Thread templates
+description: Customize Discord thread title formatting with template strings.
+---
+
+Thread title templates control how Discord thread names are formatted. Templates support placeholders for the card ID and title, with smart truncation that preserves the template structure.
+
+## Template format
+
+Templates use two placeholders:
+
+| Placeholder | Description | Example value |
+|---|---|---|
+| `{id}` | Card ID from the provider | `PROJ-123` |
+| `{title}` | Card title | `Add dark mode support` |
+
+## Configuration
+
+### Global default
+
+Set a default template for all guilds in your plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    export default {
+      threadTitleTemplate: '[{id}] {title}'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    export default {
+      threadTitleTemplate: '[{id}] {title}'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Per-guild override
+
+Override the global default for a specific guild:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { updateSettings } from '@robojs/roadmap'
+
+    updateSettings(guildId, {
+      threadTitleTemplate: '{id} - {title}'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { updateSettings } from '@robojs/roadmap'
+
+    updateSettings(guildId, {
+      threadTitleTemplate: '{id} - {title}'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Guild settings take precedence over the global plugin default.
+
+## Examples
+
+| Template | Result |
+|---|---|
+| `[{id}] {title}` | `[PROJ-123] Add dark mode support` |
+| `{id} - {title}` | `PROJ-123 - Add dark mode support` |
+| `{title} ({id})` | `Add dark mode support (PROJ-123)` |
+| `{id}` | `PROJ-123` |
+| `{title}` | `Add dark mode support` |
+| _(empty or undefined)_ | `Add dark mode support` |
+
+## Truncation behavior
+
+Discord thread names have a 100-character limit. The template system truncates intelligently:
+
+- If the template contains `{title}`, only the title portion is truncated while preserving the rest of the template (including `{id}`)
+- If the template doesn't contain `{title}`, the entire result is truncated
+- Truncation adds `...` at the cut point
+
+For example, with template `[{id}] {title}` and a 120-character title, the ID portion `[PROJ-123] ` is preserved and only the title is shortened to fit within 100 characters.
+
+## Sync updates
+
+Running `/roadmap sync` updates all existing thread titles to match the current template. This means you can change the template and re-sync to retroactively update all thread names.
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="All plugin options." />
+  <Card href="./commands" title="Commands" description="Slash commands reference." />
+  <Card href="./api-reference" title="API reference" description="Use formatThreadName() directly." />
+</Cards>

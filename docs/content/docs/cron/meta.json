@@ -1,0 +1,15 @@
+{
+	"title": "@robojs/cron",
+	"icon": "Hourglass",
+	"description": "Schedule recurring tasks with cron expressions.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Guides---",
+		"patterns",
+		"persistence",
+		"---Reference---",
+		"cron-expressions",
+		"api"
+	]
+}

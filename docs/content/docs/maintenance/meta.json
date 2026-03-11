@@ -1,0 +1,7 @@
+{
+	"title": "@robojs/maintenance",
+	"icon": "Wrench",
+	"description": "Maintenance mode utilities for Robo.js.",
+	"root": true,
+	"pages": ["index", "---Reference---", "configuration"]
+}

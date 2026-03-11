@@ -1,0 +1,187 @@
+---
+title: Configuration
+description: Plugin options, Jira settings, and behavior customization.
+---
+
+Configure the plugin in `config/plugins/robojs/roadmap.ts` (or `.mjs`). The seed file created during installation includes all options with documentation.
+
+## Plugin options
+
+<TypeTable
+  type={{
+    provider: { type: 'RoadmapProvider | ProviderConfig', description: 'Provider instance or config object. Falls back to environment variables if not set.', default: 'undefined' },
+    threadTitleTemplate: { type: 'string', description: 'Default template for thread titles. Supports {id} and {title} placeholders.', default: 'undefined (card title only)' },
+    autocompleteCacheTtl: { type: 'number', description: 'Cache duration in ms for autocomplete suggestions.', default: '300000 (5 min)' },
+    ephemeralCommands: { type: 'boolean', description: 'Whether /roadmap add and /roadmap edit replies are ephemeral.', default: 'true' },
+    autoSync: { type: 'boolean', description: 'Reserved for future automatic sync on startup.', default: 'false' },
+    syncInterval: { type: 'number', description: 'Reserved for future sync interval in ms.', default: 'undefined' },
+  }}
+/>
+
+## Full config example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    import { JiraProvider } from '@robojs/roadmap'
+    import type { RoadmapPluginOptions } from '@robojs/roadmap'
+
+    const config: RoadmapPluginOptions = {
+      provider: new JiraProvider({
+        type: 'jira',
+        options: {
+          url: process.env.JIRA_URL,
+          email: process.env.JIRA_EMAIL,
+          apiToken: process.env.JIRA_API_TOKEN,
+          projectKey: process.env.JIRA_PROJECT_KEY,
+          jql: process.env.JIRA_JQL,
+          maxResults: 100,
+          defaultIssueType: 'Task'
+        }
+      }),
+
+      threadTitleTemplate: '[{id}] {title}',
+      autocompleteCacheTtl: 300000,
+      ephemeralCommands: true
+    }
+
+    export default config
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    import { JiraProvider } from '@robojs/roadmap'
+
+    const config = {
+      provider: new JiraProvider({
+        type: 'jira',
+        options: {
+          url: process.env.JIRA_URL,
+          email: process.env.JIRA_EMAIL,
+          apiToken: process.env.JIRA_API_TOKEN,
+          projectKey: process.env.JIRA_PROJECT_KEY,
+          jql: process.env.JIRA_JQL,
+          maxResults: 100,
+          defaultIssueType: 'Task'
+        }
+      }),
+
+      threadTitleTemplate: '[{id}] {title}',
+      autocompleteCacheTtl: 300000,
+      ephemeralCommands: true
+    }
+
+    export default config
+    ```
+  </Tab>
+</Tabs>
+
+## Ephemeral commands
+
+By default, `/roadmap add` and `/roadmap edit` responses are ephemeral (only visible to the user who ran the command). Set `ephemeralCommands: false` to make responses visible to the whole channel:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    export default {
+      ephemeralCommands: false
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    export default {
+      ephemeralCommands: false
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This doesn't affect `/roadmap setup` or `/roadmap sync`, which always show their responses to the invoking user.
+
+## Autocomplete cache
+
+Autocomplete suggestions for columns, labels, and issue types are cached per-guild. The default TTL is 5 minutes. Lower values refresh faster but increase provider API calls:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/roadmap.ts"
+    export default {
+      autocompleteCacheTtl: 60000  // Refresh every minute
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/roadmap.js"
+    export default {
+      autocompleteCacheTtl: 60000  // Refresh every minute
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `/roadmap edit` card autocomplete uses a separate 60-second cache.
+
+## Public vs private forums
+
+Forums default to private mode where only administrators and moderators can view them. Toggle access through the `/roadmap setup` panel or programmatically:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { toggleForumAccess } from '@robojs/roadmap'
+
+    // Make roadmap visible to everyone
+    await toggleForumAccess(guild, 'public')
+
+    // Restrict to admins and mods
+    await toggleForumAccess(guild, 'private')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { toggleForumAccess } from '@robojs/roadmap'
+
+    // Make roadmap visible to everyone
+    await toggleForumAccess(guild, 'public')
+
+    // Restrict to admins and mods
+    await toggleForumAccess(guild, 'private')
+    ```
+  </Tab>
+</Tabs>
+
+In public mode, everyone can view and comment on threads, but only admins and mods can create new threads.
+
+## Guild-specific settings
+
+Each guild has its own persistent settings stored via Flashcore. These include forum channel IDs, access mode, sync history, assignee mappings, column mappings, and more. Access them programmatically:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getSettings, updateSettings } from '@robojs/roadmap'
+
+    const settings = getSettings(guildId)
+    updateSettings(guildId, { isPublic: true })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getSettings, updateSettings } from '@robojs/roadmap'
+
+    const settings = getSettings(guildId)
+    updateSettings(guildId, { isPublic: true })
+    ```
+  </Tab>
+</Tabs>
+
+See the [API reference](./api-reference.mdx) for the full list of settings functions.
+
+## Next steps
+
+<Cards>
+  <Card href="./column-mapping" title="Column mapping" description="Configure status-to-column mappings." />
+  <Card href="./thread-templates" title="Thread templates" description="Customize Discord thread titles." />
+  <Card href="./provider-setup" title="Provider setup" description="Jira credentials and JQL filtering." />
+</Cards>

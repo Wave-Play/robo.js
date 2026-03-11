@@ -1,0 +1,252 @@
+---
+title: Lifecycle
+description: Plugin lifecycle hooks, client timeline, handler loading, and startup events.
+---
+
+The `@robojs/discordjs` plugin follows a structured lifecycle that creates the Discord client, logs in, registers gateway listeners, and shuts down cleanly. Understanding this lifecycle helps you hook into the right moment for initialization, cleanup, and client access.
+
+## Timeline
+
+The plugin lifecycle runs in three phases during Robo's startup:
+
+```
+prepare          start               clientReady              stop
+   │                │                      │                     │
+   ├─ Create Client ├─ Validate token      ├─ Caches populated   ├─ client.destroy()
+   ├─ Set up state  ├─ Wait for server*    ├─ Check intents      ├─ Clear client ref
+   ├─ Load handlers ├─ client.login()      ├─ Bot is online      │
+   ├─ Register       ├─ Register commands*  │                     │
+   │  event listeners│                      │                     │
+   │                 │                      │                     │
+```
+
+\* Only in mock mode
+
+## Robo lifecycle files (recommended)
+
+The recommended way to hook into startup and shutdown is with Robo lifecycle files. These run for all Robo projects, not just Discord bots.
+
+### `src/robo/start.ts`
+
+Runs during Robo startup, after the plugin's prepare phase. Use it for initial data loading, connecting to external services, or any setup that should happen before the bot goes online.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/robo/start.ts"
+    import { getClient } from '@robojs/discordjs'
+    import { logger } from 'robo.js/logger.js'
+
+    export default async () => {
+    	logger.info('Bot is starting up...')
+
+    	// Access the Discord client (created during prepare)
+    	const client = getClient()
+    	client.user?.setPresence({ status: 'dnd' })
+
+    	// Load data, connect to databases, etc.
+    	await loadInitialData()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/robo/start.js"
+    import { getClient } from '@robojs/discordjs'
+    import { logger } from 'robo.js/logger.js'
+
+    export default async () => {
+    	logger.info('Bot is starting up...')
+
+    	const client = getClient()
+    	client.user?.setPresence({ status: 'dnd' })
+
+    	await loadInitialData()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### `src/robo/stop.ts`
+
+Runs during shutdown. Use it for cleanup, disconnecting external services, or saving state.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/robo/stop.ts"
+    import { logger } from 'robo.js/logger.js'
+
+    export default async () => {
+    	logger.info('Bot is shutting down...')
+    	await saveState()
+    	await disconnectDatabase()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/robo/stop.js"
+    import { logger } from 'robo.js/logger.js'
+
+    export default async () => {
+    	logger.info('Bot is shutting down...')
+    	await saveState()
+    	await disconnectDatabase()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## The `ready` event
+
+The `ready` event is a Discord.js gateway event that fires when the client's caches are populated and the bot is fully connected. This is different from `robo/start.ts` -- the `ready` event fires *after* the client has connected to Discord's gateway and populated its cache.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/ready.ts"
+    import type { EventConfig } from '@robojs/discordjs'
+    import type { Client } from 'discord.js'
+
+    export const config: EventConfig = {
+    	frequency: 'once'
+    }
+
+    export default (client: Client) => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    	console.log(`Serving ${client.guilds.cache.size} servers`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/ready.js"
+    export const config = {
+    	frequency: 'once'
+    }
+
+    export default (client) => {
+    	console.log(`Logged in as ${client.user?.tag}`)
+    	console.log(`Serving ${client.guilds.cache.size} servers`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Use `frequency: 'once'` on the `ready` event since it should typically only run on the initial connection. The handler is disabled at runtime after its first execution and re-enables on restart.
+</Callout>
+
+### `robo/start.ts` vs `ready` event
+
+| | `robo/start.ts` | `ready` event |
+|---|---|---|
+| **When** | During Robo startup | After Discord gateway connection |
+| **Client state** | Client exists but may not be logged in | Client is fully connected, caches populated |
+| **Use for** | General startup logic, data loading | Discord-specific setup that needs cached data |
+| **Framework** | Robo.js (works for all project types) | Discord.js gateway event |
+
+## Legacy `_start` / `_stop` / `_restart` events
+
+<Callout type="warn">
+These event-style lifecycle hooks exist primarily for **migration** from older Robo.js patterns or from plain Discord.js. New projects should use `robo/start.ts` and `robo/stop.ts` files instead.
+</Callout>
+
+The plugin supports legacy lifecycle events placed in `src/events/`:
+
+- `src/events/_start.ts` -- Runs during plugin startup
+- `src/events/_stop.ts` -- Runs during plugin shutdown
+- `src/events/_restart.ts` -- Runs during hot-reload restarts
+
+These events have an enforced **5-second timeout**. If a handler exceeds this timeout, a warning is logged and execution continues. Plugin handlers with `failSafe` enabled will log a warning instead of throwing on `_start` failure, allowing the bot to continue starting even if a plugin's initialization fails.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { getClient } from '@robojs/discordjs'
+
+    export default () => {
+    	const client = getClient()
+
+    	// Legacy pattern: register additional event listeners
+    	client.on('messageCreate', (message) => {
+    		if (message.content === '!hello') {
+    			message.reply('Hello from legacy handler!')
+    		}
+    	})
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { getClient } from '@robojs/discordjs'
+
+    export default () => {
+    	const client = getClient()
+
+    	client.on('messageCreate', (message) => {
+    		if (message.content === '!hello') {
+    			message.reply('Hello from legacy handler!')
+    		}
+    	})
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Handler loading
+
+The plugin uses two different loading strategies depending on the environment:
+
+| Mode | Strategy | Reason |
+|------|----------|--------|
+| **Production** | Eager loading | All handlers are imported in parallel during prepare for fastest runtime access |
+| **Development** | Lazy loading | Handlers are imported on-demand for faster startup and HMR support |
+| **Mock** | Lazy loading | Avoids module linking issues with test runners |
+
+<Callout>
+This is automatic -- no user configuration is needed. The plugin determines the loading strategy based on `Mode.isDev()` and the `ROBO_MOCK_MODE` environment variable.
+</Callout>
+
+## Client access
+
+Access the Discord client anywhere in your code using `getClient()` and `hasClient()`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getClient, hasClient } from '@robojs/discordjs'
+
+    // Check if client is available
+    if (hasClient()) {
+    	const client = getClient()
+    	client.user?.setPresence({ status: 'online' })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getClient, hasClient } from '@robojs/discordjs'
+
+    if (hasClient()) {
+    	const client = getClient()
+    	client.user?.setPresence({ status: 'online' })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+`getClient()` throws if called before the prepare hook completes. Use `hasClient()` to safely check availability, especially in code that may run during early initialization.
+</Callout>
+
+## Mock mode lifecycle
+
+When running with `@robojs/mock` (`ROBO_MOCK_MODE=true`), the lifecycle has a few differences:
+
+1. **Server wait**: The start hook waits for `@robojs/server` to be ready before logging in, since the mock server must be listening before Discord.js can connect to its mock gateway
+2. **Runtime registration**: Commands are registered at runtime instead of build time, since the build/complete step is skipped in mock mode
+3. **Standalone mode**: When `__ROBO_MOCK_STANDALONE=true`, the start hook skips login entirely -- the mock server runs without a bot
+
+## Next steps
+
+<Cards>
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./events" title="Events" description="Gateway event handlers." />
+	<Card href="./command-registration" title="Command registration" description="How commands are registered with Discord." />
+</Cards>

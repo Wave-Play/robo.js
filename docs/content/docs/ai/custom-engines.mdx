@@ -1,0 +1,192 @@
+---
+title: Custom engines
+description: Build your own AI provider by extending BaseEngine.
+---
+
+The plugin uses an engine abstraction for all AI operations. The default `OpenAiEngine` ships with the plugin, but you can build custom engines for any provider -- Anthropic, Azure OpenAI, Llama, on-prem solutions, or anything else that speaks HTTP.
+
+## BaseEngine contract
+
+Extend the `BaseEngine` abstract class to create a custom engine. Four methods are required:
+
+| Method | Returns | Purpose |
+|--------|---------|---------|
+| `chat(messages, options)` | `Promise<ChatResult>` | Core chat completion. |
+| `generateImage(options)` | `Promise<GenerateImageResult>` | Image generation. |
+| `getFunctionHandlers()` | `Record<string, Command>` | Command handler map for tool execution. |
+| `getInfo()` | `Record<string, unknown>` | Engine metadata for diagnostics. |
+
+### Optional overrides
+
+| Method | Default | Purpose |
+|--------|---------|---------|
+| `init()` | No-op | Async initialization (auth, warmup, resource loading). |
+| `supportedFeatures()` | `{ voice: false, voiceTranscription: false, vision: false }` | Feature capability flags. |
+| `startVoiceSession(options)` | Throws | Start a realtime voice session. |
+| `stopVoiceSession(handle)` | Throws | Stop a voice session. |
+| `summarizeToolResult(params)` | Pass-through | Summarize tool execution results for follow-up prompts. |
+| `getMCPTools()` | `[]` | Return configured MCP server tools. |
+
+## Minimal example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/engines/custom.ts"
+    import { BaseEngine } from '@robojs/ai'
+    import type {
+    	ChatMessage,
+    	ChatOptions,
+    	ChatResult,
+    	GenerateImageOptions,
+    	GenerateImageResult
+    } from '@robojs/ai'
+
+    export class CustomEngine extends BaseEngine {
+    	async init() {
+    		// Authenticate, warm up connections
+    	}
+
+    	async chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult> {
+    		const response = await myProvider.complete(messages)
+    		return {
+    			finish_reason: 'stop',
+    			message: { role: 'assistant', content: response.text }
+    		}
+    	}
+
+    	async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
+    		throw new Error('Image generation not supported')
+    	}
+
+    	getFunctionHandlers() {
+    		return {}
+    	}
+
+    	getInfo() {
+    		return { name: 'custom', version: '1.0.0' }
+    	}
+
+    	supportedFeatures() {
+    		return { voice: false, voiceTranscription: false, vision: true }
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/engines/custom.js"
+    import { BaseEngine } from '@robojs/ai'
+
+    export class CustomEngine extends BaseEngine {
+    	async init() {
+    		// Authenticate, warm up connections
+    	}
+
+    	async chat(messages, options) {
+    		const response = await myProvider.complete(messages)
+    		return {
+    			finish_reason: 'stop',
+    			message: { role: 'assistant', content: response.text }
+    		}
+    	}
+
+    	async generateImage(options) {
+    		throw new Error('Image generation not supported')
+    	}
+
+    	getFunctionHandlers() {
+    		return {}
+    	}
+
+    	getInfo() {
+    		return { name: 'custom', version: '1.0.0' }
+    	}
+
+    	supportedFeatures() {
+    		return { voice: false, voiceTranscription: false, vision: true }
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Registration
+
+Wire your engine in the plugin config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    import { CustomEngine } from '../src/engines/custom.js'
+
+    export default {
+    	engine: new CustomEngine()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.mjs"
+    import { CustomEngine } from '../src/engines/custom.js'
+
+    export default {
+    	engine: new CustomEngine()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+When a custom engine is provided, `OPENAI_API_KEY` isn't required. The engine handles its own authentication.
+
+## ChatResult
+
+The `chat()` method must return a `ChatResult` object:
+
+<TypeTable
+	type={{
+		finish_reason: { type: 'string', description: 'Completion reason (e.g., "stop", "tool_calls").', default: 'Required' },
+		message: { type: 'ChatMessage', description: "The assistant's response message.", default: 'undefined' },
+		toolCalls: { type: 'ChatFunctionCall[]', description: 'Tool calls for command execution.', default: 'undefined' },
+		mcpCalls: { type: 'MCPCall[]', description: 'MCP tool calls made during the completion.', default: 'undefined' },
+		degradedMcpServers: { type: 'string[]', description: 'MCP servers that were removed due to failures.', default: 'undefined' },
+		conversation: { type: 'ConversationState', description: 'Conversation state for continuity across turns.', default: 'undefined' },
+		voice: { type: 'VoiceChatResult', description: 'Voice session result metadata.', default: 'undefined' },
+	}}
+/>
+
+## EngineSupportedFeatures
+
+Feature flags returned by `supportedFeatures()`:
+
+<TypeTable
+	type={{
+		voice: { type: 'boolean', description: 'Whether the engine can handle realtime voice sessions.', default: 'false' },
+		voiceTranscription: { type: 'boolean', description: 'Speech-to-text capability.', default: 'false' },
+		vision: { type: 'boolean', description: 'Image understanding capability.', default: 'false' },
+	}}
+/>
+
+## Voice-capable engines
+
+To support voice, implement these methods and set `supportedFeatures().voice` to `true`:
+
+- `startVoiceSession(options: VoiceSessionStartOptions)` -- Returns a `VoiceSessionHandle` with `pump()`, `commitInput()`, and `stop()` methods for controlling the audio stream.
+- `stopVoiceSession(handle: VoiceSessionHandle)` -- Cleans up the voice session and releases resources.
+
+The `VoiceSessionHandle` provides:
+
+<TypeTable
+	type={{
+		channelId: { type: 'string', description: 'Voice channel identifier.', default: 'Required' },
+		guildId: { type: 'string', description: 'Guild identifier.', default: 'Required' },
+		id: { type: 'string', description: 'Unique session identifier.', default: 'Required' },
+		pump: { type: '(frame: VoiceInputFrame) => Promise<void>', description: 'Push additional audio frames into the session.', default: 'undefined' },
+		commitInput: { type: '() => Promise<void>', description: 'Commit buffered audio for processing.', default: 'undefined' },
+		stop: { type: '(reason?: string) => Promise<void>', description: 'Stop the session.', default: 'undefined' },
+	}}
+/>
+
+## Next steps
+
+<Cards>
+	<Card href="./hooks" title="Hooks" description="Intercept and customize the AI pipeline." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

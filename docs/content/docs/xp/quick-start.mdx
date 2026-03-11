@@ -1,0 +1,113 @@
+---
+title: Quick start
+description: Install the XP plugin and start leveling users in minutes.
+---
+
+Get the XP system running in your Robo with a single command. No configuration required -- the defaults work out of the box.
+
+## Install
+
+```bash
+npx robo add @robojs/xp
+```
+
+Or create a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/xp
+```
+
+## Try it out
+
+Start your Robo and send a few messages in any text channel. The plugin begins tracking XP immediately.
+
+<Steps>
+  <Step>
+    ### Check your rank
+
+    Use `/rank` to see your current level, XP, and progress toward the next level. The command shows a progress bar and your position on the server leaderboard.
+  </Step>
+  <Step>
+    ### View the leaderboard
+
+    Use `/leaderboard` to see the top users in the server. By default, this command requires the Manage Guild permission. Set `leaderboard.public` to `true` in your config to make it available to everyone.
+  </Step>
+  <Step>
+    ### Give XP manually
+
+    Admins can use `/xp give @user 500` to award XP directly. The plugin recalculates the user's level and grants any role rewards automatically.
+  </Step>
+</Steps>
+
+## Plugin config file
+
+When installed, the plugin seeds a config file at `config/plugins/robojs/xp.ts`. This file controls global defaults applied to all guilds on startup.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/xp.ts"
+    import type { PluginOptions } from '@robojs/xp'
+
+    export default {
+    	defaults: {
+    		cooldownSeconds: 60,
+    		xpRate: 1.0
+    	}
+    } satisfies PluginOptions
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/xp.js"
+    export default {
+    	defaults: {
+    		cooldownSeconds: 60,
+    		xpRate: 1.0
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `defaults` field accepts any `GuildConfig` fields. These become the global baseline that individual guilds can override through `/xp config` or the API.
+
+## File structure
+
+After installation, the plugin adds the following to your project:
+
+<Files>
+  <Folder name="config" defaultOpen>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="xp.ts" />
+      </Folder>
+    </Folder>
+  </Folder>
+  <Folder name="src">
+    <Folder name="events">
+      <Folder name="_start">
+        <File name="level-announcements.ts" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+The `level-announcements.ts` seed file is a starter template for sending messages when users level up. Customize it or remove it if you don't need announcements.
+
+## Enable the REST API
+
+The plugin includes optional HTTP endpoints for building web dashboards. Install `@robojs/server` to enable them:
+
+```bash
+npx robo add @robojs/server
+```
+
+Once installed, endpoints like `GET /api/xp/users/:guildId/:userId` and `GET /api/xp/leaderboard/:guildId` become available automatically. See [REST API](./rest-api.mdx) for the full endpoint reference.
+
+## Next steps
+
+<Cards>
+  <Card href="./configuration" title="Configuration" description="Customize cooldowns, multipliers, and no-XP zones." />
+  <Card href="./commands" title="Commands" description="Full slash command reference." />
+  <Card href="./events" title="Events" description="Listen to level-ups and XP changes." />
+  <Card href="./recipes" title="Recipes" description="Common integration patterns." />
+</Cards>

@@ -1,0 +1,30 @@
+{
+	"title": "@robojs/sync",
+	"icon": "RefreshSync",
+	"description": "Real-time state sync for multiplayer apps.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Getting Started---",
+		"quick-start",
+		"---Hooks---",
+		"use-sync-state",
+		"use-sync-context",
+		"use-sync-broadcast",
+		"use-sync-call",
+		"---Components---",
+		"sync-zone",
+		"sync-box",
+		"---Primitives---",
+		"cursors",
+		"draggables",
+		"presence",
+		"---Server---",
+		"server-handlers",
+		"middleware",
+		"schema-validation",
+		"server-api",
+		"---Advanced---",
+		"flashcore-realtime"
+	]
+}

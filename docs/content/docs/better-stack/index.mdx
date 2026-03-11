@@ -1,0 +1,135 @@
+---
+title: "README"
+icon: Activity
+description: Monitor your Robo's uptime and integrate logs with Better Stack.
+---
+
+<PluginHero
+	name="@robojs/better-stack"
+	description="Monitor your Robo's uptime and integrate logs with Better Stack."
+	icon={<Activity />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack"
+	platforms={["Bots", "Activities", "Web"]}
+/>
+
+Integrate [Better Stack](https://betterstack.com) into your Robo for uptime monitoring and centralized log management. This plugin provides two core features: **heartbeat monitoring** to track whether your Robo is online, and **log ingestion** to forward structured logs to Better Stack's searchable dashboard.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Activity />} title="Heartbeat Monitoring" description="Periodic pings to track uptime and detect outages" />
+	<Feature icon={<Database />} title="Log Ingestion" description="Forward structured logs to Better Stack's Logtail service" />
+	<Feature icon={<Zap />} title="Uptime Alerts" description="Get notified through email, Slack, or Discord when your Robo goes down" />
+	<Feature icon={<Globe />} title="Searchable Logs" description="Color-coded, filterable logs in Better Stack's dashboard" />
+	<Feature icon={<Key />} title="Env Config" description="Secure token management via environment variables" />
+	<Feature icon={<Server />} title="Custom Host" description="Support for EU region and self-hosted Logtail endpoints" />
+</FeatureGrid>
+
+## Prerequisites
+
+Sign up for an account at [Better Stack](https://betterstack.com) before configuring the plugin.
+
+## Installation
+
+To install, run:
+
+```bash
+npx robo add @robojs/better-stack
+```
+
+Or create a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/better-stack
+```
+
+## Heartbeat monitoring
+
+Heartbeat monitoring sends periodic HTTP pings to Better Stack. If pings stop arriving, Better Stack marks your service as down and sends alerts through your configured channels.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	heartbeat: {
+    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	heartbeat: {
+    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+See [Heartbeat](./heartbeat.mdx) for setup instructions and configuration options.
+
+## Log integration
+
+Log integration forwards your Robo's log output to Better Stack's Logtail service, providing searchable, color-coded logs with level filtering. There are three ways to configure it.
+
+The simplest approach uses a plugin config file:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+    export default {
+    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Or use environment variables for production:
+
+```bash title=".env"
+BETTER_STACK_SOURCE_TOKEN="YOUR_UNIQUE_SOURCE_TOKEN"
+```
+
+See [Log drain](./log-drain.mdx) for all configuration methods, log level mapping, and the `createLogtailDrain` API.
+
+## Configuration reference
+
+All plugin configuration options at a glance:
+
+<TypeTable
+	type={{
+		sourceToken: { type: 'string', description: 'Logtail source token for log ingestion.', default: 'undefined' },
+		ingestingHost: { type: 'string', description: 'Custom Logtail ingesting host (hostname only, no protocol).', default: 'Logtail default' },
+		'heartbeat.url': { type: 'string', description: 'Heartbeat monitor URL from Better Stack.', default: 'undefined' },
+		'heartbeat.interval': { type: 'number', description: 'Ping interval in milliseconds.', default: '5000' },
+		'heartbeat.debug': { type: 'boolean', description: 'Log each heartbeat ping for troubleshooting.', default: 'false' },
+	}}
+/>
+
+### Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `BETTER_STACK_SOURCE_TOKEN` | Logtail source token. Overridden by `sourceToken` in plugin config. |
+| `BETTER_STACK_INGESTING_HOST` | Custom ingesting host. Overridden by `ingestingHost` in plugin config. |
+
+<Callout type="info">
+Plugin config values take precedence over environment variables. Use environment variables for production deployments where tokens should not be committed to version control.
+</Callout>
+
+## Next Steps
+
+<Cards>
+	<Card href="./heartbeat" title="Heartbeat" description="Set up uptime monitoring for your Robo." />
+	<Card href="./log-drain" title="Log drain" description="Forward logs to Better Stack for search and analysis." />
+	<Card href="../framework/core/logger" title="Logger" description="Learn about the Robo.js logging system." />
+</Cards>

@@ -1,0 +1,97 @@
+---
+title: Quick start
+description: Get your Jira roadmap synced to Discord in minutes.
+---
+
+This guide walks through setting up the roadmap plugin with the built-in Jira provider. You'll go from zero to a fully synced Discord roadmap in about five minutes.
+
+## Prerequisites
+
+- A Robo.js project (create one with `npx create-robo my-bot`)
+- A Jira Cloud instance with API access
+- A Discord bot with Manage Channels permission
+
+## Install the plugin
+
+```bash
+npx robo add @robojs/roadmap
+```
+
+This installs the package and creates a seed config file at `config/plugins/robojs/roadmap.ts`.
+
+## Configure Jira credentials
+
+Create a Jira API token at [Atlassian Account Settings](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/), then add your credentials to `.env`:
+
+```bash title=".env"
+JIRA_URL="https://company.atlassian.net"
+JIRA_EMAIL="your-email@example.com"
+JIRA_API_TOKEN="your-api-token"
+JIRA_PROJECT_KEY="PROJ"
+```
+
+The plugin picks up these environment variables automatically. No config file changes needed for basic setup.
+
+## Start your Robo
+
+```bash
+npx robo dev
+```
+
+Watch for the log message `Roadmap provider initialized: Jira` confirming the connection.
+
+## Set up Discord forums
+
+Run `/roadmap setup` in your Discord server. This command:
+
+1. Creates a "Roadmap" category
+2. Creates forum channels for each workflow column (Backlog, In Progress, Done)
+3. Shows an interactive setup panel with access controls and role management
+
+The setup panel lets you toggle between public and private access, manage authorized roles, configure assignee mappings, and set up column mappings.
+
+<Callout type="info">
+Only users with Administrator permission can run `/roadmap setup`.
+</Callout>
+
+## Sync your roadmap
+
+Run `/roadmap sync` to pull cards from Jira. The sync engine:
+
+- Creates forum threads for new cards
+- Updates existing threads when cards change
+- Moves threads between forums when columns change
+- Archives threads for completed cards
+
+A cancel button appears during sync, letting you stop mid-operation while preserving partial results.
+
+Preview changes first with a dry run:
+
+```
+/roadmap sync dry-run:true
+```
+
+## Required bot permissions
+
+| Permission | Used for |
+|---|---|
+| Manage Channels | Create category and forum channels |
+| View Channel | Access roadmap forums |
+| Create Public Threads | Create forum threads for cards |
+| Send Messages in Threads | Post card content and updates |
+| Manage Threads | Lock, archive, and edit threads |
+| Manage Messages | Edit thread starter messages |
+
+<Callout type="info">
+Permissions inherit from the category to forum channels. Set permissions on the roadmap category for easiest management.
+</Callout>
+
+## What's next
+
+Your roadmap is live. Cards sync as forum threads with descriptions, labels, and assignee mentions. Community members can discuss cards directly in Discord.
+
+<Cards>
+  <Card href="./provider-setup" title="Provider setup" description="Advanced Jira configuration and JQL filtering." />
+  <Card href="./commands" title="Commands" description="All slash commands and their options." />
+  <Card href="./configuration" title="Configuration" description="Customize columns, templates, and behavior." />
+</Cards>

@@ -1,0 +1,105 @@
+---
+title: "README"
+icon: Milestone
+description: Sync project roadmaps from Jira to organized Discord forum channels.
+---
+
+<PluginHero
+	name="@robojs/roadmap"
+	description="Sync project roadmaps from Jira to organized Discord forum channels."
+	icon={<Milestone />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/roadmap"
+	platforms={["Bots"]}
+	optional={[{ name: "@robojs/server", href: "/docs/server", description: "REST API for integrations" }]}
+/>
+
+Sync project roadmaps from external providers like Jira to organized Discord forum channels. Each card becomes a forum thread, automatically organized by workflow columns like Backlog, In Progress, and Done.
+
+The plugin handles the full lifecycle: creating forum channels, syncing cards as threads with rich Components v2 formatting, moving threads when cards change columns, and managing permissions. It ships with a Jira provider out of the box and supports custom providers for GitHub Projects, Linear, or any backend.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<RefreshSync />} title="Jira Sync" description="Provider-to-Discord sync with automatic error recovery" />
+	<Feature icon={<Blocks />} title="Forum Channels" description="Organized by workflow columns like Backlog and Done" />
+	<Feature icon={<Waypoints />} title="Thread Movement" description="Threads follow cards across columns with history links" />
+	<Feature icon={<CPU />} title="Components v2" description="Rich rendering with sections, thumbnails, and metadata" />
+	<Feature icon={<Connect />} title="Assignee Mapping" description="Map provider names to Discord mentions with redaction" />
+	<Feature icon={<FileStack />} title="Label Tagging" description="Smart autocomplete tags with up to 5 per thread" />
+	<Feature icon={<Lock />} title="Role Auth" description="Role-based authorization for card creation and editing" />
+	<Feature icon={<DiamondNodes />} title="Custom Providers" description="Extensible architecture for GitHub, Linear, or any backend" />
+	<Feature icon={<Zap />} title="Cancellable Sync" description="Cancel mid-sync with partial results preserved" />
+</FeatureGrid>
+
+## Installation
+
+```bash
+npx robo add @robojs/roadmap
+```
+
+Or start a new project with the plugin:
+
+```package-install
+npx create-robo my-project -p @robojs/roadmap
+```
+
+## How it works
+
+The plugin creates a dedicated Discord category with forum channels for each workflow column. When you sync, cards from your provider appear as forum threads in the appropriate column. Labels become forum tags, assignees are mapped to Discord mentions, and descriptions render using Discord's Components v2 format with sections and thumbnails.
+
+<Files>
+  <Folder name="Discord Server" defaultOpen>
+    <Folder name="Roadmap (Category)" defaultOpen>
+      <File name="Backlog (Forum)" />
+      <File name="In Progress (Forum)" />
+      <File name="Done (Forum)" />
+    </Folder>
+  </Folder>
+</Files>
+
+When a card moves between columns (e.g., from Backlog to In Progress), the plugin creates a new thread in the target forum, locks and archives the old thread, and links to previous discussions if they had user activity.
+
+## Quick start
+
+<Steps>
+  <Step>
+    ### Set up credentials
+
+    Add your Jira environment variables to `.env`:
+
+    ```bash title=".env"
+    JIRA_URL="https://company.atlassian.net"
+    JIRA_EMAIL="your-email@example.com"
+    JIRA_API_TOKEN="your-api-token"
+    JIRA_PROJECT_KEY="PROJ"
+    ```
+  </Step>
+  <Step>
+    ### Start your Robo
+
+    ```bash
+    npx robo dev
+    ```
+  </Step>
+  <Step>
+    ### Set up forums
+
+    Run `/roadmap setup` in Discord to create the roadmap category and forum channels.
+  </Step>
+  <Step>
+    ### Sync cards
+
+    Run `/roadmap sync` to pull cards from Jira into Discord forum threads.
+  </Step>
+</Steps>
+
+Cards appear as forum threads organized by column. Each thread includes the card description, labels as tags, and mapped assignee mentions.
+
+## Next steps
+
+<Cards>
+  <Card href="./quick-start" title="Quick start" description="Step-by-step setup guide with Jira." />
+  <Card href="./commands" title="Commands" description="All slash commands and interactive UI." />
+  <Card href="./configuration" title="Configuration" description="Plugin options and provider settings." />
+  <Card href="./custom-providers" title="Custom providers" description="Build providers for GitHub, Linear, or custom backends." />
+</Cards>

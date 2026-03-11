@@ -1,0 +1,25 @@
+{
+  "title": "@robojs/auth",
+  "icon": "Lock",
+  "description": "Authentication with OAuth, email, and more.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quick-start",
+    "configuration",
+    "---Guides---",
+    "email-password",
+    "oauth-providers",
+    "email-delivery",
+    "session-management",
+    "upstream-proxy",
+    "---Reference---",
+    "client-api",
+    "server-api",
+    "adapters",
+    "---Advanced---",
+    "custom-adapters",
+    "recipes"
+  ]
+}

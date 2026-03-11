@@ -1,0 +1,270 @@
+---
+title: Configuration
+description: All configuration options, environment variables, and validation for the auth plugin.
+---
+
+The plugin is configured via `config/plugins/robojs/auth.ts`. The config type is `AuthPluginOptions`, validated at startup with a Zod schema in strict mode. Unrecognized fields cause errors.
+
+## Config file example
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/auth.ts"
+    import Discord from '@robojs/auth/providers/discord'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+    import type { AuthPluginOptions } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    const config: AuthPluginOptions = {
+    	appName: 'My App',
+    	adapter,
+    	secret: process.env.AUTH_SECRET,
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+    		EmailPassword({ adapter })
+    	],
+    	session: { strategy: 'database', maxAge: 60 * 60 * 24 * 30 }
+    }
+
+    export default config
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/auth.js"
+    import Discord from '@robojs/auth/providers/discord'
+    import EmailPassword from '@robojs/auth/providers/email-password'
+    import { createFlashcoreAdapter } from '@robojs/auth'
+
+    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+    const config = {
+    	appName: 'My App',
+    	adapter,
+    	secret: process.env.AUTH_SECRET,
+    	providers: [
+    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+    		EmailPassword({ adapter })
+    	],
+    	session: { strategy: 'database', maxAge: 60 * 60 * 24 * 30 }
+    }
+
+    export default config
+    ```
+  </Tab>
+</Tabs>
+
+## Core options
+
+<TypeTable
+	type={{
+		appName: {
+			description: 'Display name in emails and UI. Empty/whitespace falls back to default.',
+			type: 'string',
+			default: '"Robo.js"'
+		},
+		adapter: {
+			description: 'Storage backend. Auto-created from secret if not provided.',
+			type: 'Adapter'
+		},
+		basePath: {
+			description: 'Route prefix. Leading slash ensured, trailing slash stripped.',
+			type: 'string',
+			default: '"/api/auth"'
+		},
+		secret: {
+			description: 'JWT signing secret. Reads AUTH_SECRET or NEXTAUTH_SECRET. Required in production. Auto-generates temporary in dev.',
+			type: 'string'
+		},
+		url: {
+			description: 'Canonical URL. Reads AUTH_URL or NEXTAUTH_URL, falls back to http://localhost:${PORT || 3000}.',
+			type: 'string'
+		},
+		providers: {
+			description: 'Array of Auth.js providers. Import from @robojs/auth/providers/*.',
+			type: 'Provider[]',
+			default: '[]'
+		},
+		debug: {
+			description: 'Enable Auth.js debug logging.',
+			type: 'boolean',
+			default: 'false'
+		},
+		allowDangerousEmailAccountLinking: {
+			description: 'Auto-link accounts by email across providers. Security risk.',
+			type: 'boolean',
+			default: 'false'
+		},
+		redirectProxyUrl: {
+			description: 'Preview deployment proxy URL.',
+			type: 'string'
+		}
+	}}
+/>
+
+## Session options
+
+Configure session strategy, lifetime, and refresh behavior via the `session` object.
+
+<TypeTable
+	type={{
+		strategy: {
+			description: 'Defaults to "database" when adapter present, "jwt" otherwise.',
+			type: '"jwt" | "database"'
+		},
+		maxAge: {
+			description: 'Session TTL in seconds.',
+			type: 'number',
+			default: '2592000 (30 days)'
+		},
+		updateAge: {
+			description: 'Session refresh interval in seconds.',
+			type: 'number',
+			default: '86400 (24 hours)'
+		}
+	}}
+/>
+
+## Auth.js options
+
+Advanced hooks and customizations from Auth.js.
+
+<TypeTable
+	type={{
+		callbacks: {
+			description: 'signIn, redirect, session, jwt hooks. Plugin wraps session to inject emailVerified.',
+			type: 'object'
+		},
+		events: {
+			description: 'createUser, updateUser, linkAccount, session, signIn, signOut. Plugin wraps createUser and signIn for emails.',
+			type: 'object'
+		},
+		cookies: {
+			description: 'Cookie name and option overrides. Security auto-adjusted for HTTP URLs.',
+			type: 'CookiesOptions'
+		},
+		pages: {
+			description: 'Custom paths: signIn, signOut, error, verifyRequest, newUser.',
+			type: 'object'
+		}
+	}}
+/>
+
+## Email options
+
+Email delivery, templates, and triggers. See the dedicated [email delivery](./email-delivery.mdx) page for details.
+
+<TypeTable
+	type={{
+		'emails.from': {
+			description: 'Default sender.',
+			type: 'string | { name, address }'
+		},
+		'emails.mailer': {
+			description: 'Mail transport.',
+			type: 'AuthMailer | factory | module spec'
+		},
+		'emails.templates': {
+			description: 'Per-event template overrides.',
+			type: 'Record<event, template | false>'
+		},
+		'emails.triggers': {
+			description: 'Custom email builders.',
+			type: 'Record<event, builder | builder[]>'
+		}
+	}}
+/>
+
+## Upstream proxy
+
+Forward all auth routes to another Robo instance. See [upstream proxy](./upstream-proxy.mdx) for configuration examples.
+
+<TypeTable
+	type={{
+		'upstream.baseUrl': {
+			description: 'Upstream server URL (required).',
+			type: 'string'
+		},
+		'upstream.basePath': {
+			description: 'Remote auth path.',
+			type: 'string'
+		},
+		'upstream.headers': {
+			description: 'Extra headers.',
+			type: 'Record<string, string>'
+		},
+		'upstream.cookieName': {
+			description: 'Session cookie name.',
+			type: 'string'
+		},
+		'upstream.secret': {
+			description: 'Local JWT decoding secret.',
+			type: 'string'
+		},
+		'upstream.sessionStrategy': {
+			description: 'Strategy matching upstream.',
+			type: '"jwt" | "database"'
+		},
+		'upstream.fetch': {
+			description: 'Custom fetch implementation.',
+			type: 'FetchLike'
+		}
+	}}
+/>
+
+## Environment variables
+
+These variables are read by the plugin during initialization.
+
+| Variable | Purpose | Read/Written |
+|---|---|---|
+| `AUTH_SECRET` | JWT signing secret | Read; written if resolved from config |
+| `NEXTAUTH_SECRET` | Fallback for AUTH_SECRET | Read only |
+| `AUTH_URL` | Canonical callback URL | Read; written if resolved |
+| `NEXTAUTH_URL` | Fallback for AUTH_URL | Read only |
+| `AUTH_REDIRECT_PROXY_URL` | Preview deployment proxy | Read; written if configured |
+| `PORT` | Fallback port (default 3000) | Read only |
+| `NODE_ENV` | Production detection | Read only |
+
+## Validation
+
+The exported `authPluginOptionsSchema` (Zod) and `normalizeAuthOptions()` function enable programmatic validation.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { authPluginOptionsSchema, normalizeAuthOptions } from '@robojs/auth'
+
+    const validated = authPluginOptionsSchema.parse(rawConfig)
+    const normalized = normalizeAuthOptions(rawConfig)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { authPluginOptionsSchema, normalizeAuthOptions } from '@robojs/auth'
+
+    const validated = authPluginOptionsSchema.parse(rawConfig)
+    const normalized = normalizeAuthOptions(rawConfig)
+    ```
+  </Tab>
+</Tabs>
+
+## Secret auto-generation
+
+<Callout type="warn">
+In production, a missing secret causes an error. In development, a temporary random secret is generated with a warning. Always set AUTH_SECRET for consistent sessions across restarts.
+</Callout>
+
+## Cookie security
+
+For `http://` URLs, the plugin automatically sets `secure=false` on cookies to prevent rejection in local development.
+
+## Next steps
+
+<Cards>
+	<Card href="./quick-start" title="Quick start" description="Get started with a minimal setup" />
+	<Card href="./email-password" title="Email and password" description="Configure the built-in credential flows" />
+	<Card href="./adapters" title="Adapters" description="Flashcore and Prisma storage options" />
+	<Card href="./upstream-proxy" title="Upstream proxy" description="Share auth across Robo apps" />
+</Cards>

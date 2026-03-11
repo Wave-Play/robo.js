@@ -1,0 +1,187 @@
+---
+title: Context Menus
+description: User and message context menu commands with type-safe configuration.
+---
+
+Context menus appear when users right-click on a user or message in Discord. They're defined by placing files in `src/context/user/` or `src/context/message/`.
+
+## File structure
+
+```
+src/
+└── context/
+    ├── user/
+    │   └── Get Info.ts        → "Get Info" user context menu
+    └── message/
+        └── Pin Message.ts     → "Pin Message" message context menu
+```
+
+The file name becomes the context menu label. Unlike slash commands, context menu names can include spaces and capital letters.
+
+## User context menus
+
+The handler receives a `UserContextMenuCommandInteraction` and the targeted `User`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/user/Get Info.ts"
+    import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+
+    export default (interaction: UserContextMenuCommandInteraction, user: User) => {
+    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/user/Get Info.js"
+    export default (interaction, user) => {
+    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Message context menus
+
+The handler receives a `MessageContextMenuCommandInteraction` and the targeted `Message`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/message/Pin Message.ts"
+    import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+
+    export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
+    	await message.pin()
+    	return 'Message pinned!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/message/Pin Message.js"
+    export default async (interaction, message) => {
+    	await message.pin()
+    	return 'Message pinned!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Return types
+
+Context menu handlers can return the same types as slash command handlers (`CommandResult`):
+
+- `string` -- replied as a text message
+- `InteractionReplyOptions` -- replied with embeds, components, etc.
+- `void` -- you handle the reply yourself
+
+When [Sage mode](./sage) is enabled (the default), the return value is automatically sent as a reply to the interaction.
+
+## Context config
+
+Export a `config` object to configure the context menu. All fields are optional.
+
+<TypeTable
+  type={{
+    description: { type: "string", description: "Internal documentation only. Context menus do not display descriptions in Discord.", default: "undefined" },
+    contexts: { type: "CommandContext[]", description: "Where the context menu can be used: 'Guild', 'BotDM', 'PrivateChannel'.", default: "Plugin defaults" },
+    integrationTypes: { type: "CommandIntegrationType[]", description: "Installation types: 'GuildInstall', 'UserInstall'.", default: "Plugin defaults" },
+    dmPermission: { type: "boolean", description: "Deprecated. Use `contexts` instead.", default: "undefined" },
+    defaultMemberPermissions: { type: "string | number | bigint", description: "Permissions required to use the context menu.", default: "undefined" },
+    nameLocalizations: { type: "Record<string, string>", description: "Localized context menu names by locale code.", default: "undefined" },
+    sage: { type: "false | SageOptions", description: "Per-handler Sage override.", default: "Plugin sage config" },
+    timeout: { type: "number", description: "Execution timeout in milliseconds.", default: "undefined" },
+    disabled: { type: "boolean", description: "Whether the handler is disabled.", default: "undefined" },
+    serverOnly: { type: "string | string[]", description: "Restrict to specific server IDs.", default: "undefined" },
+  }}
+/>
+
+You can use the `ContextConfig` type for annotation:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/user/Get Info.ts"
+    import type { ContextConfig } from '@robojs/discordjs'
+    import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+
+    export const config: ContextConfig = {
+    	description: 'View user information',
+    	contexts: ['Guild']
+    }
+
+    export default (interaction: UserContextMenuCommandInteraction, user: User) => {
+    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/user/Get Info.js"
+    export const config = {
+    	description: 'View user information',
+    	contexts: ['Guild']
+    }
+
+    export default (interaction, user) => {
+    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Type-safe configs with `createContextConfig()`
+
+Use `createContextConfig()` for type-safe context menu configuration:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/context/message/Pin Message.ts"
+    import { createContextConfig } from '@robojs/discordjs'
+    import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+
+    export const config = createContextConfig({
+    	description: 'Pin this message',
+    	defaultMemberPermissions: 'ManageMessages',
+    	contexts: ['Guild']
+    })
+
+    export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
+    	await message.pin()
+    	return 'Message pinned!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/context/message/Pin Message.js"
+    export const config = {
+    	description: 'Pin this message',
+    	defaultMemberPermissions: 'ManageMessages',
+    	contexts: ['Guild']
+    }
+
+    export default async (interaction, message) => {
+    	await message.pin()
+    	return 'Message pinned!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## ContextType constant
+
+The `ContextType` constant maps context menu types to their Discord API values:
+
+```ts
+import { ContextType } from '@robojs/discordjs'
+
+ContextType.User    // 2
+ContextType.Message // 3
+```
+
+This is useful when you need to check or set context menu types programmatically.
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./middleware" title="Middleware" description="Intercept and modify handler execution." />
+	<Card href="/docs/bots/context-menu" title="Bot context menus guide" description="Higher-level tutorial on context menus." />
+</Cards>

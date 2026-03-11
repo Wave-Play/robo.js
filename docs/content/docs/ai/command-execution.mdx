@@ -1,0 +1,138 @@
+---
+title: Command execution
+description: Natural language routing to your Robo's slash commands.
+---
+
+The AI can execute your Robo's slash commands via natural language. When a user asks "ban user X for spamming", the AI maps this to your `/ban` command, executes it with the correct parameters, and reports the result back conversationally.
+
+## Configuration
+
+Control which commands are exposed to the AI as tools:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	commands: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	commands: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+    commands: { type: 'boolean | string[]', description: 'Which commands the AI can invoke. `true` exposes all registered commands, `false` disables command execution, or pass an array to whitelist specific commands.', default: 'undefined (all exposed)' },
+  }}
+/>
+
+Whitelisting specific commands:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/ai.ts"
+    export default {
+    	commands: ['ban', 'kick', 'ai log']
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/ai.js"
+    export default {
+    	commands: ['ban', 'kick', 'ai log']
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## How it works
+
+The pipeline from natural language to command execution:
+
+1. During `engine.init()`, the plugin reads all Robo portal commands via `portal.getByType('discord:commands')`.
+2. Commands are converted to OpenAI function definitions with JSON schema parameters.
+3. When the AI decides to invoke a command, a tool call is extracted from the response.
+4. `scheduleToolExecution()` queues the tool call.
+5. A mock Discord interaction is created with the correct parameters.
+6. The command handler runs with this mock interaction.
+7. Results are serialized into tool digests.
+8. Tool digests are fed back into the next AI turn so the AI can formulate a natural response.
+
+This means your existing slash commands work as AI tools without any modifications. The AI sees them as callable functions with typed parameters.
+
+## Permission checks
+
+The system respects Discord's permission model:
+
+- DM permissions are checked before execution.
+- Role-based permissions are enforced.
+- The AI cannot override Discord's permission settings.
+
+Keep your slash command permissions in sync with the behavior you want from AI-driven execution. If a user doesn't have permission to run `/ban` directly, the AI won't run it on their behalf either.
+
+## Sage deferral
+
+Long-running commands are handled automatically to prevent interaction timeouts:
+
+- Auto-defers after `deferBuffer` milliseconds (default 3000).
+- Background tasks show typing indicators, refreshed every 7 seconds.
+- Deferred notices inform users when tasks are still in progress.
+
+<Callout type="info">
+The defer buffer prevents premature deferral for fast commands while still catching slow ones before Discord's 3-second interaction timeout.
+</Callout>
+
+## Background tasks
+
+When commands take time to complete, the plugin tracks them per channel:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/example.ts"
+    import { AI } from '@robojs/ai'
+
+    // Check active tasks in a channel
+    const tasks = AI.getActiveTasks(channelId)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/example.js"
+    import { AI } from '@robojs/ai'
+
+    // Check active tasks in a channel
+    const tasks = AI.getActiveTasks(channelId)
+    ```
+  </Tab>
+</Tabs>
+
+The lifecycle of a background task:
+
+1. `registerBackgroundTask()` tracks the active task for the channel.
+2. Typing indicators loop until the task completes.
+3. `buildDeferredNotice()` generates a user-facing placeholder message.
+4. `completeBackgroundTask()` cleans up when the command finishes.
+
+## Tool digests
+
+After a command executes, results flow back to the AI:
+
+- Results are wrapped in `ToolDigest` objects.
+- Digests are queued per channel.
+- `withTaskContext()` injects active task context into the AI's system prompt.
+- The AI receives the command output and formulates a natural language response.
+
+This means the AI doesn't just run commands silently. It reports what happened, what the result was, and can answer follow-up questions about the operation.
+
+## Next steps
+
+<Cards>
+	<Card href="./conversations" title="Conversations" description="How the bot handles messages and context." />
+	<Card href="./hooks" title="Hooks" description="Customize the AI pipeline with lifecycle hooks." />
+	<Card href="./configuration" title="Configuration" description="All plugin and engine options." />
+</Cards>

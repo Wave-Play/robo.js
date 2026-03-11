@@ -1,0 +1,128 @@
+---
+title: Configuration
+description: Plugin options, required intents, and bot permissions
+---
+
+Configure the moderation plugin through a config file, the `/mod setup` command, and your Discord Developer Portal settings.
+
+## Plugin options
+
+Create `config/plugins/robojs/moderation.mjs` to set plugin-level options:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/moderation.mjs"
+    export default {
+      deletePolls: true
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/moderation.mjs"
+    export default {
+      deletePolls: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Option reference
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `deletePolls` | `boolean` | `false` | Automatically delete any message containing a Discord poll |
+
+When `deletePolls` is enabled, the plugin listens to raw `MESSAGE_CREATE` events and deletes messages with polls before Discord.js processes them.
+
+## Per-guild settings
+
+Runtime settings are configured through `/mod setup` and persisted across restarts. These are not set in the config file.
+
+| Setting | Description |
+|---------|-------------|
+| **Moderator Logs Channel** | Channel where all moderation actions are logged |
+| **Moderator Mail Channel** | Channel where user reports are sent |
+| **Test Mode** | Simulate moderation actions without executing them |
+| **Require Confirmation** | Show a confirmation modal before destructive actions |
+| **Lockdown Mode** | Block all commands for non-moderators |
+
+See [Moderation Channels](./moderation-channels.mdx) and [Lockdown Mode](./lockdown-mode.mdx) for details on these features.
+
+## Required intents
+
+The plugin automatically registers these Discord gateway intents when installed:
+
+| Intent | Purpose |
+|--------|---------|
+| `Guilds` | Access guild and channel data |
+| `GuildBans` | Detect ban/unban events |
+| `GuildMessages` | Monitor messages for rules enforcement |
+| `GuildModeration` | Access moderation events |
+| `MessageContent` | Read message content for rules enforcement |
+| `DirectMessages` | Send DMs to users who haven't accepted rules |
+| `AutoModerationConfiguration` | AutoMod configuration events |
+| `AutoModerationExecution` | AutoMod execution events |
+
+<Callout type="warn">
+`MessageContent` is a **privileged intent**. Enable it in the [Discord Developer Portal](https://discord.com/developers/applications) under your application's **Bot** settings. Without it, the rules enforcement feature cannot read message content to determine if a user has accepted the rules.
+</Callout>
+
+## Required bot permissions
+
+The plugin requests these permissions when generating invite links:
+
+| Permission | Used by |
+|------------|---------|
+| `BanMembers` | `/mod ban`, Ban/Unban buttons |
+| `KickMembers` | `/mod kick` |
+| `ModerateMembers` | `/mod timeout`, `/mod warn`, `/mod audit`, `/mod setup` |
+| `ManageChannels` | Creating moderator log and mail channels |
+| `ManageMessages` | Poll deletion, message cleanup on kick, rules enforcement |
+| `ManageRoles` | Assigning the member role on rules acceptance |
+| `ReadMessageHistory` | Audit commands, message scanning |
+| `ViewChannel` | Channel access for logging and reports |
+| `ViewAuditLog` | Accessing Discord's audit log |
+
+## Data persistence
+
+The plugin stores data using two mechanisms:
+
+### Robo State (guild settings)
+
+Per-guild settings (channels, mode toggles) are stored via Robo's `setState` with `persist: true`. The state key is `settings` in namespace `plugin-modtools:<guildId>`.
+
+### Flashcore (user data)
+
+User-specific data is stored via Flashcore:
+
+| Key | Namespace | Data | Description |
+|-----|-----------|------|-------------|
+| `ban` | `plugin-modtools:<guildId><userId>` | `{ reason?: string }` | Ban reason for a user |
+| `infractions` | `<guildId><userId>` | `number` | Warning/strike count |
+| `rules-title` | `<guildId>` | `string` | Rules embed title |
+| `rules-rules` | `<guildId>` | `string` | Rules embed content |
+| `rules-imageurl` | `<guildId>` | `string` | Rules embed image URL |
+| `member-role` | `<guildId>` | `string` | Role name granted on rules acceptance |
+| `rules-channel` | `<guildId>` | `string` | Channel ID where rules were posted |
+
+This data persists across restarts. Changing your Flashcore adapter (e.g., to a database) carries this data with it.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Commands"
+    description="Full reference for all moderation commands."
+  />
+  <Card
+    href="./lockdown-mode"
+    title="Lockdown Mode"
+    description="Emergency command restriction."
+  />
+  <Card
+    href="./rules-system"
+    title="Rules System"
+    description="Set up rules acceptance and enforcement."
+  />
+</Cards>

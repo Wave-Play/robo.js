@@ -1,0 +1,133 @@
+---
+title: "README"
+icon: RefreshSync
+description: Real-time state sync across clients for multiplayer games and apps.
+---
+
+<PluginHero
+	name="@robojs/sync"
+	description="Real-time state sync across clients for multiplayer games and apps."
+	icon={<RefreshSync />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-sync"
+	platforms={["Activities"]}
+	requires={[{ name: "@robojs/server", href: "/docs/server", description: "WebSocket transport layer" }]}
+/>
+
+Real-time state synchronization across clients using WebSockets. Ideal for multiplayer games, collaborative apps, and live dashboards.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const [position, setPosition, context] = useSyncState({ x: 0, y: 0 }, [channelId])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const [position, setPosition, context] = useSyncState({ x: 0, y: 0 }, [channelId])
+    ```
+  </Tab>
+</Tabs>
+
+Works like React's `useState`, but syncs state across all clients in real-time via WebSockets. Components sharing the same key array see the same state. No manual socket handling required. Requires `@robojs/server` as a peer dependency.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<RefreshSync />} title="Shared State" description="useSyncState syncs state like React's useState" />
+	<Feature icon={<Waypoints />} title="Client Awareness" description="Track connected clients and host status" />
+	<Feature icon={<Zap />} title="Broadcasts" description="Fire-and-forget ephemeral messaging" />
+	<Feature icon={<Server />} title="RPC Calls" description="Server-authoritative game logic" />
+	<Feature icon={<Boxes />} title="Zones" description="Hierarchical key namespacing with SyncZone" />
+	<Feature icon={<CPU />} title="SyncBox" description="Locking, interpolation, and optimistic updates" />
+	<Feature icon={<DiamondNodes />} title="Cursors" description="Collaborative cursor tracking" />
+	<Feature icon={<Activity />} title="Draggables" description="Synchronized drag-and-drop" />
+	<Feature icon={<Globe />} title="Presence" description="Participant tracking with stale detection" />
+	<Feature icon={<FileStack />} title="Server Handlers" description="File-based validation, transformation, and RPC" />
+	<Feature icon={<Shield />} title="Schema Validation" description="Built-in schema format or Zod integration" />
+	<Feature icon={<Database />} title="Flashcore Realtime" description="Realtime subscriptions for Flashcore models" />
+</FeatureGrid>
+
+## Installation
+
+Add the plugin to your Robo project:
+
+```bash
+npx robo add @robojs/sync
+```
+
+<Callout type="info">
+`@robojs/server` is also required. Install it with `npx robo add @robojs/server` if you haven't already.
+</Callout>
+
+To scaffold a new project with sync preconfigured:
+
+```package-install
+npx create-robo my-project -p @robojs/sync
+```
+
+## Setup
+
+Wrap your app with `SyncContextProvider` to establish the WebSocket connection and make sync hooks available.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/App.tsx"
+    import { SyncContextProvider } from '@robojs/sync'
+
+    export function App() {
+    	return (
+    		<SyncContextProvider clientData={{ name: 'Player1' }} loadingScreen={<Loading />}>
+    			<Activity />
+    		</SyncContextProvider>
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/App.jsx"
+    import { SyncContextProvider } from '@robojs/sync'
+
+    export function App() {
+    	return (
+    		<SyncContextProvider clientData={{ name: 'Player1' }} loadingScreen={<Loading />}>
+    			<Activity />
+    		</SyncContextProvider>
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+| Prop | Description |
+|------|-------------|
+| `clientData` | Metadata attached to the current client. Other clients see this via `client.data`. |
+| `loadingScreen` | Component shown while the WebSocket connection is being established. |
+
+## Scaling beyond sync
+
+For complex multiplayer games that need authoritative server state, matchmaking, reconnection, and deterministic logic, consider [Colyseus](https://colyseus.io/). Model your sync keys as Colyseus rooms and move update logic to server-side room handlers.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./quick-start"
+		title="Quick start"
+		description="Build your first synced app step by step."
+	/>
+	<Card
+		href="./use-sync-state"
+		title="useSyncState"
+		description="The core hook for shared state."
+	/>
+	<Card
+		href="./server-handlers"
+		title="Server handlers"
+		description="Server-authoritative state with validation and RPC."
+	/>
+	<Card
+		href="./sync-box"
+		title="SyncBox"
+		description="Declarative sync containers with locking and interpolation."
+	/>
+</Cards>

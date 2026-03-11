@@ -1,0 +1,306 @@
+---
+title: Namespace Controllers
+description: Programmatic access to commands, events, context menus, and middleware.
+---
+
+Namespace controllers provide programmatic access to all registered handlers. Use them to list, retrieve, and execute commands and events at runtime -- useful for building admin panels, dynamic help systems, or programmatic event triggering.
+
+## Pre-instantiated controllers
+
+Import the controllers directly from the plugin:
+
+```ts
+import { commands, events, context, middleware } from '@robojs/discordjs'
+```
+
+These are ready-to-use instances that work with the portal's handler registry.
+
+## Commands
+
+The `commands` controller provides access to all registered slash commands.
+
+### `commands.list()`
+
+Returns an array of all command keys:
+
+```ts
+import { commands } from '@robojs/discordjs'
+
+const allCommands = commands.list()
+// ['ping', 'ban', 'settings view', 'settings update']
+```
+
+### `commands.get(name)`
+
+Retrieves a specific command handler by name:
+
+```ts
+const handler = await commands.get('ping')
+if (handler) {
+	// handler is the default export function
+}
+```
+
+### `commands.execute(name, interaction)`
+
+Execute a command programmatically:
+
+```ts
+import type { ChatInputCommandInteraction } from 'discord.js'
+
+await commands.execute('ping', interaction)
+```
+
+## Events
+
+The `events` controller provides access to all registered event handlers.
+
+### `events.list()`
+
+Returns an array of event names that have handlers:
+
+```ts
+import { events } from '@robojs/discordjs'
+
+const registeredEvents = events.list()
+// ['ready', 'messageCreate', 'guildMemberAdd']
+```
+
+### `events.get(name)`
+
+Retrieves all handlers for a specific event:
+
+```ts
+const handlers = await events.get('messageCreate')
+// Array of handler functions
+```
+
+### `events.emit(name, ...args)`
+
+Emit an event programmatically, executing all handlers for that event:
+
+```ts
+// Trigger all messageCreate handlers
+await events.emit('messageCreate', message)
+```
+
+## Context menus
+
+The `context` controller provides access to all registered context menu handlers.
+
+### `context.list()`
+
+Returns an array of all context menu keys:
+
+```ts
+import { context } from '@robojs/discordjs'
+
+const menus = context.list()
+// ['Get Info', 'Pin Message']
+```
+
+### `context.get(name)`
+
+Retrieves a specific context menu handler by name:
+
+```ts
+const handler = await context.get('Get Info')
+if (handler) {
+	// handler is the default export function
+}
+```
+
+## Middleware
+
+The `middleware` controller provides access to the middleware chain.
+
+### `middleware.list()`
+
+Returns an array of all middleware keys:
+
+```ts
+import { middleware } from '@robojs/discordjs'
+
+const allMiddleware = middleware.list()
+// ['logger', 'rate-limit', 'admin-only']
+```
+
+### `middleware.chain()`
+
+Returns the ordered, enabled middleware chain. Entries are sorted by `order` (lower first) and filtered to only enabled middleware:
+
+```ts
+const chain = await middleware.chain()
+for (const entry of chain) {
+	console.log(`${entry.key} (order: ${entry.order}, enabled: ${entry.enabled})`)
+}
+```
+
+Each entry in the chain contains:
+
+<TypeTable
+  type={{
+    key: { type: "string", description: "Middleware key (file name)." },
+    handler: { type: "MiddlewareHandler", description: "The middleware handler function." },
+    order: { type: "number", description: "Execution order." },
+    enabled: { type: "boolean", description: "Whether the middleware is enabled." },
+  }}
+/>
+
+## Namespace vs per-handler controllers
+
+There are two levels of control:
+
+- **Namespace controllers** (e.g., `commands`, `events`) operate on **all handlers** of a given type. Use them to list, retrieve, or execute any registered handler.
+- **Per-handler controllers** (e.g., `portal.discordjs.command('ping')`) operate on a **single specific handler**. Use them to enable/disable, restrict to servers, or adjust metadata for one handler at a time.
+
+## Accessing per-handler controllers
+
+Use the `portal` to get a controller for a specific handler by name:
+
+```ts
+import { portal } from '@robojs/discordjs'
+
+// Get a controller for a specific command
+const pingController = portal.discordjs.command('ping')
+
+// Get a controller for a specific event
+const messageHandler = portal.discordjs.event('messageCreate')
+
+// Get a controller for a specific middleware
+const rateLimitController = portal.discordjs.middleware('rate-limit')
+```
+
+Each returns the corresponding controller interface documented below.
+
+## Per-handler controller interfaces
+
+For individual handler control, the plugin provides controller interfaces accessible through the portal:
+
+### CommandController
+
+```ts
+interface CommandController {
+	isEnabled(): boolean
+	setEnabled(value: boolean): void
+	setServerOnly(serverIds: string | string[]): void
+	isEnabledForServer(serverId: string): boolean
+	getMetadata(): Record<string, unknown>
+}
+```
+
+### EventController
+
+```ts
+interface EventController {
+	isEnabled(): boolean
+	setEnabled(value: boolean): void
+	setServerOnly(serverIds: string | string[]): void
+	isEnabledForServer(serverId: string): boolean
+}
+```
+
+### ContextController
+
+```ts
+interface ContextController {
+	isEnabled(): boolean
+	setEnabled(value: boolean): void
+	setServerOnly(serverIds: string | string[]): void
+	isEnabledForServer(serverId: string): boolean
+	getMetadata(): Record<string, unknown>
+}
+```
+
+### MiddlewareController
+
+```ts
+interface MiddlewareController {
+	isEnabled(): boolean
+	setEnabled(value: boolean): void
+	getOrder(): number
+	setOrder(order: number): void
+}
+```
+
+## Use cases
+
+### Dynamic command toggling
+
+Disable a specific command at runtime using its per-handler controller:
+
+```ts
+import { portal } from '@robojs/discordjs'
+
+// Disable a specific command handler
+const pingController = portal.discordjs.command('ping')
+pingController.setEnabled(false)
+
+// Re-enable it later
+pingController.setEnabled(true)
+```
+
+You can also disable all commands at once using the namespace controller:
+
+```ts
+import { portal } from '@robojs/discordjs'
+
+// Disable all command handlers
+portal.discordjs.commands.setEnabled(false)
+```
+
+Here is a full example of an admin command that toggles any command by name:
+
+```ts title="src/commands/admin/toggle.ts"
+import { portal } from '@robojs/discordjs'
+
+export const config = {
+	description: 'Toggle a command on or off',
+	options: [
+		{ name: 'command', type: 'string', required: true },
+		{ name: 'enabled', type: 'boolean', required: true }
+	]
+}
+
+export default async (interaction, options) => {
+	const controller = portal.discordjs.command(options.command)
+	if (!controller) {
+		return `Command "${options.command}" not found`
+	}
+
+	controller.setEnabled(options.enabled)
+	return `Command "/${options.command}" is now ${options.enabled ? 'enabled' : 'disabled'}`
+}
+```
+
+### Custom help command
+
+Build a dynamic help system using the namespace controller:
+
+```ts title="src/commands/help.ts"
+import { commands } from '@robojs/discordjs'
+
+export default () => {
+	const allCommands = commands.list()
+	return `Available commands:\n${allCommands.map((cmd) => `\`/${cmd}\``).join('\n')}`
+}
+```
+
+### Programmatic event emission
+
+Trigger event handlers from other parts of your code:
+
+```ts
+import { events } from '@robojs/discordjs'
+
+// Trigger all handlers for a custom scenario
+await events.emit('messageCreate', syntheticMessage)
+```
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./events" title="Events" description="Gateway event handlers." />
+	<Card href="./middleware" title="Middleware" description="Intercept and modify handler execution." />
+</Cards>

@@ -1,0 +1,514 @@
+---
+title: Client
+description: Call tRPC procedures with React Query hooks or a standalone client.
+---
+
+The plugin provides two ways to call tRPC procedures from the client: **React Query hooks** for React apps with automatic caching, and a **standalone client** for direct calls without React.
+
+Both are set up in the seeded `src/trpc/client.ts` file and share the same type safety through the `AppRouter` type.
+
+## Standalone client
+
+The standalone client calls procedures directly and returns promises. No React required.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/trpc/client.ts"
+    import { createTRPCClient, httpBatchLink } from '@robojs/trpc'
+    import type { AppRouter } from './server'
+
+    export const trpcClient = createTRPCClient<AppRouter>({
+    	links: [
+    		httpBatchLink({
+    			url: '/api/trpc'
+    		})
+    	]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/trpc/client.js"
+    import { createTRPCClient, httpBatchLink } from '@robojs/trpc'
+
+    export const trpcClient = createTRPCClient({
+    	links: [
+    		httpBatchLink({
+    			url: '/api/trpc'
+    		})
+    	]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Use it anywhere — event handlers, server-side scripts, vanilla JavaScript:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Query
+    const greeting = await trpcClient.hello.query({ text: 'World' })
+
+    // Mutation
+    const result = await trpcClient.createUser.mutate({
+    	name: 'Alice',
+    	email: 'alice@example.com'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Query
+    const greeting = await trpcClient.hello.query({ text: 'World' })
+
+    // Mutation
+    const result = await trpcClient.createUser.mutate({
+    	name: 'Alice',
+    	email: 'alice@example.com'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## React Query hooks
+
+For React apps, `createTRPCReact` generates typed hooks that integrate with [React Query](https://tanstack.com/query/latest). You get automatic caching, loading states, error handling, and refetching.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/trpc/client.ts"
+    import { createTRPCReact, httpBatchLink } from '@robojs/trpc'
+    import type { AppRouter } from './server'
+
+    const batchLink = httpBatchLink({
+    	url: '/api/trpc'
+    })
+
+    export const trpc = createTRPCReact<AppRouter>()
+
+    export const trpcQueryClient = trpc.createClient({
+    	links: [batchLink]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/trpc/client.js"
+    import { createTRPCReact, httpBatchLink } from '@robojs/trpc'
+
+    const batchLink = httpBatchLink({
+    	url: '/api/trpc'
+    })
+
+    export const trpc = createTRPCReact()
+
+    export const trpcQueryClient = trpc.createClient({
+    	links: [batchLink]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Setting up TRPCProvider
+
+Wrap your app in `TRPCProvider` to enable the hooks:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/App.tsx"
+    import { TRPCProvider } from '@robojs/trpc'
+    import { trpc, trpcQueryClient } from '../trpc/client'
+
+    function App() {
+    	return (
+    		<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient}>
+    			<Activity />
+    		</TRPCProvider>
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/App.jsx"
+    import { TRPCProvider } from '@robojs/trpc'
+    import { trpc, trpcQueryClient } from '../trpc/client'
+
+    function App() {
+    	return (
+    		<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient}>
+    			<Activity />
+    		</TRPCProvider>
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+`TRPCProvider` wraps both tRPC's context and React Query's `QueryClientProvider`, so you don't need to set those up separately.
+
+#### Props
+
+<TypeTable
+	type={{
+		children: { type: 'React.ReactNode', description: 'Child components to render.' },
+		trpc: { type: 'any', description: 'The React hooks client from createTRPCReact().' },
+		trpcClient: { type: 'any', description: 'The client instance from trpc.createClient().' },
+		queryClient: { type: 'QueryClient', description: 'Optional custom React Query client. Defaults to a new QueryClient if not provided.' }
+	}}
+/>
+
+### Using hooks
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { trpc } from '../trpc/client'
+
+    function UserList() {
+    	const { data, isLoading, error } = trpc.user.list.useQuery()
+
+    	if (isLoading) return <div>Loading...</div>
+    	if (error) return <div>Error: {error.message}</div>
+
+    	return (
+    		<ul>
+    			{data?.map((user) => (
+    				<li key={user.id}>{user.name}</li>
+    			))}
+    		</ul>
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { trpc } from '../trpc/client'
+
+    function UserList() {
+    	const { data, isLoading, error } = trpc.user.list.useQuery()
+
+    	if (isLoading) return <div>Loading...</div>
+    	if (error) return <div>Error: {error.message}</div>
+
+    	return (
+    		<ul>
+    			{data?.map((user) => (
+    				<li key={user.id}>{user.name}</li>
+    			))}
+    		</ul>
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Mutations with hooks
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { trpc } from '../trpc/client'
+
+    function CreateUser() {
+    	const mutation = trpc.createUser.useMutation()
+
+    	const handleSubmit = (name: string, email: string) => {
+    		mutation.mutate({ name, email })
+    	}
+
+    	return (
+    		<div>
+    			<button onClick={() => handleSubmit('Alice', 'alice@example.com')}>
+    				Create User
+    			</button>
+    			{mutation.isPending && <span>Creating...</span>}
+    			{mutation.error && <span>Error: {mutation.error.message}</span>}
+    			{mutation.data && <span>Created: {mutation.data.name}</span>}
+    		</div>
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { trpc } from '../trpc/client'
+
+    function CreateUser() {
+    	const mutation = trpc.createUser.useMutation()
+
+    	const handleSubmit = (name, email) => {
+    		mutation.mutate({ name, email })
+    	}
+
+    	return (
+    		<div>
+    			<button onClick={() => handleSubmit('Alice', 'alice@example.com')}>
+    				Create User
+    			</button>
+    			{mutation.isPending && <span>Creating...</span>}
+    			{mutation.error && <span>Error: {mutation.error.message}</span>}
+    			{mutation.data && <span>Created: {mutation.data.name}</span>}
+    		</div>
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Choosing a client mode
+
+| | Standalone | React Query |
+|---|---|---|
+| React required | No | Yes |
+| Caching | Manual | Automatic |
+| Loading/error states | Manual | Built-in |
+| Refetching | Manual | Automatic |
+| Best for | Event handlers, scripts, non-React code | React components, UI data fetching |
+
+You can use both in the same project. The seeded `client.ts` exports both `trpcClient` (standalone) and `trpc` (React Query hooks).
+
+## Link configuration
+
+Links control how requests are sent to the server. The plugin re-exports several link types from tRPC.
+
+### httpBatchLink (default)
+
+Batches multiple concurrent procedure calls into a single HTTP request. This is the default and recommended link.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { httpBatchLink } from '@robojs/trpc'
+
+    const link = httpBatchLink({
+    	url: '/api/trpc'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { httpBatchLink } from '@robojs/trpc'
+
+    const link = httpBatchLink({
+    	url: '/api/trpc'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Custom headers
+
+Send authentication tokens or other headers with every request:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const link = httpBatchLink({
+    	url: '/api/trpc',
+    	async headers() {
+    		const token = localStorage.getItem('auth_token')
+    		return {
+    			Authorization: token ? `Bearer ${token}` : ''
+    		}
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const link = httpBatchLink({
+    	url: '/api/trpc',
+    	async headers() {
+    		const token = localStorage.getItem('auth_token')
+    		return {
+    			Authorization: token ? `Bearer ${token}` : ''
+    		}
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### loggerLink
+
+Log tRPC operations during development:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { loggerLink, httpBatchLink } from '@robojs/trpc'
+
+    const links = [
+    	loggerLink({
+    		enabled: () => process.env.NODE_ENV === 'development'
+    	}),
+    	httpBatchLink({ url: '/api/trpc' })
+    ]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { loggerLink, httpBatchLink } from '@robojs/trpc'
+
+    const links = [
+    	loggerLink({
+    		enabled: () => process.env.NODE_ENV === 'development'
+    	}),
+    	httpBatchLink({ url: '/api/trpc' })
+    ]
+    ```
+  </Tab>
+</Tabs>
+
+### splitLink
+
+Route different operation types to different links:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { splitLink, httpBatchLink, wsLink, createWSClient } from '@robojs/trpc'
+
+    const wsClient = createWSClient({
+    	url: 'ws://localhost:3000/api/trpc'
+    })
+
+    const links = [
+    	splitLink({
+    		condition: (op) => op.type === 'subscription',
+    		true: wsLink({ client: wsClient }),
+    		false: httpBatchLink({ url: '/api/trpc' })
+    	})
+    ]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { splitLink, httpBatchLink, wsLink, createWSClient } from '@robojs/trpc'
+
+    const wsClient = createWSClient({
+    	url: 'ws://localhost:3000/api/trpc'
+    })
+
+    const links = [
+    	splitLink({
+    		condition: (op) => op.type === 'subscription',
+    		true: wsLink({ client: wsClient }),
+    		false: httpBatchLink({ url: '/api/trpc' })
+    	})
+    ]
+    ```
+  </Tab>
+</Tabs>
+
+### Other available links
+
+| Link | Description |
+|---|---|
+| `httpBatchStreamLink` | Like `httpBatchLink` but with streaming support for large responses. |
+| `httpSubscriptionLink` | Server-sent events for subscriptions over HTTP. |
+| `retryLink` | Automatically retry failed operations. |
+| `wsLink` | WebSocket transport for real-time subscriptions. |
+
+## Server prefix
+
+The tRPC endpoint URL defaults to `/api/trpc`. If you change `@robojs/server`'s prefix, update the client URL to match:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: '/v1'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/server.mjs"
+    export default {
+    	prefix: '/v1'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/trpc/client.ts"
+    const link = httpBatchLink({
+    	url: '/v1/trpc' // Must match server prefix
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/trpc/client.js"
+    const link = httpBatchLink({
+    	url: '/v1/trpc' // Must match server prefix
+    })
+    ```
+  </Tab>
+</Tabs>
+
+A mismatch between the server prefix and client URL causes 404 errors.
+
+## Custom QueryClient
+
+Override React Query's defaults by passing a custom `QueryClient`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx title="src/app/App.tsx"
+    import { QueryClient } from '@tanstack/react-query'
+    import { TRPCProvider } from '@robojs/trpc'
+    import { trpc, trpcQueryClient } from '../trpc/client'
+
+    const queryClient = new QueryClient({
+    	defaultOptions: {
+    		queries: {
+    			staleTime: 5 * 60 * 1000,
+    			retry: 2,
+    			refetchOnWindowFocus: false
+    		}
+    	}
+    })
+
+    function App() {
+    	return (
+    		<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient} queryClient={queryClient}>
+    			<Activity />
+    		</TRPCProvider>
+    	)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx title="src/app/App.jsx"
+    import { QueryClient } from '@tanstack/react-query'
+    import { TRPCProvider } from '@robojs/trpc'
+    import { trpc, trpcQueryClient } from '../trpc/client'
+
+    const queryClient = new QueryClient({
+    	defaultOptions: {
+    		queries: {
+    			staleTime: 5 * 60 * 1000,
+    			retry: 2,
+    			refetchOnWindowFocus: false
+    		}
+    	}
+    })
+
+    function App() {
+    	return (
+    		<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient} queryClient={queryClient}>
+    			<Activity />
+    		</TRPCProvider>
+    	)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+	<Card href="./server" title="Server guide" description="Define procedures, handle errors, and split routers." />
+	<Card href="./configuration" title="Configuration" description="Server prefix, API reference, and troubleshooting." />
+</Cards>

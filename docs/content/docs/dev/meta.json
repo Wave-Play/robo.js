@@ -1,0 +1,15 @@
+{
+	"title": "@robojs/dev",
+	"icon": "Bug",
+	"description": "Dev tools that disappear in production.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Guides---",
+		"error-forwarding",
+		"commands",
+		"---Reference---",
+		"configuration",
+		"api"
+	]
+}

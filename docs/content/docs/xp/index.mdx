@@ -1,0 +1,123 @@
+---
+title: "README"
+icon: Trophy
+description: XP and leveling system with role rewards, multipliers, and multi-store support.
+---
+
+<PluginHero
+	name="@robojs/xp"
+	description="XP and leveling system with role rewards, multipliers, and multi-store support."
+	icon={<Trophy />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/xp"
+	platforms={["Bots"]}
+	optional={[{ name: "@robojs/server", href: "/docs/server", description: "REST API for leaderboards" }]}
+/>
+
+Standard chat XP system for Discord bots built on Robo.js. Awards XP for messages, tracks levels, manages role rewards, and exposes an event-driven API for building custom features.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Zap />} title="Standard XP" description="Awards 15-25 XP per message with configurable cooldown" />
+	<Feature icon={<Shield />} title="Role Rewards" description="Automatic role assignment with stack or replace modes" />
+	<Feature icon={<BarChart />} title="Multipliers" description="Server, role, and user XP multipliers" />
+	<Feature icon={<Rocket />} title="Cached Leaderboards" description="Optimized for 10k+ users with sub-200ms refresh" />
+	<Feature icon={<Lock />} title="No-XP Zones" description="Exclude specific roles and channels from earning XP" />
+	<Feature icon={<Terminal />} title="Admin Commands" description="Complete control via /xp command suite with interactive UI" />
+	<Feature icon={<Waypoints />} title="Event System" description="Real-time hooks for level changes and XP updates" />
+	<Feature icon={<DiamondNodes />} title="Custom Curves" description="Quadratic, linear, exponential, lookup, or fully custom formulas" />
+	<Feature icon={<Database />} title="Multi-Store" description="Run parallel progression systems (leveling, currencies, reputation)" />
+	<Feature icon={<Wrench />} title="Custom Branding" description='Rename "XP" to "Reputation", "Points", "Karma", or anything else' />
+</FeatureGrid>
+
+## Quick taste
+
+A complete level-up announcement system in a few lines:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start/level-announcements.ts"
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+    	const guild = await client.guilds.fetch(guildId)
+    	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+    	if (!channel?.isTextBased()) return
+
+    	await channel.send(`<@${userId}> just reached Level ${newLevel}.`)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start/level-announcements.js"
+    import { events } from '@robojs/xp'
+    import { client } from 'robo.js'
+
+    events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+    	const guild = await client.guilds.fetch(guildId)
+    	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+    	if (!channel?.isTextBased()) return
+
+    	await channel.send(`<@${userId}> just reached Level ${newLevel}.`)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+The same pattern works for contest bonuses, moderation penalties, premium XP boosts, analytics tracking, and any other XP-based feature.
+
+## Installation
+
+```bash
+npx robo add @robojs/xp
+```
+
+Or start a new project with the plugin pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/xp
+```
+
+### Optional: REST API
+
+Install `@robojs/server` to enable HTTP endpoints:
+
+```bash
+npx robo add @robojs/server
+```
+
+## How it works
+
+When a user sends a message in a guild text channel, the plugin:
+
+1. Validates the message (not a bot, not a DM, text channel)
+2. Increments the user's `messages` counter
+3. Checks no-XP channels, no-XP roles, and cooldown
+4. If eligible, rolls 15-25 base XP, applies `xpRate` and multipliers
+5. Computes the new level and persists the data
+6. Emits `levelUp`/`levelDown` and `xpChange` events
+
+Built-in commands like `/rank` and `/leaderboard` let users check their progress. Admins manage the system through `/xp config` (interactive UI) and `/xp give`, `/xp remove`, `/xp set`.
+
+## Default behavior
+
+| Setting | Default |
+|---|---|
+| XP per message | 15-25 (random) |
+| Cooldown | 60 seconds per user |
+| Level curve | `XP = 5 * level² + 50 * level + 100` |
+| Rewards mode | Stack (keep all role rewards) |
+| Remove rewards on loss | Disabled |
+| Leaderboard visibility | Admin-only |
+
+All defaults are configurable per guild, per store, or globally. See [Configuration](./configuration.mdx) for the full reference.
+
+## Next steps
+
+<Cards>
+  <Card href="./quick-start" title="Quick start" description="Install the plugin and see it in action." />
+  <Card href="./configuration" title="Configuration" description="Customize cooldowns, rates, and more." />
+  <Card href="./commands" title="Commands" description="Full slash command reference." />
+  <Card href="./api-reference" title="API reference" description="TypeScript API for building custom features." />
+</Cards>

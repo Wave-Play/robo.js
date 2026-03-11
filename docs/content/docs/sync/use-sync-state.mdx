@@ -1,0 +1,194 @@
+---
+title: "useSyncState"
+description: "Synchronize state across clients in real-time with a React hook."
+---
+
+The core hook for real-time state sync. Works like React's `useState` but shares state across all clients watching the same key via WebSockets.
+
+## Signature
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    function useSyncState<T, ClientData = unknown>(
+    	initialState: T,
+    	key: (string | null)[]
+    ): readonly [T, (newState: Partial<T> | ((prev: T) => T)) => void, SyncContext<ClientData>]
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    function useSyncState(
+    	initialState,
+    	key
+    )
+    // Returns: [state, setState, context]
+    ```
+  </Tab>
+</Tabs>
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `initialState` | `T` | Default state before any server value arrives |
+| `key` | `(string \| null)[]` | Scope key. Components sharing the same normalized key share state. |
+
+## Return value
+
+| Index | Type | Description |
+|-------|------|-------------|
+| `[0]` | `T` | Current synced state |
+| `[1]` | `(value: Partial<T> \| ((prev: T) => T)) => void` | Setter function — accepts partial objects or updater functions |
+| `[2]` | `SyncContext<ClientData>` | Context with `clients`, `clientId`, `isHost`, `broadcast`, `send` |
+
+## Basic usage
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { useSyncState } from '@robojs/sync'
+
+    function Counter() {
+    	const [count, setCount] = useSyncState(0, ['counter'])
+
+    	return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { useSyncState } from '@robojs/sync'
+
+    function Counter() {
+    	const [count, setCount] = useSyncState(0, ['counter'])
+
+    	return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Updater functions
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    setCount((prev) => prev + 1)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    setCount((prev) => prev + 1)
+    ```
+  </Tab>
+</Tabs>
+
+When using an updater function, the previous value comes from the server cache rather than React state, so it's always the latest synced value.
+
+## Object state
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    const [player, setPlayer] = useSyncState({ x: 0, y: 0, score: 0 }, ['player', odId])
+
+    // Partial update — only sends changed fields
+    setPlayer({ x: 10, y: 20 })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    const [player, setPlayer] = useSyncState({ x: 0, y: 0, score: 0 }, ['player', odId])
+
+    // Partial update — only sends changed fields
+    setPlayer({ x: 10, y: 20 })
+    ```
+  </Tab>
+</Tabs>
+
+## Context
+
+The third return value provides room context.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    const [state, setState, context] = useSyncState(initialState, ['game', roomId])
+
+    console.log(context.clientId)       // Your unique client ID
+    console.log(context.isHost)         // true if you're the room host
+    console.log(context.clients)        // Array of all connected clients
+    context.broadcast({ type: 'ping' }) // Send to all clients
+    context.send(targetId, { text: 'hello' }) // Send to specific client
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    const [state, setState, context] = useSyncState(initialState, ['game', roomId])
+
+    console.log(context.clientId)       // Your unique client ID
+    console.log(context.isHost)         // true if you're the room host
+    console.log(context.clients)        // Array of all connected clients
+    context.broadcast({ type: 'ping' }) // Send to all clients
+    context.send(targetId, { text: 'hello' }) // Send to specific client
+    ```
+  </Tab>
+</Tabs>
+
+The `context.clients` array contains `Client<ClientData>` objects. Each client has an `id` string and an optional `data` field populated from the `clientData` prop on `SyncContextProvider`.
+
+## Key scoping
+
+Keys determine which components share state. Keys are normalized to dot-notation internally.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    // These two components share the same state
+    const [a] = useSyncState(0, ['room', '123', 'score'])
+    const [b] = useSyncState(0, ['room', '123', 'score'])
+
+    // This one has separate state
+    const [c] = useSyncState(0, ['room', '456', 'score'])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    // These two components share the same state
+    const [a] = useSyncState(0, ['room', '123', 'score'])
+    const [b] = useSyncState(0, ['room', '123', 'score'])
+
+    // This one has separate state
+    const [c] = useSyncState(0, ['room', '456', 'score'])
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Avoid dots in individual key segments. `['a.b']` normalizes to the same key as `['a', 'b']`, which can cause unintended collisions.
+</Callout>
+
+## Offline behavior
+
+When the WebSocket is disconnected, updates are queued in memory and flushed on reconnection. Queued state is lost if the page refreshes before reconnecting.
+
+## Next Steps
+
+<Cards>
+	<Card
+		href="./use-sync-context"
+		title="useSyncContext"
+		description="Track clients and host status separately from state."
+	/>
+	<Card
+		href="./use-sync-broadcast"
+		title="useSyncBroadcast"
+		description="Send ephemeral messages that don't persist."
+	/>
+	<Card
+		href="./sync-box"
+		title="SyncBox"
+		description="Declarative sync containers with interpolation and locking."
+	/>
+</Cards>

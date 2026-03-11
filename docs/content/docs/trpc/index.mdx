@@ -1,0 +1,187 @@
+---
+title: "README"
+icon: DiamondNodes
+description: Type-safe APIs with tRPC, fully managed for Robo.js.
+---
+
+<PluginHero
+	name="@robojs/trpc"
+	description="Type-safe APIs with tRPC, fully managed for Robo.js."
+	icon={<DiamondNodes />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/trpc"
+	platforms={["Bots", "Activities", "Web"]}
+	requires={[{ name: "@robojs/server", href: "/docs/server", description: "HTTP routing for tRPC endpoints" }]}
+/>
+
+Add a [tRPC](https://trpc.io) server and client to your Robo automatically. This plugin sets up a tRPC router with automatic registration, type-safe procedure calls, and support for both React Query hooks and standalone clients.
+
+End-to-end type safety means your client knows exactly what the server expects and returns — no manual type definitions, no runtime surprises.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Shield />} title="End-to-end Types" description="Full type safety from server procedures to client calls" />
+	<Feature icon={<Zap />} title="Auto Registration" description="Router captured automatically via custom initTRPC wrapper" />
+	<Feature icon={<Database />} title="React Query" description="Built-in hooks with caching, loading states, and invalidation" />
+	<Feature icon={<Terminal />} title="Standalone Client" description="Direct procedure calls without React dependency" />
+	<Feature icon={<Lock />} title="Zod Validation" description="Schema-based input validation for every procedure" />
+	<Feature icon={<FileStack />} title="Seed Files" description="Working server, client, and start hook out of the box" />
+</FeatureGrid>
+
+## Installation
+
+This plugin requires [`@robojs/server`](../server/index.mdx) for HTTP routing.
+
+```bash
+npx robo add @robojs/server @robojs/trpc
+```
+
+Or create a new project with both plugins pre-installed:
+
+```package-install
+npx create-robo my-project -p @robojs/server @robojs/trpc
+```
+
+We also recommend installing `zod` for input validation:
+
+```package-install
+npm install zod
+```
+
+## Quick start
+
+When you install the plugin, it seeds three files into your project:
+
+<Files>
+	<Folder name="src" defaultOpen>
+		<Folder name="robo" defaultOpen>
+			<Folder name="start" defaultOpen>
+				<File name="trpc.ts" />
+			</Folder>
+		</Folder>
+		<Folder name="trpc" defaultOpen>
+			<File name="client.ts" />
+			<File name="server.ts" />
+		</Folder>
+	</Folder>
+</Files>
+
+These give you a working tRPC setup out of the box. Define procedures on the server, call them from the client — fully typed.
+
+### Define a procedure
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/trpc/server.ts"
+    import { initTRPC } from '@robojs/trpc/server.js'
+    import { z } from 'zod'
+
+    const t = initTRPC.create()
+
+    export const appRouter = t.router({
+    	hello: t.procedure
+    		.input(z.object({ text: z.string() }))
+    		.query(({ input }) => {
+    			return { message: `Hello ${input.text}` }
+    		})
+    })
+
+    export type AppRouter = typeof appRouter
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/trpc/server.js"
+    import { initTRPC } from '@robojs/trpc/server.js'
+    import { z } from 'zod'
+
+    const t = initTRPC.create()
+
+    export const appRouter = t.router({
+    	hello: t.procedure
+    		.input(z.object({ text: z.string() }))
+    		.query(({ input }) => {
+    			return { message: `Hello ${input.text}` }
+    		})
+    })
+
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Import `initTRPC` from `@robojs/trpc/server.js`, not from `@trpc/server`. The plugin wraps tRPC's initializer to automatically register your router.
+</Callout>
+
+### Call it from the client
+
+Use the standalone client for direct calls:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { trpcClient } from '../trpc/client'
+
+    const result = await trpcClient.hello.query({ text: 'World' })
+    console.log(result.message) // "Hello World"
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { trpcClient } from '../trpc/client'
+
+    const result = await trpcClient.hello.query({ text: 'World' })
+    console.log(result.message) // "Hello World"
+    ```
+  </Tab>
+</Tabs>
+
+Or use React Query hooks for automatic caching and loading states:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```tsx
+    import { trpc } from '../trpc/client'
+
+    function Greeting() {
+    	const { data, isLoading } = trpc.hello.useQuery({ text: 'World' })
+
+    	if (isLoading) return <span>Loading...</span>
+    	return <span>{data?.message}</span>
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```jsx
+    import { trpc } from '../trpc/client'
+
+    function Greeting() {
+    	const { data, isLoading } = trpc.hello.useQuery({ text: 'World' })
+
+    	if (isLoading) return <span>Loading...</span>
+    	return <span>{data?.message}</span>
+    }
+    ```
+  </Tab>
+</Tabs>
+
+React Query hooks require wrapping your app in `TRPCProvider`. See the [client guide](./client.mdx) for setup.
+
+## How it works
+
+The plugin handles tRPC integration through three mechanisms:
+
+1. **Router registration.** The custom `initTRPC` from `@robojs/trpc/server.js` wraps tRPC's router method to automatically capture your router instance. No manual registration needed.
+
+2. **API routing.** The plugin registers a catch-all API route at `/api/trpc/*` through `@robojs/server`. All tRPC procedure calls are handled by this endpoint.
+
+3. **Start hook.** A seeded `_start` event handler imports your server file at startup, triggering router registration before any requests arrive.
+
+The result is a tRPC setup that works with zero configuration — install the plugin, define procedures, and start calling them.
+
+## Next Steps
+
+<Cards>
+	<Card href="./server" title="Server guide" description="Define procedures, handle errors, and split routers." />
+	<Card href="./client" title="Client guide" description="Set up React Query hooks or standalone clients." />
+	<Card href="./configuration" title="Configuration" description="Server prefix, seed files, and API reference." />
+</Cards>

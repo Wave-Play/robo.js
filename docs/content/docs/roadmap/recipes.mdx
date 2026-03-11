@@ -1,0 +1,301 @@
+---
+title: Recipes
+description: Common patterns for reports, automation, monitoring, and multi-guild setups.
+---
+
+Practical examples for common use cases beyond basic sync operations.
+
+## Generate a monthly report
+
+Use date range helpers to build activity reports:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getCardsFromLastMonth, getProvider, isProviderReady } from '@robojs/roadmap'
+
+    export default async function monthlyReport(interaction) {
+      if (!isProviderReady()) {
+        return 'Provider not configured.'
+      }
+
+      const provider = getProvider()
+      const cards = await getCardsFromLastMonth(provider)
+
+      const created = cards.filter(c => c.column === 'Backlog')
+      const completed = cards.filter(c => c.column === 'Done')
+      const inProgress = cards.filter(c => c.column === 'In Progress')
+
+      return [
+        `**Monthly Report**`,
+        `Cards updated: ${cards.length}`,
+        `New: ${created.length} | Active: ${inProgress.length} | Completed: ${completed.length}`
+      ].join('\n')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getCardsFromLastMonth, getProvider, isProviderReady } from '@robojs/roadmap'
+
+    export default async function monthlyReport(interaction) {
+      if (!isProviderReady()) {
+        return 'Provider not configured.'
+      }
+
+      const provider = getProvider()
+      const cards = await getCardsFromLastMonth(provider)
+
+      const created = cards.filter(c => c.column === 'Backlog')
+      const completed = cards.filter(c => c.column === 'Done')
+      const inProgress = cards.filter(c => c.column === 'In Progress')
+
+      return [
+        `**Monthly Report**`,
+        `Cards updated: ${cards.length}`,
+        `New: ${created.length} | Active: ${inProgress.length} | Completed: ${completed.length}`
+      ].join('\n')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Trigger sync from a webhook
+
+Use the REST API to trigger syncs from CI/CD pipelines or external services:
+
+```bash
+# Trigger sync after a Jira webhook fires
+curl -X POST http://localhost:3000/api/roadmap/sync/YOUR_GUILD_ID
+```
+
+Or trigger from a custom event handler:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { syncRoadmap, getProvider } from '@robojs/roadmap'
+
+    export default async function onWebhook(guild) {
+      const provider = getProvider()
+      if (!provider) return
+
+      const result = await syncRoadmap({ guild, provider })
+      console.log(`Synced ${result.stats.total} cards`)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { syncRoadmap, getProvider } from '@robojs/roadmap'
+
+    export default async function onWebhook(guild) {
+      const provider = getProvider()
+      if (!provider) return
+
+      const result = await syncRoadmap({ guild, provider })
+      console.log(`Synced ${result.stats.total} cards`)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Monitor provider health
+
+Build a health check dashboard using the REST API:
+
+```bash
+# Check provider status
+curl http://localhost:3000/api/roadmap/provider/status
+
+# Get last sync time
+curl http://localhost:3000/api/roadmap/sync/YOUR_GUILD_ID/status
+```
+
+## Track activity over time
+
+Use date range helpers for trend analysis:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getCardsFromLastDays, getProvider } from '@robojs/roadmap'
+
+    async function weeklyTrend() {
+      const provider = getProvider()
+
+      const thisWeek = await getCardsFromLastDays(provider, 7)
+      const lastWeek = await getCardsFromLastDays(provider, 14)
+
+      // Compare activity between periods
+      const delta = thisWeek.length - lastWeek.length
+      return `This week: ${thisWeek.length} cards (${delta >= 0 ? '+' : ''}${delta} vs last week)`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getCardsFromLastDays, getProvider } from '@robojs/roadmap'
+
+    async function weeklyTrend() {
+      const provider = getProvider()
+
+      const thisWeek = await getCardsFromLastDays(provider, 7)
+      const lastWeek = await getCardsFromLastDays(provider, 14)
+
+      // Compare activity between periods
+      const delta = thisWeek.length - lastWeek.length
+      return `This week: ${thisWeek.length} cards (${delta >= 0 ? '+' : ''}${delta} vs last week)`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Sync a single card
+
+Sync one card after creation or update without running a full sync:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { syncSingleCard, getProvider } from '@robojs/roadmap'
+
+    const provider = getProvider()
+    const card = await provider.getCard('PROJ-123')
+
+    if (card) {
+      const result = await syncSingleCard(card, guild, provider)
+      if (result) {
+        console.log(`Thread: ${result.threadUrl}`)
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { syncSingleCard, getProvider } from '@robojs/roadmap'
+
+    const provider = getProvider()
+    const card = await provider.getCard('PROJ-123')
+
+    if (card) {
+      const result = await syncSingleCard(card, guild, provider)
+      if (result) {
+        console.log(`Thread: ${result.threadUrl}`)
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Cancelable sync with progress
+
+Run a sync with progress tracking and cancellation support:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { syncRoadmap, SyncCanceledError, getProvider } from '@robojs/roadmap'
+
+    const controller = new AbortController()
+    const provider = getProvider()
+
+    try {
+      const result = await syncRoadmap({
+        guild,
+        provider,
+        signal: controller.signal,
+        onProgress: (update) => {
+          console.log(`[${update.currentIndex + 1}/${update.totalCards}] ${update.currentCard.title}`)
+          if (update.stats.errors > 5) {
+            controller.abort()  // Cancel if too many errors
+          }
+        }
+      })
+      console.log('Sync complete:', result.stats)
+    } catch (error) {
+      if (error instanceof SyncCanceledError) {
+        console.log('Sync canceled')
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { syncRoadmap, SyncCanceledError, getProvider } from '@robojs/roadmap'
+
+    const controller = new AbortController()
+    const provider = getProvider()
+
+    try {
+      const result = await syncRoadmap({
+        guild,
+        provider,
+        signal: controller.signal,
+        onProgress: (update) => {
+          console.log(`[${update.currentIndex + 1}/${update.totalCards}] ${update.currentCard.title}`)
+          if (update.stats.errors > 5) {
+            controller.abort()  // Cancel if too many errors
+          }
+        }
+      })
+      console.log('Sync complete:', result.stats)
+    } catch (error) {
+      if (error instanceof SyncCanceledError) {
+        console.log('Sync canceled')
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Multi-guild management
+
+Each guild has independent settings. Manage multiple guilds programmatically:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { getSettings, updateSettings } from '@robojs/roadmap'
+
+    const guildIds = ['guild-1', 'guild-2', 'guild-3']
+
+    for (const guildId of guildIds) {
+      const settings = getSettings(guildId)
+      console.log(`${guildId}: last sync ${new Date(settings.lastSyncTimestamp ?? 0)}`)
+
+      // Apply consistent settings across guilds
+      updateSettings(guildId, {
+        threadTitleTemplate: '[{id}] {title}',
+        isPublic: true
+      })
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { getSettings, updateSettings } from '@robojs/roadmap'
+
+    const guildIds = ['guild-1', 'guild-2', 'guild-3']
+
+    for (const guildId of guildIds) {
+      const settings = getSettings(guildId)
+      console.log(`${guildId}: last sync ${new Date(settings.lastSyncTimestamp ?? 0)}`)
+
+      // Apply consistent settings across guilds
+      updateSettings(guildId, {
+        threadTitleTemplate: '[{id}] {title}',
+        isPublic: true
+      })
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card href="./api-reference" title="API reference" description="Full programmatic API." />
+  <Card href="./commands" title="Commands" description="Slash commands reference." />
+  <Card href="./configuration" title="Configuration" description="Plugin options and behavior." />
+</Cards>
