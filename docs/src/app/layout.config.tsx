@@ -3,7 +3,7 @@ import Image from "next/image"
 import FrameworkPreview from "@/../public/fp.png"
 import logo from "@/../public/logo.png"
 import { AnimatedIconWrapper } from "@/components/ui/icons/animated-icon-wrapper"
-import { Blocks, BookText, Connect, Discord, DiscordLogo, PartyPopper, Rocket, Terminal } from "@/components/ui/icons"
+import { Blocks, BookText, Connect, Discord, DiscordLogo, FileStack, PartyPopper, Rocket, Terminal } from "@/components/ui/icons"
 
 /**
  * Shared layout configurations
@@ -74,7 +74,18 @@ export const navLinks = [
         icon: <AnimatedIconWrapper><BookText className="p-1" /></AnimatedIconWrapper>,
         description: "Access detailed technical documentation.",
       },
+      {
+        text: "Changelog",
+        url: "/docs/changelog",
+        icon: <AnimatedIconWrapper><FileStack className="p-1" /></AnimatedIconWrapper>,
+        description: "Track every release across the ecosystem.",
+      },
     ],
+  },
+  {
+    text: "Changelog",
+    url: "/docs/changelog",
+    type: "main",
   },
   {
     text: "Blog",

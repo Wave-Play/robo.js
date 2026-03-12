@@ -12,7 +12,7 @@ import Link from 'fumadocs-core/link'
 import { usePathname } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { AnimatedIconWrapper } from '@/components/ui/icons/animated-icon-wrapper'
-import { FileText, Connect, Boxes } from '@/components/ui/icons'
+import { FileText, Connect, Boxes, Milestone } from '@/components/ui/icons'
 
 /**
  * Grouping config for the sidebar dropdown.
@@ -39,6 +39,7 @@ const ecosystemLinks: { title: string; description: string; url: string; icon: R
 
 const miscLinks: { title: string; description: string; url: string; icon: ReactNode }[] = [
 	{ title: 'Blog', description: 'News, updates, and guides', url: 'https://dev.to/waveplay', icon: <AnimatedIconWrapper><FileText size={20} /></AnimatedIconWrapper> },
+	{ title: 'Changelog', description: 'Latest releases and changes', url: '/docs/changelog', icon: <AnimatedIconWrapper><Milestone size={20} /></AnimatedIconWrapper> },
 ]
 
 function groupTabs(tabs: SidebarTab[]) {

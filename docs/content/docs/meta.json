@@ -13,7 +13,7 @@
     "mock",
     "---Ecosystem---",
     "plugins",
-    "[Boxes][Templates](/templates)",
+    "[Boxes][Templates](/docs/templates)",
     "---Plugins---",
     "ai",
     "analytics",
@@ -34,6 +34,7 @@
     "xp",
     "---Misc---",
     "reference",
+    "[FileStack][Changelog](/docs/changelog)",
     "[FileText][Blog](https://dev.to/waveplay)"
   ]
 }

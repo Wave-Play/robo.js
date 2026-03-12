@@ -10,6 +10,7 @@
     "dev": "next dev",
     "start": "next start",
     "prestart": "fumadocs-mdx",
+    "generate:changelog": "tsx scripts/generate-changelog.ts",
     "generate:ref": "tsx scripts/generate-reference.ts",
     "cq:format": "biome format --write .",
     "cq:lint": "biome lint --write .",
