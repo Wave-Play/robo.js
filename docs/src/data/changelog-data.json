@@ -1,0 +1,6166 @@
+{
+	"generatedAt": "2026-03-12T02:22:34.446Z",
+	"packages": [
+		{
+			"name": "robo.js",
+			"slug": "framework",
+			"displayName": "Framework"
+		},
+		{
+			"name": "@robojs/ai",
+			"slug": "ai",
+			"displayName": "@robojs/ai"
+		},
+		{
+			"name": "@robojs/analytics",
+			"slug": "analytics",
+			"displayName": "@robojs/analytics"
+		},
+		{
+			"name": "@robojs/auth",
+			"slug": "auth",
+			"displayName": "@robojs/auth"
+		},
+		{
+			"name": "@robojs/better-stack",
+			"slug": "better-stack",
+			"displayName": "@robojs/better-stack"
+		},
+		{
+			"name": "@robojs/cron",
+			"slug": "cron",
+			"displayName": "@robojs/cron"
+		},
+		{
+			"name": "@robojs/dev",
+			"slug": "dev",
+			"displayName": "@robojs/dev"
+		},
+		{
+			"name": "@robojs/giveaways",
+			"slug": "giveaways",
+			"displayName": "@robojs/giveaways"
+		},
+		{
+			"name": "@robojs/i18n",
+			"slug": "i18n",
+			"displayName": "@robojs/i18n"
+		},
+		{
+			"name": "@robojs/moderation",
+			"slug": "moderation",
+			"displayName": "@robojs/moderation"
+		},
+		{
+			"name": "@robojs/patch",
+			"slug": "patch",
+			"displayName": "@robojs/patch"
+		},
+		{
+			"name": "@robojs/roadmap",
+			"slug": "roadmap",
+			"displayName": "@robojs/roadmap"
+		},
+		{
+			"name": "@robojs/server",
+			"slug": "server",
+			"displayName": "@robojs/server"
+		},
+		{
+			"name": "@robojs/sync",
+			"slug": "sync",
+			"displayName": "@robojs/sync"
+		},
+		{
+			"name": "@robojs/trpc",
+			"slug": "trpc",
+			"displayName": "@robojs/trpc"
+		},
+		{
+			"name": "@robojs/xp",
+			"slug": "xp",
+			"displayName": "@robojs/xp"
+		}
+	],
+	"releases": [
+		{
+			"date": "2025-11-29",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.6.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "ee35aa9",
+							"type": "feat",
+							"scope": null,
+							"message": "mcp tool support",
+							"breaking": false
+						},
+						{
+							"hash": "e9d2830",
+							"type": "feat",
+							"scope": null,
+							"message": "tool tracking hooks & reply overrides",
+							"breaking": false
+						},
+						{
+							"hash": "1e27661",
+							"type": "refactor",
+							"scope": null,
+							"message": "complete plugin overhaul",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/auth",
+					"displayName": "@robojs/auth",
+					"slug": "auth",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "e862e28",
+							"type": "feat",
+							"scope": null,
+							"message": "first release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/cron",
+					"displayName": "@robojs/cron",
+					"slug": "cron",
+					"version": "0.1.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ad7659f",
+							"type": "feat",
+							"scope": null,
+							"message": "support for absolute paths for cron job files",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/giveaways",
+					"displayName": "@robojs/giveaways",
+					"slug": "giveaways",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "6d102dc",
+							"type": "feat",
+							"scope": null,
+							"message": "first release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/i18n",
+					"displayName": "@robojs/i18n",
+					"slug": "i18n",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "1b7f291",
+							"type": "fix",
+							"scope": null,
+							"message": "guard createCommandConfig for missing descriptionKey and locales",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/roadmap",
+					"displayName": "@robojs/roadmap",
+					"slug": "roadmap",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "df08ce5",
+							"type": "feat",
+							"scope": null,
+							"message": "first release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "6348fe5",
+							"type": "feat",
+							"scope": null,
+							"message": "not found handlers",
+							"breaking": false
+						},
+						{
+							"hash": "032d328",
+							"type": "patch",
+							"scope": null,
+							"message": "special cookie header handling",
+							"breaking": false
+						},
+						{
+							"hash": "0756cf3",
+							"type": "refactor",
+							"scope": null,
+							"message": "handle vite middleware before creating RoboRequest",
+							"breaking": false
+						},
+						{
+							"hash": "833bc94",
+							"type": "refactor",
+							"scope": null,
+							"message": "skip body parsing without robo routes",
+							"breaking": false
+						},
+						{
+							"hash": "53c122f",
+							"type": "feat",
+							"scope": null,
+							"message": "add SPA fallback for client-side routes",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/xp",
+					"displayName": "@robojs/xp",
+					"slug": "xp",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "a44199d",
+							"type": "feat",
+							"scope": null,
+							"message": "first release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.32",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "6a97a61",
+							"type": "feat",
+							"scope": "config",
+							"message": "support for .tsx config files",
+							"breaking": false
+						},
+						{
+							"hash": "528fd9f",
+							"type": "feat",
+							"scope": "config",
+							"message": "improved support for in-project imports + compilation",
+							"breaking": false
+						},
+						{
+							"hash": "ee2a767",
+							"type": "feat",
+							"scope": null,
+							"message": "exposed compiler via unstable module",
+							"breaking": false
+						},
+						{
+							"hash": "6b57cfd",
+							"type": "fix",
+							"scope": "cli",
+							"message": "hydrate api subroutes when parent routes have handlers",
+							"breaking": false
+						},
+						{
+							"hash": "2c12d82",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "customizable namespace separator",
+							"breaking": false
+						},
+						{
+							"hash": "b6a37bd",
+							"type": "feat",
+							"scope": null,
+							"message": "new registerSlashCommands function for full control over registration",
+							"breaking": false
+						},
+						{
+							"hash": "51433db",
+							"type": "fix",
+							"scope": "cli",
+							"message": "load mode-specific env before build/dev/start",
+							"breaking": false
+						},
+						{
+							"hash": "bd6e7b2",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new --no-register build option",
+							"breaking": false
+						},
+						{
+							"hash": "ef0c000",
+							"type": "patch",
+							"scope": "cli",
+							"message": "resolve relative recursive imports in config files correctly",
+							"breaking": false
+						},
+						{
+							"hash": "495bb08",
+							"type": "patch",
+							"scope": "cli",
+							"message": "respect project language when seeding plugin root files",
+							"breaking": false
+						},
+						{
+							"hash": "ec2589f",
+							"type": "feat",
+							"scope": "cli",
+							"message": "seed hooks and environment variable updates",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2025-09-14",
+			"packages": [
+				{
+					"name": "@robojs/better-stack",
+					"displayName": "@robojs/better-stack",
+					"slug": "better-stack",
+					"version": "0.3.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "b89b216",
+							"type": "feat",
+							"scope": null,
+							"message": "support newer sources",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/i18n",
+					"displayName": "@robojs/i18n",
+					"slug": "i18n",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "a19a042",
+							"type": "feat",
+							"scope": null,
+							"message": "first release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "bf52fae",
+							"type": "fix",
+							"scope": null,
+							"message": "reconstruct request URL using x-forwarded-proto and originalUrl",
+							"breaking": false
+						},
+						{
+							"hash": "4ef73c6",
+							"type": "patch",
+							"scope": null,
+							"message": "ignore query params when routing websocket handlers",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.3.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "abe1b25",
+							"type": "refactor",
+							"scope": null,
+							"message": "re-export all @trpc/react-query modules",
+							"breaking": false
+						},
+						{
+							"hash": "a2f59bf",
+							"type": "chore",
+							"scope": null,
+							"message": "updated trpc to 11.4.3",
+							"breaking": false
+						},
+						{
+							"hash": "263b4c5",
+							"type": "chore",
+							"scope": null,
+							"message": "support for react 19",
+							"breaking": false
+						},
+						{
+							"hash": "35b56cd",
+							"type": "fix",
+							"scope": null,
+							"message": "resolving package on windows.",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.31",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "012151e",
+							"type": "patch",
+							"scope": null,
+							"message": "use ephemeral flags when available",
+							"breaking": false
+						},
+						{
+							"hash": "b2bb7bb",
+							"type": "feat",
+							"scope": "types",
+							"message": "string literals now used for options with choices",
+							"breaking": false
+						},
+						{
+							"hash": "747f9ec",
+							"type": "fix",
+							"scope": "cli",
+							"message": "robo add now works with url package names",
+							"breaking": false
+						},
+						{
+							"hash": "d71c670",
+							"type": "patch",
+							"scope": null,
+							"message": "windows fixes and swc/core update",
+							"breaking": false
+						},
+						{
+							"hash": "158067c",
+							"type": "fix",
+							"scope": "logger",
+							"message": "bind all public methods",
+							"breaking": false
+						},
+						{
+							"hash": "8a50e0b",
+							"type": "fix",
+							"scope": "logger",
+							"message": "object interpolation in browser environments",
+							"breaking": false
+						},
+						{
+							"hash": "57fcca0",
+							"type": "feat",
+							"scope": null,
+							"message": "chainable color api",
+							"breaking": false
+						},
+						{
+							"hash": "55ea1f3",
+							"type": "patch",
+							"scope": "cli",
+							"message": "don't register /launch unless its a discord activity",
+							"breaking": false
+						},
+						{
+							"hash": "52212bc",
+							"type": "chore",
+							"scope": "types",
+							"message": "new SmartCommandConfig export",
+							"breaking": false
+						},
+						{
+							"hash": "90b49e1",
+							"type": "patch",
+							"scope": "types",
+							"message": "always assume nullable member option",
+							"breaking": false
+						},
+						{
+							"hash": "0c1f970",
+							"type": "feat",
+							"scope": null,
+							"message": "support for channelTypes command option",
+							"breaking": false
+						},
+						{
+							"hash": "60ce5c4",
+							"type": "fix",
+							"scope": "sage",
+							"message": "missing ephemeral state when not deferred",
+							"breaking": false
+						},
+						{
+							"hash": "82e3e34",
+							"type": "chore",
+							"scope": null,
+							"message": "support for .config no longer deprecated",
+							"breaking": false
+						},
+						{
+							"hash": "6e5a01c",
+							"type": "feat",
+							"scope": null,
+							"message": "added categories of commands to the default help.ts",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2025-02-18",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "03e5963",
+							"type": "fix",
+							"scope": null,
+							"message": "support both `vite.mjs` and `vite.ts` in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "010cb1e",
+							"type": "chore",
+							"scope": null,
+							"message": "include `localUrl` in watch file",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.30",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ad25a02",
+							"type": "patch",
+							"scope": "cli",
+							"message": "check more vite file variations when building for production",
+							"breaking": false
+						},
+						{
+							"hash": "da98ac3",
+							"type": "feat",
+							"scope": null,
+							"message": "`mode` api browser compatibility",
+							"breaking": false
+						},
+						{
+							"hash": "55c3ed6",
+							"type": "feat",
+							"scope": null,
+							"message": "`logger` api browser compatibility",
+							"breaking": false
+						},
+						{
+							"hash": "b6ecdec",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `-id --instance-id` option",
+							"breaking": false
+						},
+						{
+							"hash": "3fed7e5",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "customizable data dir in file adapter constructor",
+							"breaking": false
+						},
+						{
+							"hash": "7eba84c",
+							"type": "feat",
+							"scope": null,
+							"message": "`color` api now compatible with browsers",
+							"breaking": false
+						},
+						{
+							"hash": "0e7c892",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `-l --log-level` option",
+							"breaking": false
+						},
+						{
+							"hash": "2b0bbf8",
+							"type": "feat",
+							"scope": null,
+							"message": "tiny new `Nanocore` API (unstable)",
+							"breaking": false
+						},
+						{
+							"hash": "aab6634",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "expose adapters via separate module",
+							"breaking": false
+						},
+						{
+							"hash": "9b045b6",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "now possible to use own non-keyv adapters",
+							"breaking": false
+						},
+						{
+							"hash": "ae9235b",
+							"type": "feat",
+							"scope": null,
+							"message": "new `Flashcore.$init` API",
+							"breaking": false
+						},
+						{
+							"hash": "404ec55",
+							"type": "feat",
+							"scope": null,
+							"message": "`color`, `composeColors`, and `consoleDrain` in logger module",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-12-26",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.8",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "1e402bf",
+							"type": "patch",
+							"scope": null,
+							"message": "exported missing class",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-12-23",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ee409b8",
+							"type": "chore",
+							"scope": null,
+							"message": "better documentation in seed file",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.29",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "d9d171a",
+							"type": "chore",
+							"scope": null,
+							"message": "nicer update available message w/ hint to disable",
+							"breaking": false
+						},
+						{
+							"hash": "c3e0a52",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `--credentials` option in `robo cloud status` for ci setup",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-12-22",
+			"packages": [
+				{
+					"name": "@robojs/sync",
+					"displayName": "@robojs/sync",
+					"slug": "sync",
+					"version": "0.1.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "589419c",
+							"type": "chore",
+							"scope": null,
+							"message": "support for react 19",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.28",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "6f4476c",
+							"type": "patch",
+							"scope": null,
+							"message": "fixed race condition by patching `interaction.deferReply`",
+							"breaking": false
+						},
+						{
+							"hash": "97ae5bd",
+							"type": "patch",
+							"scope": null,
+							"message": "warn when incorrect data object was returned in slash commands",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-12-09",
+			"packages": [
+				{
+					"name": "@robojs/patch",
+					"displayName": "@robojs/patch",
+					"slug": "patch",
+					"version": "0.2.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "b13ded0",
+							"type": "patch",
+							"scope": null,
+							"message": "support for `RequestInfo` object patching",
+							"breaking": false
+						},
+						{
+							"hash": "3b1bd02",
+							"type": "patch",
+							"scope": null,
+							"message": "exclude mapped urls from .proxy prefixing",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.27",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "5166d16",
+							"type": "patch",
+							"scope": null,
+							"message": "register loaded config globally",
+							"breaking": false
+						},
+						{
+							"hash": "1dbae32",
+							"type": "chore",
+							"scope": null,
+							"message": "deprecated experimental `userInstall` option",
+							"breaking": false
+						},
+						{
+							"hash": "fab10f2",
+							"type": "feat",
+							"scope": null,
+							"message": "ability to define user installs on a per-command basis w/ defaults",
+							"breaking": false
+						},
+						{
+							"hash": "777d33d",
+							"type": "patch",
+							"scope": "cli",
+							"message": "escape login URLs on Windows",
+							"breaking": false
+						},
+						{
+							"hash": "e7807d0",
+							"type": "feat",
+							"scope": null,
+							"message": "intent management for events",
+							"breaking": false
+						},
+						{
+							"hash": "dfe4bdd",
+							"type": "feat",
+							"scope": null,
+							"message": "new `contexts` option for slash commands",
+							"breaking": false
+						},
+						{
+							"hash": "0a670ec",
+							"type": "feat",
+							"scope": "config",
+							"message": "define default member permissions",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-11-22",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.7",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "5a08d2a",
+							"type": "refactor",
+							"scope": null,
+							"message": "cleaner debug logs",
+							"breaking": false
+						},
+						{
+							"hash": "204ec0c",
+							"type": "patch",
+							"scope": null,
+							"message": "account for unnecessary @ in function calls",
+							"breaking": false
+						},
+						{
+							"hash": "6893fad",
+							"type": "patch",
+							"scope": null,
+							"message": "mock entitlements in interaction",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.26",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "1b84f8e",
+							"type": "fix",
+							"scope": "runtime",
+							"message": "decouple Bun runtime from PM detection",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-11-17",
+			"packages": [
+				{
+					"name": "@robojs/moderation",
+					"displayName": "@robojs/moderation",
+					"slug": "moderation",
+					"version": "0.4.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "b902032",
+							"type": "feat",
+							"scope": null,
+							"message": "rules",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.25",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "b902032",
+							"type": "feat",
+							"scope": null,
+							"message": "new `build` function in Robo object",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "`deploy` now triggers `login` when necessary",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "fix",
+							"scope": "cli",
+							"message": "reload environment variables in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "feat",
+							"scope": "defaults",
+							"message": "help specific to each command available",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "feat",
+							"scope": "discord",
+							"message": "default help menu with pagination",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "patch",
+							"scope": "cli",
+							"message": "load environment variables in `login` and `deploy` commands",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "feat",
+							"scope": null,
+							"message": "support for `.ts` config files",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "fix",
+							"scope": "cli",
+							"message": "get custom build directory on start command",
+							"breaking": false
+						},
+						{
+							"hash": "d10c770",
+							"type": "patch",
+							"scope": "commands",
+							"message": "don't register entry point in guild commands",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "feat",
+							"scope": null,
+							"message": "new `Env` export",
+							"breaking": false
+						},
+						{
+							"hash": "b902032",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "style updates to `deploy` and `login` commands",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-11-02",
+			"packages": [
+				{
+					"name": "@robojs/cron",
+					"displayName": "@robojs/cron",
+					"slug": "cron",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "6179012",
+							"type": "feat",
+							"scope": null,
+							"message": "add Cron.get() method for retrieving saved jobs",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.2.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "44d6755",
+							"type": "feat",
+							"scope": null,
+							"message": "include `req` and `res` in context by default",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.24",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "32b172c",
+							"type": "fix",
+							"scope": "commands",
+							"message": "account for options without type specified when parsing them",
+							"breaking": false
+						},
+						{
+							"hash": "fe88aee",
+							"type": "fix",
+							"scope": "sage",
+							"message": "await async command handlers even when auto defer is disabled",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-30",
+			"packages": [
+				{
+					"name": "@robojs/cron",
+					"displayName": "@robojs/cron",
+					"slug": "cron",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "fb2f028",
+							"type": "feat",
+							"scope": null,
+							"message": "cron package",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "34ef0e8",
+							"type": "patch",
+							"scope": null,
+							"message": "prefixed hostname env with robo\\_ to prevent clashes",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.23",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "80d0092",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "listen to server for auth url instead of creating locally",
+							"breaking": false
+						},
+						{
+							"hash": "5b9eae7",
+							"type": "chore",
+							"scope": null,
+							"message": "updated help link",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-27",
+			"packages": [
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.2.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "d2bf907",
+							"type": "patch",
+							"scope": null,
+							"message": "better support for non-prefixed servers",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.2.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "f31c26d",
+							"type": "patch",
+							"scope": null,
+							"message": "decoupled client imports from server file",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "55a0b55",
+							"type": "refactor",
+							"scope": null,
+							"message": "moved server-side exports to `/server` namespace",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-18",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.22",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "db93f0a",
+							"type": "patch",
+							"scope": "cli",
+							"message": "broken invite command",
+							"breaking": false
+						},
+						{
+							"hash": "0c13f23",
+							"type": "patch",
+							"scope": "cli",
+							"message": "always ensure entry command is there unless purposefully removed",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-15",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "7b8247d",
+							"type": "patch",
+							"scope": null,
+							"message": "store instance globally",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.6.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "c5dfaf0",
+							"type": "feat",
+							"scope": null,
+							"message": "support for `BodyInit` as `.send()` param and returns",
+							"breaking": false
+						},
+						{
+							"hash": "bf5b0ce",
+							"type": "refactor",
+							"scope": null,
+							"message": "use global state for ready signal",
+							"breaking": false
+						},
+						{
+							"hash": "a8b90e4",
+							"type": "feat",
+							"scope": null,
+							"message": "new `Server` exported interface",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-14",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.21",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "1e3dcfa",
+							"type": "chore",
+							"scope": "cli",
+							"message": "updated help command",
+							"breaking": false
+						},
+						{
+							"hash": "ced83f9",
+							"type": "patch",
+							"scope": "cli",
+							"message": "properly delegate args with spaces to exec",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-11",
+			"packages": [
+				{
+					"name": "@robojs/analytics",
+					"displayName": "@robojs/analytics",
+					"slug": "analytics",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "da547b7",
+							"type": "fix",
+							"scope": null,
+							"message": "seed",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/analytics",
+					"displayName": "@robojs/analytics",
+					"slug": "analytics",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "2d9c597",
+							"type": "feat",
+							"scope": null,
+							"message": "analytics package",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-10",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.20",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "c83cf09",
+							"type": "patch",
+							"scope": "cli",
+							"message": "seeding no longer overwrites existing files",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-09",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.19",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "07baafb",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "modernized `robo remove` ux",
+							"breaking": false
+						},
+						{
+							"hash": "c5fbc34",
+							"type": "patch",
+							"scope": "cli",
+							"message": "fallback seed lookup path",
+							"breaking": false
+						},
+						{
+							"hash": "ef51dd9",
+							"type": "fix",
+							"scope": "cli",
+							"message": "cloudflared path on windows",
+							"breaking": false
+						},
+						{
+							"hash": "4fc64e9",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `robo sync` command",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-07",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.18",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8198201",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `-y --yes` option in `robo add`",
+							"breaking": false
+						},
+						{
+							"hash": "40c77aa",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "use discord logger more consistently",
+							"breaking": false
+						},
+						{
+							"hash": "8a477bc",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "exclude `disableBot` from experimental warnings",
+							"breaking": false
+						},
+						{
+							"hash": "457f1d5",
+							"type": "patch",
+							"scope": null,
+							"message": "account for relative paths in seed lookups",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-06",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8b0ce73",
+							"type": "refactor",
+							"scope": null,
+							"message": "use gpt-4o as the new default",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.17",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ca9b21d",
+							"type": "patch",
+							"scope": null,
+							"message": "fixed portal regression for apis",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.16",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "4f6fdea",
+							"type": "patch",
+							"scope": null,
+							"message": "unified global instance for flashcore",
+							"breaking": false
+						},
+						{
+							"hash": "0770bac",
+							"type": "patch",
+							"scope": null,
+							"message": "unified global instance for portal",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-10-01",
+			"packages": [
+				{
+					"name": "@robojs/patch",
+					"displayName": "@robojs/patch",
+					"slug": "patch",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "3815af6",
+							"type": "feat",
+							"scope": null,
+							"message": "auto fix discord entry point commands",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-09-22",
+			"packages": [
+				{
+					"name": "@robojs/patch",
+					"displayName": "@robojs/patch",
+					"slug": "patch",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0f0bd3e",
+							"type": "patch",
+							"scope": null,
+							"message": "avoid patching external requests",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-09-16",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.7",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8c8cbc8",
+							"type": "patch",
+							"scope": null,
+							"message": "resolved npm missing seed",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.1.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "76f4ec5",
+							"type": "patch",
+							"scope": null,
+							"message": "resolved npm missing seed",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.1.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "c4f8886",
+							"type": "patch",
+							"scope": null,
+							"message": "resolved npm missing seed",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.1.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "34bb4cc",
+							"type": "patch",
+							"scope": null,
+							"message": "resolved npm missing seed",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8c8cbc8",
+							"type": "patch",
+							"scope": null,
+							"message": "resolved npm missing seed",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/trpc",
+					"displayName": "@robojs/trpc",
+					"slug": "trpc",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "b502ff8",
+							"type": "feat",
+							"scope": null,
+							"message": "first release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.15",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "4fb9298",
+							"type": "patch",
+							"scope": "cli",
+							"message": "fixed plugin seeding paths being sourced from",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-09-04",
+			"packages": [
+				{
+					"name": "@robojs/patch",
+					"displayName": "@robojs/patch",
+					"slug": "patch",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "5a3abeb",
+							"type": "feat",
+							"scope": null,
+							"message": "patch package",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "d268c7d",
+							"type": "refactor",
+							"scope": null,
+							"message": "default hostname to HOSTNAME environment variable",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.14",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0a6958e",
+							"type": "feat",
+							"scope": null,
+							"message": "bun support",
+							"breaking": false
+						},
+						{
+							"hash": "d5b273b",
+							"type": "fix",
+							"scope": "cli",
+							"message": "do not refresh .env a second time upon mode mismatch",
+							"breaking": false
+						},
+						{
+							"hash": "e76bc62",
+							"type": "patch",
+							"scope": "cli",
+							"message": "safely handle corrupted manifest files",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-07-31",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3ee7a85",
+							"type": "feat",
+							"scope": null,
+							"message": "customizable hostname",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-07-27",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3dfc67e",
+							"type": "feat",
+							"scope": null,
+							"message": "seed boilerplate files",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.13",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "fa321f6",
+							"type": "feat",
+							"scope": "compiler",
+							"message": "plugins can now provide seed descriptions",
+							"breaking": false
+						},
+						{
+							"hash": "a5ae699",
+							"type": "feat",
+							"scope": "cli",
+							"message": "show seed descriptions and request consent upon install",
+							"breaking": false
+						},
+						{
+							"hash": "ed2734b",
+							"type": "refactor",
+							"scope": "compiler",
+							"message": "dedicated logger for compiler",
+							"breaking": false
+						},
+						{
+							"hash": "70b477e",
+							"type": "refactor",
+							"scope": "compiler",
+							"message": "encapsulated compiler object",
+							"breaking": false
+						},
+						{
+							"hash": "65809a6",
+							"type": "feat",
+							"scope": "compiler",
+							"message": "plugin seeds",
+							"breaking": false
+						},
+						{
+							"hash": "d22fbfa",
+							"type": "fix",
+							"scope": "cli",
+							"message": "patched roboplay api url references",
+							"breaking": false
+						},
+						{
+							"hash": "0cae688",
+							"type": "refactor",
+							"scope": "compiler",
+							"message": "include project language in manifest",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-07-21",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.12",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "361e3d8",
+							"type": "patch",
+							"scope": "cli",
+							"message": "avoid circular dependency imports",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.11",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "2f939d5",
+							"type": "patch",
+							"scope": "cli",
+							"message": "support for spaces in options",
+							"breaking": false
+						},
+						{
+							"hash": "61b98a2",
+							"type": "feat",
+							"scope": null,
+							"message": "modes",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-07-01",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.10",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ca8ddd7",
+							"type": "refactor",
+							"scope": "core",
+							"message": "moved data loading into robo.start() in production mode",
+							"breaking": false
+						},
+						{
+							"hash": "7093bf4",
+							"type": "feat",
+							"scope": null,
+							"message": "experimental sharding support",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-06-18",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "1520b9f",
+							"type": "refactor",
+							"scope": null,
+							"message": "use gpt-4-turbo as default model",
+							"breaking": false
+						},
+						{
+							"hash": "15fb940",
+							"type": "patch",
+							"scope": null,
+							"message": "use correct response field in /chat command",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-06-17",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "694a680",
+							"type": "fix",
+							"scope": null,
+							"message": "copy custom headers correctly in node engine",
+							"breaking": false
+						},
+						{
+							"hash": "dfc4180",
+							"type": "refactor",
+							"scope": null,
+							"message": "stream binary data into raw response",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-06-04",
+			"packages": [
+				{
+					"name": "@robojs/sync",
+					"displayName": "@robojs/sync",
+					"slug": "sync",
+					"version": "0.1.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "b8395b7",
+							"type": "patch",
+							"scope": null,
+							"message": "better support for non-tunneled localhost",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-06-02",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "99eb54a",
+							"type": "patch",
+							"scope": null,
+							"message": "support for newer server plugin versions",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-29",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.9",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "c43ff79",
+							"type": "fix",
+							"scope": null,
+							"message": "spawn commands in shell on Windows (CVE-2024-27980)",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-28",
+			"packages": [
+				{
+					"name": "@robojs/better-stack",
+					"displayName": "@robojs/better-stack",
+					"slug": "better-stack",
+					"version": "0.2.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "a3f75b2",
+							"type": "patch",
+							"scope": null,
+							"message": "clear heartbeat intervals on stop/restart",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-22",
+			"packages": [
+				{
+					"name": "@robojs/sync",
+					"displayName": "@robojs/sync",
+					"slug": "sync",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "89853bd",
+							"type": "patch",
+							"scope": null,
+							"message": "shared connection liveness check",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-20",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3db1f28",
+							"type": "patch",
+							"scope": null,
+							"message": "fixed 404 params",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-17",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "a1fbe72",
+							"type": "patch",
+							"scope": null,
+							"message": "updated fastify engine to support new robo response",
+							"breaking": false
+						},
+						{
+							"hash": "9821ac4",
+							"type": "fix",
+							"scope": null,
+							"message": "robo request params",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-16",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.5.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "890b71d",
+							"type": "refactor",
+							"scope": null,
+							"message": "renamed `.req` and `.res` accessors to `.raw`",
+							"breaking": true
+						},
+						{
+							"hash": "eb3867a",
+							"type": "refactor",
+							"scope": null,
+							"message": "RoboResponse now extends Response instead of Error",
+							"breaking": true
+						},
+						{
+							"hash": "890b71d",
+							"type": "refactor",
+							"scope": null,
+							"message": "RoboRequest now extends Request",
+							"breaking": true
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-11",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.8",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "bf6db2e",
+							"type": "fix",
+							"scope": null,
+							"message": "context commands not adding to manifest properly",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-10",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "26780ac",
+							"type": "patch",
+							"scope": null,
+							"message": "better error logging for failed runs",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.7",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "d6138ef",
+							"type": "feat",
+							"scope": null,
+							"message": "experimental support for user installs",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-05-02",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "79b9d17",
+							"type": "feat",
+							"scope": null,
+							"message": "temperature control",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.4.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0113987",
+							"type": "feat",
+							"scope": null,
+							"message": "prevent vite hmr from being hijacked by default",
+							"breaking": false
+						},
+						{
+							"hash": "0748de7",
+							"type": "feat",
+							"scope": null,
+							"message": "`registerWebsocket` engine function",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/sync",
+					"displayName": "@robojs/sync",
+					"slug": "sync",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "1cb4011",
+							"type": "feat",
+							"scope": null,
+							"message": "sync plugin",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-30",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "60c8235",
+							"type": "refactor",
+							"scope": null,
+							"message": "increased default poll delay to 1 second",
+							"breaking": false
+						},
+						{
+							"hash": "60c8235",
+							"type": "feat",
+							"scope": null,
+							"message": "new `pollDelay` option",
+							"breaking": false
+						},
+						{
+							"hash": "afdbefb",
+							"type": "fix",
+							"scope": null,
+							"message": "command execution",
+							"breaking": false
+						},
+						{
+							"hash": "6d532b8",
+							"type": "patch",
+							"scope": null,
+							"message": "compatibility with robo.js automatic options extraction",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.4.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "7490206",
+							"type": "feat",
+							"scope": null,
+							"message": "`ready` utility function",
+							"breaking": false
+						},
+						{
+							"hash": "2bf83fe",
+							"type": "feat",
+							"scope": null,
+							"message": "`getServerEngine` utility function",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "838ed5d",
+							"type": "feat",
+							"scope": null,
+							"message": "`extractCommandOptions` utility function",
+							"breaking": false
+						},
+						{
+							"hash": "6a4473d",
+							"type": "patch",
+							"scope": null,
+							"message": "auto delete outdated slash commands",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-24",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.4.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "a73732e",
+							"type": "refactor",
+							"scope": null,
+							"message": "use /hmr path for vite by default",
+							"breaking": false
+						},
+						{
+							"hash": "5db2da4",
+							"type": "patch",
+							"scope": null,
+							"message": "export correct paths in `engines.js` module",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "7450631",
+							"type": "patch",
+							"scope": "compiler",
+							"message": "updated defaults to better work with decorators and colyseus",
+							"breaking": false
+						},
+						{
+							"hash": "7159c94",
+							"type": "patch",
+							"scope": null,
+							"message": "guard against duplicate cloudflare tunnel logs",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-11",
+			"packages": [
+				{
+					"name": "@robojs/moderation",
+					"displayName": "@robojs/moderation",
+					"slug": "moderation",
+					"version": "0.3.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "5aea548",
+							"type": "feat",
+							"scope": null,
+							"message": "option to delete polls automatically",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-10",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "7f73414",
+							"type": "patch",
+							"scope": null,
+							"message": "fixed `loadEnv` module export",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-09",
+			"packages": [
+				{
+					"name": "@robojs/better-stack",
+					"displayName": "@robojs/better-stack",
+					"slug": "better-stack",
+					"version": "0.2.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "f539436",
+							"type": "chore",
+							"scope": null,
+							"message": "bump",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ce470a7",
+							"type": "patch",
+							"scope": "cli",
+							"message": "use command wrapper on windows `robox`",
+							"breaking": false
+						},
+						{
+							"hash": "e610a59",
+							"type": "patch",
+							"scope": "cli",
+							"message": "watcher should honor excluded paths",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-08",
+			"packages": [
+				{
+					"name": "@robojs/better-stack",
+					"displayName": "@robojs/better-stack",
+					"slug": "better-stack",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "77546e8",
+							"type": "refactor",
+							"scope": null,
+							"message": "migrated to new `robo.js` package name",
+							"breaking": true
+						},
+						{
+							"hash": "dd9e9b5",
+							"type": "refactor",
+							"scope": null,
+							"message": "new package name",
+							"breaking": true
+						}
+					]
+				},
+				{
+					"name": "@robojs/dev",
+					"displayName": "@robojs/dev",
+					"slug": "dev",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "33a0586",
+							"type": "refactor",
+							"scope": null,
+							"message": "migrated to new `robo.js` package name",
+							"breaking": true
+						},
+						{
+							"hash": "4b73c9a",
+							"type": "refactor",
+							"scope": null,
+							"message": "new package name",
+							"breaking": true
+						}
+					]
+				},
+				{
+					"name": "@robojs/moderation",
+					"displayName": "@robojs/moderation",
+					"slug": "moderation",
+					"version": "0.3.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "13d528d",
+							"type": "refactor",
+							"scope": null,
+							"message": "migrated to new `robo.js` package name",
+							"breaking": true
+						},
+						{
+							"hash": "4f2c70d",
+							"type": "refactor",
+							"scope": null,
+							"message": "new package name",
+							"breaking": true
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.4.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "a088ae9",
+							"type": "patch",
+							"scope": null,
+							"message": "support for vite's hmr and websockets",
+							"breaking": false
+						},
+						{
+							"hash": "5136afe",
+							"type": "patch",
+							"scope": null,
+							"message": "fastify engine support for vite websockets",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "2b4fcbb",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "convenience `default` option",
+							"breaking": false
+						},
+						{
+							"hash": "6d32a61",
+							"type": "patch",
+							"scope": null,
+							"message": "avoid faulty plugins from duplicating manifest entries",
+							"breaking": false
+						},
+						{
+							"hash": "792658a",
+							"type": "feat",
+							"scope": "state",
+							"message": "convenience `default` option",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-07",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.5.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "fb1bfa4",
+							"type": "refactor",
+							"scope": null,
+							"message": "new package name",
+							"breaking": true
+						},
+						{
+							"hash": "826433a",
+							"type": "refactor",
+							"scope": null,
+							"message": "use new robo.js package name",
+							"breaking": true
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.4.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3d04d3a",
+							"type": "refactor",
+							"scope": null,
+							"message": "use new `robo.js` package name",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-06",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.4.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "569c513",
+							"type": "refactor",
+							"scope": null,
+							"message": "start server even when there's no routes",
+							"breaking": false
+						},
+						{
+							"hash": "09111ac",
+							"type": "feat",
+							"scope": null,
+							"message": "start vite server as middleware if installed",
+							"breaking": false
+						},
+						{
+							"hash": "88d4ae2",
+							"type": "feat",
+							"scope": null,
+							"message": "vite integration",
+							"breaking": false
+						},
+						{
+							"hash": "b0e818e",
+							"type": "feat",
+							"scope": null,
+							"message": "support for loading public assets",
+							"breaking": false
+						},
+						{
+							"hash": "4c25e59",
+							"type": "refactor",
+							"scope": null,
+							"message": "new package name",
+							"breaking": true
+						},
+						{
+							"hash": "d8657b4",
+							"type": "refactor",
+							"scope": null,
+							"message": "renamed RoboError to RoboResponse",
+							"breaking": true
+						},
+						{
+							"hash": "c7038d9",
+							"type": "fix",
+							"scope": null,
+							"message": "parse body as empty when none was provided",
+							"breaking": false
+						},
+						{
+							"hash": "8ee8ab8",
+							"type": "chore",
+							"scope": null,
+							"message": "refined logs",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0460b7f",
+							"type": "patch",
+							"scope": null,
+							"message": "use new robo.js package name",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.10.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "a1b7c8c",
+							"type": "feat",
+							"scope": "cli",
+							"message": "build vite alongside robo if applicable",
+							"breaking": false
+						},
+						{
+							"hash": "fe8e6ee",
+							"type": "feat",
+							"scope": "states",
+							"message": "support for namespace via options",
+							"breaking": false
+						},
+						{
+							"hash": "6c57f69",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed legacy process runtime",
+							"breaking": true
+						},
+						{
+							"hash": "622e07b",
+							"type": "feat",
+							"scope": "cli",
+							"message": "alias sage-cli commands within robo.js",
+							"breaking": false
+						},
+						{
+							"hash": "b6fdd44",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed `robo doctor` command",
+							"breaking": false
+						},
+						{
+							"hash": "e5e6514",
+							"type": "feat",
+							"scope": null,
+							"message": "dedicated utils module",
+							"breaking": false
+						},
+						{
+							"hash": "053b2d7",
+							"type": "feat",
+							"scope": "cli",
+							"message": "set NODE_ENV when missing",
+							"breaking": false
+						},
+						{
+							"hash": "6397f98",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `robox` command wrapper",
+							"breaking": false
+						},
+						{
+							"hash": "aa8649f",
+							"type": "refactor",
+							"scope": null,
+							"message": "deprecate dot-based `.config` & remove `robo.config.*` support",
+							"breaking": false
+						},
+						{
+							"hash": "25f4a37",
+							"type": "feat",
+							"scope": null,
+							"message": "options as second command parameter w/ type safety",
+							"breaking": false
+						},
+						{
+							"hash": "1e5273e",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "delegate `robo upgrade` to `sage upgrade`",
+							"breaking": false
+						},
+						{
+							"hash": "93fdbe8",
+							"type": "feat",
+							"scope": "states",
+							"message": "support for updater functions as value",
+							"breaking": false
+						},
+						{
+							"hash": "3327196",
+							"type": "feat",
+							"scope": null,
+							"message": "dedicated cli module",
+							"breaking": false
+						},
+						{
+							"hash": "e4131d4",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new -t --tunnel option w/ automatic cloudflared binary download",
+							"breaking": false
+						},
+						{
+							"hash": "18feec7",
+							"type": "feat",
+							"scope": "config",
+							"message": "can now exclude additional paths from watcher",
+							"breaking": false
+						},
+						{
+							"hash": "73cc21c",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed heartbeat support",
+							"breaking": false
+						},
+						{
+							"hash": "c85ed36",
+							"type": "feat",
+							"scope": null,
+							"message": "exposed logger in new separate module",
+							"breaking": false
+						},
+						{
+							"hash": "98263ee",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "new startup message",
+							"breaking": false
+						},
+						{
+							"hash": "8fb91f8",
+							"type": "patch",
+							"scope": "cli",
+							"message": "account for zero dependency projects when adding/removing plugins",
+							"breaking": false
+						},
+						{
+							"hash": "67458e9",
+							"type": "fix",
+							"scope": null,
+							"message": "file watcher not including plugin config files",
+							"breaking": false
+						},
+						{
+							"hash": "dbc108e",
+							"type": "feat",
+							"scope": null,
+							"message": "experimental `disableBot` flag",
+							"breaking": false
+						},
+						{
+							"hash": "726c414",
+							"type": "patch",
+							"scope": null,
+							"message": "better support for pnpm when executing commands on windows",
+							"breaking": false
+						},
+						{
+							"hash": "78a1fb2",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "support for namespace arrays",
+							"breaking": false
+						},
+						{
+							"hash": "d3b5f15",
+							"type": "chore",
+							"scope": "config",
+							"message": "clientOptions now optional",
+							"breaking": false
+						},
+						{
+							"hash": "572a747",
+							"type": "feat",
+							"scope": null,
+							"message": "new `.setup()` function in logger",
+							"breaking": false
+						},
+						{
+							"hash": "d874ddd",
+							"type": "patch",
+							"scope": null,
+							"message": "truncate stack trace code to fit discord embeds",
+							"breaking": false
+						},
+						{
+							"hash": "f04375f",
+							"type": "patch",
+							"scope": null,
+							"message": "don't override default logger instances when changing configuration",
+							"breaking": false
+						},
+						{
+							"hash": "e50b0ca",
+							"type": "chore",
+							"scope": null,
+							"message": "dim date time in ready event message",
+							"breaking": false
+						},
+						{
+							"hash": "d4a1f3a",
+							"type": "refactor",
+							"scope": null,
+							"message": "use scoped logger for discord-specific events",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-04-01",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.3.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "7eb8520",
+							"type": "feat",
+							"scope": null,
+							"message": "new .json reply function",
+							"breaking": false
+						},
+						{
+							"hash": "7eb8520",
+							"type": "refactor",
+							"scope": null,
+							"message": "include json as content-type header by default",
+							"breaking": false
+						},
+						{
+							"hash": "6529bef",
+							"type": "feat",
+							"scope": null,
+							"message": "graceful throws",
+							"breaking": true
+						},
+						{
+							"hash": "8b80bec",
+							"type": "feat",
+							"scope": null,
+							"message": "config option to disable automatic body parsing",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.26",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "e2031ab",
+							"type": "patch",
+							"scope": "cli",
+							"message": "clean up printed urls",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-03-21",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.25",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "c8720bf",
+							"type": "fix",
+							"scope": "cli",
+							"message": "graceful builds no longer cause dev command to exit prematurely",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.24",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "5331663",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new `deploy` experience w/ real-time updates",
+							"breaking": false
+						},
+						{
+							"hash": "71a7ec0",
+							"type": "patch",
+							"scope": "cli",
+							"message": "gracefully exit build commands",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-02-12",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.23",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "515901e",
+							"type": "feat",
+							"scope": "cli",
+							"message": "include link to new deployment page in `robo deploy`",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-02-09",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.22",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "5192bbb",
+							"type": "patch",
+							"scope": "cli",
+							"message": "sanitize non-ascii in project metadata when making requests",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-01-21",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.21",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "5f43d35",
+							"type": "fix",
+							"scope": "compiler",
+							"message": "specify module settings to fully resolve imports",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-01-16",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.20",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "44017a8",
+							"type": "patch",
+							"scope": "cli",
+							"message": "tweaked .robopack compression for better compatibility",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-01-15",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.4.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "86cd358",
+							"type": "feat",
+							"scope": null,
+							"message": "ability to restrict usage to certain channels",
+							"breaking": false
+						},
+						{
+							"hash": "7eb543d",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed redundant colon in logger prefix",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.19",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "e007926",
+							"type": "patch",
+							"scope": "cli",
+							"message": "windows-related deployment bugs",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.18",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "c21467b",
+							"type": "chore",
+							"scope": "cli",
+							"message": "auto clear old unsupported RoboPlay session data",
+							"breaking": false
+						},
+						{
+							"hash": "21538bc",
+							"type": "patch",
+							"scope": "flashcore",
+							"message": "support options in `has()` function",
+							"breaking": false
+						},
+						{
+							"hash": "f80ce66",
+							"type": "patch",
+							"scope": "cli",
+							"message": "updated `robo deploy` to use newer api requirements",
+							"breaking": false
+						},
+						{
+							"hash": "5ed24e5",
+							"type": "feat",
+							"scope": "cli",
+							"message": "`robo cloud logs` command",
+							"breaking": false
+						},
+						{
+							"hash": "7b9e155",
+							"type": "feat",
+							"scope": "cli",
+							"message": "`robo cloud start` and `robo cloud stop` commands",
+							"breaking": false
+						},
+						{
+							"hash": "ab03c32",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "connect Robo to RoboPlay Pods after `robo login`",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2024-01-07",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.17",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "faf4ab1",
+							"type": "patch",
+							"scope": null,
+							"message": "show errors caused by config files",
+							"breaking": false
+						},
+						{
+							"hash": "82b1379",
+							"type": "feat",
+							"scope": "cli",
+							"message": "logout command",
+							"breaking": false
+						},
+						{
+							"hash": "7fb6ea3",
+							"type": "feat",
+							"scope": "cli",
+							"message": "cloud status command",
+							"breaking": false
+						},
+						{
+							"hash": "86e745d",
+							"type": "refactor",
+							"scope": "logger",
+							"message": "updated styling for fork prefix",
+							"breaking": false
+						},
+						{
+							"hash": "2439383",
+							"type": "feat",
+							"scope": "cli",
+							"message": "`cloud status` now includes status for your robos",
+							"breaking": false
+						},
+						{
+							"hash": "177861a",
+							"type": "feat",
+							"scope": "cli",
+							"message": "login command",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-12-30",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.2.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "24c9552",
+							"type": "chore",
+							"scope": null,
+							"message": "removed additional path aliases",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.2.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3589724",
+							"type": "patch",
+							"scope": null,
+							"message": "removed all path alias usage",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-12-29",
+			"packages": [
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.2.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "347315f",
+							"type": "patch",
+							"scope": null,
+							"message": "corrected relative imports in node engine",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.16",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "2f7f75e",
+							"type": "fix",
+							"scope": null,
+							"message": "compare default commands using correct platform separator",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.15",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0921547",
+							"type": "chore",
+							"scope": null,
+							"message": "additional logging when generating default commands",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.14",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "a58e471",
+							"type": "patch",
+							"scope": null,
+							"message": "manual opt-out for /dev commands",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-12-28",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.4.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "06da2f3",
+							"type": "patch",
+							"scope": null,
+							"message": "do not pass request body to listAssistants API",
+							"breaking": false
+						},
+						{
+							"hash": "514ec39",
+							"type": "patch",
+							"scope": null,
+							"message": "better error handling for file uploads",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "0bd7e7b",
+							"type": "feat",
+							"scope": null,
+							"message": "use fastify as server engine when available",
+							"breaking": false
+						},
+						{
+							"hash": "62f67a0",
+							"type": "refactor",
+							"scope": null,
+							"message": "abstracted server functionality + ability to provide own engine",
+							"breaking": false
+						},
+						{
+							"hash": "8dd40b5",
+							"type": "feat",
+							"scope": null,
+							"message": "export engines via separate module",
+							"breaking": false
+						},
+						{
+							"hash": "3a334af",
+							"type": "feat",
+							"scope": null,
+							"message": "customizable `/api` prefix",
+							"breaking": false
+						},
+						{
+							"hash": "644d2ea",
+							"type": "refactor",
+							"scope": null,
+							"message": "updated base engine class signature",
+							"breaking": false
+						},
+						{
+							"hash": "267d095",
+							"type": "fix",
+							"scope": null,
+							"message": "pass down route parameters",
+							"breaking": false
+						},
+						{
+							"hash": "4525a0c",
+							"type": "fix",
+							"scope": null,
+							"message": "use correct substring when parsing url query",
+							"breaking": false
+						},
+						{
+							"hash": "8d83af0",
+							"type": "fix",
+							"scope": null,
+							"message": "dynamic route syntax [] -> :",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.13",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "7a6a53c",
+							"type": "fix",
+							"scope": null,
+							"message": "respect help command disabling",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.12",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0502c38",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "new `Flashcore.has()` function to check if a key exists",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-12-15",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.4.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "7903fa3",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed `openaiKey` plugin option",
+							"breaking": true
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "support for components in natural language commands",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "support for embeds and files in natural language commands",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "new `/imagine` command",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "refactor",
+							"scope": null,
+							"message": "new engine-based model usage",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "image generation capabilities",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "use assistant api when insights enabled (default: true)",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "new `/chat` command",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "feat",
+							"scope": null,
+							"message": "new `/ai say` command",
+							"breaking": false
+						},
+						{
+							"hash": "7903fa3",
+							"type": "patch",
+							"scope": null,
+							"message": "stable command options with natural language",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-11-26",
+			"packages": [
+				{
+					"name": "@robojs/moderation",
+					"displayName": "@robojs/moderation",
+					"slug": "moderation",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "9aa2394",
+							"type": "feat",
+							"scope": null,
+							"message": "lockdown mode",
+							"breaking": false
+						},
+						{
+							"hash": "70d2bc2",
+							"type": "refactor",
+							"scope": "settings",
+							"message": "use persisted states instead of flashcore",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-11-24",
+			"packages": [
+				{
+					"name": "@robojs/dev",
+					"displayName": "@robojs/dev",
+					"slug": "dev",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "aaf163f",
+							"type": "feat",
+							"scope": null,
+							"message": "release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/moderation",
+					"displayName": "@robojs/moderation",
+					"slug": "moderation",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "3340245",
+							"type": "feat",
+							"scope": null,
+							"message": "release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.11",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "69e6aa0",
+							"type": "feat",
+							"scope": "states",
+							"message": "support for namespace via options",
+							"breaking": false
+						},
+						{
+							"hash": "69e6aa0",
+							"type": "feat",
+							"scope": "states",
+							"message": "support for updater functions as value",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-11-18",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.10",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "55f1a3f",
+							"type": "fix",
+							"scope": "cli",
+							"message": "added missing state loader for persisted data",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-11-13",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.9",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "289faee",
+							"type": "chore",
+							"scope": null,
+							"message": "version bump",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.8",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3d647c7",
+							"type": "fix",
+							"scope": "cli",
+							"message": "missing start import",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-11-09",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.3.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "d14461d",
+							"type": "feat",
+							"scope": null,
+							"message": "support for vision models",
+							"breaking": false
+						},
+						{
+							"hash": "a56d366",
+							"type": "feat",
+							"scope": null,
+							"message": "\"maxTokens\" option",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-11-05",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.7",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0850950",
+							"type": "fix",
+							"scope": "cli",
+							"message": "ensure plugins directory always exist prior to adding",
+							"breaking": false
+						},
+						{
+							"hash": "18913ee",
+							"type": "fix",
+							"scope": null,
+							"message": "multi nesting support for plugins",
+							"breaking": false
+						},
+						{
+							"hash": "76f6d92",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "support for key namespaces",
+							"breaking": false
+						},
+						{
+							"hash": "bf23d17",
+							"type": "chore",
+							"scope": null,
+							"message": "updated package readme",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-10-15",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "867facc",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "show success message for \"add\" and \"remove\" commands",
+							"breaking": false
+						},
+						{
+							"hash": "2c4f2ab",
+							"type": "feat",
+							"scope": null,
+							"message": "support for local plugin installs",
+							"breaking": false
+						},
+						{
+							"hash": "9c172e6",
+							"type": "refactor",
+							"scope": "logger",
+							"message": "expose level fields and pass instance to log drains",
+							"breaking": false
+						},
+						{
+							"hash": "951e9d7",
+							"type": "feat",
+							"scope": null,
+							"message": "support for .json config files",
+							"breaking": false
+						},
+						{
+							"hash": "07bf9ae",
+							"type": "feat",
+							"scope": null,
+							"message": "support for custom log drains",
+							"breaking": false
+						},
+						{
+							"hash": "1c4342d",
+							"type": "feat",
+							"scope": null,
+							"message": "new experimental field to select custom build directory",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-10-11",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "e718a6b",
+							"type": "feat",
+							"scope": null,
+							"message": "customize model to use via plugin options",
+							"breaking": false
+						},
+						{
+							"hash": "a2d6b09",
+							"type": "chore",
+							"scope": null,
+							"message": "always include openai response errors in debug logs",
+							"breaking": false
+						},
+						{
+							"hash": "1458e34",
+							"type": "fix",
+							"scope": null,
+							"message": "handle empty commands converted to functions",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8f505e8",
+							"type": "fix",
+							"scope": "cli",
+							"message": "account for nested routes without paths when building manifest",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-10-07",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "ec93830",
+							"type": "fix",
+							"scope": "cli",
+							"message": "missing positional arguments options",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "935513b",
+							"type": "chore",
+							"scope": "cli",
+							"message": "added new command entries to help command",
+							"breaking": false
+						},
+						{
+							"hash": "28a6d82",
+							"type": "fix",
+							"scope": "build",
+							"message": "always use native slashes when merging manifest plugins",
+							"breaking": false
+						},
+						{
+							"hash": "ba7fe09",
+							"type": "fix",
+							"scope": "cli",
+							"message": "never assume plugins array always exists",
+							"breaking": false
+						},
+						{
+							"hash": "1c1c5d9",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "runtime utils moved into own file",
+							"breaking": false
+						},
+						{
+							"hash": "cfa5b28",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "don't run env checks on plugins",
+							"breaking": false
+						},
+						{
+							"hash": "57ae042",
+							"type": "feat",
+							"scope": null,
+							"message": "added help command",
+							"breaking": false
+						},
+						{
+							"hash": "0b9953b",
+							"type": "feat",
+							"scope": null,
+							"message": "new optional \"type\" config field",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-09-27",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "690cb5e",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"robo remove\" command for uninstalling plugins",
+							"breaking": false
+						},
+						{
+							"hash": "203b3a3",
+							"type": "patch",
+							"scope": "build",
+							"message": "decode import path when generating manifest using bun",
+							"breaking": false
+						},
+						{
+							"hash": "38a2668",
+							"type": "patch",
+							"scope": null,
+							"message": "don't auto restart immediately after robo start failure in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "e21caad",
+							"type": "feat",
+							"scope": "bun",
+							"message": "optimized typescript compiler",
+							"breaking": false
+						},
+						{
+							"hash": "05defa3",
+							"type": "patch",
+							"scope": "bun",
+							"message": "skip .env loading when using bun",
+							"breaking": false
+						},
+						{
+							"hash": "5e4174f",
+							"type": "fix",
+							"scope": "bun",
+							"message": "skip pnpm-specific plugin package lookups when using bun",
+							"breaking": false
+						},
+						{
+							"hash": "9ddc7fb",
+							"type": "patch",
+							"scope": null,
+							"message": "rolled back native bun support for ts files",
+							"breaking": false
+						},
+						{
+							"hash": "f16f282",
+							"type": "fix",
+							"scope": "flashcore",
+							"message": "dont warn about enoent errors when deleting keys",
+							"breaking": false
+						},
+						{
+							"hash": "f6d0573",
+							"type": "feat",
+							"scope": "cli",
+							"message": "upgrade command",
+							"breaking": false
+						},
+						{
+							"hash": "31e7003",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"robo add\" command for installing plugins",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-09-11",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "2583050",
+							"type": "feat",
+							"scope": null,
+							"message": "bun support",
+							"breaking": false
+						},
+						{
+							"hash": "0cc8e56",
+							"type": "patch",
+							"scope": null,
+							"message": "no need to parse .env file in bun",
+							"breaking": false
+						},
+						{
+							"hash": "9d9eb0a",
+							"type": "feat",
+							"scope": null,
+							"message": "customizable update check interval",
+							"breaking": false
+						},
+						{
+							"hash": "453eac8",
+							"type": "feat",
+							"scope": null,
+							"message": "check for framework updates in dev mode",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-09-05",
+			"packages": [
+				{
+					"name": "@robojs/ai",
+					"displayName": "@robojs/ai",
+					"slug": "ai",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "df72bf6",
+							"type": "feat",
+							"scope": null,
+							"message": "plugin release",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "@robojs/server",
+					"displayName": "@robojs/server",
+					"slug": "server",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "df72bf6",
+							"type": "feat",
+							"scope": null,
+							"message": "plugin release",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-09-04",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.9.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "91dd336",
+							"type": "feat",
+							"scope": "compiler",
+							"message": "declaration generation now uses tsconfig.json as base & better defaults",
+							"breaking": false
+						},
+						{
+							"hash": "2a599e6",
+							"type": "feat",
+							"scope": null,
+							"message": "spirits system now enabled by default",
+							"breaking": false
+						},
+						{
+							"hash": "8a51502",
+							"type": "feat",
+							"scope": "compiler",
+							"message": "new config option to exclude files from being processed",
+							"breaking": false
+						},
+						{
+							"hash": "e839778",
+							"type": "feat",
+							"scope": null,
+							"message": "support for config files inside \"config\" directory",
+							"breaking": false
+						},
+						{
+							"hash": "f6168a0",
+							"type": "feat",
+							"scope": "compiler",
+							"message": "create declaration files for plugin builds",
+							"breaking": false
+						},
+						{
+							"hash": "8d0558d",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "support for functional updates in \"set\" function",
+							"breaking": false
+						},
+						{
+							"hash": "65d596a",
+							"type": "feat",
+							"scope": "logger",
+							"message": "can now fork logger instances",
+							"breaking": false
+						},
+						{
+							"hash": "90de0b0",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "parse arguments directly instead of using commander",
+							"breaking": false
+						},
+						{
+							"hash": "a57cc0b",
+							"type": "feat",
+							"scope": null,
+							"message": "support for new plugin config files",
+							"breaking": false
+						},
+						{
+							"hash": "680ea66",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed built-in api server functionality in favor of new plugin",
+							"breaking": false
+						},
+						{
+							"hash": "16dd50b",
+							"type": "feat",
+							"scope": null,
+							"message": "remember command registration errors as warnings until successful retry",
+							"breaking": false
+						},
+						{
+							"hash": "0debaa6",
+							"type": "patch",
+							"scope": null,
+							"message": "faster restarts after failed attempts",
+							"breaking": false
+						},
+						{
+							"hash": "f39a8a3",
+							"type": "fix",
+							"scope": "cli",
+							"message": "correctly parse adjacent cli options without positional values",
+							"breaking": false
+						},
+						{
+							"hash": "608fc39",
+							"type": "patch",
+							"scope": null,
+							"message": "more descriptive logs after failed restarts",
+							"breaking": false
+						},
+						{
+							"hash": "e6af082",
+							"type": "chore",
+							"scope": null,
+							"message": "export types for state functions",
+							"breaking": false
+						},
+						{
+							"hash": "d2a97f2",
+							"type": "patch",
+							"scope": "compiler",
+							"message": "use logger levels typescript dianostic output",
+							"breaking": false
+						},
+						{
+							"hash": "f4c1e58",
+							"type": "fix",
+							"scope": "cli",
+							"message": "only apply spirit system in buildasync function for non-plugin builds",
+							"breaking": false
+						},
+						{
+							"hash": "1d271cd",
+							"type": "fix",
+							"scope": null,
+							"message": "continue checking modules when building manifest even if root is empty",
+							"breaking": false
+						},
+						{
+							"hash": "aab42e9",
+							"type": "fix",
+							"scope": "spirit",
+							"message": "listener functions now handle undefined values better",
+							"breaking": false
+						},
+						{
+							"hash": "7f20457",
+							"type": "fix",
+							"scope": "portal",
+							"message": "delegate plugin and auto metadata to nested entries",
+							"breaking": false
+						},
+						{
+							"hash": "fb97b95",
+							"type": "patch",
+							"scope": "compiler",
+							"message": "improved debug messages & removed redundant check",
+							"breaking": false
+						},
+						{
+							"hash": "c758ebb",
+							"type": "patch",
+							"scope": null,
+							"message": "print manifest summary rather than entire content after generating",
+							"breaking": false
+						},
+						{
+							"hash": "2b95206",
+							"type": "patch",
+							"scope": "cli",
+							"message": "print specific command key that caused registration error",
+							"breaking": false
+						},
+						{
+							"hash": "392a36f",
+							"type": "fix",
+							"scope": null,
+							"message": "correctly merge events when reading plugins manifest",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-07-17",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.7",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3688354",
+							"type": "fix",
+							"scope": "spirits",
+							"message": "handle missing id when running exec()",
+							"breaking": false
+						},
+						{
+							"hash": "0fde55c",
+							"type": "patch",
+							"scope": null,
+							"message": "removed unnecessary watcher warning when removing files",
+							"breaking": false
+						},
+						{
+							"hash": "8ae6768",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": "new .on() and .off() apis for watching key changes",
+							"breaking": false
+						},
+						{
+							"hash": "c3ecab1",
+							"type": "patch",
+							"scope": null,
+							"message": "failed error messages no longer stop process",
+							"breaking": false
+						},
+						{
+							"hash": "f81d555",
+							"type": "patch",
+							"scope": null,
+							"message": "issue a warning when removing value from saved state",
+							"breaking": false
+						},
+						{
+							"hash": "dfa31d1",
+							"type": "fix",
+							"scope": null,
+							"message": "remove class instances when saving state",
+							"breaking": false
+						},
+						{
+							"hash": "e02fe0b",
+							"type": "feat",
+							"scope": "flashcore",
+							"message": ".delete() now triggers watcher callbacks as well",
+							"breaking": false
+						},
+						{
+							"hash": "691f200",
+							"type": "feat",
+							"scope": null,
+							"message": "new static state.listforks() function to get all forked state names",
+							"breaking": false
+						},
+						{
+							"hash": "a85325f",
+							"type": "fix",
+							"scope": "flashcore",
+							"message": "file adapter's .delete() api now uses safe key to delete correct value",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-06-28",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "47d898f",
+							"type": "feat",
+							"scope": null,
+							"message": "exposed module keys via portal api",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-06-25",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "4f9ebaf",
+							"type": "fix",
+							"scope": null,
+							"message": "exit early when running \"exec\" on terminated spirits",
+							"breaking": false
+						},
+						{
+							"hash": "a76cfe4",
+							"type": "patch",
+							"scope": null,
+							"message": "automatically re-run bot after process exit in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "fbc3a91",
+							"type": "feat",
+							"scope": null,
+							"message": "support for \"max\" and \"min\" option fields",
+							"breaking": false
+						},
+						{
+							"hash": "37590d5",
+							"type": "feat",
+							"scope": null,
+							"message": "support for \"choices\" option field",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-06-23",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "74c06c3",
+							"type": "refactor",
+							"scope": "sage",
+							"message": "prev/next buttons in logs now handled via events rather than collectors",
+							"breaking": false
+						},
+						{
+							"hash": "8729d64",
+							"type": "feat",
+							"scope": "sage",
+							"message": "include channel and user info in redirected error messages",
+							"breaking": false
+						},
+						{
+							"hash": "cf45d9b",
+							"type": "refactor",
+							"scope": "sage",
+							"message": "error message interactions now handled via events rather than collector",
+							"breaking": false
+						},
+						{
+							"hash": "f68fffb",
+							"type": "feat",
+							"scope": null,
+							"message": "convenience function for getting plugin options",
+							"breaking": false
+						},
+						{
+							"hash": "2f61192",
+							"type": "fix",
+							"scope": "sage",
+							"message": "handle cases where interaction may already be used up prior to auto deferrals",
+							"breaking": false
+						},
+						{
+							"hash": "3ce7a81",
+							"type": "refactor",
+							"scope": null,
+							"message": "moved description entry field onto base entry interface",
+							"breaking": false
+						},
+						{
+							"hash": "fc1706f",
+							"type": "fix",
+							"scope": null,
+							"message": "custom permission manifest parsing for bigints",
+							"breaking": false
+						},
+						{
+							"hash": "3a7064b",
+							"type": "feat",
+							"scope": "sage",
+							"message": "error message channel redirects & custom messages",
+							"breaking": false
+						},
+						{
+							"hash": "75cda40",
+							"type": "fix",
+							"scope": null,
+							"message": "use correct path separator for debugging modules on windows",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-06-18",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3fb5a01",
+							"type": "refactor",
+							"scope": null,
+							"message": "accept string type for \"level\" in logger constructor",
+							"breaking": false
+						},
+						{
+							"hash": "8bfff61",
+							"type": "refactor",
+							"scope": null,
+							"message": "simplified logger file",
+							"breaking": false
+						},
+						{
+							"hash": "49a99c3",
+							"type": "patch",
+							"scope": "spirits",
+							"message": "exit worker threads with process.exit()",
+							"breaking": false
+						},
+						{
+							"hash": "5ede058",
+							"type": "refactor",
+							"scope": "sage",
+							"message": "use source event file path when available",
+							"breaking": false
+						},
+						{
+							"hash": "cc996c1",
+							"type": "feat",
+							"scope": "cli",
+							"message": "warn about permission changes in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "5549238",
+							"type": "feat",
+							"scope": null,
+							"message": "expose \"composeColors\" utility",
+							"breaking": false
+						},
+						{
+							"hash": "059ef3c",
+							"type": "feat",
+							"scope": null,
+							"message": "expose \"color\" utility",
+							"breaking": false
+						},
+						{
+							"hash": "7a0852b",
+							"type": "feat",
+							"scope": null,
+							"message": "permission config fields",
+							"breaking": false
+						},
+						{
+							"hash": "cdba883",
+							"type": "fix",
+							"scope": null,
+							"message": "log background heartbeat errors as debug logs",
+							"breaking": false
+						},
+						{
+							"hash": "c2c893f",
+							"type": "feat",
+							"scope": null,
+							"message": "custom levels when creating new logger instance",
+							"breaking": false
+						},
+						{
+							"hash": "a239224",
+							"type": "fix",
+							"scope": null,
+							"message": "autocomplete option field now registers correctly again",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-06-16",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "68a1be5",
+							"type": "feat",
+							"scope": "sage",
+							"message": "show node_modules source in addition to project source",
+							"breaking": false
+						},
+						{
+							"hash": "82122b6",
+							"type": "patch",
+							"scope": null,
+							"message": "include middleware plugin path in debug logs",
+							"breaking": false
+						},
+						{
+							"hash": "01e06bb",
+							"type": "fix",
+							"scope": null,
+							"message": "check for empty embeds in sage error messages",
+							"breaking": false
+						},
+						{
+							"hash": "365edb3",
+							"type": "fix",
+							"scope": null,
+							"message": "handle multiple middleware entries better (fixes duplicates)",
+							"breaking": false
+						},
+						{
+							"hash": "383a3b3",
+							"type": "fix",
+							"scope": null,
+							"message": "account for file:// protocol when computing error source",
+							"breaking": false
+						},
+						{
+							"hash": "649956e",
+							"type": "fix",
+							"scope": "cli",
+							"message": "handle missing plugins config option when adding watchers",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-06-13",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "24676fe",
+							"type": "fix",
+							"scope": null,
+							"message": "attach plugin info to more manifest entries",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.8.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "6171ae6",
+							"type": "feat",
+							"scope": null,
+							"message": "spirits",
+							"breaking": false
+						},
+						{
+							"hash": "5647aa4",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"flashcore\" api for easy persistent storage - compatible with keyv adapters",
+							"breaking": false
+						},
+						{
+							"hash": "e537306",
+							"type": "feat",
+							"scope": null,
+							"message": "300x faster dev mode when using experimental flag",
+							"breaking": false
+						},
+						{
+							"hash": "509f19e",
+							"type": "feat",
+							"scope": null,
+							"message": "significantly faster builds with worker threads",
+							"breaking": false
+						},
+						{
+							"hash": "bdf4187",
+							"type": "refactor",
+							"scope": null,
+							"message": "logger now writes to stdout/stderr directly, flush() function, and better formatting",
+							"breaking": false
+						},
+						{
+							"hash": "b7535f2",
+							"type": "feat",
+							"scope": null,
+							"message": "api routes",
+							"breaking": false
+						},
+						{
+							"hash": "85e6374",
+							"type": "feat",
+							"scope": null,
+							"message": "experimental incremental builds",
+							"breaking": false
+						},
+						{
+							"hash": "545ea90",
+							"type": "feat",
+							"scope": null,
+							"message": "replaced \".tar\" with new \".robopack\" format",
+							"breaking": false
+						},
+						{
+							"hash": "2fe42db",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed now-unnecessary dependencies (-%45 package size)",
+							"breaking": false
+						},
+						{
+							"hash": "73609bb",
+							"type": "patch",
+							"scope": null,
+							"message": "minor log changes to server ready message",
+							"breaking": false
+						},
+						{
+							"hash": "9bf6abe",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "replaced bloated .env loading with similar implementation",
+							"breaking": false
+						},
+						{
+							"hash": "a8adb81",
+							"type": "chore",
+							"scope": null,
+							"message": "exit robo threads differently than process",
+							"breaking": false
+						},
+						{
+							"hash": "6c264dd",
+							"type": "feat",
+							"scope": "cli",
+							"message": "experimental new file format for roboplay deployments",
+							"breaking": false
+						},
+						{
+							"hash": "fd4a343",
+							"type": "fix",
+							"scope": null,
+							"message": "expanded special linux watcher logic onto all os types",
+							"breaking": false
+						},
+						{
+							"hash": "18a7c6d",
+							"type": "patch",
+							"scope": null,
+							"message": "minor fixes",
+							"breaking": false
+						},
+						{
+							"hash": "cc537be",
+							"type": "fix",
+							"scope": null,
+							"message": "tell sage not to defer \"/dev logs\" command",
+							"breaking": false
+						},
+						{
+							"hash": "61bdca0",
+							"type": "refactor",
+							"scope": null,
+							"message": "logger now imports less modules",
+							"breaking": false
+						},
+						{
+							"hash": "f13e33f",
+							"type": "feat",
+							"scope": null,
+							"message": "experimental flag toggles",
+							"breaking": false
+						},
+						{
+							"hash": "06db4e6",
+							"type": "patch",
+							"scope": "flashcore",
+							"message": "improved support for keyv adapters",
+							"breaking": false
+						},
+						{
+							"hash": "5e5949c",
+							"type": "fix",
+							"scope": null,
+							"message": "spirit messages no longer override robo logger configuration",
+							"breaking": false
+						},
+						{
+							"hash": "9bddd29",
+							"type": "refactor",
+							"scope": null,
+							"message": "dev mode builds no longer show print summary in verbose mode",
+							"breaking": false
+						},
+						{
+							"hash": "9baeed9",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "handle parallel limits internally",
+							"breaking": false
+						},
+						{
+							"hash": "4a89c6c",
+							"type": "refactor",
+							"scope": null,
+							"message": "spirit ids are now passed down via workerdata",
+							"breaking": false
+						},
+						{
+							"hash": "0171ef1",
+							"type": "feat",
+							"scope": null,
+							"message": "spirit mode restart now on-par with process",
+							"breaking": false
+						},
+						{
+							"hash": "a49dde7",
+							"type": "refactor",
+							"scope": null,
+							"message": "\"/dev restart\" now sends restart confirmation + timing",
+							"breaking": false
+						},
+						{
+							"hash": "c28bff6",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "forked and improved \"colorette\" as \"chalk\" replacement",
+							"breaking": false
+						},
+						{
+							"hash": "9a88db5",
+							"type": "feat",
+							"scope": "state",
+							"message": "new \"persist\" option for setting state",
+							"breaking": false
+						},
+						{
+							"hash": "d3d4983",
+							"type": "fix",
+							"scope": null,
+							"message": "added missing fs import when deploying",
+							"breaking": false
+						},
+						{
+							"hash": "f51a531",
+							"type": "refactor",
+							"scope": null,
+							"message": "avoid terminating workers unless necessary for graceful spirit shutdowns",
+							"breaking": false
+						},
+						{
+							"hash": "64595bb",
+							"type": "feat",
+							"scope": "state",
+							"message": "forkable states for easy prefixing",
+							"breaking": false
+						},
+						{
+							"hash": "1c9c04b",
+							"type": "fix",
+							"scope": null,
+							"message": "race condition when saving state",
+							"breaking": false
+						},
+						{
+							"hash": "789f412",
+							"type": "patch",
+							"scope": null,
+							"message": "error handling for robo stop() and restart() functions",
+							"breaking": false
+						},
+						{
+							"hash": "7ef2faa",
+							"type": "refactor",
+							"scope": null,
+							"message": "waiting for state now handled as robo option rather than flag",
+							"breaking": false
+						},
+						{
+							"hash": "54c10bf",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "more descriptive spirit ids while still remaining predictable",
+							"breaking": false
+						},
+						{
+							"hash": "aaa6245",
+							"type": "refactor",
+							"scope": "spirit",
+							"message": "merged \"command\" and \"event\" fields; renamed \"response\" to \"payload\"",
+							"breaking": false
+						},
+						{
+							"hash": "d1cf55c",
+							"type": "feat",
+							"scope": null,
+							"message": "export logger class",
+							"breaking": false
+						},
+						{
+							"hash": "ad43a9c",
+							"type": "patch",
+							"scope": null,
+							"message": "watcher callback now passes full path instead of separate name + dir",
+							"breaking": false
+						},
+						{
+							"hash": "6b125d6",
+							"type": "refactor",
+							"scope": null,
+							"message": "include plugin path in handler debug logs",
+							"breaking": false
+						},
+						{
+							"hash": "fd1f0d2",
+							"type": "fix",
+							"scope": null,
+							"message": "watcher rename events now handled better outside of linux",
+							"breaking": false
+						},
+						{
+							"hash": "3692ffe",
+							"type": "feat",
+							"scope": null,
+							"message": "restored ability to restart programatically in spirit mode",
+							"breaking": false
+						},
+						{
+							"hash": "156f59e",
+							"type": "fix",
+							"scope": null,
+							"message": "files build argument now optional",
+							"breaking": false
+						},
+						{
+							"hash": "88a73d2",
+							"type": "fix",
+							"scope": null,
+							"message": "graceful spirit worker thread shutdowns",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-28",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.7.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "2da1fba",
+							"type": "refactor",
+							"scope": null,
+							"message": "removed \"node-watch\" dependency in favor of custom implementation",
+							"breaking": false
+						},
+						{
+							"hash": "e8d3ebc",
+							"type": "patch",
+							"scope": null,
+							"message": "nested try catch around error event handling",
+							"breaking": false
+						},
+						{
+							"hash": "5e7eb34",
+							"type": "fix",
+							"scope": null,
+							"message": "safely access plugins reference (useful for shutdowns)",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-22",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.7.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "51d158c",
+							"type": "feat",
+							"scope": null,
+							"message": "new experimental middleware",
+							"breaking": false
+						},
+						{
+							"hash": "61ea387",
+							"type": "feat",
+							"scope": "cli",
+							"message": "native support for monorepos",
+							"breaking": false
+						},
+						{
+							"hash": "9d13ec9",
+							"type": "feat",
+							"scope": null,
+							"message": "support for context menu commands",
+							"breaking": false
+						},
+						{
+							"hash": "0d8524e",
+							"type": "feat",
+							"scope": null,
+							"message": "support for path alises with typescript",
+							"breaking": false
+						},
+						{
+							"hash": "a7f9e23",
+							"type": "feat",
+							"scope": null,
+							"message": "ability to enable/disable modules at runtime",
+							"breaking": false
+						},
+						{
+							"hash": "04e4b9b",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"portal\" api",
+							"breaking": false
+						},
+						{
+							"hash": "8f4e86f",
+							"type": "feat",
+							"scope": null,
+							"message": "support for recursive modules",
+							"breaking": false
+						},
+						{
+							"hash": "8129a17",
+							"type": "fix",
+							"scope": "cli",
+							"message": "use correct source path when generating defaults",
+							"breaking": false
+						},
+						{
+							"hash": "3eed386",
+							"type": "fix",
+							"scope": null,
+							"message": "allow modules to completely override default commands",
+							"breaking": false
+						},
+						{
+							"hash": "599baff",
+							"type": "fix",
+							"scope": null,
+							"message": "compatibility with older manifest files when generating context",
+							"breaking": false
+						},
+						{
+							"hash": "8c7605a",
+							"type": "fix",
+							"scope": "sage",
+							"message": "only auto defer if not already deferred",
+							"breaking": false
+						},
+						{
+							"hash": "38b928a",
+							"type": "fix",
+							"scope": "cli",
+							"message": "correctly mark auto generated default events as \"auto\"",
+							"breaking": false
+						},
+						{
+							"hash": "a9d7408",
+							"type": "feat",
+							"scope": "cli",
+							"message": "attach module name to handler records inside manifest",
+							"breaking": false
+						},
+						{
+							"hash": "830e545",
+							"type": "fix",
+							"scope": "cli",
+							"message": "never assume plugins are always defined in config",
+							"breaking": false
+						},
+						{
+							"hash": "3b8cfd9",
+							"type": "refactor",
+							"scope": "types",
+							"message": "replaced handler variants with generic handler record",
+							"breaking": false
+						},
+						{
+							"hash": "5d3c35a",
+							"type": "fix",
+							"scope": "compiler",
+							"message": "path aliases now take monorepos into account",
+							"breaking": false
+						},
+						{
+							"hash": "e3cd405",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"/dev status\" default subcommand",
+							"breaking": false
+						},
+						{
+							"hash": "863ac30",
+							"type": "feat",
+							"scope": "cli",
+							"message": "watch \".env\" and \"tsconfig.json\" files in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "fda6979",
+							"type": "chore",
+							"scope": "compiler",
+							"message": "clean up empty .swc directory after compiling",
+							"breaking": false
+						},
+						{
+							"hash": "e62dccc",
+							"type": "fix",
+							"scope": "cli",
+							"message": "register options for subcommands and subcommand groups",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-16",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.6.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "99dbe81",
+							"type": "fix",
+							"scope": "cli",
+							"message": "show subcommands and subcommand groups in build summary",
+							"breaking": false
+						},
+						{
+							"hash": "d37066b",
+							"type": "patch",
+							"scope": "cli",
+							"message": "verbose flag in \"dev\" command now prints more build logs",
+							"breaking": false
+						},
+						{
+							"hash": "3571f59",
+							"type": "fix",
+							"scope": null,
+							"message": "correctly mark auto subcommands as automatic",
+							"breaking": false
+						},
+						{
+							"hash": "7d0b5ad",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"/dev restart\" subcommand",
+							"breaking": false
+						},
+						{
+							"hash": "bd4db92",
+							"type": "refactor",
+							"scope": null,
+							"message": "\"/dev\" command has been renamed to \"/dev logs\" subcommand",
+							"breaking": false
+						},
+						{
+							"hash": "b590dec",
+							"type": "feat",
+							"scope": null,
+							"message": "support for module subfolders",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-15",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.6.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "074f417",
+							"type": "feat",
+							"scope": "cli",
+							"message": "auto register subcommand and subcommand group changes",
+							"breaking": false
+						},
+						{
+							"hash": "afe2f5f",
+							"type": "feat",
+							"scope": null,
+							"message": "support for subcommands and subcommand groups",
+							"breaking": false
+						},
+						{
+							"hash": "cc0277d",
+							"type": "feat",
+							"scope": null,
+							"message": "continue watching for changes when build fails in development mode",
+							"breaking": false
+						},
+						{
+							"hash": "d252636",
+							"type": "feat",
+							"scope": null,
+							"message": "show errors and warnings from build process in development mode",
+							"breaking": false
+						},
+						{
+							"hash": "9b5923f",
+							"type": "fix",
+							"scope": "cli",
+							"message": "copy non-ts files for typescript builds",
+							"breaking": false
+						},
+						{
+							"hash": "1bbe924",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "simpler predicate function for less code repetition",
+							"breaking": false
+						},
+						{
+							"hash": "e379000",
+							"type": "fix",
+							"scope": null,
+							"message": "return quickly when saving state for null process",
+							"breaking": false
+						},
+						{
+							"hash": "72b65bf",
+							"type": "patch",
+							"scope": null,
+							"message": "updated default /help to support new subcommands and subcommand groups",
+							"breaking": false
+						},
+						{
+							"hash": "8fe87c3",
+							"type": "patch",
+							"scope": null,
+							"message": "error reply embed field now shows correct subcommand and subcommand group keys",
+							"breaking": false
+						},
+						{
+							"hash": "295e446",
+							"type": "patch",
+							"scope": "cli",
+							"message": "delegate child process exit events as a global with only o(1) event listeners",
+							"breaking": false
+						},
+						{
+							"hash": "caa3268",
+							"type": "patch",
+							"scope": null,
+							"message": "register process event listeners only when starting the robo",
+							"breaking": false
+						},
+						{
+							"hash": "2c53541",
+							"type": "patch",
+							"scope": null,
+							"message": "better diffing when registering subcommand and subcommand group updates",
+							"breaking": false
+						},
+						{
+							"hash": "1e3ce0d",
+							"type": "chore",
+							"scope": "cli",
+							"message": "bold environment variable names when registering commands",
+							"breaking": false
+						},
+						{
+							"hash": "4c6a9e4",
+							"type": "fix",
+							"scope": "cli",
+							"message": "handle potentially null child process",
+							"breaking": false
+						},
+						{
+							"hash": "aff8a56",
+							"type": "patch",
+							"scope": null,
+							"message": "better error messages for missing default exports in commands and events",
+							"breaking": false
+						},
+						{
+							"hash": "5fb4a05",
+							"type": "patch",
+							"scope": null,
+							"message": "removed ansi decorators from top level error messages in error replies",
+							"breaking": false
+						},
+						{
+							"hash": "24c9447",
+							"type": "refactor",
+							"scope": null,
+							"message": "parent process delegate responsibilities now handled in run() rather than dev command",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-13",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.5.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8b77331",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "revamped internal manifest generation code",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-12",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.5.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "8fd0f67",
+							"type": "feat",
+							"scope": null,
+							"message": "accept custom client in robo start options",
+							"breaking": false
+						},
+						{
+							"hash": "6ce14ec",
+							"type": "feat",
+							"scope": "cli",
+							"message": "include build type in manifest",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-11",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.5.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "c80d247",
+							"type": "fix",
+							"scope": null,
+							"message": "export primary robo object",
+							"breaking": false
+						},
+						{
+							"hash": "5749b9d",
+							"type": "feat",
+							"scope": null,
+							"message": "introducing states (experimental)",
+							"breaking": false
+						},
+						{
+							"hash": "12284fa",
+							"type": "refactor",
+							"scope": null,
+							"message": "wait for child process to be ready in development mode",
+							"breaking": false
+						},
+						{
+							"hash": "5a89c11",
+							"type": "feat",
+							"scope": null,
+							"message": "await state load before robo start",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-08",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.5.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "9698694",
+							"type": "feat",
+							"scope": "cli",
+							"message": "watched plugin builds now also trigger robo restarts",
+							"breaking": false
+						},
+						{
+							"hash": "540ce7c",
+							"type": "feat",
+							"scope": "cli",
+							"message": "--watch flag for continuously building plugins",
+							"breaking": false
+						},
+						{
+							"hash": "6069ddd",
+							"type": "feat",
+							"scope": null,
+							"message": "manifest scopes/permissions & inherit from plugins",
+							"breaking": false
+						},
+						{
+							"hash": "6233208",
+							"type": "feat",
+							"scope": null,
+							"message": "new automatic \"dev\" command when running in development mode",
+							"breaking": false
+						},
+						{
+							"hash": "4f59425",
+							"type": "refactor",
+							"scope": null,
+							"message": "reduced package size by 28% by replacing chokidar with node-watch",
+							"breaking": false
+						},
+						{
+							"hash": "07db24e",
+							"type": "fix",
+							"scope": null,
+							"message": "complete command result type",
+							"breaking": false
+						},
+						{
+							"hash": "2efb113",
+							"type": "fix",
+							"scope": "cli",
+							"message": "no longer crashes when trying to build an empty plugin directory",
+							"breaking": false
+						},
+						{
+							"hash": "8af3e9d",
+							"type": "fix",
+							"scope": null,
+							"message": "stringify objects when printing log messages",
+							"breaking": false
+						},
+						{
+							"hash": "9d0635f",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "stricter child process termination when restarting",
+							"breaking": false
+						},
+						{
+							"hash": "d0652d4",
+							"type": "fix",
+							"scope": "cli",
+							"message": "\"build plugin\" command now finds options correctly",
+							"breaking": false
+						},
+						{
+							"hash": "5b32c3a",
+							"type": "chore",
+							"scope": "cli",
+							"message": "no longer show guild id in command updates log",
+							"breaking": false
+						},
+						{
+							"hash": "86d01e0",
+							"type": "feat",
+							"scope": null,
+							"message": "include error messages in debug logs",
+							"breaking": false
+						},
+						{
+							"hash": "0b43b7b",
+							"type": "feat",
+							"scope": null,
+							"message": "sage error replies for button interactions",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-05-03",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.4.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "b0b3ec8",
+							"type": "fix",
+							"scope": "cli",
+							"message": "clean .build directory for pure js builds as well",
+							"breaking": false
+						},
+						{
+							"hash": "2c63084",
+							"type": "feat",
+							"scope": null,
+							"message": "keep a small log buffer in dev mode",
+							"breaking": false
+						},
+						{
+							"hash": "953741b",
+							"type": "feat",
+							"scope": null,
+							"message": "new \"show logs\" button in debug errors",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-30",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.4.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "080f67e",
+							"type": "fix",
+							"scope": "cli",
+							"message": "copy instead of compiling for normal js projects",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.4.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "ee2b5a9",
+							"type": "feat",
+							"scope": null,
+							"message": "automatic promise rejection handling",
+							"breaking": false
+						},
+						{
+							"hash": "ad5768f",
+							"type": "feat",
+							"scope": null,
+							"message": "command return values are now optional",
+							"breaking": false
+						},
+						{
+							"hash": "116ebab",
+							"type": "feat",
+							"scope": "cli",
+							"message": "new \"why\" command that explains your robo structure",
+							"breaking": false
+						},
+						{
+							"hash": "51b608b",
+							"type": "refactor",
+							"scope": null,
+							"message": "default commands now in /default directory with events support",
+							"breaking": false
+						},
+						{
+							"hash": "647e99b",
+							"type": "fix",
+							"scope": "cli",
+							"message": "auto-generated commands and events are now properly marked as \"auto\"",
+							"breaking": false
+						},
+						{
+							"hash": "a6ed21a",
+							"type": "fix",
+							"scope": "cli",
+							"message": "\"auto\" marker for auto generated events",
+							"breaking": false
+						},
+						{
+							"hash": "07bd8f0",
+							"type": "refactor",
+							"scope": null,
+							"message": "renamed \"stack trace\" button to \"show stack trace\" in errors",
+							"breaking": false
+						},
+						{
+							"hash": "7375d4f",
+							"type": "refactor",
+							"scope": null,
+							"message": "more accurate \"powered by\" wording",
+							"breaking": false
+						},
+						{
+							"hash": "16a0531",
+							"type": "feat",
+							"scope": null,
+							"message": "stop() function now supports custom exit codes",
+							"breaking": false
+						},
+						{
+							"hash": "099cf9a",
+							"type": "fix",
+							"scope": "cli",
+							"message": "generated defaults no longer override events and commands check for more file types",
+							"breaking": false
+						},
+						{
+							"hash": "2f77aed",
+							"type": "feat",
+							"scope": null,
+							"message": "export chalk and logger",
+							"breaking": false
+						},
+						{
+							"hash": "3a20df8",
+							"type": "feat",
+							"scope": null,
+							"message": "more flexible logger parameters",
+							"breaking": false
+						},
+						{
+							"hash": "08afac9",
+							"type": "chore",
+							"scope": null,
+							"message": "skip trigger logs for auto-generated events",
+							"breaking": false
+						},
+						{
+							"hash": "9f56985",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "use \"info\" instead of \"event\" for initial log",
+							"breaking": false
+						},
+						{
+							"hash": "9bb58f7",
+							"type": "refactor",
+							"scope": "cli",
+							"message": "print \"wait\" instead of \"info\" for restarts",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-17",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.3.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "3a00456",
+							"type": "fix",
+							"scope": null,
+							"message": "better nested error handling",
+							"breaking": false
+						},
+						{
+							"hash": "ee7429a",
+							"type": "feat",
+							"scope": null,
+							"message": "show exact code at fault in error messages",
+							"breaking": false
+						},
+						{
+							"hash": "66a09cd",
+							"type": "refactor",
+							"scope": null,
+							"message": "less robo branding on error messages",
+							"breaking": false
+						},
+						{
+							"hash": "78353da",
+							"type": "refactor",
+							"scope": null,
+							"message": "error message moved outside embed",
+							"breaking": false
+						},
+						{
+							"hash": "6090b4d",
+							"type": "feat",
+							"scope": null,
+							"message": "compact error message with stack trace follow up",
+							"breaking": false
+						},
+						{
+							"hash": "3a1f016",
+							"type": "feat",
+							"scope": null,
+							"message": "manifest now contains version and updatedAt",
+							"breaking": false
+						},
+						{
+							"hash": "43c1bea",
+							"type": "chore",
+							"scope": null,
+							"message": "minor logging improvements",
+							"breaking": false
+						},
+						{
+							"hash": "1feb074",
+							"type": "feat",
+							"scope": null,
+							"message": "support for source maps in dev mode",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-10",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.3.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "9c47ed7",
+							"type": "feat",
+							"scope": null,
+							"message": "new restart robo function",
+							"breaking": false
+						},
+						{
+							"hash": "59b8ff6",
+							"type": "refactor",
+							"scope": null,
+							"message": "commands now register after build",
+							"breaking": false
+						},
+						{
+							"hash": "8cd2790",
+							"type": "refactor",
+							"scope": null,
+							"message": "renamed robosocket to robo",
+							"breaking": false
+						},
+						{
+							"hash": "bae3b0e",
+							"type": "feat",
+							"scope": "config",
+							"message": "intents replaced with client options",
+							"breaking": false
+						},
+						{
+							"hash": "f8df8b9",
+							"type": "feat",
+							"scope": "sage",
+							"message": "smarter deferrals with buffer time",
+							"breaking": false
+						},
+						{
+							"hash": "fa6429f",
+							"type": "feat",
+							"scope": null,
+							"message": "sage now provides better error data in development",
+							"breaking": false
+						},
+						{
+							"hash": "4dc61a4",
+							"type": "fix",
+							"scope": null,
+							"message": "error stack traces in logger",
+							"breaking": false
+						},
+						{
+							"hash": "a7fbe32",
+							"type": "chore",
+							"scope": null,
+							"message": "ready message now includes datetime",
+							"breaking": false
+						},
+						{
+							"hash": "df74d3f",
+							"type": "fix",
+							"scope": "dev",
+							"message": "gracefully handle manual stops",
+							"breaking": false
+						},
+						{
+							"hash": "fca4243",
+							"type": "chore",
+							"scope": "debug",
+							"message": "cleaned up incorrect logger usage",
+							"breaking": false
+						},
+						{
+							"hash": "e097334",
+							"type": "chore",
+							"scope": "debug",
+							"message": "changed windows pnpm fix log level to debug",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-07",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.6",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "1e4ad58",
+							"type": "chore",
+							"scope": null,
+							"message": "updated types to reflect new options",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.5",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "f97d57b",
+							"type": "feat",
+							"scope": null,
+							"message": "support for more option types",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-06",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.4",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "fa7fbd3",
+							"type": "fix",
+							"scope": null,
+							"message": "correctly pass all event parameters",
+							"breaking": false
+						},
+						{
+							"hash": "f0d8cd1",
+							"type": "fix",
+							"scope": null,
+							"message": "recursive pnpm on windows",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-05",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.3",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "e289560",
+							"type": "fix",
+							"scope": null,
+							"message": "absolute imports on windows",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-04",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.2",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "050eaa5",
+							"type": "fix",
+							"scope": null,
+							"message": "windows usage with pnpm",
+							"breaking": false
+						},
+						{
+							"hash": "14be7e7",
+							"type": "chore",
+							"scope": null,
+							"message": "upped build size warning thresholds",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "2023-04-03",
+			"packages": [
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "71109a4",
+							"type": "fix",
+							"scope": "pkg",
+							"message": "updated all robo.js package references",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.2.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "0a1b4eb",
+							"type": "feat",
+							"scope": null,
+							"message": "failsafe mode for plugins",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.1.1",
+					"impact": "patch",
+					"changes": [
+						{
+							"hash": "0ff716e",
+							"type": "perf",
+							"scope": null,
+							"message": "improved node_modules lookup for pnpm",
+							"breaking": false
+						}
+					]
+				},
+				{
+					"name": "robo.js",
+					"displayName": "Framework",
+					"slug": "framework",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "8576ac6",
+							"type": "feat",
+							"scope": null,
+							"message": "re-released as scoped robo.js. [read more](https://blog.waveplay.com/introducing-robo-and-roboplay/)",
+							"breaking": false
+						},
+						{
+							"hash": "a29f790",
+							"type": "feat",
+							"scope": null,
+							"message": "introducing robo.js! [read more](https://blog.waveplay.com/introducing-robo-and-roboplay/)",
+							"breaking": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"date": "unknown",
+			"packages": [
+				{
+					"name": "@robojs/better-stack",
+					"displayName": "@robojs/better-stack",
+					"slug": "better-stack",
+					"version": "0.1.0",
+					"impact": "minor",
+					"changes": [
+						{
+							"hash": "a29b197",
+							"type": "feat",
+							"scope": null,
+							"message": "better stack plugin",
+							"breaking": false
+						}
+					]
+				}
+			]
+		}
+	]
+}

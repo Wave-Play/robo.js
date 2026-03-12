@@ -224,6 +224,30 @@
   100% { transform: rotate(0deg) scale(1); }
 }
 
+/* Changelog search: wobble icon on hover (reuses sidebar search-wobble keyframes) */
+.changelog-search:hover .changelog-search-icon {
+  animation: search-wobble 0.5s ease-in-out;
+}
+
+/* Sidebar-aware padding: replaces useSidebar() + conditional className in page shells */
+#nd-docs-layout[data-sidebar-collapsed="true"] .sidebar-aware-padding {
+  @media (min-width: 1280px) {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+
+/* Sidebar toggle: pointer cursor + grow on hover (matches search toggle) */
+button[aria-label="Open Sidebar"],
+button[aria-label="Collapse Sidebar"] {
+  cursor: pointer !important;
+  transition: background-color 150ms, color 150ms, transform 150ms !important;
+}
+button[aria-label="Open Sidebar"]:hover,
+button[aria-label="Collapse Sidebar"]:hover {
+  transform: scale(1.12);
+}
+
 /* Sidebar separator labels (e.g. "Getting Started", "Plugins") */
 #nd-sidebar > div p.mt-6,
 #nd-sidebar-mobile p.mt-6 {
@@ -253,6 +277,199 @@
 
 .exa-button-link {
   text-decoration: none;
+}
+
+/* ── Changelog: ambient tron animations ─────────────────────── */
+
+/* Energy line traveling UP the timeline wire — slow 12s cycle */
+@keyframes timeline-pulse-up {
+  0% {
+    bottom: -4%;
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    bottom: 100%;
+    opacity: 0;
+  }
+}
+
+.timeline-wire {
+  overflow: hidden;
+}
+
+.timeline-pulse-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 4%;
+  background: linear-gradient(
+    to top,
+    transparent,
+    var(--primary) 30%,
+    var(--primary) 70%,
+    transparent
+  );
+  opacity: 0;
+  animation: timeline-pulse-up 12s linear infinite;
+  z-index: 1;
+}
+
+/* Diamond node subtle idle glow */
+@keyframes diamond-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px 1px color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+}
+
+.timeline-diamond {
+  animation: diamond-glow 3s ease-in-out infinite;
+}
+
+/* Top diamond expanding outline glow — 3s cycle synced with pulse arrivals.
+   Low blur keeps the diamond shape visible; subtle opacity for understated effect. */
+@keyframes diamond-glow-ring {
+  0%, 70% {
+    transform: rotate(45deg) scale(1);
+    filter: blur(1px);
+    opacity: 0.08;
+  }
+  78% {
+    transform: rotate(45deg) scale(2.2);
+    filter: blur(3px);
+    opacity: 0.4;
+  }
+  86% {
+    transform: rotate(45deg) scale(1);
+    filter: blur(1px);
+    opacity: 0.08;
+  }
+  100% {
+    transform: rotate(45deg) scale(1);
+    filter: blur(1px);
+    opacity: 0.08;
+  }
+}
+
+/* First diamond inner heartbeat — continuous even grow/shrink, peak synced to glow */
+@keyframes diamond-heartbeat {
+  0% {
+    transform: rotate(45deg) scale(0.15);
+    opacity: 0.5;
+  }
+  50% {
+    transform: rotate(45deg) scale(0.55);
+    opacity: 0.9;
+  }
+  100% {
+    transform: rotate(45deg) scale(0.15);
+    opacity: 0.5;
+  }
+}
+
+.timeline-diamond-heartbeat {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  transform: rotate(45deg) scale(0.15);
+  pointer-events: none;
+  animation: diamond-heartbeat 3s ease-in-out 1.44s infinite;
+}
+
+.timeline-diamond-glow-ring {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  transform: rotate(45deg);
+  opacity: 0.08;
+  pointer-events: none;
+  animation: diamond-glow-ring 3s ease-in-out 0.6s infinite;
+}
+
+/* Card shimmer sweep — hover only. Clip on parent keeps shape fixed; transform on pseudo sweeps. */
+@keyframes card-shimmer {
+  0% {
+    opacity: 1;
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+.release-card-shimmer {
+  position: relative;
+  isolation: isolate;
+  clip-path: polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+}
+
+.release-card-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--primary) 6%, transparent) 45%,
+    color-mix(in oklch, var(--primary) 10%, transparent) 50%,
+    color-mix(in oklch, var(--primary) 6%, transparent) 55%,
+    transparent 100%
+  );
+  transform: translateX(-100%) skewX(-15deg);
+}
+
+.release-card-shimmer:hover::before {
+  animation: card-shimmer 0.8s ease-in-out;
+}
+
+/* Changelog hero: dot-matrix fade + radial glow behind the title */
+.changelog-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: -120px;
+  pointer-events: none;
+}
+
+.changelog-hero-glow {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(
+    ellipse,
+    color-mix(in oklch, var(--primary) 12%, transparent) 0%,
+    color-mix(in oklch, var(--primary) 5%, transparent) 40%,
+    transparent 70%
+  );
+}
+
+.changelog-hero-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--primary) 30%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 50% 80% at 50% 40%, black, transparent);
+  mask-image: radial-gradient(ellipse 50% 80% at 50% 40%, black, transparent);
 }
 
 /* Steps component: Diamond numbers, no line below last step */
