@@ -13,10 +13,15 @@ Features:
 - setIfNotExists via exclusive file creation
 
 Storage layout:
-.robo/flashcore/
-  ├── \{encoded-key\}.json
-  ├── \{encoded-key\}.json
-  └── ...
+
+<Files>
+  <Folder name=".robo" defaultOpen disabled>
+    <Folder name="flashcore" defaultOpen>
+      <File name="{encoded-key}.json" />
+      <File name="{encoded-key}.json" />
+    </Folder>
+  </Folder>
+</Files>
 
 ## Type Parameters
 

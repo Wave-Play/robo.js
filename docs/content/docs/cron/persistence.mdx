@@ -138,6 +138,18 @@ This process is automatic. You don't need to write any restoration code yourself
 
 Persistence is especially useful for jobs created at runtime — for example, from a slash command.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="schedule.ts" note="Creates cron jobs" />
+      <File name="cancel.ts" note="Cancels cron jobs" />
+    </Folder>
+    <Folder name="cron" defaultOpen>
+      <File name="reminder.js" note="Job handler" />
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/commands/schedule.ts"

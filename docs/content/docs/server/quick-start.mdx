@@ -25,7 +25,7 @@ Get a web server running in your Robo project with just a few files.
 		<Files>
 			<Folder name="src" defaultOpen>
 				<Folder name="api" defaultOpen>
-					<File name="hello.ts" />
+					<File name="hello.ts" note="GET /api/hello" />
 				</Folder>
 			</Folder>
 		</Files>
@@ -95,6 +95,16 @@ Export a `POST` function to handle POST requests at the same path. Use `request.
 ## Dynamic parameters
 
 Wrap a filename segment in brackets to create a dynamic route parameter. Access it via `request.params`.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="api" defaultOpen>
+      <Folder name="users" defaultOpen>
+        <File name="[id].ts" note="GET /api/users/:id" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">

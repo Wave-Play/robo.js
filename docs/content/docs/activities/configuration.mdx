@@ -5,6 +5,21 @@ description: Configure your Discord Activity project
 
 This page is the central reference for all **configuration** in a Discord Activity project. Other pages link here rather than duplicating config details.
 
+<Files>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="server.ts" note="Server plugin config" />
+        <File name="sync.ts" note="Sync plugin config" />
+        <File name="patch.ts" note="Patch plugin config" />
+      </Folder>
+    </Folder>
+    <File name="robo.mjs" note="Main config" />
+    <File name="vite.mjs" note="Vite config" />
+  </Folder>
+  <File name=".env" note="Secrets" />
+</Files>
+
 <ScreenshotPlaceholder
   alt="VS Code file explorer showing the config directory structure with robo.mjs, vite.mjs, and config/plugins/robojs containing server.ts, sync.ts, and patch.ts"
   focus="The config directory structure showing all configuration files"

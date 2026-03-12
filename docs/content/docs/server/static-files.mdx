@@ -9,17 +9,15 @@ The plugin automatically serves static files from the `public/` directory. This 
 
 In development, files are served from `public/` at the project root. In production, files are served from `.robo/public/` (built by Vite or copied during `robo build`).
 
-```
 <Files>
   <Folder name="public" defaultOpen>
-    <File name="favicon.ico" />
-    <File name="logo.png" />
-    <Folder name="assets">
-      <File name="styles.css" />
+    <File name="favicon.ico" note="/favicon.ico" />
+    <File name="logo.png" note="/logo.png" />
+    <Folder name="assets" defaultOpen>
+      <File name="styles.css" note="/assets/styles.css" />
     </Folder>
   </Folder>
 </Files>
-```
 
 These files are accessible at:
 

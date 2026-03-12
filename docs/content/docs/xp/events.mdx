@@ -224,6 +224,16 @@ Role reward reconciliation only runs for the default store. Custom stores never 
 - Include `reason` when calling XP operations to make analytics and audit logs more useful.
 - For heavy work (API calls, database writes), consider using a queue rather than processing inline.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="events" defaultOpen>
+      <Folder name="_start" defaultOpen>
+        <File name="xp-analytics.ts" note="XP change tracking" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/events/_start/xp-analytics.ts"

@@ -9,6 +9,22 @@ The plugin provides `createCommandConfig()` as a drop-in replacement for the Rob
 
 Store command metadata alongside your translations. Nested keys work well for organizing command names, descriptions, and option text.
 
+<Files>
+  <Folder name="locales" defaultOpen disabled>
+    <Folder name="en-US" defaultOpen>
+      <File name="commands.json" note="Command translations" />
+    </Folder>
+    <Folder name="es-ES" defaultOpen>
+      <File name="commands.json" note="Command translations" />
+    </Folder>
+  </Folder>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="Localized command" />
+    </Folder>
+  </Folder>
+</Files>
+
 ```json title="locales/en-US/commands.json"
 {
 	"hey": "Hey there, {$user.name}!",

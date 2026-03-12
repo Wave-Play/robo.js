@@ -82,6 +82,16 @@ Link buttons use `setURL()` instead of `setCustomId()` and do **not** fire inter
 
 Handle button interactions in an `interactionCreate` event handler using `isButton()` and the `customId`:
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="events" defaultOpen>
+      <Folder name="interactionCreate" defaultOpen>
+        <File name="confirm.ts" note="Button click handler" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/events/interactionCreate/confirm.ts"

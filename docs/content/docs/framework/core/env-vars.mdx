@@ -59,6 +59,14 @@ Environment variables follow well-established practices for keeping secrets safe
 
 Projects with multiple environments can use mode-specific `.env` files. Suffix the filename with the mode name, and Robo.js will load the correct file automatically based on the active [Mode](./mode).
 
+<Files>
+  <Folder name="/" defaultOpen disabled>
+    <File name=".env" note="Base variables" />
+    <File name=".env.development" note="Dev overrides" />
+    <File name=".env.production" note="Production overrides" />
+  </Folder>
+</Files>
+
 ```bash
 # .env.production
 DEBUG_STUFF="false"

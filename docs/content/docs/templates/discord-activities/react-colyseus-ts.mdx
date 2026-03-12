@@ -49,6 +49,24 @@ Colyseus manages game state on the server while clients receive synchronized upd
 - **Client**: React components with Colyseus client integration
 - **Schema**: Shared state definitions for type-safe synchronization
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="app" note="Client-side code" disabled />
+    <Folder name="api" note="Server routes" disabled />
+    <Folder name="rooms" note="Colyseus rooms" defaultOpen>
+      <File name="StateHandlerRoom.ts" />
+    </Folder>
+    <Folder name="entities" note="Schema definitions" defaultOpen>
+      <File name="Player.ts" />
+      <File name="State.ts" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <File name="vite.mjs" />
+  </Folder>
+  <File name=".env" />
+</Files>
+
 ## Hosting
 
 ```bash

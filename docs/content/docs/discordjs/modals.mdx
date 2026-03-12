@@ -240,6 +240,20 @@ Modals can include up to 5 text inputs, each in its own action row:
 
 A common pattern: a command sends a button, and clicking the button opens a modal. This requires two files.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="feedback.ts" note="Sends the button" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <Folder name="interactionCreate" defaultOpen>
+        <File name="feedback-modal.ts" note="Shows the modal" />
+        <File name="feedback-submit.ts" note="Handles submission" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 Command that sends the button:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>

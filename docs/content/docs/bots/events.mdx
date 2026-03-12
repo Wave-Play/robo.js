@@ -47,7 +47,7 @@ Create a file in `src/events/` with the name of the Discord event you want to ha
 <Files>
 	<Folder name="src" defaultOpen disabled>
 		<Folder name="events" defaultOpen>
-			<File name="ready.ts" />
+			<File name="ready.ts" note="Client ready event" />
 		</Folder>
 	</Folder>
 </Files>
@@ -107,8 +107,8 @@ Handle the same event with multiple files by creating a folder named after the e
 	<Folder name="src" defaultOpen disabled>
 		<Folder name="events" defaultOpen>
 			<Folder name="messageCreate" defaultOpen>
-				<File name="log.ts" />
-				<File name="greet.ts" />
+				<File name="log.ts" note="Logs messages" />
+				<File name="greet.ts" note="Auto-replies" />
 			</Folder>
 		</Folder>
 	</Folder>
@@ -157,6 +157,17 @@ Robo.js provides framework-level events that are not Discord events: `_start`, `
 - **`_start`** runs after Robo.js initialization (before the Discord connection is established). Use it for setup tasks like database connections.
 - **`ready`** fires after connecting to Discord's gateway. Use it for anything that needs the Discord client.
 - **`_stop`** runs on shutdown with a 5-second timeout. Use it for teardown tasks.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="events" defaultOpen>
+      <File name="_start.ts" note="Runs on startup" />
+      <File name="_stop.ts" note="Runs on shutdown" />
+      <File name="_restart.ts" note="Runs on restart" />
+      <File name="ready.ts" note="Discord gateway ready" />
+    </Folder>
+  </Folder>
+</Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">

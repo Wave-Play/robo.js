@@ -78,6 +78,14 @@ Robo.js discovers plugins by scanning the `/config/plugins` directory.
 
 For each plugin, create an `.mjs` file in `/config/plugins` with the same name as the plugin's package. The file should export the plugin's configuration:
 
+<Files>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <File name="@robojs-server.mjs" note="Plugin config" />
+    </Folder>
+  </Folder>
+</Files>
+
 ```typescript
 // config/plugins/<package>.mjs
 export default {

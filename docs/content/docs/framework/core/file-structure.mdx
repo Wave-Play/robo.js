@@ -12,52 +12,210 @@ A standard Robo.js project contains the following directories:
 <Files>
   <Folder name="/" defaultOpen disabled>
     <Folder name=".robo">
-      <File name="(Generated files)" />
+      <Folder name="build" disabled />
+      <Folder name="data" disabled />
+      <File name="manifest.json" />
     </Folder>
-    <Folder name="config">
-      <File name="(Configuration files)" />
+    <Folder name="config" defaultOpen>
+      <Folder name="plugins" disabled />
+      <File name="robo.mjs" note="Main config" />
     </Folder>
-    <Folder name="src">
-      <File name="(Source code)" />
+    <Folder name="src" defaultOpen>
+      <Folder name="api" disabled />
+      <Folder name="commands" disabled />
+      <Folder name="context" disabled />
+      <Folder name="events" disabled />
+      <Folder name="middleware" disabled />
+      <Folder name="modules" disabled />
     </Folder>
     <File name=".env" />
     <File name="package.json" />
+    <File name="tsconfig.json" />
   </Folder>
 </Files>
 
-You will spend most of your time in the `/src` directory, where your project's features live. The `/config` directory holds project and plugin configurations.
+You will spend most of your time in the `/src` directory, where your project's features live. The `/config` directory holds project and plugin configurations. Not every project needs all of these — only create the directories you use.
 
 Depending on your setup, you may have additional files from tools like ESLint or Prettier.
 
-### Source Code
+## Source Code
 
-The `/src` directory is where your project's functionality is defined. Any file type supported by Node.js works here, including JavaScript, **[TypeScript](./typescript)**, and JSON. TypeScript works out of the box with no additional setup.
+The `/src` directory is where your project's functionality is defined. Each subdirectory has a specific purpose and Robo.js uses the file structure to automatically register commands, events, routes, and more.
 
-### Configuration
+Any file type supported by Node.js works here, including JavaScript, **[TypeScript](./typescript)**, and JSON. TypeScript works out of the box with no additional setup.
 
-Config files live in the `/config` directory. These control project and plugin settings. Plugin config files are generated automatically when you run `npx robo add`.
+### Commands
 
-You may rarely need to edit these files directly. See **[Configuration](./config)** for more details.
+Files in `src/commands/` become slash commands. The file name is the command name, and folders create subcommands.
 
-### Environment Variables
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="/ping" />
+      <File name="greet.ts" note="/greet" />
+      <Folder name="channel" defaultOpen>
+        <File name="lock.ts" note="/channel lock" />
+        <File name="unlock.ts" note="/channel unlock" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
-The `.env` file stores sensitive information such as API keys, database URLs, and Discord tokens. These variables are loaded into your project at startup.
+See **[Commands](/docs/bots/commands)** for more details.
 
-See **[Environment Variables](./env-vars)** for more details.
+### Events
 
-### Package File
+Files in `src/events/` handle Discord gateway events. The file name matches the event name. Multiple handlers for the same event go in a subfolder.
 
-The `package.json` file is standard for Node.js projects. It contains metadata about your project including the name, version, dependencies, and scripts.
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="events" defaultOpen>
+      <File name="ready.ts" note="Client ready" />
+      <Folder name="messageCreate" defaultOpen>
+        <File name="log.ts" note="Runs on every message" />
+        <File name="auto-mod.ts" note="Runs on every message" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
-## Modules
+See **[Events](/docs/bots/events)** for more details.
 
-For larger projects, modules let you group related functionality together. Each module is a self-contained unit within your project that follows the same file structure conventions.
+### API Routes
+
+Files in `src/api/` become HTTP endpoints when using `@robojs/server`. The file path maps directly to the URL.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="api" defaultOpen>
+      <File name="health.ts" note="/api/health" />
+      <Folder name="auth" defaultOpen>
+        <File name="login.ts" note="/api/auth/login" />
+      </Folder>
+      <Folder name="users" defaultOpen>
+        <File name="index.ts" note="/api/users" />
+        <File name="[id].ts" note="/api/users/:id" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+See **[Server Routing](/docs/server/routing)** for more details.
+
+### Context Menus
+
+Files in `src/context/` register right-click context menu commands. Separate `user/` and `message/` subdirectories determine the target type.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="context" defaultOpen>
+      <Folder name="user" defaultOpen>
+        <File name="Info.ts" note="User right-click" />
+      </Folder>
+      <Folder name="message" defaultOpen>
+        <File name="Bookmark.ts" note="Message right-click" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+See **[Context Menus](/docs/bots/context-menu)** for more details.
+
+### Middleware
+
+Files in `src/middleware/` intercept commands and events before they execute. Middleware runs in alphabetical order — use number prefixes to control the sequence.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="middleware" defaultOpen>
+      <File name="01-logger.ts" note="Runs first" />
+      <File name="02-auth.ts" note="Runs second" />
+      <File name="03-cooldown.ts" note="Runs third" />
+    </Folder>
+  </Folder>
+</Files>
+
+See **[Middleware](/docs/bots/middleware)** for more details.
+
+### Modules
+
+Modules group related commands, events, and middleware into self-contained units inside `src/modules/`. Each module follows the same directory conventions as the top-level `src/`.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" disabled />
+    <Folder name="events" disabled />
+    <Folder name="modules" defaultOpen>
+      <Folder name="moderation" defaultOpen>
+        <Folder name="commands" defaultOpen>
+          <File name="ban.ts" note="/ban" />
+          <File name="kick.ts" note="/kick" />
+        </Folder>
+        <Folder name="events" disabled />
+      </Folder>
+      <Folder name="fun" defaultOpen>
+        <Folder name="commands" defaultOpen>
+          <File name="joke.ts" note="/joke" />
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
 See **[Modules](./modules)** for more details.
 
+## Configuration
+
+Config files live in the `/config` directory. The main config is `robo.mjs` (or `.ts`, `.cjs`, `.json`). Plugin configs are organized by scope inside `config/plugins/`.
+
+<Files>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="discordjs.mjs" note="Discord plugin config" />
+        <File name="server.mjs" note="Server plugin config" />
+      </Folder>
+    </Folder>
+    <File name="robo.mjs" note="Main project config" />
+  </Folder>
+</Files>
+
+Plugin config files are generated automatically when you run `npx robo add`. You may rarely need to edit these files directly.
+
+See **[Configuration](./config)** for more details.
+
+## Environment Variables
+
+The `.env` file stores sensitive information such as API keys, database URLs, and Discord tokens. These variables are loaded into your project at startup.
+
+<Files>
+  <Folder name="/" defaultOpen disabled>
+    <File name=".env" note="Secrets (never commit)" />
+    <File name=".env.development" note="Dev overrides" />
+    <File name=".env.production" note="Prod overrides" />
+  </Folder>
+</Files>
+
+See **[Environment Variables](./env-vars)** for more details.
+
 ## .robo Directory
 
-The `/.robo` directory is managed by Robo.js and contains generated files. You should not edit this directory manually, but the following sections explain what it contains.
+The `/.robo` directory is managed by Robo.js and contains generated files. You should not edit this directory manually.
+
+<Files>
+  <Folder name=".robo" defaultOpen disabled>
+    <Folder name="build">
+      <File name="(Compiled output)" />
+    </Folder>
+    <Folder name="data">
+      <File name="(Flashcore data)" />
+    </Folder>
+    <Folder name="temp">
+      <File name="(Temporary files)" />
+    </Folder>
+    <File name="manifest.json" note="Project metadata" />
+  </Folder>
+</Files>
 
 ### Build
 
@@ -80,6 +238,78 @@ The `/.robo/manifest.json` file contains project metadata including the project 
 ### Temp Files
 
 The `/.robo/temp` directory appears occasionally and holds temporary files generated during runtime, such as intermediate files created during compression.
+
+## Full Example
+
+Here is what a fully-featured Discord bot project looks like with commands, events, API routes, context menus, middleware, and modules:
+
+<Files>
+  <Folder name="/" defaultOpen disabled>
+    <Folder name=".robo">
+      <Folder name="build" disabled />
+      <Folder name="data" disabled />
+      <File name="manifest.json" note="Project metadata" />
+    </Folder>
+    <Folder name="config" defaultOpen>
+      <Folder name="plugins" defaultOpen>
+        <Folder name="robojs" defaultOpen>
+          <File name="discordjs.mjs" note="Discord plugin config" />
+          <File name="server.mjs" note="Server plugin config" />
+        </Folder>
+      </Folder>
+      <File name="robo.mjs" note="Main project config" />
+    </Folder>
+    <Folder name="src" defaultOpen>
+      <Folder name="api" defaultOpen>
+        <File name="health.ts" note="/api/health" />
+        <Folder name="users" defaultOpen>
+          <File name="index.ts" note="/api/users" />
+          <File name="[id].ts" note="/api/users/:id" />
+        </Folder>
+      </Folder>
+      <Folder name="commands" defaultOpen>
+        <File name="ping.ts" note="/ping" />
+        <File name="greet.ts" note="/greet" />
+        <Folder name="channel" defaultOpen>
+          <File name="lock.ts" note="/channel lock" />
+          <File name="unlock.ts" note="/channel unlock" />
+        </Folder>
+      </Folder>
+      <Folder name="context" defaultOpen>
+        <Folder name="user" defaultOpen>
+          <File name="Info.ts" note="User right-click" />
+        </Folder>
+        <Folder name="message" defaultOpen>
+          <File name="Bookmark.ts" note="Message right-click" />
+        </Folder>
+      </Folder>
+      <Folder name="events" defaultOpen>
+        <File name="ready.ts" note="Client ready" />
+        <Folder name="messageCreate" defaultOpen>
+          <File name="log.ts" note="Message logger" />
+        </Folder>
+      </Folder>
+      <Folder name="middleware" defaultOpen>
+        <File name="01-logger.ts" note="Runs first" />
+        <File name="02-auth.ts" note="Runs second" />
+      </Folder>
+      <Folder name="modules" defaultOpen>
+        <Folder name="moderation" defaultOpen>
+          <Folder name="commands" defaultOpen>
+            <File name="ban.ts" note="/ban" />
+            <File name="kick.ts" note="/kick" />
+          </Folder>
+          <Folder name="events" disabled />
+        </Folder>
+      </Folder>
+    </Folder>
+    <File name=".env" note="Environment variables" />
+    <File name="package.json" />
+    <File name="tsconfig.json" />
+  </Folder>
+</Files>
+
+Your project does not need all of these. Start with what you need and add directories as your project grows.
 
 ## Next Steps
 

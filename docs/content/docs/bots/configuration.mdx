@@ -134,6 +134,18 @@ Create mode-specific overrides by appending the mode name to the filename. These
 - **Development** — `config/plugins/robojs/discordjs.development.ts`
 - **Production** — `config/plugins/robojs/discordjs.production.ts`
 
+<Files>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="discordjs.ts" note="Base config" />
+        <File name="discordjs.development.ts" note="Dev overrides" />
+        <File name="discordjs.production.ts" note="Production overrides" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 This is useful for setting `testServers` only in development or enabling `autoRegisterCommands` only in production.
 
 ## Configuration Reference

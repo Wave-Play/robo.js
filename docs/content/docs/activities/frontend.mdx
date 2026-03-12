@@ -17,6 +17,17 @@ Activity templates use **Vite** (a fast build tool for web projects) for fast bu
 
 Activity projects organize frontend code into a few key directories:
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="app" defaultOpen>
+      <File name="App.tsx" note="Entry point" />
+      <File name="Activity.tsx" note="Main activity view" />
+    </Folder>
+    <Folder name="hooks" note="Custom React hooks" disabled />
+  </Folder>
+  <Folder name="public" note="Static assets" disabled />
+</Files>
+
 - **`src/app/App.tsx`** — Entry point that wraps providers and renders the main component.
 - **`src/app/Activity.tsx`** — Main UI component for your activity.
 - **`src/hooks/`** — Custom hooks like `useDiscordSdk` for interacting with the Embedded App SDK.

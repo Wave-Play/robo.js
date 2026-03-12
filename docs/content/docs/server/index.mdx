@@ -10,6 +10,17 @@ description: Turn your Robo into a web server with file-based routing, typed end
 	icon={<Server />}
 	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api"
 	platforms={["Bots", "Activities", "Web"]}
+	cli={[
+		{ name: "robo tunnel start", description: "Start a Cloudflare tunnel", kind: "command", href: "./cli" },
+		{ name: "robo tunnel stop", description: "Stop running tunnels", kind: "command", href: "./cli" },
+		{ name: "robo tunnel list", description: "List running tunnels", kind: "command", href: "./cli" },
+		{ name: "robo dev --tunnel", description: "Start dev server with tunnel", kind: "extends", href: "./cli" }
+	]}
+	terminal={[
+		{ name: "/tunnel start", description: "Start a tunnel from dev terminal", href: "./cli" },
+		{ name: "/tunnel stop", description: "Stop tunnels from dev terminal", href: "./cli" },
+		{ name: "/tunnel list", description: "List tunnels from dev terminal", href: "./cli" }
+	]}
 />
 
 This plugin adds HTTP server capabilities to any Robo project. Create files in `/src/api` and they become web endpoints automatically. It supports typed endpoints with Zod, static file serving, CORS, tunnels, WebSocket, and multiple server engines.
@@ -31,6 +42,14 @@ npx create-robo my-project -p @robojs/server
 ## Quick example
 
 Create a file in `/src/api` and export HTTP method handlers:
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="api" defaultOpen>
+      <File name="hello.ts" note="GET /api/hello" />
+    </Folder>
+  </Folder>
+</Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">

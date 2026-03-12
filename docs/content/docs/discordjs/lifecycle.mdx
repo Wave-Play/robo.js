@@ -26,6 +26,15 @@ prepare          start               clientReady              stop
 
 The recommended way to hook into startup and shutdown is with Robo lifecycle files. These run for all Robo projects, not just Discord bots.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="robo" defaultOpen>
+      <File name="start.ts" note="Startup lifecycle" />
+      <File name="stop.ts" note="Shutdown lifecycle" />
+    </Folder>
+  </Folder>
+</Files>
+
 ### `src/robo/start.ts`
 
 Runs during Robo startup, after the plugin's prepare phase. Use it for initial data loading, connecting to external services, or any setup that should happen before the bot goes online.

@@ -34,13 +34,17 @@ npm run dev
 
 ## Plugin Structure
 
-```
-/src
-├── /commands      # Slash commands
-├── /events        # Event handlers
-├── /api           # API routes (if server plugin)
-└── index.js       # Plugin exports
-```
+<Files>
+  <Folder name="config" defaultOpen>
+    <File name="robo.mjs" note="Plugin config" />
+  </Folder>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" note="Slash commands" />
+    <Folder name="events" note="Event handlers" />
+    <Folder name="api" note="API routes (if server plugin)" />
+    <File name="index.js" note="Plugin exports" />
+  </Folder>
+</Files>
 
 ## Configuration
 

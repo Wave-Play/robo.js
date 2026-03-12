@@ -689,6 +689,14 @@ Access zone metadata from any component inside a `SyncZone`. Returns `null` if n
 
 File-based handlers in `/src/sync/` process server-side logic for sync keys. Each handler file can export:
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="sync" defaultOpen>
+      <File name="game.ts" note="Handles game state" />
+    </Folder>
+  </Folder>
+</Files>
+
 | Export | Description |
 |--------|-------------|
 | `schema` | Validation schema for incoming state |

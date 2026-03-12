@@ -75,6 +75,63 @@ npx robo tunnel stop --all
 | `--all, -a` | Stop all running tunnels |
 | `--verbose, -v` | Show detailed output |
 
+## Terminal Commands
+
+The server plugin also extends the `robo dev` interactive terminal with `/tunnel` commands. These mirror the CLI tunnel commands above but run directly inside your dev session — no second terminal needed.
+
+### `/tunnel`
+
+Show available tunnel subcommands:
+
+```
+/tunnel
+```
+
+### `/tunnel start`
+
+Start a Cloudflare tunnel in the background:
+
+```
+/tunnel start
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-p <number>` | Port to tunnel | `PORT` env or `3000` |
+
+```
+# Tunnel a specific port
+/tunnel start -p 8080
+```
+
+If a tunnel is already running on the target port, the command shows the existing tunnel's ID and URL instead of starting a duplicate.
+
+### `/tunnel stop`
+
+Stop a running tunnel by ID:
+
+```
+/tunnel stop <id>
+```
+
+Stop all running tunnels:
+
+```
+/tunnel stop --all
+```
+
+| Option | Description |
+|---|---|
+| `--all, -a` | Stop all running tunnels |
+
+### `/tunnel list`
+
+List all running tunnels with their ID, port, uptime, and public URL:
+
+```
+/tunnel list
+```
+
 ## Next steps
 
 <Cards>

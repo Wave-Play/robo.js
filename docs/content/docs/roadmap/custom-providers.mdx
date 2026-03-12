@@ -57,6 +57,21 @@ Every provider must implement these abstract methods:
 
 ## Example implementation
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="providers" defaultOpen>
+      <File name="github.ts" note="Custom provider" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="roadmap.ts" note="Register provider" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/providers/github.ts"

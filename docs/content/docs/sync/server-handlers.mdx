@@ -12,13 +12,13 @@ Handler files map to sync keys using the file path. Dynamic segments use bracket
 <Files>
 	<Folder name="src" defaultOpen>
 		<Folder name="sync" defaultOpen>
-			<File name="lobby.ts" />
+			<File name="lobby.ts" note="Key: ['lobby']" />
 			<Folder name="game" defaultOpen>
-				<File name="middleware.ts" />
+				<File name="middleware.ts" note="All game/* keys" />
 				<Folder name="[roomId]" defaultOpen>
-					<File name="state.ts" />
-					<File name="coins.ts" />
-					<File name="middleware.ts" />
+					<File name="state.ts" note="Key: ['game', roomId, 'state']" />
+					<File name="coins.ts" note="Key: ['game', roomId, 'coins']" />
+					<File name="middleware.ts" note="game/[roomId]/* keys" />
 				</Folder>
 			</Folder>
 		</Folder>

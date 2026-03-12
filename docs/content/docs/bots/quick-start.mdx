@@ -35,27 +35,27 @@ Follow the prompts to configure TypeScript and select starter features. The CLI 
 <Files>
   <Folder name="src" defaultOpen>
     <Folder name="commands" defaultOpen>
-      <File name="ping.ts" />
+      <File name="ping.ts" note="/ping" />
     </Folder>
     <Folder name="events" defaultOpen>
-      <File name="ready.ts" />
+      <File name="ready.ts" note="Client ready event" />
     </Folder>
     <Folder name="context">
-      <Folder name="user">
-        <File name="info.ts" />
+      <Folder name="user" note="Right-click user">
+        <File name="info.ts" note="User context menu" />
       </Folder>
-      <Folder name="message">
-        <File name="bookmark.ts" />
+      <Folder name="message" note="Right-click message">
+        <File name="bookmark.ts" note="Message context menu" />
       </Folder>
     </Folder>
     <Folder name="middleware">
-      <File name="_start.ts" />
+      <File name="_start.ts" note="Startup handler" />
     </Folder>
   </Folder>
   <Folder name="config" defaultOpen>
     <Folder name="plugins" defaultOpen>
       <Folder name="robojs" defaultOpen>
-        <File name="discordjs.ts" />
+        <File name="discordjs.ts" note="Plugin config" />
       </Folder>
     </Folder>
   </Folder>

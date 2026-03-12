@@ -9,6 +9,21 @@ The plugin supports any analytics service through the `BaseEngine` class. Extend
 
 Extend `BaseEngine` and implement the `event()` and `view()` methods:
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="engines" defaultOpen>
+      <File name="my-engine.ts" note="Custom engine" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="analytics.mjs" note="Register engine" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/engines/my-engine.ts"

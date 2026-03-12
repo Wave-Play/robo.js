@@ -17,16 +17,16 @@ Paths map directly from files to URLs:
 <Files>
   <Folder name="src" defaultOpen>
     <Folder name="api" defaultOpen>
-      <File name="health.ts" />
+      <File name="health.ts" note="/api/health" />
       <Folder name="auth" defaultOpen>
-        <File name="login.ts" />
+        <File name="login.ts" note="/api/auth/login" />
       </Folder>
       <Folder name="users" defaultOpen>
-        <File name="index.ts" />
-        <File name="[id].ts" />
+        <File name="index.ts" note="/api/users" />
+        <File name="[id].ts" note="/api/users/:id" />
       </Folder>
       <Folder name="files" defaultOpen>
-        <File name="[...path].ts" />
+        <File name="[...path].ts" note="/api/files/*" />
       </Folder>
     </Folder>
   </Folder>

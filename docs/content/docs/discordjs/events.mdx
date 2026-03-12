@@ -7,13 +7,13 @@ Event handlers are created by placing files in the `src/events/` directory. The 
 
 ## File structure
 
-```
-src/
-└── events/
-    ├── ready.ts              → client ready event
-    ├── messageCreate.ts      → message create event
-    └── guildMemberAdd.ts     → guild member add event
-```
+<Files>
+  <Folder name="src/events" defaultOpen disabled>
+    <File name="ready.ts" note="client ready event" />
+    <File name="messageCreate.ts" note="message create event" />
+    <File name="guildMemberAdd.ts" note="guild member add event" />
+  </Folder>
+</Files>
 
 ## Handler signature
 
@@ -89,13 +89,14 @@ Export a `config` object to configure the event handler.
 
 Create a directory with the event name and place multiple handler files inside. Each handler runs independently.
 
-```
-src/
-└── events/
-    └── messageCreate/
-        ├── log-messages.ts
-        └── auto-reply.ts
-```
+<Files>
+  <Folder name="src/events" defaultOpen disabled>
+    <Folder name="messageCreate" defaultOpen>
+      <File name="log-messages.ts" note="Logs messages" />
+      <File name="auto-reply.ts" note="Auto-replies" />
+    </Folder>
+  </Folder>
+</Files>
 
 When multiple handlers exist for the same event, they run concurrently. Each handler runs independently and in parallel via `Promise.all`.
 

@@ -101,16 +101,30 @@ When a mode is active, Robo.js prioritizes mode-specific files over defaults:
 
 If a mode-specific file does not exist, the default file is used.
 
+<Files>
+  <Folder name="config" defaultOpen disabled>
+    <File name="robo.mjs" note="Default config" />
+    <File name="robo.beta.mjs" note="Beta mode config" />
+  </Folder>
+  <File name=".env" note="Default" />
+  <File name=".env.beta" note="Beta mode" />
+</Files>
+
 ## Mode-Specific Modules
 
 Create modules that only load when a specific mode is active by adding a `.<mode>` suffix to the module folder name:
 
-```text
-/src/modules
-  security.production
-    /middleware
-      /rate-limiting.ts
-```
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="modules" defaultOpen>
+      <Folder name="security.production" defaultOpen>
+        <Folder name="middleware" defaultOpen>
+          <File name="rate-limiting.ts" note="Runs only in production" />
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
 The `rate-limiting.ts` middleware loads only when the `production` mode is active. During `robo dev`, it is skipped entirely.
 

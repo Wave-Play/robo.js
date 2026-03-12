@@ -7,14 +7,16 @@ Context menus appear when users right-click on a user or message in Discord. The
 
 ## File structure
 
-```
-src/
-└── context/
-    ├── user/
-    │   └── Get Info.ts        → "Get Info" user context menu
-    └── message/
-        └── Pin Message.ts     → "Pin Message" message context menu
-```
+<Files>
+  <Folder name="src/context" defaultOpen disabled>
+    <Folder name="user" defaultOpen>
+      <File name="Get Info.ts" note='"Get Info" user context menu' />
+    </Folder>
+    <Folder name="message" defaultOpen>
+      <File name="Pin Message.ts" note='"Pin Message" message context menu' />
+    </Folder>
+  </Folder>
+</Files>
 
 The file name becomes the context menu label. Unlike slash commands, context menu names can include spaces and capital letters.
 

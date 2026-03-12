@@ -31,6 +31,24 @@ Move commands to `src/commands/`, events to `src/events/`, and remove manual cli
 4. Transfer `clientOptions` to `config/plugins/robojs/discordjs.ts`.
 5. Run `robo dev` to start your bot.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="/ping" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="ready.ts" note="Client ready" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="discordjs.ts" note="Plugin config" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 **Before (Discord.js):**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>

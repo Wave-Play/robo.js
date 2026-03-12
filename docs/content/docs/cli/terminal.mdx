@@ -85,15 +85,17 @@ The interactive terminal includes several quality-of-life features:
 
 You can create your own `/` commands by placing files in `src/robo/terminal/commands/`. The file path determines the command name:
 
-```
-src/robo/terminal/commands/
-├── ping.ts           # /ping
-├── greet.ts          # /greet
-└── db/
-    ├── index.ts      # /db
-    ├── status.ts     # /db status
-    └── clear.ts      # /db clear
-```
+<Files>
+  <Folder name="src/robo/terminal/commands" defaultOpen disabled>
+    <File name="ping.ts" note="/ping" />
+    <File name="greet.ts" note="/greet" />
+    <Folder name="db" defaultOpen>
+      <File name="index.ts" note="/db" />
+      <File name="status.ts" note="/db status" />
+      <File name="clear.ts" note="/db clear" />
+    </Folder>
+  </Folder>
+</Files>
 
 ### Basic Example
 

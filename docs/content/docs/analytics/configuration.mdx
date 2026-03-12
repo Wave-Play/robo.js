@@ -188,6 +188,20 @@ After initialization, the `Analytics` object and its engine are immutable. They 
 
 When installed with `npx robo add @robojs/analytics`, the plugin seeds three files into your project:
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="test-analytics.ts" note="/test-analytics" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="guildCreate.ts" note="Tracks server joins" />
+    </Folder>
+    <Folder name="middleware" defaultOpen>
+      <File name="track-commands.ts" note="Auto-tracks commands" />
+    </Folder>
+  </Folder>
+</Files>
+
 | Seed file | Target path | Purpose |
 |---|---|---|
 | `track-commands.ts` | `src/middleware/track-commands.ts` | Middleware that tracks every slash command automatically |

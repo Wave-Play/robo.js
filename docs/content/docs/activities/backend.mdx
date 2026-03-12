@@ -17,6 +17,18 @@ description: Server-side development for Discord Activities
 
 Each file in `src/api/` maps to an endpoint. The file name determines the route path. For example, `src/api/hello.ts` becomes `GET /api/hello`.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="api" defaultOpen>
+      <File name="hello.ts" note="GET /api/hello" />
+      <File name="data.ts" note="POST /api/data" />
+      <Folder name="users" defaultOpen>
+        <File name="[id].ts" note="/api/users/:id" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 Return a string or object from the default export:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>

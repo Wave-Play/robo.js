@@ -43,6 +43,26 @@ npm run dev
 
 Creating a **[Slash Command](/docs/discord-bots/commands)** is as easy as creating files.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="/ping" />
+    </Folder>
+    <Folder name="context" defaultOpen>
+      <Folder name="message" defaultOpen>
+        <File name="Quote.ts" note="Message right-click" />
+      </Folder>
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="ready.ts" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <File name="robo.mjs" note="Main config" />
+  </Folder>
+  <File name=".env" />
+</Files>
+
 Let's say you want a new `/hello` command. Just create a file in the `/src/commands` directory named `hello.ts` and export a default function that returns something.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>

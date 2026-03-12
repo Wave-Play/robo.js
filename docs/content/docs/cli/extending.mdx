@@ -11,14 +11,16 @@ Create commands by placing files in `src/robo/cli/commands/`. These become avail
 
 ### File Structure
 
-```
-src/robo/cli/commands/
-├── tunnel.ts         # npx robo tunnel
-└── db/
-    ├── index.ts      # npx robo db
-    ├── migrate.ts    # npx robo db migrate
-    └── seed.ts       # npx robo db seed
-```
+<Files>
+  <Folder name="src/robo/cli/commands" defaultOpen disabled>
+    <File name="tunnel.ts" note="npx robo tunnel" />
+    <Folder name="db" defaultOpen>
+      <File name="index.ts" note="npx robo db" />
+      <File name="migrate.ts" note="npx robo db migrate" />
+      <File name="seed.ts" note="npx robo db seed" />
+    </Folder>
+  </Folder>
+</Files>
 
 The file path determines the command name:
 - `tunnel.ts` → `npx robo tunnel`
@@ -222,6 +224,22 @@ The filename (minus extension) determines which command is extended:
 | `extend/dev.ts` | `robo dev` |
 | `extend/build.ts` | `robo build` |
 | `extend/cloud/status.ts` | `robo cloud status` |
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="robo" defaultOpen>
+      <Folder name="cli" defaultOpen>
+        <Folder name="extend" defaultOpen>
+          <File name="dev.ts" note="Extends robo dev" />
+          <File name="build.ts" note="Extends robo build" />
+          <Folder name="cloud" defaultOpen>
+            <File name="status.ts" note="Extends robo cloud status" />
+          </Folder>
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
 Use nested folders to extend subcommands.
 

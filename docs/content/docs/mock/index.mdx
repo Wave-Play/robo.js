@@ -1,7 +1,25 @@
 ---
 title: Mock Server Overview
 icon: TestTube
+description: Test Discord bots and activities locally with a simulated Discord server.
 ---
+
+<PluginHero
+	name="@robojs/mock"
+	description="Test Discord bots and activities locally with a simulated Discord server."
+	icon={<TestTube />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/mock"
+	platforms={["Bots", "Activities"]}
+	requires={[
+		{ name: "@robojs/server", href: "/docs/server", description: "HTTP and WebSocket server infrastructure" }
+	]}
+	cli={[
+		{ name: "robo mock start", description: "Start standalone mock Discord server", kind: "command", href: "./cli" },
+		{ name: "robo mock test", description: "Run integration tests with mock server", kind: "command", href: "./cli" },
+		{ name: "robo dev --mock", description: "Enable mock mode for development", kind: "extends", href: "./cli" },
+		{ name: "robo start --mock", description: "Enable mock mode for production", kind: "extends", href: "./cli" }
+	]}
+/>
 
 Testing a Discord bot or activity usually means deploying it, switching to Discord, and clicking through interactions manually. Mock Server eliminates that loop.
 

@@ -47,6 +47,25 @@ npm run dev
 
 ## Configuration
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="/ping" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="messageCreate.ts" />
+    </Folder>
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="ai.ts" note="AI plugin config" />
+      </Folder>
+    </Folder>
+  </Folder>
+  <File name=".env" note="API keys" />
+</Files>
+
 Configure the AI in `config/plugins/robojs/ai.mjs`:
 
 ```javascript

@@ -5,6 +5,31 @@ description: Common integration patterns for building custom XP-based features.
 
 The XP plugin is designed for extension. These recipes demonstrate common patterns using the event system and imperative API.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="contest-winner.ts" note="Contest bonus XP" />
+    </Folder>
+    <Folder name="core" defaultOpen>
+      <File name="reputation.ts" note="Multi-dimensional reputation" />
+      <File name="seasons.ts" note="Seasonal battle pass" />
+      <File name="setup.ts" note="Programmatic setup wizard" />
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <Folder name="_start" defaultOpen>
+        <File name="level-announcements.ts" note="Level-up messages" />
+        <File name="xp-analytics.ts" note="Analytics tracking" />
+        <File name="custom-rewards.ts" note="Milestone rewards" />
+      </Folder>
+      <Folder name="messageCreate" defaultOpen>
+        <File name="economy.ts" note="Multi-currency economy" />
+      </Folder>
+      <File name="warn-issued.ts" note="Moderation penalties" />
+      <File name="premium-activated.ts" note="Premium XP boost" />
+    </Folder>
+  </Folder>
+</Files>
+
 ## Level-up announcements
 
 Send a message when users level up. The plugin seeds a starter template at `seed/events/_start/level-announcements.ts` with rich embeds and customization options.

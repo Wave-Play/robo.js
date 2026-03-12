@@ -15,6 +15,16 @@ The plugin accepts a single configuration option.
 
 Configure it via a plugin config file:
 
+<Files>
+  <Folder name="config" defaultOpen disabled>
+    <Folder name="plugins" defaultOpen>
+      <Folder name="robojs" defaultOpen>
+        <File name="i18n.mjs" note="Plugin config" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="config/plugins/robojs/i18n.mjs"

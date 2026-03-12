@@ -21,6 +21,14 @@ This guide covers the essentials. For the complete reference including all confi
 
 Create a file in `src/commands` named after the command. The file's default export is the handler function.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="/ping" />
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/commands/ping.ts"
@@ -284,8 +292,8 @@ Nest files in folders to create subcommands. The folder name becomes the parent 
 	<Folder name="src" defaultOpen disabled>
 		<Folder name="commands" defaultOpen>
 			<Folder name="channel" defaultOpen>
-				<File name="lock.ts" />
-				<File name="unlock.ts" />
+				<File name="lock.ts" note="/channel lock" />
+				<File name="unlock.ts" note="/channel unlock" />
 			</Folder>
 		</Folder>
 	</Folder>
@@ -310,7 +318,7 @@ Add another folder level for subcommand groups, creating a three-level hierarchy
 		<Folder name="commands" defaultOpen>
 			<Folder name="bot" defaultOpen>
 				<Folder name="status" defaultOpen>
-					<File name="idle.ts" />
+					<File name="idle.ts" note="/bot status idle" />
 				</Folder>
 			</Folder>
 		</Folder>

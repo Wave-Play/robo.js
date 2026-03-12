@@ -171,6 +171,13 @@ Discord enforces a 2000-character limit per message. When the AI's response exce
 
 Drop files into the `/documents` directory at the root of your project. On startup, the engine syncs them to an OpenAI vector store using hash-based diffing, so only changed files are uploaded.
 
+<Files>
+  <Folder name="documents" defaultOpen disabled>
+    <File name="faq.md" note="Knowledge base" />
+    <File name="product-info.txt" note="Synced to vector store" />
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="config/plugins/robojs/ai.mjs"

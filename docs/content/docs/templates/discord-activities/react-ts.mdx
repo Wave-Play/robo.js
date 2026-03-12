@@ -115,6 +115,23 @@ While the `api` and `app` folders are reserved for your server and client-side c
 
 Folders only become reserved when you install a plugin that uses them. For example, bot functionality uses the `commands` and `events` folders.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="app" note="Client-side code">
+      <File name="Activity.tsx" />
+      <File name="App.tsx" />
+      <File name="main.tsx" />
+    </Folder>
+    <Folder name="api" note="Server routes" disabled />
+    <Folder name="commands" note="Slash commands" disabled />
+    <Folder name="events" note="Event handlers" disabled />
+  </Folder>
+  <Folder name="config" defaultOpen disabled>
+    <File name="vite.mjs" />
+  </Folder>
+  <File name=".env" />
+</Files>
+
 ## Robo Ecosystem
 
 By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](/plugins)**, **[templates](/templates)**, and **[tools](/docs/cli)**. **[Robo Plugins](/docs/plugins)** are special. They can add features with one command.

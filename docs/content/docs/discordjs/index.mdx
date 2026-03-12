@@ -10,6 +10,11 @@ description: Discord.js integration for slash commands, events, context menus, m
 	icon={<Discord />}
 	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/discordjs"
 	platforms={["Bots", "Activities"]}
+	cli={[
+		{ name: "robo invite", description: "Generate a Discord bot invite link", kind: "command", href: "./intents-permissions" },
+		{ name: "robo build --force", description: "Force re-register Discord commands", kind: "extends", href: "./command-registration" },
+		{ name: "robo dev --force", description: "Force re-register Discord commands", kind: "extends", href: "./command-registration" }
+	]}
 />
 
 The core Discord plugin for Robo.js. It manages the Discord.js client lifecycle, routes slash commands and events through the file system, handles context menus and middleware, auto-defers interactions with Sage mode, infers gateway intents, aggregates permissions, and registers commands with Discord's API.
@@ -51,6 +56,14 @@ DISCORD_CLIENT_ID="your-client-id"
 ## Quick start
 
 Create a file at `src/commands/ping.ts` and export a default function:
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <File name="ping.ts" note="/ping" />
+    </Folder>
+  </Folder>
+</Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">

@@ -51,6 +51,25 @@ npm run dev
 - Auto-generated client
 - Database migrations
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="commands" defaultOpen>
+      <Folder name="user" defaultOpen>
+        <File name="create.ts" note="/user create" />
+        <File name="fetch.ts" note="/user fetch" />
+      </Folder>
+    </Folder>
+    <Folder name="events" defaultOpen>
+      <File name="_start.ts" />
+      <File name="_stop.ts" />
+    </Folder>
+  </Folder>
+  <Folder name="prisma" defaultOpen disabled>
+    <File name="schema.prisma" note="Database schema" />
+  </Folder>
+  <File name=".env" note="Database URL" />
+</Files>
+
 ## Schema Example
 
 ```prisma title="prisma/schema.prisma"

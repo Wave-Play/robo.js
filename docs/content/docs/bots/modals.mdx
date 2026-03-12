@@ -92,6 +92,16 @@ Additional methods for text inputs:
 
 Listen for modal submissions with an `interactionCreate` event handler using `isModalSubmit()`. Retrieve field values with `fields.getTextInputValue()`.
 
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="events" defaultOpen>
+      <Folder name="interactionCreate" defaultOpen>
+        <File name="feedback-submit.ts" note="Modal submission handler" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/events/interactionCreate/feedback-submit.ts"

@@ -9,15 +9,18 @@ Sync middleware intercepts state updates and RPC calls at the directory level. P
 
 Middleware applies to all handlers within its directory and subdirectories.
 
-```
-src/sync/
-  middleware.ts              -> applies to ALL sync operations
-  game/
-    middleware.ts            -> applies to game/* operations
-    [roomId]/
-      middleware.ts          -> applies to game/[roomId]/* operations
-      state.ts
-```
+<Files>
+  <Folder name="src/sync" defaultOpen disabled>
+    <File name="middleware.ts" note="Applies to ALL sync operations" />
+    <Folder name="game" defaultOpen>
+      <File name="middleware.ts" note="Applies to game/* operations" />
+      <Folder name="[roomId]" defaultOpen>
+        <File name="middleware.ts" note="Applies to game/[roomId]/*" />
+        <File name="state.ts" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
 ## Exports
 

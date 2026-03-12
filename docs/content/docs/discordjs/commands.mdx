@@ -7,15 +7,16 @@ Slash commands are defined by creating files in the `src/commands/` directory. T
 
 ## File structure
 
-```
-src/
-└── commands/
-    ├── ping.ts          → /ping
-    ├── ban.ts           → /ban
-    └── settings/
-        ├── view.ts      → /settings view
-        └── update.ts    → /settings update
-```
+<Files>
+  <Folder name="src/commands" defaultOpen disabled>
+    <File name="ping.ts" note="/ping" />
+    <File name="ban.ts" note="/ban" />
+    <Folder name="settings" defaultOpen>
+      <File name="view.ts" note="/settings view" />
+      <File name="update.ts" note="/settings update" />
+    </Folder>
+  </Folder>
+</Files>
 
 ## Handler signature
 
@@ -303,24 +304,30 @@ Nest directories to create subcommands. Two levels of nesting creates subcommand
 
 ### Subcommands (2-level)
 
-```
-src/commands/
-└── settings/
-    ├── view.ts       → /settings view
-    └── update.ts     → /settings update
-```
+<Files>
+  <Folder name="src/commands" defaultOpen disabled>
+    <Folder name="settings" defaultOpen>
+      <File name="view.ts" note="/settings view" />
+      <File name="update.ts" note="/settings update" />
+    </Folder>
+  </Folder>
+</Files>
 
 ### Subcommand groups (3-level)
 
-```
-src/commands/
-└── admin/
-    ├── user/
-    │   ├── ban.ts    → /admin user ban
-    │   └── kick.ts   → /admin user kick
-    └── server/
-        └── lock.ts   → /admin server lock
-```
+<Files>
+  <Folder name="src/commands" defaultOpen disabled>
+    <Folder name="admin" defaultOpen>
+      <Folder name="user" defaultOpen>
+        <File name="ban.ts" note="/admin user ban" />
+        <File name="kick.ts" note="/admin user kick" />
+      </Folder>
+      <Folder name="server" defaultOpen>
+        <File name="lock.ts" note="/admin server lock" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
 
 <Callout type="warn">
 Discord allows a maximum of 3 levels: command, subcommand group, and subcommand. You cannot nest deeper than this.
