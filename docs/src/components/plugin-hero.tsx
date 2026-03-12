@@ -11,7 +11,20 @@ interface CompatPlugin {
 	description?: string
 }
 
-interface PluginHeroProps {
+interface CliEntry {
+	name: string
+	description?: string
+	href?: string
+	kind?: "command" | "extends"
+}
+
+interface TerminalEntry {
+	name: string
+	description?: string
+	href?: string
+}
+
+export interface PluginHeroProps {
 	name: string
 	description: string
 	icon?: React.ReactNode
@@ -21,6 +34,11 @@ interface PluginHeroProps {
 	platforms?: ("Bots" | "Activities" | "Web")[]
 	requires?: CompatPlugin[]
 	optional?: CompatPlugin[]
+	cli?: CliEntry[]
+	terminal?: TerminalEntry[]
+	initialVersion?: string | null
+	initialUnpackedSize?: number | null
+	initialBundleSize?: BundleData | null
 }
 
 interface NpmData {
@@ -28,75 +46,31 @@ interface NpmData {
 	unpackedSize?: number
 }
 
-interface BundleData {
+export interface BundleData {
 	gzip: number
 	raw: number
 }
 
-// Module-level caches shared across all PluginHero instances
-const npmCache = new Map<string, { data: NpmData; fetchedAt: number }>()
-const bundleCache = new Map<string, { data: BundleData; fetchedAt: number }>()
-const CACHE_TTL = 60 * 60 * 1000 // 1 hour
-const inflightNpmRequests = new Map<string, Promise<NpmData | null>>()
-const inflightBundleRequests = new Map<string, Promise<BundleData | null>>()
-
 async function fetchNpmData(packageName: string): Promise<NpmData | null> {
-	const cached = npmCache.get(packageName)
-	if (cached && Date.now() - cached.fetchedAt < CACHE_TTL) {
-		return cached.data
+	try {
+		const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`)
+		if (!res.ok) return null
+		const json = await res.json()
+		return { version: json.version, unpackedSize: json.dist?.unpackedSize }
+	} catch {
+		return null
 	}
-
-	const inflight = inflightNpmRequests.get(packageName)
-	if (inflight) return inflight
-
-	const request = (async () => {
-		try {
-			const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`)
-			if (!res.ok) return null
-			const json = await res.json()
-			const data: NpmData = {
-				version: json.version,
-				unpackedSize: json.dist?.unpackedSize,
-			}
-			npmCache.set(packageName, { data, fetchedAt: Date.now() })
-			return data
-		} catch {
-			return null
-		} finally {
-			inflightNpmRequests.delete(packageName)
-		}
-	})()
-
-	inflightNpmRequests.set(packageName, request)
-	return request
 }
 
 async function fetchBundleSize(packageName: string): Promise<BundleData | null> {
-	const cached = bundleCache.get(packageName)
-	if (cached && Date.now() - cached.fetchedAt < CACHE_TTL) {
-		return cached.data
+	try {
+		const res = await fetch(`https://bundlephobia.com/api/size?package=${encodeURIComponent(packageName)}`)
+		if (!res.ok) return null
+		const json = await res.json()
+		return { gzip: json.gzip, raw: json.size }
+	} catch {
+		return null
 	}
-
-	const inflight = inflightBundleRequests.get(packageName)
-	if (inflight) return inflight
-
-	const request = (async () => {
-		try {
-			const res = await fetch(`https://bundlephobia.com/api/size?package=${encodeURIComponent(packageName)}`)
-			if (!res.ok) return null
-			const json = await res.json()
-			const data: BundleData = { gzip: json.gzip, raw: json.size }
-			bundleCache.set(packageName, { data, fetchedAt: Date.now() })
-			return data
-		} catch {
-			return null
-		} finally {
-			inflightBundleRequests.delete(packageName)
-		}
-	})()
-
-	inflightBundleRequests.set(packageName, request)
-	return request
 }
 
 function formatBytes(bytes: number): string {
@@ -183,6 +157,13 @@ const GlobeSmallIcon = () => (
 	</svg>
 )
 
+const TerminalIcon = ({ size = 12 }: { size?: number }) => (
+	<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
+		<polyline points="4 17 10 11 4 5" />
+		<line x1="12" x2="20" y1="19" y2="19" />
+	</svg>
+)
+
 const platformIcons: Record<string, React.ReactNode> = {
 	Bots: <BotIcon />,
 	Activities: <GamepadIcon />,
@@ -195,13 +176,15 @@ const platformLabels: Record<string, string> = {
 	Web: "Web",
 }
 
-export function PluginHero({ name, description, icon, github, npm, deprecated, platforms, requires, optional }: PluginHeroProps) {
+export function PluginHero({ name, description, icon, github, npm, deprecated, platforms, requires, optional, cli, terminal, initialVersion, initialUnpackedSize, initialBundleSize }: PluginHeroProps) {
 	const [copied, setCopied] = useState(false)
 	const [preview, setPreview] = useState(false)
-	const [version, setVersion] = useState<string | null>(null)
-	const [unpackedSize, setUnpackedSize] = useState<number | null>(null)
-	const [bundleSize, setBundleSize] = useState<BundleData | null>(null)
+	const [version, setVersion] = useState<string | null>(initialVersion ?? null)
+	const [unpackedSize, setUnpackedSize] = useState<number | null>(initialUnpackedSize ?? null)
+	const [bundleSize, setBundleSize] = useState<BundleData | null>(initialBundleSize ?? null)
 	const [compatOpen, setCompatOpen] = useState(false)
+	const [cliOpen, setCliOpen] = useState(false)
+	const [terminalOpen, setTerminalOpen] = useState(false)
 	const iconRef = useRef<{ startAnimation: () => void; stopAnimation: () => void } | null>(null)
 	const cardRef = useRef<HTMLDivElement>(null)
 
@@ -216,6 +199,7 @@ export function PluginHero({ name, description, icon, github, npm, deprecated, p
 	const activeCmd = preview ? previewCmd : installCmd
 
 	useEffect(() => {
+		if (initialVersion !== undefined) return
 		fetchNpmData(name).then((data) => {
 			if (data) {
 				setVersion(data.version)
@@ -223,7 +207,7 @@ export function PluginHero({ name, description, icon, github, npm, deprecated, p
 			}
 		})
 		fetchBundleSize(name).then(setBundleSize)
-	}, [name])
+	}, [name, initialVersion])
 
 	useEffect(() => {
 		const el = cardRef.current
@@ -314,12 +298,6 @@ export function PluginHero({ name, description, icon, github, npm, deprecated, p
 								>
 									<Badge variant="secondary">{bundleSize ? formatBytes(bundleSize.gzip) : "..."} Bundle Size</Badge>
 								</a>
-								{platforms && platforms.map((p) => (
-									<Badge key={p} variant="secondary" className="gap-1">
-										{platformIcons[p]}
-										{platformLabels[p]}
-									</Badge>
-								))}
 								{deprecated && <Badge variant="destructive">Deprecated</Badge>}
 							</div>
 
@@ -384,6 +362,89 @@ export function PluginHero({ name, description, icon, github, npm, deprecated, p
 													)}
 												</a>
 											))}
+										</div>
+									)}
+								</div>
+							)}
+
+							{/* CLI extensions collapsible */}
+							{cli && cli.length > 0 && (
+								<div className="w-full">
+									<button
+										onClick={() => setCliOpen((o) => !o)}
+										className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+									>
+										<TerminalIcon />
+										Extends CLI with {cli.length} command{cli.length !== 1 ? "s" : ""}
+										<ChevronIcon open={cliOpen} />
+									</button>
+									{cliOpen && (
+										<div className="mt-2 flex flex-col gap-1">
+											{cli.map((entry) => {
+												const inner = (
+													<>
+														<span className="text-muted-foreground/40 text-[11px]">{"\u25C6"}</span>
+														<span className="text-xs font-mono text-foreground group-hover:text-primary transition-colors">
+															{entry.name}
+														</span>
+														{entry.kind === "extends" && (
+															<span className="text-[10px] text-muted-foreground/60">extends</span>
+														)}
+														{entry.description && (
+															<span className="text-xs text-muted-foreground">{entry.description}</span>
+														)}
+													</>
+												)
+												return entry.href ? (
+													<a key={entry.name} href={entry.href} className="flex items-center gap-1.5 no-underline group">
+														{inner}
+													</a>
+												) : (
+													<div key={entry.name} className="flex items-center gap-1.5 group">
+														{inner}
+													</div>
+												)
+											})}
+										</div>
+									)}
+								</div>
+							)}
+
+							{/* Terminal extensions collapsible */}
+							{terminal && terminal.length > 0 && (
+								<div className="w-full">
+									<button
+										onClick={() => setTerminalOpen((o) => !o)}
+										className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+									>
+										<TerminalIcon />
+										Extends Terminal with {terminal.length} command{terminal.length !== 1 ? "s" : ""}
+										<ChevronIcon open={terminalOpen} />
+									</button>
+									{terminalOpen && (
+										<div className="mt-2 flex flex-col gap-1">
+											{terminal.map((entry) => {
+												const inner = (
+													<>
+														<span className="text-muted-foreground/40 text-[11px]">{"\u25C6"}</span>
+														<span className="text-xs font-mono text-foreground group-hover:text-primary transition-colors">
+															{entry.name}
+														</span>
+														{entry.description && (
+															<span className="text-xs text-muted-foreground">{entry.description}</span>
+														)}
+													</>
+												)
+												return entry.href ? (
+													<a key={entry.name} href={entry.href} className="flex items-center gap-1.5 no-underline group">
+														{inner}
+													</a>
+												) : (
+													<div key={entry.name} className="flex items-center gap-1.5 group">
+														{inner}
+													</div>
+												)
+											})}
 										</div>
 									)}
 								</div>
