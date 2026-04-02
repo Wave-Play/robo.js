@@ -74,6 +74,16 @@ Set intents explicitly via `clientOptions.intents`:
   </Tab>
 </Tabs>
 
+### Prefix command intents
+
+Prefix commands require three specific intents to function: `GuildMessages`, `DirectMessages`, and `MessageContent`. These are automatically inferred at build time when prefix command files are detected in `src/prefixCommands/`.
+
+At runtime, `checkPrefixIntents()` validates that all three intents are configured and logs warnings for any that are missing.
+
+<Callout type="warn">
+`MessageContent` is a **privileged intent** that must be enabled in the [Discord Developer Portal](https://discord.com/developers/applications). Without it, your bot cannot read message content and prefix commands will not work.
+</Callout>
+
 ### Privileged intents
 
 Some intents require explicit approval in the Discord Developer Portal:
@@ -82,7 +92,7 @@ Some intents require explicit approval in the Discord Developer Portal:
 |--------|--------------|--------|
 | `GuildMembers` | Server Members Intent | `guildMemberAdd`, `guildMemberUpdate`, `guildMemberRemove`, `threadMembersUpdate` |
 | `GuildPresences` | Presence Intent | `presenceUpdate` |
-| `MessageContent` | Message Content Intent | Access to message content in `messageCreate`, `messageUpdate` |
+| `MessageContent` | Message Content Intent | Access to message content in `messageCreate`, `messageUpdate`. Required for [prefix commands](./prefix-commands). |
 
 <Callout type="warn">
 Privileged intents must be enabled in both your code and the [Discord Developer Portal](https://discord.com/developers/applications). Bots in 100+ servers also need Discord approval.
@@ -229,6 +239,17 @@ import { checkIntents } from '@robojs/discordjs'
 // events is a record mapping event names to their handler arrays
 checkIntents(client, events)
 // Logs warnings for any events whose required intents are not configured
+```
+
+#### `checkPrefixIntents(client)`
+
+Check that the client has the required intents for prefix commands (`GuildMessages`, `DirectMessages`, `MessageContent`). Called automatically at startup when prefix commands are registered, but can also be invoked manually:
+
+```ts
+import { checkPrefixIntents } from '@robojs/discordjs'
+
+checkPrefixIntents(client)
+// Logs warnings for any missing prefix command intents
 ```
 
 #### `REQUIRED_INTENTS`

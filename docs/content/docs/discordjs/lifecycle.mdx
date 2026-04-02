@@ -43,10 +43,10 @@ Runs during Robo startup, after the plugin's prepare phase. Use it for initial d
   <Tab value="TypeScript">
     ```ts title="src/robo/start.ts"
     import { getClient } from '@robojs/discordjs'
-    import { logger } from 'robo.js/logger.js'
+    import type { StartContext } from 'robo.js'
 
-    export default async () => {
-    	logger.info('Bot is starting up...')
+    export default async (context: StartContext) => {
+    	context.logger.info('Bot is starting up...')
 
     	// Access the Discord client (created during prepare)
     	const client = getClient()
@@ -60,10 +60,9 @@ Runs during Robo startup, after the plugin's prepare phase. Use it for initial d
   <Tab value="JavaScript">
     ```js title="src/robo/start.js"
     import { getClient } from '@robojs/discordjs'
-    import { logger } from 'robo.js/logger.js'
 
-    export default async () => {
-    	logger.info('Bot is starting up...')
+    export default async (context) => {
+    	context.logger.info('Bot is starting up...')
 
     	const client = getClient()
     	client.user?.setPresence({ status: 'dnd' })
@@ -81,10 +80,10 @@ Runs during shutdown. Use it for cleanup, disconnecting external services, or sa
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="src/robo/stop.ts"
-    import { logger } from 'robo.js/logger.js'
+    import type { StopContext } from 'robo.js'
 
-    export default async () => {
-    	logger.info('Bot is shutting down...')
+    export default async (context: StopContext) => {
+    	context.logger.info(`Shutting down (reason: ${context.reason})...`)
     	await saveState()
     	await disconnectDatabase()
     }
@@ -92,16 +91,18 @@ Runs during shutdown. Use it for cleanup, disconnecting external services, or sa
   </Tab>
   <Tab value="JavaScript">
     ```js title="src/robo/stop.js"
-    import { logger } from 'robo.js/logger.js'
-
-    export default async () => {
-    	logger.info('Bot is shutting down...')
+    export default async (context) => {
+    	context.logger.info(`Shutting down (reason: ${context.reason})...`)
     	await saveState()
     	await disconnectDatabase()
     }
     ```
   </Tab>
 </Tabs>
+
+<Callout type="info">
+These are just two of six lifecycle hooks. Robo.js also supports `init.ts`, `prepare.ts`, `error.ts`, and `hmr.ts`. See **[Lifecycle Hooks](/docs/framework/core/lifecycle)** for the complete reference.
+</Callout>
 
 ## The `ready` event
 

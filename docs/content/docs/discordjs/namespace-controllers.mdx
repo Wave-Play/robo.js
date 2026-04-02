@@ -10,7 +10,7 @@ Namespace controllers provide programmatic access to all registered handlers. Us
 Import the controllers directly from the plugin:
 
 ```ts
-import { commands, events, context, middleware } from '@robojs/discordjs'
+import { commands, events, context, middleware, prefixCommands } from '@robojs/discordjs'
 ```
 
 These are ready-to-use instances that work with the portal's handler registry.
@@ -147,6 +147,45 @@ Each entry in the chain contains:
   }}
 />
 
+## Prefix commands
+
+The `prefixCommands` controller provides access to all registered prefix command handlers.
+
+### `prefixCommands.list()`
+
+Returns an array of all prefix command keys:
+
+```ts
+import { prefixCommands } from '@robojs/discordjs'
+
+const allPrefixCommands = prefixCommands.list()
+// ['ping', 'ban', 'admin ban', 'admin kick']
+```
+
+### `prefixCommands.get(name)`
+
+Retrieves a specific prefix command handler by name:
+
+```ts
+const handler = await prefixCommands.get('ping')
+if (handler) {
+	// handler is the default export function
+}
+```
+
+### `prefixCommands.execute(name, message, args?)`
+
+Execute a prefix command programmatically:
+
+```ts
+import type { Message } from 'discord.js'
+
+await prefixCommands.execute('ping', message)
+
+// With arguments
+await prefixCommands.execute('ban', message, ['@user', 'spam'])
+```
+
 ## Namespace vs per-handler controllers
 
 There are two levels of control:
@@ -169,6 +208,9 @@ const messageHandler = portal.discordjs.event('messageCreate')
 
 // Get a controller for a specific middleware
 const rateLimitController = portal.discordjs.middleware('rate-limit')
+
+// Get a controller for a specific prefix command
+const pingPrefixController = portal.discordjs.prefixCommand('ping')
 ```
 
 Each returns the corresponding controller interface documented below.
@@ -220,6 +262,18 @@ interface MiddlewareController {
 	setEnabled(value: boolean): void
 	getOrder(): number
 	setOrder(order: number): void
+}
+```
+
+### PrefixCommandController
+
+```ts
+interface PrefixCommandController {
+	isEnabled(): boolean
+	setEnabled(value: boolean): void
+	setServerOnly(serverIds: string | string[]): void
+	isEnabledForServer(serverId: string): boolean
+	getMetadata(): Record<string, unknown>
 }
 ```
 
@@ -303,4 +357,5 @@ await events.emit('messageCreate', syntheticMessage)
 	<Card href="./commands" title="Commands" description="Slash command routing and options." />
 	<Card href="./events" title="Events" description="Gateway event handlers." />
 	<Card href="./middleware" title="Middleware" description="Intercept and modify handler execution." />
+	<Card href="./prefix-commands" title="Prefix commands" description="Text-based command routing." />
 </Cards>

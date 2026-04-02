@@ -1,0 +1,467 @@
+---
+title: Prefix Commands
+description: Text-based command routing with configurable prefix, arguments, and cooldowns.
+---
+
+Prefix commands respond to messages starting with a configurable prefix (default `!`), using file-based routing in `src/prefixCommands/`.
+
+## File structure
+
+<Files>
+  <Folder name="src/prefixCommands" defaultOpen disabled>
+    <File name="ping.ts" note="!ping" />
+    <File name="ban.ts" note="!ban" />
+    <Folder name="admin" defaultOpen>
+      <File name="ban.ts" note="!admin ban" />
+      <File name="kick.ts" note="!admin kick" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Callout>
+Prefix commands support up to 3 levels of nesting. The separator between tokens is a space (e.g., `!admin ban`).
+</Callout>
+
+## Handler signature
+
+The default export receives the Discord.js `Message` and a `PrefixCommandArgs` object. Return a `string`, `MessageReplyOptions`, or `void`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/prefixCommands/ping.ts"
+    import type { PrefixCommandArgs } from '@robojs/discordjs'
+    import type { Message } from 'discord.js'
+
+    export default (message: Message, args: PrefixCommandArgs) => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/prefixCommands/ping.js"
+    export default (message, args) => {
+    	return 'Pong!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The return type (`PrefixCommandResult`) can be:
+- `string` -- replied as a text message via `message.reply()`
+- `MessageReplyOptions` -- replied with embeds, components, etc.
+- `void` -- you handle the reply yourself
+
+## Arguments
+
+The `args` parameter provides parsed arguments from the message content.
+
+<TypeTable
+  type={{
+    raw: { type: "string[]", description: "Space-split tokens after the command name. Respects quoted strings.", default: "[]" },
+    params: { type: "Record<string, string | undefined>", description: "Named parameters mapped from config.args by position.", default: "{}" },
+    content: { type: "string", description: "The full raw string after the command name.", default: "''" },
+  }}
+/>
+
+## Command config
+
+Export a `config` object to configure the command. All fields are optional.
+
+<TypeTable
+  type={{
+    description: { type: "string", description: "Description of the command.", default: "undefined" },
+    args: { type: "readonly PrefixCommandArg[]", description: "Named argument definitions for positional parsing.", default: "undefined" },
+    aliases: { type: "string[]", description: "Alternative names that trigger this command.", default: "undefined" },
+    cooldown: { type: "number", description: "Cooldown in milliseconds between uses (per guild + user + command).", default: "undefined" },
+    dmPermission: { type: "boolean", description: "Whether the command can be used in DMs.", default: "true" },
+    requiredPermissions: { type: "string | string[]", description: "Discord permissions required to use the command.", default: "undefined" },
+    sage: { type: "false | PrefixSageOptions", description: "Sage behavior overrides. Set to false to disable.", default: "undefined" },
+    disabled: { type: "boolean", description: "Whether the handler is disabled.", default: "undefined" },
+    serverOnly: { type: "string | string[]", description: "Restrict to specific server IDs.", default: "undefined" },
+    timeout: { type: "number", description: "Execution timeout in milliseconds.", default: "undefined" },
+  }}
+/>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/prefixCommands/ban.ts"
+    import type { PrefixCommandConfig, PrefixCommandArgs } from '@robojs/discordjs'
+    import type { Message } from 'discord.js'
+
+    export const config: PrefixCommandConfig = {
+    	description: 'Ban a user from the server',
+    	args: [
+    		{ name: 'user', description: 'The user to ban', required: true },
+    		{ name: 'reason', description: 'Reason for the ban' }
+    	],
+    	aliases: ['b'],
+    	cooldown: 10000,
+    	requiredPermissions: 'BanMembers'
+    }
+
+    export default (message: Message, args: PrefixCommandArgs) => {
+    	return `Banned ${args.params.user} for: ${args.params.reason ?? 'No reason provided'}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/prefixCommands/ban.js"
+    export const config = {
+    	description: 'Ban a user from the server',
+    	args: [
+    		{ name: 'user', description: 'The user to ban', required: true },
+    		{ name: 'reason', description: 'Reason for the ban' }
+    	],
+    	aliases: ['b'],
+    	cooldown: 10000,
+    	requiredPermissions: 'BanMembers'
+    }
+
+    export default (message, args) => {
+    	return `Banned ${args.params.user} for: ${args.params.reason ?? 'No reason provided'}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Named arguments
+
+Define named arguments with `config.args` to map positional tokens to named parameters.
+
+<TypeTable
+  type={{
+    name: { type: "string", description: "The argument name, used as the key in params.", default: "required" },
+    description: { type: "string", description: "Description of the argument.", default: "undefined" },
+    required: { type: "boolean", description: "Whether the argument is required.", default: "undefined" },
+  }}
+/>
+
+When a required argument is missing, the handler auto-replies with the missing argument names and a usage message showing `<required>` and `[optional]` placeholders:
+
+```
+Missing required argument(s): user
+Usage: `ban <user> [reason]`
+```
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/prefixCommands/kick.ts"
+    import type { PrefixCommandConfig, PrefixCommandArgs } from '@robojs/discordjs'
+    import type { Message } from 'discord.js'
+
+    export const config: PrefixCommandConfig = {
+    	args: [
+    		{ name: 'user', required: true },
+    		{ name: 'reason' }
+    	]
+    }
+
+    export default (message: Message, args: PrefixCommandArgs) => {
+    	// If "user" is missing, the handler never runs -- an auto-reply is sent instead
+    	return `Kicked ${args.params.user}`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/prefixCommands/kick.js"
+    export const config = {
+    	args: [
+    		{ name: 'user', required: true },
+    		{ name: 'reason' }
+    	]
+    }
+
+    export default (message, args) => {
+    	return `Kicked ${args.params.user}`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Quoted strings
+
+Both double-quoted and single-quoted strings in arguments are preserved as single tokens. For example:
+
+```
+!greet "John Doe" hello
+```
+
+Produces:
+
+```ts
+args.raw    // ['John Doe', 'hello']
+args.params // { name: 'John Doe', greeting: 'hello' }  (if args are configured)
+args.content // '"John Doe" hello'
+```
+
+## Aliases
+
+Use `config.aliases` to define alternative names for a command. Alias resolution is case-insensitive by default.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/prefixCommands/help.ts"
+    import type { PrefixCommandConfig } from '@robojs/discordjs'
+    import type { Message } from 'discord.js'
+
+    export const config: PrefixCommandConfig = {
+    	description: 'Show help information',
+    	aliases: ['h', 'info', '?']
+    }
+
+    export default (message: Message) => {
+    	return 'Here is the help information!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/prefixCommands/help.js"
+    export const config = {
+    	description: 'Show help information',
+    	aliases: ['h', 'info', '?']
+    }
+
+    export default (message) => {
+    	return 'Here is the help information!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Cooldowns
+
+Cooldowns are tracked per guild + user + command combination. The cooldown timer only starts **after** successful execution -- if the handler throws an error, no cooldown is applied.
+
+When a user triggers a command while on cooldown, they receive an automatic reply:
+
+```
+Please wait Xs before using this command again.
+```
+
+```ts
+export const config = {
+	cooldown: 10000  // 10 seconds between uses
+}
+```
+
+## Permissions
+
+Use `requiredPermissions` to restrict a command to users with specific Discord permissions. Accepts a single permission string or an array.
+
+When a user lacks the required permissions, the command auto-replies with the list of missing permissions.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/prefixCommands/purge.ts"
+    import type { PrefixCommandConfig, PrefixCommandArgs } from '@robojs/discordjs'
+    import type { Message } from 'discord.js'
+
+    export const config: PrefixCommandConfig = {
+    	requiredPermissions: ['ManageMessages', 'ManageChannels']
+    }
+
+    export default (message: Message, args: PrefixCommandArgs) => {
+    	return 'Messages purged!'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/prefixCommands/purge.js"
+    export const config = {
+    	requiredPermissions: ['ManageMessages', 'ManageChannels']
+    }
+
+    export default (message, args) => {
+    	return 'Messages purged!'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## DM support
+
+Prefix commands are allowed in DMs by default. Set `dmPermission: false` to silently ignore DM messages for a command.
+
+```ts
+export const config = {
+	dmPermission: false  // this command only works in servers
+}
+```
+
+## Subcommands
+
+Nested directories create subcommands. The router uses longest-match-first resolution, checking up to 3 space-separated tokens.
+
+<Files>
+  <Folder name="src/prefixCommands" defaultOpen disabled>
+    <File name="mod.ts" note="!mod" />
+    <Folder name="mod" defaultOpen>
+      <File name="ban.ts" note="!mod ban" />
+      <File name="kick.ts" note="!mod kick" />
+      <Folder name="config" defaultOpen>
+        <File name="set.ts" note="!mod config set" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+When a user types `!mod ban @user`, the router first tries to match `mod/ban`, then falls back to `mod` if no match is found. This means you can have both a base command and subcommands for the same prefix.
+
+## Sage mode
+
+Prefix commands have their own Sage mode, separate from slash command Sage. Export `config.sage` to configure it.
+
+<TypeTable
+  type={{
+    typing: { type: "boolean", description: "Show a typing indicator while the command executes.", default: "undefined" },
+    errorReplies: { type: "boolean", description: "Show error replies in development mode.", default: "true" },
+  }}
+/>
+
+<Callout>
+Unlike slash command Sage, prefix command Sage does **not** auto-defer interactions. Instead, when `typing` is enabled, it calls `message.channel.sendTyping()` to show a typing indicator. Error replies are only shown in development mode when `errorReplies` is true.
+</Callout>
+
+Set `sage: false` to disable both typing and error replies:
+
+```ts
+export const config = {
+	sage: false
+}
+```
+
+## Plugin configuration
+
+Configure prefix command behavior globally in your plugin config.
+
+<TypeTable
+  type={{
+    value: { type: "string | ((guildId: string | null) => string | Promise<string>)", description: "The prefix string or a function returning a prefix per guild.", default: "'!'" },
+    caseSensitive: { type: "boolean", description: "Whether command matching is case-sensitive.", default: "false" },
+    ignoreBots: { type: "boolean", description: "Whether to ignore messages from bots.", default: "true" },
+    mentionAsPrefix: { type: "boolean", description: "Whether mentioning the bot can be used as a prefix.", default: "false" },
+  }}
+/>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	prefix: {
+    		value: '?',
+    		caseSensitive: false,
+    		ignoreBots: true
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    export default {
+    	prefix: {
+    		value: '?',
+    		caseSensitive: false,
+    		ignoreBots: true
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Dynamic prefix
+
+Use a function to return different prefixes per guild. The function receives the guild ID (or `null` for DMs).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/discordjs.ts"
+    import { Flashcore } from 'robo.js'
+    import type { DiscordConfig } from '@robojs/discordjs'
+
+    export default {
+    	prefix: {
+    		value: async (guildId: string | null) => {
+    			if (!guildId) return '!'
+    			return (await Flashcore.get<string>(`prefix:${guildId}`)) ?? '!'
+    		}
+    	}
+    } satisfies DiscordConfig
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/discordjs.mjs"
+    import { Flashcore } from 'robo.js'
+
+    export default {
+    	prefix: {
+    		value: async (guildId) => {
+    			if (!guildId) return '!'
+    			return (await Flashcore.get(`prefix:${guildId}`)) ?? '!'
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Bot mention as prefix
+
+Allow users to trigger commands by mentioning the bot instead of typing a prefix:
+
+```ts
+export default {
+	prefix: {
+		mentionAsPrefix: true
+	}
+}
+```
+
+With this enabled, both `!ping` and `@Bot ping` will trigger the `ping` command.
+
+## Intent requirements
+
+<Callout type="warn">
+Prefix commands require the `GuildMessages`, `DirectMessages`, and `MessageContent` gateway intents. `MessageContent` is a **privileged intent** that must be enabled in the [Discord Developer Portal](https://discord.com/developers/applications). These intents are auto-inferred at build time when prefix command files are detected.
+</Callout>
+
+See [Intents & permissions](./intents-permissions) for details on intent configuration.
+
+## Middleware integration
+
+Prefix commands pass through the same middleware chain as slash commands. In middleware, the `record.type` for prefix commands is `'discordjs:prefixCommands'`.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/middleware/logger.ts"
+    import type { MiddlewareData } from '@robojs/discordjs'
+
+    export default (data: MiddlewareData) => {
+    	if (data.record.type === 'discordjs:prefixCommands') {
+    		console.log(`Prefix command: ${data.record.key}`)
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/middleware/logger.js"
+    export default (data) => {
+    	if (data.record.type === 'discordjs:prefixCommands') {
+    		console.log(`Prefix command: ${data.record.key}`)
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+See [Middleware](./middleware) for more on how the middleware chain works.
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Slash command routing and options." />
+	<Card href="./configuration" title="Configuration" description="All plugin options and environment variables." />
+	<Card href="./namespace-controllers" title="Namespace controllers" description="Programmatic access to handlers." />
+	<Card href="./intents-permissions" title="Intents & permissions" description="Intent inference and permission aggregation." />
+</Cards>

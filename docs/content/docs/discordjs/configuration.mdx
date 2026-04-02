@@ -47,6 +47,7 @@ The Discord plugin is configured through a file at `config/plugins/robojs/discor
     autoRegisterCommands: { type: "boolean | string[]", description: "Whether to register commands with Discord API during builds. Pass an array of mode names to restrict (e.g., ['production']).", default: "true" },
     clientOptions: { type: "ClientOptions", description: "Discord.js Client constructor options (intents, partials, etc.).", default: "undefined" },
     defaults: { type: "CommandDefaults", description: "Default configuration applied to all commands and context menus.", default: "undefined" },
+    prefix: { type: "PrefixConfig", description: "Prefix command configuration. Controls the prefix string, case sensitivity, and bot mention support.", default: "{ value: '!', caseSensitive: false, ignoreBots: true, mentionAsPrefix: false }" },
     sage: { type: "false | SageOptions", description: "Sage auto-defer/reply configuration. Set to false to disable entirely.", default: "{ defer: true, deferBuffer: 250, ephemeral: false, errorReplies: true }" },
     testServers: { type: "string[]", description: "Guild IDs to register commands as guild commands instead of global.", default: "undefined" },
     timeouts: { type: "TimeoutConfig", description: "Timeout configuration for various operations.", default: "See TimeoutConfig defaults" },
@@ -107,6 +108,19 @@ Set defaults applied to all commands and context menus. Individual commands can 
   }}
 />
 
+### Prefix configuration
+
+Configure how prefix commands are triggered. See [Prefix Commands](./prefix-commands) for full documentation.
+
+<TypeTable
+  type={{
+    value: { type: "string | ((guildId: string | null) => string | Promise<string>)", description: "Prefix string or async function returning prefix per guild.", default: "'!'" },
+    caseSensitive: { type: "boolean", description: "Whether command matching is case-sensitive.", default: "false" },
+    ignoreBots: { type: "boolean", description: "Whether to ignore messages from bots.", default: "true" },
+    mentionAsPrefix: { type: "boolean", description: "Whether bot mentions can be used as prefix.", default: "false" },
+  }}
+/>
+
 ### Timeout configuration
 
 <TypeTable
@@ -161,6 +175,10 @@ DISCORD_CLIENT_ID="your-client-id"
     		integrationTypes: ['GuildInstall'],
     		defaultMemberPermissions: undefined
     	},
+    	prefix: {
+    		value: '!',
+    		caseSensitive: false
+    	},
     	sage: {
     		defer: true,
     		deferBuffer: 250,
@@ -194,6 +212,10 @@ DISCORD_CLIENT_ID="your-client-id"
     		contexts: ['Guild', 'BotDM'],
     		integrationTypes: ['GuildInstall'],
     		defaultMemberPermissions: undefined
+    	},
+    	prefix: {
+    		value: '!',
+    		caseSensitive: false
     	},
     	sage: {
     		defer: true,

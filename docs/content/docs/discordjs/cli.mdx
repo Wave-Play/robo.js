@@ -1,0 +1,105 @@
+---
+title: CLI
+description: Terminal commands for inspecting bot state during development.
+---
+
+The Discord plugin extends the `robo dev` interactive terminal with `/discord` commands. These give you instant visibility into bot state, registered handlers, and intent configuration without leaving your dev session.
+
+## Terminal Commands
+
+### `/discord`
+
+Show available Discord subcommands:
+
+```
+/discord
+```
+
+### `/discord status`
+
+Display a bot status dashboard with connection info and handler counts:
+
+```
+/discord status
+```
+
+Shows:
+- Bot username and online status
+- Guild count and WebSocket ping
+- Uptime since connection
+- Registered command, event, context menu, and middleware counts
+
+### `/discord commands`
+
+List all registered slash commands:
+
+```
+/discord commands
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-p, --page <number>` | Page number | `1` |
+| `-n, --per-page <number>` | Items per page | `15` |
+
+```
+# Show page 2
+/discord commands -p 2
+
+# Show 5 commands per page
+/discord commands -n 5
+```
+
+Displays command name, description, option count, and plugin source. Subcommands are grouped under their parent command.
+
+### `/discord events`
+
+List all registered event listeners:
+
+```
+/discord events
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-p, --page <number>` | Page number | `1` |
+| `-n, --per-page <number>` | Items per page | `15` |
+
+Shows event names grouped by key, handler count per event, and required gateway intents.
+
+### `/discord intents`
+
+Analyze gateway intent configuration:
+
+```
+/discord intents
+```
+
+Displays:
+- Currently enabled intents
+- Events that require each intent
+- Warnings for missing intents needed by registered events
+
+Useful for debugging events that aren't firing due to missing intents.
+
+### `/discord guilds`
+
+List all guilds (servers) the bot is connected to:
+
+```
+/discord guilds
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-p, --page <number>` | Page number | `1` |
+| `-n, --per-page <number>` | Items per page | `15` |
+
+Shows guild name, ID, member count, and owner status.
+
+## Next steps
+
+<Cards>
+	<Card title="Configuration" href="./configuration" description="Plugin options and client settings." />
+	<Card title="Intents & Permissions" href="./intents-permissions" description="Configure gateway intents and bot permissions." />
+</Cards>

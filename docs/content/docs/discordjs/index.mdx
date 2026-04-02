@@ -15,6 +15,13 @@ description: Discord.js integration for slash commands, events, context menus, m
 		{ name: "robo build --force", description: "Force re-register Discord commands", kind: "extends", href: "./command-registration" },
 		{ name: "robo dev --force", description: "Force re-register Discord commands", kind: "extends", href: "./command-registration" }
 	]}
+	terminal={[
+		{ name: "/discord status", description: "Show bot status dashboard", href: "./cli" },
+		{ name: "/discord commands", description: "List registered slash commands", href: "./cli" },
+		{ name: "/discord events", description: "List event listeners", href: "./cli" },
+		{ name: "/discord intents", description: "Analyze intent configuration", href: "./cli" },
+		{ name: "/discord guilds", description: "List connected guilds", href: "./cli" }
+	]}
 />
 
 The core Discord plugin for Robo.js. It manages the Discord.js client lifecycle, routes slash commands and events through the file system, handles context menus and middleware, auto-defers interactions with Sage mode, infers gateway intents, aggregates permissions, and registers commands with Discord's API.
