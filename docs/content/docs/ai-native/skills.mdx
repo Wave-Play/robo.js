@@ -1,0 +1,194 @@
+---
+title: Skills
+description: Skills are instruction sets that give AI coding tools deep knowledge of your Robo.js project, its plugins, and how to work with them.
+---
+
+Skills are `SKILL.md` files shipped inside plugin packages. They contain structured instructions that teach AI coding tools how your project works — its conventions, APIs, code generation patterns, and debugging workflows.
+
+When you install a skill, the `SKILL.md` file (and any reference files) are copied into your AI tool's skills directory. The tool can then use that knowledge when generating code, answering questions, or debugging issues.
+
+## Directory structure
+
+Each skill lives in its own subdirectory under a plugin's `skills/` folder:
+
+<Files>
+  <Folder name="skills" defaultOpen disabled>
+    <Folder name="robo-core" defaultOpen>
+      <File name="SKILL.md" note="Main instruction file" />
+    </Folder>
+    <Folder name="robo-debug" defaultOpen>
+      <File name="SKILL.md" note="Debugging workflow" />
+    </Folder>
+  </Folder>
+</Files>
+
+Skills can also include reference files in a `references/` subdirectory for additional context that the main `SKILL.md` can point to.
+
+## SKILL.md anatomy
+
+Every `SKILL.md` starts with YAML frontmatter that describes the skill:
+
+```yaml
+---
+name: robo-core
+description: "Reference guide for the Robo.js core framework — lifecycle hooks, Flashcore, State, Logger, Env, Portal, Manifest, HMR, Mode, Config, and plugin utilities."
+user-invocable: true
+argument-hint: "<question about Robo.js core APIs>"
+---
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Unique identifier for the skill (matches the directory name) |
+| `description` | Yes | What the skill covers, used in listings and tool prompts |
+| `user-invocable` | No | When `true`, the user can invoke this skill directly (e.g., `/robo-core`) |
+| `argument-hint` | No | Hint shown to the user for what arguments the skill accepts |
+
+The body of the file contains the actual instructions in Markdown. This is what the AI tool reads when the skill is activated. Skills typically include code patterns, API references, common mistakes, and step-by-step workflows.
+
+## Installing skills
+
+<Steps>
+### List available skills
+
+```bash
+npx robo skills list
+```
+
+This shows all installed and available skills from your project's plugins.
+
+### Install from all plugins
+
+```bash
+npx robo skills install --all
+```
+
+The CLI scans every registered plugin (plus `robo.js` core) for skills, auto-detects your AI tool, and copies the skill files to the correct directory.
+
+### Verify installation
+
+```bash
+npx robo skills list
+```
+
+Installed skills appear with a checkmark.
+</Steps>
+
+You can also install skills from a specific plugin:
+
+```bash
+npx robo skills install @robojs/discordjs
+```
+
+## Where skills are installed
+
+Skills are copied to different directories depending on your AI tool. The CLI auto-detects which tools you use by checking for marker files in your project:
+
+| AI Tool | Skills directory | Detection markers |
+|---------|-----------------|-------------------|
+| Claude Code | `.claude/skills/` | `.claude`, `CLAUDE.md` |
+| GitHub Copilot | `.github/skills/` | `.github/copilot-instructions.md`, `.github/skills` |
+| Cursor / Codex / Gemini | `.agents/skills/` | `.cursor`, `.cursorrules`, `.codex`, `.gemini`, `GEMINI.md` |
+| Windsurf | `.windsurf/skills/` | `.windsurf`, `.windsurfrules` |
+
+If no tool is detected, the CLI prompts you to select which tool(s) you use. Your selection is saved in the manifest for future runs.
+
+You can also override detection with the `ROBO_SKILL_TARGETS` environment variable:
+
+```bash
+ROBO_SKILL_TARGETS=.claude/skills,.agents/skills npx robo skills install --all
+```
+
+Set `ROBO_SKILL_TARGETS=none` to disable skill installation entirely.
+
+## CLI commands
+
+| Command | Description |
+|---------|-------------|
+| `npx robo skills` | List installed and available skills (alias for `skills list`) |
+| `npx robo skills list` | List installed and available skills |
+| `npx robo skills install --all` | Install skills from all registered plugins |
+| `npx robo skills install <plugin>` | Install skills from a specific plugin |
+| `npx robo skills remove <plugin>` | Remove skills installed from a plugin |
+| `npx robo skills update` | Update all installed skills from their source plugins |
+| `npx robo skills update <plugin>` | Update skills from a specific plugin |
+
+### Install options
+
+| Flag | Description |
+|------|-------------|
+| `--all`, `-a` | Install from all registered plugins |
+| `--force`, `-f` | Overwrite skills already installed from a different plugin |
+| `--yes`, `-y` | Auto-accept installation (skip confirmation prompts) |
+| `--silent`, `-s` | Suppress output |
+| `--verbose`, `-v` | Show debug-level information |
+
+## Shipped skills
+
+### robo-core
+
+Source: `robo.js`
+
+Complete reference for the Robo.js core framework. Covers lifecycle hooks (`init`, `prepare`, `start`, `stop`, `error`), build hooks, Flashcore persistent storage, State management, the Logger system with drains and forking, Env loading, Portal namespace access, Manifest queries, HMR subscriptions, Mode utilities, Config loading, and hook priority control.
+
+### robo-debug
+
+Source: `robo.js`
+
+Structured debugging workflow using `robo inspect --json` and `robo logs --json`. Walks through inspecting project topology, checking for errors, filtering by plugin/source, searching for patterns, combining filters, and cross-referencing results.
+
+### robo-plugin
+
+Source: `robo.js`
+
+Full guide to creating Robo.js plugins. Covers package structure, route definitions with `RouteConfig`, lifecycle hooks with typed contexts, seed files, terminal commands, CLI extensions, logging standards, build and publish workflow, and common mistakes.
+
+### robo-update
+
+Source: `robo.js`
+
+Migration assistant for upgrading Robo.js projects between versions. Detects the current version by scanning for v0.10 patterns, generates a categorized migration checklist (critical, recommended, optional), and walks through applying changes in safe order with user confirmation.
+
+### robo-discordjs
+
+Source: `@robojs/discordjs`
+
+Guide for building Discord apps with `@robojs/discordjs`. Covers file-based command routing, events, context menus, middleware, command configuration with `createCommandConfig`, Sage auto-defer, namespace controllers, and plugin configuration.
+
+### robo-server
+
+Source: `@robojs/server`
+
+Guide for building APIs with `@robojs/server`. Covers file-based routing, `define()` for typed endpoints with Zod, `RoboResponse` for error handling, `RoboRequest` fields, OpenAPI generation, CORS configuration, WebSocket support, testing utilities, and the `Server` facade.
+
+## Manifest tracking
+
+Installed skills are tracked in `.robo/.robo-skills.json`. This manifest records which skills are installed, which plugin they came from, the plugin version at install time, and which files were copied. The manifest is used by `robo skills update` and `robo skills remove` to manage skill lifecycle.
+
+<Callout type="info">
+The manifest is a framework-managed file. You generally do not need to edit it directly.
+</Callout>
+
+## Auto-install on plugin add
+
+When you install a plugin with `npx robo add`, any skills shipped by that plugin are offered for installation. This means new plugins can immediately provide AI tool context without a separate step.
+
+## Next steps
+
+<Cards>
+  <Card
+    href="./agents-md"
+    title="AGENTS.md"
+    description="Project-level context files for AI tools."
+  />
+  <Card
+    href="./creating-skills"
+    title="Creating Skills"
+    description="Ship skills with your own plugin."
+  />
+  <Card
+    href="./cli"
+    title="CLI for AI"
+    description="Structured JSON output for AI tool consumption."
+  />
+</Cards>

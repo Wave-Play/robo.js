@@ -1,0 +1,141 @@
+---
+title: Terminal Commands
+description: Terminal commands provide an interactive interface within the Robo.js development server, with built-in and plugin-provided commands.
+---
+
+When running `robo dev` or `robo start` in a TTY environment, Robo.js launches an interactive terminal. Type `/` followed by a command name to interact with your project at runtime — inspect state, manage data, check plugin status, and more.
+
+Terminal commands are available to both humans typing in the console and AI tools reasoning about your project's runtime state.
+
+## Built-in commands
+
+These commands are hardcoded into the interactive terminal and always available:
+
+| Command | Description |
+|---------|-------------|
+| `/help` | List all available commands |
+| `/clear` | Clear the log output |
+| `/output` | Toggle shell output drawer |
+| `/restart` | Full rebuild and restart (dev mode only) |
+| `/state` | Inspect and modify runtime state |
+| `/flashcore` | Inspect and modify Flashcore storage |
+| `/env` | Show loaded environment variables |
+| `/status` | Show system status and info |
+| `/plugins` | List installed plugins |
+
+The core `robo.js` package also ships file-based terminal commands that are always present:
+
+| Command | Description |
+|---------|-------------|
+| `/skills` | Manage AI coding skills |
+| `/skills list` | List installed and available skills |
+| `/skills install` | Install skills from plugins |
+
+## Plugin-provided commands
+
+Plugins can ship their own terminal commands. Here are some examples from official plugins:
+
+| Plugin | Commands |
+|--------|----------|
+| `@robojs/discordjs` | `/discord`, `/discord status`, `/discord commands`, `/discord events`, `/discord guilds`, `/discord intents` |
+| `@robojs/server` | `/server status`, `/server routes`, `/server curl`, `/server openapi`, `/open`, `/tunnel start`, `/tunnel stop`, `/tunnel list` |
+| `@robojs/analytics` | `/analytics`, `/analytics status`, `/analytics fire`, `/analytics test` |
+| `@robojs/ai` | `/ai`, `/ai status`, `/ai usage` |
+| `@robojs/mock` | `/mock`, `/mock status`, `/mock command`, `/mock actions`, `/mock sessions`, `/mock stage`, `/mock use`, `/mock reset` |
+| `@robojs/cli` | `/cli`, `/cli link`, `/cli list`, `/cli run` |
+
+## Creating custom commands
+
+Plugins define terminal commands by placing files in `src/robo/terminal/commands/`. The file name becomes the command name, and subdirectories create subcommands.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="robo" defaultOpen>
+      <Folder name="terminal" defaultOpen>
+        <Folder name="commands" defaultOpen>
+          <File name="status.ts" note="/status" />
+          <Folder name="db" defaultOpen>
+            <File name="migrate.ts" note="/db migrate" />
+            <File name="seed.ts" note="/db seed" />
+          </Folder>
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+Each file exports a `config` and a default handler function:
+
+```ts title="src/robo/terminal/commands/status.ts"
+import { createTerminalCommandConfig } from 'robo.js'
+import type { TerminalContext } from 'robo.js'
+
+export const config = createTerminalCommandConfig({
+  description: 'Show plugin status',
+  options: [
+    { alias: '-v', name: '--verbose', description: 'Show detailed info', type: 'boolean' }
+  ]
+} as const)
+
+export default async (context: TerminalContext<typeof config>) => {
+  const { verbose } = context.options
+
+  context.write('Plugin status: active\n')
+
+  if (verbose) {
+    context.write('Connections: 42\n')
+    context.write('Uptime: 3h 15m\n')
+  }
+}
+```
+
+### TerminalContext fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `args` | `string[]` | Positional arguments |
+| `options` | Typed from config | Parsed option flags |
+| `config` | `Config` | Project configuration |
+| `runtime` | `RuntimeProvider?` | Runtime provider for state/flashcore access |
+| `write` | `(text: string) => void` | Write output to the terminal |
+| `drawer` | `object?` | Persistent drawer UI (`show`, `hide`, `isOpen`) |
+
+## Features
+
+The interactive terminal includes several quality-of-life features:
+
+- **Command history** -- Use arrow keys to navigate previous commands
+- **Autocomplete** -- Tab completion for command names
+- **Status indicator** -- Shows system status below the input prompt
+- **Drawer UI** -- Commands can display persistent information below the prompt using `context.drawer`
+
+## Activation conditions
+
+The interactive terminal activates when all of these conditions are met:
+
+- `stdout` and `stdin` are TTY (not piped or redirected)
+- Terminal is at least 10 rows by 40 columns
+- Not running in CI (no `CI` environment variable)
+- `ROBO_NON_INTERACTIVE` environment variable is not set
+
+For the full terminal command reference, see **[Interactive Terminal](/docs/robo-cli/terminal)**.
+
+## Next steps
+
+<Cards>
+  <Card
+    href="./skills"
+    title="Skills"
+    description="AI coding tool skills shipped by plugins."
+  />
+  <Card
+    href="./creating-skills"
+    title="Creating Skills"
+    description="Ship skills and terminal commands with your plugin."
+  />
+  <Card
+    href="/docs/robo-cli/terminal"
+    title="Terminal Reference"
+    description="Full reference for the interactive terminal."
+  />
+</Cards>

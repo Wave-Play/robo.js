@@ -1,0 +1,148 @@
+---
+title: AGENTS.md
+description: AGENTS.md files provide persistent, structured context that helps AI coding tools understand your project's architecture, conventions, and gotchas.
+---
+
+`AGENTS.md` is a Markdown file that lives in your repository and provides persistent context for AI coding tools. Unlike a `README.md` (which targets humans), `AGENTS.md` targets AI agents — it describes your project's architecture, data flows, conventions, and gotchas in a format optimized for machine consumption.
+
+AI coding tools like Claude Code, Cursor, and Copilot automatically read `AGENTS.md` files when they exist in your project. This gives the tool a head start on understanding your codebase before it reads any source files.
+
+## Why it matters
+
+Without `AGENTS.md`, an AI tool must infer your project's architecture by reading source files, which is slow and error-prone. With `AGENTS.md`, the tool starts every session with a structured understanding of:
+
+- How your project is organized
+- Which APIs and patterns to use
+- What conventions to follow
+- Common pitfalls to avoid
+
+This is especially valuable in larger projects where the AI tool cannot read every file in a single pass.
+
+<Callout type="info">
+**AGENTS.md vs Skills:** Skills are structured instruction sets shipped by plugins and installed into AI tool config directories. AGENTS.md is a project-level context file that lives in your repo. Use both: skills for framework/plugin knowledge, AGENTS.md for project-specific context.
+</Callout>
+
+## What to include
+
+A good `AGENTS.md` covers the information an AI agent needs to contribute effectively to your project. Here are the key sections:
+
+### Architecture overview
+
+Describe the high-level structure of your project. What are the main modules? How do they interact? What does the dependency graph look like?
+
+### Data flows
+
+Document how data moves through your system. Where does input come from? What transformations happen? Where does output go?
+
+### API surface
+
+List the key APIs your project exposes or consumes. Include the patterns for creating new endpoints, commands, or handlers.
+
+### Configuration
+
+Document where configuration lives, what fields are available, and how mode-specific overrides work.
+
+### Lifecycle and startup
+
+Explain the boot sequence. What hooks run in what order? What needs to be initialized before what?
+
+### Conventions and standards
+
+Document naming conventions, file organization patterns, import paths, logging standards, and error handling patterns.
+
+### Gotchas and pitfalls
+
+List the things that trip up new contributors. This is often the most valuable section — it prevents the AI tool from making the same mistakes a human would.
+
+## Example structure
+
+Here is a skeleton based on the patterns used in the Robo.js monorepo:
+
+```markdown
+# AGENTS
+
+## What is this project?
+
+Brief description of the project, its purpose, and primary use cases.
+
+## Architecture
+
+- `src/core/` -- Core runtime modules (config, state, logging)
+- `src/commands/` -- Slash command handlers (file-based routing)
+- `src/events/` -- Event listeners
+- `src/api/` -- HTTP API routes (@robojs/server)
+- `src/robo/` -- Lifecycle hooks (start, stop, prepare, etc.)
+
+## Key Patterns
+
+- Commands return strings for auto-reply: `return 'Pong!'`
+- Use `getClient()` from `@robojs/discordjs`, not a global `client` import
+- Plugin config lives at `config/plugins/{scope}/{name}.ts`
+- Logger should use forked instances: `logger.fork('my-feature')`
+
+## Data Flow
+
+1. Discord gateway event arrives
+2. @robojs/discordjs routes to the matching handler file
+3. Handler processes the interaction and returns a response
+4. Sage auto-defers if the handler takes too long
+
+## Configuration
+
+- Main config: `config/robo.ts`
+- Discord plugin: `config/plugins/robojs/discordjs.ts`
+- Server plugin: `config/plugins/robojs/server.ts`
+- Environment: `.env`, `.env.development`, `.env.production`
+
+## Gotchas
+
+- `src/events/_start.ts` is a v0.10 pattern. Use `src/robo/start.ts` instead.
+- Never import `client` from `robo.js` directly. Use `getClient()` from `@robojs/discordjs`.
+- Flashcore operations are async. Always `await` them.
+- The portal is not available during `init` hooks. Use `prepare` or `start` instead.
+```
+
+## Writing your own
+
+<Steps>
+### Create the file
+
+Create `AGENTS.md` in your project root. Some AI tools also support placing context files in subdirectories for scoped context (e.g., Claude Code reads `CLAUDE.md` at the project root).
+
+### Start with architecture
+
+Describe the high-level structure. List the main directories and their purposes.
+
+### Add conventions
+
+Document the patterns that are unique to your project. What import paths should be used? What naming conventions apply?
+
+### Document gotchas
+
+List the mistakes you have seen (or made). These are the highest-value entries because they prevent repeated errors.
+
+### Keep it current
+
+Update `AGENTS.md` when your architecture changes. Stale context is worse than no context because the AI tool will follow outdated patterns.
+</Steps>
+
+## AGENTS.md in the Robo.js ecosystem
+
+The Robo.js monorepo uses `AGENTS.md` at the root to document the plugin architecture, core framework files, plugin packages, development standards (including logging), and CLI tools. Individual plugins also maintain their own `AGENTS.md` files with plugin-specific context.
+
+This pattern works well for plugin authors: ship an `AGENTS.md` in your plugin package to help AI tools understand your plugin's internals when a developer is working on it directly.
+
+## Next steps
+
+<Cards>
+  <Card
+    href="./skills"
+    title="Skills"
+    description="Plugin-shipped instruction sets for AI tools."
+  />
+  <Card
+    href="./creating-skills"
+    title="Creating Skills"
+    description="Ship skills with your own plugin."
+  />
+</Cards>

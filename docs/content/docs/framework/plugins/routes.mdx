@@ -1,0 +1,507 @@
+---
+title: Route Definitions
+description: Define custom source directory scanning for plugins with route files.
+---
+
+Route definitions are an advanced plugin API that tells Robo.js how to scan source directories and register handlers. When a plugin defines `src/robo/routes/{name}.ts`, Robo scans `src/{name}/` in both the project and the plugin for matching files.
+
+This is the mechanism that powers commands, events, API routes, middleware, and any other file-convention feature in Robo.js. Plugins use route definitions to extend the framework with new file-based conventions.
+
+<Callout type="info">
+Most Robo.js users don't need to write route definitions. This page is for plugin authors who want to add custom file conventions to the framework.
+</Callout>
+
+## Convention
+
+A route definition file at `src/robo/routes/{name}.ts` maps to scanning `src/{name}/` directories. The filename determines which directory is scanned:
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="robo" defaultOpen>
+			<Folder name="routes" defaultOpen>
+				<File name="commands.ts" note="Scans src/commands/" />
+				<File name="events.ts" note="Scans src/events/" />
+				<File name="api.ts" note="Scans src/api/" />
+				<File name="tasks.ts" note="Scans src/tasks/" />
+			</Folder>
+		</Folder>
+	</Folder>
+</Files>
+
+Each route definition file can export the following:
+
+- A `config` export with `RouteConfig` describing how to generate keys, handle nesting, and capture exports
+- An optional default export processor function that transforms scanned entries
+- An optional `controller` export (factory function for runtime handler controllers)
+- Optional `Handler` and `Controller` type exports for Portal codegen
+
+## RouteConfig
+
+The `config` export defines how files in the source directory are discovered and processed.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/robo/routes/tasks.ts"
+		import type { RouteConfig } from 'robo.js'
+
+		export const config: RouteConfig = {
+			key: {
+				style: 'filepath',
+				separator: '/',
+			},
+			nesting: {
+				maxDepth: 10,
+				allowIndex: true,
+			},
+			exports: {
+				default: 'required',
+				config: 'optional',
+				named: ['GET', 'POST'],
+			},
+			multiple: false,
+			description: 'Scheduled task handlers',
+		}
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/robo/routes/tasks.js"
+		export const config = {
+			key: {
+				style: 'filepath',
+				separator: '/',
+			},
+			nesting: {
+				maxDepth: 10,
+				allowIndex: true,
+			},
+			exports: {
+				default: 'required',
+				config: 'optional',
+				named: ['GET', 'POST'],
+			},
+			multiple: false,
+			description: 'Scheduled task handlers',
+		}
+		```
+	</Tab>
+</Tabs>
+
+### Config fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `key.style` | `'filename'` \| `'filepath'` \| `'parentOrFilename'` | - | How handler keys are generated from file paths |
+| `key.separator` | `string` | `'/'` | Separator between key segments |
+| `key.nested` | `'camelCase'` \| `'dotNotation'` | Uses separator | How nested path segments are joined |
+| `key.transform` | `(key, segments) => string` | - | Custom transformation applied after key generation |
+| `nesting.maxDepth` | `number` | - | Maximum directory depth to scan |
+| `nesting.allowIndex` | `boolean` | `true` | Whether `index.ts` files create handlers for their parent directory |
+| `nesting.dynamicSegment` | `RegExp` | - | Pattern for dynamic route segments like `[id]` |
+| `nesting.catchAllSegment` | `RegExp` | - | Pattern for catch-all segments like `[...path]` |
+| `nesting.optionalCatchAll` | `RegExp` | - | Pattern for optional catch-all segments like `[[...slug]]` |
+| `exports.default` | `'required'` \| `'optional'` \| `'forbidden'` | `'required'` | Whether a default export is required |
+| `exports.config` | `'required'` \| `'optional'` \| `'forbidden'` | `'optional'` | Whether a config export is required |
+| `exports.named` | `string[]` | - | Named exports to capture (e.g., `['GET', 'POST']`) |
+| `multiple` | `boolean` | `false` | Allow multiple handlers to share the same key |
+| `singular` | `string` | Route name without trailing 's' | Singular accessor name for portal (e.g., `'command'` for `'commands'`) |
+| `filter` | `RegExp` | - | Regex to filter files; non-matching files are excluded |
+| `description` | `string` | - | Human-readable description for documentation |
+
+## Key Styles
+
+The `key.style` field determines how handler keys are generated from file paths. There are three styles available:
+
+### `filepath`
+
+The full relative path becomes the key. Used by API routes and sync handlers.
+
+```
+src/api/users/[id].ts      → "users/[id]"
+src/api/health.ts           → "health"
+src/api/auth/login.ts       → "auth/login"
+```
+
+### `filename`
+
+Only the filename matters, regardless of directory nesting. Used by context menu commands.
+
+```
+src/context/user/Profile.ts    → "Profile"
+src/context/message/Report.ts  → "Report"
+```
+
+### `parentOrFilename`
+
+Uses the parent folder name for nested files and the filename for top-level files. Used by events where multiple handlers can share the same event name.
+
+```
+src/events/ready.ts                → "ready"
+src/events/messageCreate/log.ts    → "messageCreate"
+src/events/messageCreate/filter.ts → "messageCreate"
+```
+
+The `separator` field controls how path segments are joined. For example, Discord commands use a space separator:
+
+```
+key: { style: 'filepath', separator: ' ' }
+
+src/commands/admin/ban.ts → "admin ban"
+```
+
+## Processor Function
+
+The default export transforms scanned entries into processed entries. Each file discovered in the scanned directory is passed through this function before being added to the manifest.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/robo/routes/tasks.ts"
+		import type { ScannedEntry, ProcessedEntry } from 'robo.js'
+
+		export default function (entry: ScannedEntry): ProcessedEntry {
+			const handlerConfig = entry.exports.config as { schedule?: string } | undefined
+
+			return {
+				key: entry.key,
+				path: entry.filePath.replace(/\.ts$/, '.js'),
+				exports: {
+					default: 'default' in entry.exports,
+					config: 'config' in entry.exports,
+					named: Object.keys(entry.exports).filter(
+						(k) => !['default', 'config'].includes(k)
+					),
+				},
+				metadata: {
+					schedule: handlerConfig?.schedule,
+				},
+			}
+		}
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/robo/routes/tasks.js"
+		export default function (entry) {
+			const handlerConfig = entry.exports.config
+
+			return {
+				key: entry.key,
+				path: entry.filePath.replace(/\.ts$/, '.js'),
+				exports: {
+					default: 'default' in entry.exports,
+					config: 'config' in entry.exports,
+					named: Object.keys(entry.exports).filter(
+						(k) => !['default', 'config'].includes(k)
+					),
+				},
+				metadata: {
+					schedule: handlerConfig?.schedule,
+				},
+			}
+		}
+		```
+	</Tab>
+</Tabs>
+
+### ScannedEntry
+
+The input to the processor. Represents a file discovered during directory scanning.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Generated key based on the `RouteConfig` key settings |
+| `type` | `string` | Full type identifier (e.g., `"discord:commands"`) |
+| `filePath` | `string` | File path relative to `/src` |
+| `relativePath` | `string` | Path relative to the route directory |
+| `exports` | `Record<string, unknown>` | All exports from the handler file |
+| `dynamicSegments?` | `{ params: string[], catchAll?: { param: string, optional: boolean } }` | Dynamic segment info (params like `[id]`, catch-all like `[...path]`) |
+
+### ProcessedEntry
+
+The output of the processor. Written to the manifest for runtime use.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | The handler key |
+| `path` | `string` | Path to the compiled handler file |
+| `exports` | `object` | Which exports exist (`default`, `config`, `named`) |
+| `metadata` | `Record<string, unknown>` | Metadata extracted from the handler's config export |
+| `extra?` | `Record<string, unknown>` | Additional data for special cases |
+| `module?` | `string` | Module name if handler is from `/src/modules/` |
+| `auto?` | `boolean` | Whether this entry was auto-generated |
+
+## Controller Factory
+
+The `controller` export creates runtime handler controllers. These manage how handlers are invoked at runtime and are used by the Portal system for typed access.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/robo/routes/tasks.ts"
+		import type { HandlerRecord } from 'robo.js'
+
+		export interface TaskController {
+			key: string
+			execute: () => Promise<unknown>
+		}
+
+		export function controller(
+			key: string,
+			record: HandlerRecord,
+			_pluginState: unknown
+		): TaskController {
+			return {
+				key,
+				async execute() {
+					const handler = record.handler as { default?: () => unknown }
+					if (handler?.default) {
+						return handler.default()
+					}
+				},
+			}
+		}
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/robo/routes/tasks.js"
+		export function controller(key, record, _pluginState) {
+			return {
+				key,
+				async execute() {
+					const handler = record.handler
+					if (handler?.default) {
+						return handler.default()
+					}
+				},
+			}
+		}
+		```
+	</Tab>
+</Tabs>
+
+## Type Exports
+
+Route files can export `Handler` and `Controller` types for Portal codegen. These types are used when generating the Portal's typed accessors, giving users type-safe access to route handlers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/robo/routes/tasks.ts"
+		import type { TaskData } from '../types.js'
+
+		export type Handler = (data: TaskData) => void | Promise<void>
+		export type Controller = TaskController
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/robo/routes/tasks.js"
+		// Type exports are TypeScript-only.
+		// JavaScript route definitions still work, but without Portal type generation.
+		```
+	</Tab>
+</Tabs>
+
+<Callout type="info">
+Type exports only apply to TypeScript projects. JavaScript route definitions work the same way at runtime but do not generate typed Portal accessors.
+</Callout>
+
+## Built-in Route Types
+
+These route definitions are provided by official Robo.js plugins. They serve as both working examples and the foundation for Discord bots, web servers, and real-time apps.
+
+| Route | Plugin | Scans | Key Style | Description |
+|-------|--------|-------|-----------|-------------|
+| `commands` | `@robojs/discordjs` | `src/commands/` | `filepath` (space separator) | Discord slash commands |
+| `events` | `@robojs/discordjs` | `src/events/` | `parentOrFilename` | Discord gateway events |
+| `middleware` | `@robojs/discordjs` | `src/middleware/` | `filepath` | Command/event interceptors |
+| `context` | `@robojs/discordjs` | `src/context/` | `filename` | Context menu commands |
+| `api` | `@robojs/server` | `src/api/` | `filepath` | HTTP API endpoints |
+| `sync` | `@robojs/sync` | `src/sync/` | `filepath` | Real-time sync handlers |
+
+## Creating a Custom Route Type
+
+This walkthrough creates a custom `tasks` route type that scans `src/tasks/` for scheduled task handlers.
+
+### 1. Create the route definition
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="robo" defaultOpen>
+			<Folder name="routes" defaultOpen>
+				<File name="tasks.ts" note="Defines how src/tasks/ is scanned" />
+			</Folder>
+		</Folder>
+		<Folder name="tasks" defaultOpen>
+			<File name="cleanup.ts" note="A task handler" />
+			<File name="report.ts" note="Another task handler" />
+		</Folder>
+	</Folder>
+</Files>
+
+### 2. Define the route
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/robo/routes/tasks.ts"
+		import type { RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
+
+		interface TaskConfig {
+			schedule?: string
+			description?: string
+		}
+
+		export const config: RouteConfig = {
+			key: {
+				style: 'filename',
+			},
+			exports: {
+				default: 'required',
+				config: 'optional',
+			},
+			description: 'Scheduled task handlers',
+		}
+
+		export default function (entry: ScannedEntry): ProcessedEntry {
+			const handlerConfig = entry.exports.config as TaskConfig | undefined
+
+			return {
+				key: entry.key,
+				path: entry.filePath.replace(/\.ts$/, '.js'),
+				exports: {
+					default: 'default' in entry.exports,
+					config: 'config' in entry.exports,
+					named: [],
+				},
+				metadata: {
+					schedule: handlerConfig?.schedule,
+					description: handlerConfig?.description,
+				},
+			}
+		}
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/robo/routes/tasks.js"
+		export const config = {
+			key: {
+				style: 'filename',
+			},
+			exports: {
+				default: 'required',
+				config: 'optional',
+			},
+			description: 'Scheduled task handlers',
+		}
+
+		export default function (entry) {
+			const handlerConfig = entry.exports.config
+
+			return {
+				key: entry.key,
+				path: entry.filePath.replace(/\.ts$/, '.js'),
+				exports: {
+					default: 'default' in entry.exports,
+					config: 'config' in entry.exports,
+					named: [],
+				},
+				metadata: {
+					schedule: handlerConfig?.schedule,
+					description: handlerConfig?.description,
+				},
+			}
+		}
+		```
+	</Tab>
+</Tabs>
+
+### 3. Create task handlers
+
+Users (or the plugin itself) can now create files in `src/tasks/` and they will be automatically discovered and processed during build.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/tasks/cleanup.ts"
+		export const config = {
+			schedule: '0 0 * * *',
+			description: 'Clean up expired sessions',
+		}
+
+		export default async function () {
+			// Task logic here
+			console.log('Running cleanup task...')
+		}
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/tasks/cleanup.js"
+		export const config = {
+			schedule: '0 0 * * *',
+			description: 'Clean up expired sessions',
+		}
+
+		export default async function () {
+			// Task logic here
+			console.log('Running cleanup task...')
+		}
+		```
+	</Tab>
+</Tabs>
+
+When `robo build` runs, Robo.js will scan `src/tasks/`, pass each file through the processor, and add the results to the manifest. The plugin can then read these entries at runtime to schedule and execute tasks.
+
+## Advanced: Namespace Controllers
+
+Route files can also export a `NamespaceController` factory. This provides a higher-level API for accessing all handlers of a route type through the Portal system.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```ts title="src/robo/routes/tasks.ts"
+		import { Manifest } from 'robo.js'
+		import type { PortalAPI } from 'robo.js'
+
+		export interface TasksNamespaceController {
+			list(): string[]
+			get(name: string): Promise<unknown>
+		}
+
+		export const NamespaceController = (portal: PortalAPI): TasksNamespaceController => ({
+			list(): string[] {
+				return Manifest.routeSummariesSync('my-plugin', 'tasks').map(
+					(summary) => summary.key
+				)
+			},
+
+			async get(name: string): Promise<unknown> {
+				const handler = await portal.getHandler('my-plugin', 'tasks', name)
+				return handler?.default ?? null
+			},
+		})
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js title="src/robo/routes/tasks.js"
+		import { Manifest } from 'robo.js'
+
+		export const NamespaceController = (portal) => ({
+			list() {
+				return Manifest.routeSummariesSync('my-plugin', 'tasks').map(
+					(summary) => summary.key
+				)
+			},
+
+			async get(name) {
+				const handler = await portal.getHandler('my-plugin', 'tasks', name)
+				return handler?.default ?? null
+			},
+		})
+		```
+	</Tab>
+</Tabs>
+
+<Callout type="warn">
+Namespace controllers are an advanced feature primarily used by plugins that need to expose their handlers programmatically. Most custom route types do not need one.
+</Callout>
+
+## Next Steps
+
+<Cards>
+	<Card href="./create" title="Creating Plugins" description="Build and publish plugins for Robo.js." />
+	<Card href="./seed" title="Seeding" description="Provide starter files with your plugin." />
+	<Card href="../core/portal" title="Portal" description="Access handlers and controllers at runtime." />
+</Cards>

@@ -1,0 +1,219 @@
+---
+title: Creating Skills
+description: Learn how to create skills for your Robo.js plugin so AI coding tools can understand and work with it effectively.
+---
+
+If you are building a Robo.js plugin, you can ship skills alongside your code. When a user installs your plugin with `npx robo add`, your skills are offered for installation into their AI tool's skills directory.
+
+## Directory structure
+
+Create a `skills/` directory at the root of your plugin package. Each skill is a subdirectory containing a `SKILL.md` file:
+
+<Files>
+  <Folder name="my-plugin" defaultOpen disabled>
+    <Folder name="skills" defaultOpen>
+      <Folder name="my-plugin-guide" defaultOpen>
+        <File name="SKILL.md" note="Main instruction file" />
+        <Folder name="references">
+          <File name="api-patterns.md" note="Additional reference" />
+          <File name="common-errors.md" note="Additional reference" />
+        </Folder>
+      </Folder>
+    </Folder>
+    <Folder name="src" disabled />
+    <File name="package.json" />
+  </Folder>
+</Files>
+
+The skill directory name (e.g., `my-plugin-guide`) becomes the skill identifier. Choose a name that is unique across the ecosystem — prefixing with your plugin name is a good convention.
+
+<Callout type="warn">
+Include the `skills/` directory in your `package.json` `files` array so it ships with your npm package.
+</Callout>
+
+## SKILL.md frontmatter
+
+Every `SKILL.md` starts with YAML frontmatter:
+
+```yaml
+---
+name: my-plugin-guide
+description: "Reference guide for building with my-plugin — covers setup, API patterns, and common mistakes."
+user-invocable: true
+argument-hint: "<question, or 'create <type>'>"
+---
+```
+
+### Required fields
+
+| Field | Description |
+|-------|-------------|
+| `name` | Unique skill identifier, must match the directory name |
+| `description` | What the skill covers, shown in `robo skills list` and tool prompts |
+
+### Optional fields
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `user-invocable` | `false` | When `true`, users can invoke the skill directly (e.g., `/my-plugin-guide`) |
+| `argument-hint` | none | Hint shown for what arguments the skill accepts |
+
+## Writing effective content
+
+The body of `SKILL.md` is the instruction set that AI tools read. Write it as if you are explaining your plugin to a knowledgeable developer who has never seen it before.
+
+### Start with a mental model
+
+Explain how your plugin works at a high level. What are the core concepts? What does the file structure look like?
+
+```markdown
+## Mental Model
+
+Files in `src/widgets/` are auto-discovered at build time. Each file exports
+a default handler and an optional `config` export for metadata.
+
+src/widgets/
+  counter.ts     -> widget named "counter"
+  timer.ts       -> widget named "timer"
+  dashboard/
+    main.ts      -> widget named "dashboard/main"
+```
+
+### Include code patterns
+
+Show the exact code patterns a developer should use. Include imports, types, and complete examples:
+
+```markdown
+## Creating a Widget
+
+```typescript
+import { createWidgetConfig } from 'my-plugin'
+import type { WidgetContext } from 'my-plugin'
+
+export const config = createWidgetConfig({
+  description: 'A counter widget',
+  refreshInterval: 5000
+})
+
+export default async function (context: WidgetContext) {
+  const count = await context.state.get<number>('count') ?? 0
+  return { count }
+}
+`` `
+```
+
+### Document common mistakes
+
+This is often the most valuable section. List the errors that users hit and how to fix them:
+
+```markdown
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Importing from `my-plugin/internal` | Use `my-plugin` (public API only) |
+| Missing `type: 'plugin'` in config | Required for all plugins |
+| Sync handler for async operations | Use `async function` and `await` |
+```
+
+### Add a usage section
+
+If the skill is user-invocable, document how to invoke it and what modes it supports:
+
+```markdown
+## Usage
+
+/my-plugin-guide                    # Inject this guide as context
+/my-plugin-guide create widget      # Generate a widget file
+/my-plugin-guide <question>         # Answer a question
+```
+
+## Reference files
+
+For large skills, split content into multiple files. Place additional Markdown files in a `references/` subdirectory:
+
+<Files>
+  <Folder name="skills" defaultOpen disabled>
+    <Folder name="my-plugin-guide" defaultOpen>
+      <File name="SKILL.md" note="Main entry point" />
+      <Folder name="references" defaultOpen>
+        <File name="api-reference.md" note="Full API docs" />
+        <File name="migration-guide.md" note="Version migration" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+The `SKILL.md` can reference these files, and they are copied alongside it during installation.
+
+## Discovery mechanism
+
+When a user runs `npx robo skills install --all`, the CLI:
+
+1. Loads the project's configuration to find registered plugins
+2. Resolves each plugin's package directory
+3. Checks for a `skills/` directory in each package
+4. Scans for subdirectories containing a `SKILL.md` file
+5. Parses the `description` from the YAML frontmatter
+6. Presents the discovered skills for installation
+
+For the core `robo.js` package, the CLI looks for `skills/` relative to its own package directory. For all other plugins, it checks both sibling package paths and `node_modules`.
+
+## Auto-install on plugin add
+
+When a user installs your plugin with `npx robo add my-plugin`, the CLI automatically discovers and offers your skills. No additional configuration is needed beyond placing the `skills/` directory in your package.
+
+## Testing your skills
+
+Before publishing, verify that your skills work correctly:
+
+<Steps>
+### Build your plugin
+
+```bash
+robo build plugin
+```
+
+### Install in a test project
+
+```bash
+npx robo add /path/to/my-plugin
+```
+
+### Check that skills are offered
+
+During installation, the CLI should list your skills and ask whether to install them.
+
+### Verify the installed files
+
+Check your AI tool's skills directory (e.g., `.claude/skills/my-plugin-guide/SKILL.md`) to confirm the files were copied correctly.
+
+### Test with your AI tool
+
+Open the project in your AI tool and verify the skill is available. For user-invocable skills, try invoking it directly.
+</Steps>
+
+## Package.json checklist
+
+Make sure your `package.json` includes the skills directory:
+
+```json
+{
+  "files": [".robo/", "src/", "skills/", "seed/", "LICENSE", "README.md"]
+}
+```
+
+## Next steps
+
+<Cards>
+  <Card
+    href="./skills"
+    title="Skills"
+    description="How skills work from the user's perspective."
+  />
+  <Card
+    href="/docs/framework/plugins/create"
+    title="Creating Plugins"
+    description="Full guide to building Robo.js plugins."
+  />
+</Cards>

@@ -1,0 +1,94 @@
+---
+title: AI Native
+icon: Brain
+description: Robo.js is designed from the ground up for AI coding tools — every plugin, CLI command, and convention works for both humans and AI agents.
+---
+
+Robo.js is AI-native. Every plugin, CLI command, and file convention is designed to work for both humans and AI coding agents. When an AI tool understands your project's structure, commands, and plugins, it can build features faster and with fewer mistakes.
+
+This is not an afterthought or a wrapper. AI support is built into the framework itself — from structured CLI output to plugin-shipped instruction sets.
+
+## Key capabilities
+
+**Skills** are instruction sets shipped by plugins. They give AI tools deep knowledge about Robo.js conventions, plugin APIs, and how to generate correct code. Install them once and your AI tool gains expertise in your entire stack.
+
+**CLI for AI** produces structured JSON output from commands like `robo inspect` and `robo logs`. AI tools parse this data to understand your project topology, diagnose errors, and reason about runtime state.
+
+**AGENTS.md** files provide persistent context about your project's architecture, conventions, and gotchas. They live in your repo and are automatically picked up by compatible AI tools.
+
+**Auto-detection** identifies which AI coding tools you use (Claude Code, Cursor, Copilot, Windsurf, Codex CLI, Gemini CLI) by checking for marker files, then installs skills to the correct directory.
+
+**Plugin ecosystem** means every Robo.js plugin can ship its own skills. When you run `npx robo add @robojs/discordjs`, the plugin's skills are offered for installation alongside the code.
+
+**Terminal commands** let plugins provide interactive `/commands` in the dev server terminal, accessible to both humans typing and AI tools reasoning about project state.
+
+## Supported AI tools
+
+| Tool | Skills directory | Detection markers |
+|------|-----------------|-------------------|
+| Claude Code | `.claude/skills/` | `.claude`, `CLAUDE.md` |
+| GitHub Copilot | `.github/skills/` | `.github/copilot-instructions.md`, `.github/skills` |
+| Cursor | `.agents/skills/` | `.cursor`, `.cursorrules` |
+| Windsurf | `.windsurf/skills/` | `.windsurf`, `.windsurfrules` |
+| Codex CLI | `.agents/skills/` | `.codex` |
+| Gemini CLI | `.agents/skills/` | `.gemini`, `GEMINI.md` |
+
+## Quick start
+
+<Steps>
+### Create a project
+
+```bash
+npx create-robo my-project -p @robojs/server
+```
+
+### Install skills
+
+```bash
+npx robo skills install --all
+```
+
+This scans all installed plugins for skills, auto-detects your AI tool, and copies skill files to the right directory.
+
+### Open in your AI tool
+
+Open the project in your AI coding tool. Skills are now available as context. For Claude Code, try invoking `/robo-core` or `/robo-server` to see them in action.
+</Steps>
+
+## Shipped skills
+
+Robo.js and its official plugins ship these skills out of the box:
+
+| Skill | Source | Description |
+|-------|--------|-------------|
+| `robo-core` | `robo.js` | Lifecycle hooks, Flashcore, State, Logger, Env, Portal, Manifest, HMR, Mode, and Config |
+| `robo-debug` | `robo.js` | Structured workflow for diagnosing project issues using `robo inspect` and `robo logs` |
+| `robo-plugin` | `robo.js` | Complete guide to creating plugins with route definitions, hooks, seeds, and terminal commands |
+| `robo-update` | `robo.js` | Migration assistant for upgrading between Robo.js versions |
+| `robo-discordjs` | `@robojs/discordjs` | Commands, events, context menus, middleware, Sage auto-defer, and Discord plugin config |
+| `robo-server` | `@robojs/server` | File routing, `define()`, `RoboResponse`, OpenAPI, and testing utilities |
+
+## Learn more
+
+<Cards>
+  <Card
+    href="./skills"
+    title="Skills"
+    description="Instruction sets that give AI tools deep knowledge of your project."
+  />
+  <Card
+    href="./agents-md"
+    title="AGENTS.md"
+    description="Persistent context files for AI coding tools."
+  />
+  <Card
+    href="./cli"
+    title="CLI for AI"
+    description="Structured JSON output from Robo CLI commands."
+  />
+  <Card
+    href="./creating-skills"
+    title="Creating Skills"
+    description="Ship skills with your plugin for AI tool integration."
+  />
+</Cards>

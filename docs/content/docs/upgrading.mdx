@@ -1,0 +1,588 @@
+---
+title: Upgrading to v0.11
+icon: ArrowUpCircle
+description: Complete migration guide for upgrading Robo.js projects from v0.10 to v0.11.
+---
+
+v0.11 is a major architectural overhaul that decouples Discord.js into a plugin, introduces a structured lifecycle system, and ships a full database engine in Flashcore. Despite the scope of these changes, most projects need only 3-5 updates to migrate.
+
+This page is the single entry point for all breaking changes. Each section links to a detailed guide for deeper dives.
+
+<Callout type="info">
+The Flashcore KV API (`Flashcore.get`, `Flashcore.set`, `Flashcore.delete`) is completely unchanged. Existing KV code works without modification.
+</Callout>
+
+## What's New
+
+Beyond the architectural changes, v0.11 ships several major new features:
+
+<Cards>
+	<Card
+		href="/docs/ai-native"
+		title="AI Native"
+		description="Skills, structured CLI output, and AGENTS.md give AI coding tools deep project understanding. Install skills with one command and let Claude Code, Copilot, Cursor, and others reason about your project."
+	/>
+	<Card
+		href="/docs/ai-native/cli"
+		title="CLI for AI"
+		description="robo inspect and robo logs produce structured JSON/NDJSON output that AI tools can parse programmatically. Skills reference these commands to build context automatically."
+	/>
+	<Card
+		href="/docs/framework/core/flashcore"
+		title="Flashcore Models"
+		description="A full Prisma-like ORM built on top of the KV layer — schemas, typed fields, relations, indexes, bulk operations, and a query engine with where clauses and ordering."
+	/>
+	<Card
+		href="/docs/discordjs/namespace-controllers"
+		title="Runtime Controllers"
+		description="Enable/disable commands at runtime, restrict to specific servers, reorder middleware, and programmatically execute handlers — all through a typed controller API."
+	/>
+</Cards>
+
+### Hot Module Replacement
+
+v0.11 introduces true HMR for the first time. Instead of restarting the entire process when code changes during development, Robo.js now reloads only the affected handler:
+
+- **Per-handler reloads** — Editing a command or event handler re-imports just that one module, not the whole project
+- **Dependency graph tracking** — When a utility file changes, the HMR system traces the import graph to find exactly which handlers are affected and reloads only those
+- **Incremental manifest updates** — Adding or removing handler files patches the manifest in-place without a full route scan
+- **Plugin HMR hooks** — Plugins can react to HMR events via `src/robo/hmr.ts` with namespace/route filtering
+- **Module cleanup API** — `hmr.module(import.meta.url).dispose()` lets handlers clean up timers, sockets, and other resources before being replaced
+- **Runtime subscriptions** — `hmr.subscribe()` lets code react to changes at runtime with namespace/route filters
+
+HMR is experimental in v0.11 and can be enabled with `robo dev --hmr`. All HMR APIs are no-ops in production.
+
+## Quick Migration Checklist
+
+<Steps>
+### Install `@robojs/discordjs`
+
+Discord.js is no longer bundled with the core framework. Add it as a plugin:
+
+```bash
+npx robo add @robojs/discordjs
+```
+
+### Update imports
+
+Discord-specific types and utilities have moved from `robo.js` to `@robojs/discordjs`. Update your import statements accordingly.
+
+### Move Discord config
+
+Move `clientOptions`, `sage`, and other Discord settings from `config/robo.ts` to `config/plugins/robojs/discordjs.ts`.
+
+### Migrate lifecycle hooks
+
+Move `src/events/_start.ts` to `src/robo/start.ts` and `src/events/_stop.ts` to `src/robo/stop.ts`. The new hooks receive a context object instead of bare arguments.
+
+### Update Manifest access
+
+Replace `getManifest()` calls with the new `Manifest` singleton API.
+
+### Update Portal usage
+
+The portal is now namespace-based. Replace `portal.commands.get('x')` with `portal.getRecord('discordjs', 'commands', 'x')` and add `()` to all `portal.module('x').isEnabled` calls.
+
+### Install `@robojs/flashcore-extras` (if needed)
+
+Advanced Flashcore features like migrations, transactions, WAL, and integrity tools are available through a separate plugin.
+
+### Rebuild
+
+```bash
+npx robo build
+```
+</Steps>
+
+## Discord.js is Now a Plugin
+
+Discord.js integration has been extracted from the core framework into `@robojs/discordjs`. This means Robo.js can now run as a pure web server, cron runner, or any other shape without carrying Discord dependencies.
+
+```bash
+npx robo add @robojs/discordjs
+```
+
+### Import Changes
+
+| Before (`robo.js`) | After (`@robojs/discordjs`) |
+|---------------------|----------------------------|
+| `import { client } from 'robo.js'` | `import { getClient } from '@robojs/discordjs'` |
+| `import { createCommandConfig } from 'robo.js'` | `import { createCommandConfig } from '@robojs/discordjs'` |
+| `import type { CommandConfig } from 'robo.js'` | `import type { CommandConfig } from '@robojs/discordjs'` |
+| `import type { CommandOptions } from 'robo.js'` | `import type { CommandOptions } from '@robojs/discordjs'` |
+| `import type { CommandResult } from 'robo.js'` | `import type { CommandResult } from '@robojs/discordjs'` |
+| `import type { EventConfig } from 'robo.js'` | `import type { EventConfig } from '@robojs/discordjs'` |
+
+The `client` export no longer exists. Use the `getClient()` function instead:
+
+```ts
+// Before
+import { client } from 'robo.js'
+client.user?.setPresence({ status: 'idle' })
+
+// After
+import { getClient } from '@robojs/discordjs'
+const client = getClient()
+client.user?.setPresence({ status: 'idle' })
+```
+
+### Config Migration
+
+Discord-specific configuration moves from `config/robo.ts` to `config/plugins/robojs/discordjs.ts`:
+
+<Tabs items={["Before", "After"]} persist>
+	<Tab value="Before">
+		```ts title="config/robo.ts"
+		export default {
+			clientOptions: {
+				intents: ['Guilds', 'GuildMessages']
+			},
+			sage: {
+				defer: true
+			}
+		}
+		```
+	</Tab>
+	<Tab value="After">
+		```ts title="config/plugins/robojs/discordjs.ts"
+		import type { DiscordConfig } from '@robojs/discordjs'
+
+		export default {
+			clientOptions: {
+				intents: ['Guilds', 'GuildMessages']
+			},
+			sage: {
+				defer: true
+			}
+		} satisfies DiscordConfig
+		```
+	</Tab>
+</Tabs>
+
+For the full Discord.js migration guide including command migration, event migration, and intent syntax changes, see the dedicated page.
+
+<Cards>
+	<Card href="/docs/discordjs/migrate" title="Discord.js Migration" description="Complete guide for migrating Discord-specific code." />
+</Cards>
+
+## New Lifecycle System
+
+Lifecycle hooks have moved from magic `_start`/`_stop` events in `src/events/` to dedicated files in `src/robo/`. The new system supports a full startup sequence with distinct phases and provides structured context to every hook.
+
+### File Location
+
+| Before | After |
+|--------|-------|
+| `src/events/_start.ts` | `src/robo/start.ts` |
+| `src/events/_stop.ts` | `src/robo/stop.ts` |
+| `src/events/_restart.ts` | Deprecated (use `stop` with `context.reason === 'restart'`) |
+
+### New Directory Structure
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="robo" defaultOpen>
+			<File name="init.ts" note="Early initialization" />
+			<File name="prepare.ts" note="Resource preparation" />
+			<File name="start.ts" note="Startup hook" />
+			<File name="stop.ts" note="Shutdown hook" />
+			<File name="error.ts" note="Error handling" />
+			<File name="hmr.ts" note="Hot reload hook" />
+			<Folder name="build" defaultOpen>
+				<File name="start.ts" note="Pre-build hook" />
+				<File name="transform.ts" note="Entry transformation" />
+				<File name="complete.ts" note="Post-build hook" />
+			</Folder>
+		</Folder>
+	</Folder>
+</Files>
+
+### Signature Change
+
+Lifecycle hooks now receive a context object including `mode`, `projectConfig`, `pluginConfig`, `state`, `logger`, `env`, and `meta` fields. The old pattern of no arguments or bare arguments is replaced by a single typed context parameter.
+
+<Tabs items={["Before", "After"]} persist>
+	<Tab value="Before">
+		```ts title="src/events/_start.ts"
+		export default () => {
+			console.log('Bot started!')
+		}
+		```
+	</Tab>
+	<Tab value="After">
+		```ts title="src/robo/start.ts"
+		import type { StartContext } from 'robo.js'
+
+		export default (context: StartContext) => {
+			context.logger.info('Bot started!')
+		}
+		```
+	</Tab>
+</Tabs>
+
+### Handling Restarts
+
+The `_restart` event is deprecated. Instead, check the `reason` field on the `StopContext`:
+
+```ts title="src/robo/stop.ts"
+import type { StopContext } from 'robo.js'
+
+export default (context: StopContext) => {
+	if (context.reason === 'restart') {
+		context.logger.info('Restarting...')
+		return
+	}
+	// Normal shutdown logic
+	context.logger.info('Shutting down...')
+}
+```
+
+<Callout type="info">
+Legacy `_start`, `_stop`, and `_restart` events still work but are deprecated. Migrate them to `src/robo/` files when convenient.
+</Callout>
+
+<Cards>
+	<Card href="/docs/framework/core/lifecycle" title="Lifecycle Hooks" description="Full reference for all lifecycle hooks and their context types." />
+</Cards>
+
+## Config Field Changes
+
+Several fields have been removed from `config/robo.ts` and moved to plugin-specific configs:
+
+| Field | Before (`config/robo.ts`) | After |
+|-------|---------------------------|-------|
+| `clientOptions` | `config/robo.ts` | `config/plugins/robojs/discordjs.ts` |
+| `sage` | `config/robo.ts` | `config/plugins/robojs/discordjs.ts` |
+| `heartbeat` | `config/robo.ts` | Removed |
+| `invite` | `config/robo.ts` | Removed |
+| `defaults` | `config/robo.ts` | `config/plugins/robojs/discordjs.ts` |
+
+<Tabs items={["Before", "After"]} persist>
+	<Tab value="Before">
+		```ts title="config/robo.ts"
+		export default {
+			clientOptions: {
+				intents: ['Guilds']
+			},
+			sage: { defer: true },
+			logger: { level: 'info' },
+			plugins: []
+		}
+		```
+	</Tab>
+	<Tab value="After">
+		```ts title="config/robo.ts"
+		export default {
+			logger: { level: 'info' },
+			plugins: []
+		}
+		```
+
+		```ts title="config/plugins/robojs/discordjs.ts"
+		import type { DiscordConfig } from '@robojs/discordjs'
+
+		export default {
+			clientOptions: {
+				intents: ['Guilds']
+			},
+			sage: { defer: true }
+		} satisfies DiscordConfig
+		```
+	</Tab>
+</Tabs>
+
+## Type and Export Moves
+
+Types and utilities have been reorganized across packages. Here is a summary grouped by destination:
+
+### Moved to `@robojs/discordjs`
+
+| Export | Kind |
+|--------|------|
+| `CommandConfig` | type |
+| `CommandOptions` | type |
+| `CommandResult` | type |
+| `CommandContext` | type |
+| `CommandEntry` | type |
+| `EventConfig` | type |
+| `EventEntry` | type |
+| `ContextConfig` | type |
+| `MiddlewareConfig` | type |
+| `MiddlewareData` | type |
+| `MiddlewareResult` | type |
+| `SageOptions` | type |
+| `DiscordConfig` | type |
+| `createCommandConfig` | function |
+| `createContextConfig` | function |
+| `getClient` | function |
+| `hasClient` | function |
+| `registerSlashCommands` | function |
+
+### New in `@robojs/flashcore-extras`
+
+These are new v0.11 features provided through an optional plugin, not things that existed in v0.10:
+
+| Export | Kind |
+|--------|------|
+| `AdapterBuilder` | class |
+| `defineMigration` | function |
+| Transaction utilities | functions |
+| WAL recovery tools | functions |
+| Integrity check/repair | functions |
+
+### Remain in `robo.js`
+
+| Export | Kind |
+|--------|------|
+| `Flashcore` | class (KV API) |
+| `Manifest` | singleton |
+| `Robo` | singleton |
+| `State`, `getState`, `setState` | state management |
+| `Logger`, `logger` | logging |
+| `Env`, `env` | environment |
+| `Mode` | runtime mode |
+| `getConfig` | function |
+| `getPluginOptions` | function |
+| `portal` | portal access |
+| All lifecycle context types | types |
+
+## Manifest API
+
+The old `getManifest()` function loaded one monolithic `manifest.json` file into memory with all commands, events, routes, and plugin data at once. v0.11 replaces this with a `Manifest` singleton backed by a directory of small JSON files that are **lazy-loaded and cached** on first access.
+
+This means faster startup (only load what you need), precise HMR invalidation (reload a single route instead of the entire manifest), and an extensible namespace system where any plugin can define its own route types without modifying core code.
+
+<Tabs items={["Before", "After"]} persist>
+	<Tab value="Before">
+		```ts
+		import { getManifest } from 'robo.js'
+
+		const manifest = getManifest()
+		const commands = manifest.commands
+		```
+	</Tab>
+	<Tab value="After">
+		```ts
+		import { Manifest } from 'robo.js'
+
+		const commands = await Manifest.routes('discordjs', 'commands')
+		const hooks = Manifest.hooks('start')
+		const plugins = Manifest.plugins()
+		const config = Manifest.config()
+		```
+	</Tab>
+</Tabs>
+
+The namespace + route pattern (`Manifest.routes('discordjs', 'commands')`) replaces hardcoded handler types. Each plugin owns its namespace — `@robojs/discordjs` uses `'discordjs'`, `@robojs/server` uses `'server'`, and so on.
+
+Key `Manifest` methods:
+
+| Method | Description |
+|--------|-------------|
+| `Manifest.routes(namespace, route)` | Get route handler entries (async, lazy-loaded) |
+| `Manifest.routesSync(namespace, route)` | Get route handler entries (sync, must be pre-loaded) |
+| `Manifest.routeSummaries(namespace, route)` | Get lightweight handler summaries (async) |
+| `Manifest.hooks(hook)` | Get lifecycle hook entries |
+| `Manifest.plugins()` | Get all registered plugin info |
+| `Manifest.plugin(name)` | Get info for a specific plugin |
+| `Manifest.config()` | Get merged project configuration |
+| `Manifest.pluginConfig(plugin)` | Get config for a specific plugin |
+| `Manifest.metadata(namespace)` | Get aggregated metadata for a namespace |
+| `Manifest.project()` | Get project metadata |
+
+## Flashcore
+
+The KV API is completely unchanged. v0.11 adds a full ORM-like model system on top of it, and production-grade tooling is available through an optional plugin.
+
+### KV API: Unchanged
+
+```ts
+import { Flashcore } from 'robo.js'
+
+// All of these work exactly as before
+await Flashcore.set('key', 'value')
+const value = await Flashcore.get<string>('key')
+await Flashcore.delete('key')
+```
+
+### Automatic Data Migration
+
+On first startup with v0.11, Flashcore automatically backs up your legacy data from `.robo/data/` and begins lazy-migrating keys to the new `.robo/flashcore/` format as they are read. No action is required.
+
+### New: Model System
+
+v0.11 ships a Prisma-like model system built on top of the KV layer. Define schemas with typed fields, relations, indexes, and use a full CRUD query API:
+
+```ts
+import { createModel, f } from 'robo.js/flashcore'
+
+const User = createModel('user', {
+	id: f.id(),
+	name: f.string(),
+	email: f.string().unique(),
+	role: f.enum(['admin', 'user']).default('user'),
+	createdAt: f.date().default(() => new Date())
+})
+
+// Prisma-like CRUD
+const user = await User.create({ data: { name: 'Alice', email: 'alice@example.com' } })
+const found = await User.findMany({ where: { role: 'admin' }, orderBy: { name: 'asc' } })
+```
+
+The model system includes chunked storage, query planning with index usage, relations (belongsTo, hasOne, hasMany, manyToMany), cascade policies, bulk operations, upsert, and a plugin/middleware system. This is entirely new — it did not exist in v0.10.
+
+### Flashcore Extras
+
+Production-grade features are available through the optional `@robojs/flashcore-extras` plugin to keep the core package lean:
+
+| Feature | Description |
+|---------|-------------|
+| Adapter wrappers | Cache, compression, encryption, resilience wrappers and `AdapterBuilder` |
+| Migrations | `defineMigration()`, schema diff, migration history, distributed locking |
+| Transactions | ACID-like transaction context with serial execution |
+| Write-Ahead Log | WAL manager with crash recovery |
+| Integrity tools | Index/catalog integrity checking and repair |
+| `/db` terminal commands | `/db status`, `/db check`, `/db repair`, `/db migrate`, `/db export`, `/db clear`, `/db diff`, `/db history`, `/db rebuild-indexes` |
+
+```bash
+npx robo add @robojs/flashcore-extras
+```
+
+<Callout type="info">
+The `/db` terminal commands run inside the interactive `robo dev` terminal and are provided by `@robojs/flashcore-extras`. These are new in v0.11 — there were no `robo db` CLI commands in v0.10.
+</Callout>
+
+<Cards>
+	<Card href="/docs/framework/core/flashcore" title="Flashcore" description="KV API, model system, schemas, and query engine." />
+	<Card href="/docs/framework/core/flashcore/migration-guide" title="Flashcore Migration" description="Data migration, adapter config, and adding models." />
+	<Card href="/docs/flashcore-extras" title="Flashcore Extras" description="Migrations, transactions, WAL, and integrity tools." />
+</Cards>
+
+## Portal API
+
+The portal has been rewritten from a Discord-centric class with hardcoded `commands`, `events`, and `middleware` properties into a **namespace-based, lazy-loading system** where any plugin can register its own handler types.
+
+### Direct Properties Removed
+
+The old `portal.commands`, `portal.events`, `portal.context`, `portal.middleware`, and `portal.apis` properties no longer exist. Access handlers through the namespace API instead:
+
+<Tabs items={["Before", "After"]} persist>
+	<Tab value="Before">
+		```ts
+		import { portal } from 'robo.js'
+
+		// Old: Discord.js Collection instances
+		const pingHandler = portal.commands.get('ping')
+		const allEvents = portal.events.keys()
+		```
+	</Tab>
+	<Tab value="After">
+		```ts
+		import { portal } from 'robo.js'
+
+		// New: namespace-based access
+		const record = portal.getRecord('discordjs', 'commands', 'ping')
+		const handler = await portal.getHandler('discordjs', 'commands', 'ping')
+
+		// Or via namespace proxy (with @robojs/discordjs installed)
+		const commands = portal.discordjs.commands
+		```
+	</Tab>
+</Tabs>
+
+### `isEnabled` is Now a Method
+
+```ts
+// Before (getter property — no parentheses)
+portal.module('admin').isEnabled
+
+// After (method — requires parentheses)
+portal.module('admin').isEnabled()
+```
+
+<Callout type="warn">
+Code using `portal.module('admin').isEnabled` without parentheses will silently return the function reference (always truthy) instead of the actual boolean value. Add `()` to all `isEnabled` calls.
+</Callout>
+
+### Lazy Handler Loading
+
+Handlers are now lazy-loaded by default in development mode. The `handler` field on `HandlerRecord` can be `null` until imported. Use `portal.getHandler()` or `portal.importHandler()` to ensure a handler is loaded before accessing it. Production mode defaults to eager loading.
+
+### `HandlerRecord` Shape Changed
+
+| Field | Before | After |
+|-------|--------|-------|
+| `handler` | Always populated | `null` until lazy-loaded |
+| `type` | `'command'`, `'event'`, etc. | `'discordjs:commands'`, `'server:api'`, etc. |
+| `plugin.path` | Plugin path string | Removed (use `plugin.version`) |
+| `description` | Top-level field | Moved to `record.metadata.description` |
+| `enabled` | N/A | New boolean for runtime toggling |
+
+## New: Controller Pattern
+
+v0.11 introduces **controllers** in `@robojs/discordjs` for runtime management of Discord handlers.
+
+### Per-Handler Controllers
+
+Access individual handlers through the portal to enable/disable them at runtime or restrict to specific servers:
+
+```ts
+import { portal } from 'robo.js'
+
+// Disable a command at runtime
+portal.discordjs.command('ping').setEnabled(false)
+
+// Restrict to specific servers
+portal.discordjs.command('admin-reset').setServerOnly(['guild-id-1', 'guild-id-2'])
+
+// Reorder middleware
+portal.discordjs.middlewareItem('rate-limit').setOrder(5)
+```
+
+### Namespace Controllers
+
+Pre-instantiated controllers let you list, look up, and programmatically execute handlers:
+
+```ts
+import { commands, events } from '@robojs/discordjs'
+
+// List all registered commands
+const allCommands = commands.list()
+
+// Execute a command programmatically
+await commands.execute('ping', interaction)
+
+// Emit an event
+await events.emit('guildMemberAdd', member)
+```
+
+Five namespace controllers are available: `commands`, `events`, `context`, `middleware`, and `prefixCommands`.
+
+<Cards>
+	<Card href="/docs/discordjs/namespace-controllers" title="Namespace Controllers" description="Full reference for runtime handler management." />
+</Cards>
+
+## CLI Changes
+
+### New Commands
+
+| Command | Description |
+|---------|-------------|
+| `robo inspect` | Inspect project state, manifest, and configuration (`--json` for structured output) |
+| `robo logs` | View and filter log files (`--json` for NDJSON output) |
+| `robo skills` | Manage AI coding tool skills |
+
+### New Terminal Commands
+
+v0.11 introduces an interactive terminal in `robo dev` with built-in commands (`/help`, `/state`, `/flashcore`, `/env`, `/status`, `/plugins`) and plugin-provided commands. See [AI Native](/docs/ai-native/terminal) for details.
+
+## Deep Dive Links
+
+<Cards>
+	<Card href="/docs/discordjs/migrate" title="Discord.js Migration" description="Full guide for moving Discord-specific code to the plugin." />
+	<Card href="/docs/framework/core/flashcore/migration-guide" title="Flashcore Migration" description="Data migration, adapter config, and model adoption." />
+	<Card href="/docs/framework/core/lifecycle" title="Lifecycle Hooks" description="All hooks, context types, priority system, and build hooks." />
+	<Card href="/docs/flashcore-extras" title="Flashcore Extras" description="Advanced database features extracted into a plugin." />
+	<Card href="/docs/discordjs/namespace-controllers" title="Controllers" description="Runtime handler management with per-handler and namespace controllers." />
+	<Card href="/docs/ai-native" title="AI Native" description="New AI-first features and integrations in v0.11." />
+</Cards>

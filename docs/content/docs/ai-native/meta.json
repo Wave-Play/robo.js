@@ -1,0 +1,16 @@
+{
+  "title": "AI Native",
+  "icon": "Brain",
+  "description": "First-class AI coding tool integration with skills, structured CLI output, and deep context.",
+  "root": true,
+  "pages": [
+    "index",
+    "---Using AI Tools---",
+    "skills",
+    "agents-md",
+    "cli",
+    "---For Plugin Authors---",
+    "creating-skills",
+    "terminal"
+  ]
+}

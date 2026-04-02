@@ -1,0 +1,204 @@
+---
+title: CLI for AI
+description: Robo.js CLI commands produce structured JSON output that AI coding tools can parse and reason over programmatically.
+---
+
+The Robo.js CLI includes commands designed for AI tool consumption. When invoked with `--json`, these commands produce structured output that AI agents can parse and reason over — no screen-scraping or regex needed.
+
+Skills reference these CLI commands in their workflows. For example, the `robo-debug` skill uses `robo inspect --json` and `robo logs --json` as its primary diagnostic tools.
+
+## robo inspect
+
+Display your project's structure, plugins, routes, hooks, configuration, and environment variable health.
+
+```bash
+npx robo inspect --json
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--json`, `-j` | Output as structured JSON |
+| `--mode`, `-m` | Which mode manifest to inspect (`development`, `production`, or custom) |
+
+Without `--json`, the command prints a human-readable summary.
+
+### JSON output schema
+
+```json
+{
+  "project": {
+    "name": "my-bot",
+    "version": "1.0.0",
+    "language": "typescript",
+    "roboVersion": "0.11.0",
+    "mode": "production",
+    "buildTime": "2025-03-15T10:30:00.000Z"
+  },
+  "plugins": [
+    {
+      "name": "@robojs/discordjs",
+      "version": "0.11.0",
+      "namespace": "discord",
+      "routes": ["commands", "events", "context", "middleware"],
+      "hooks": ["start", "stop", "prepare", "hmr"]
+    }
+  ],
+  "routes": {
+    "commands": ["ping", "help", "admin ban"],
+    "events": ["messageCreate", "ready"],
+    "api": ["/api/health", "/api/users"],
+    "context": ["user/Report"],
+    "middleware": ["logger"]
+  },
+  "hooks": ["start", "stop", "prepare"],
+  "config": {
+    "type": "robo",
+    "namespace": "my-bot"
+  },
+  "env": {
+    "summary": { "total": 5, "set": 4, "empty": 0, "missing": 1 },
+    "missing": ["OPENAI_API_KEY"],
+    "satisfied": ["DISCORD_TOKEN", "DATABASE_URL", "NODE_ENV", "PORT"]
+  }
+}
+```
+
+### Key fields
+
+| Field | Description |
+|-------|-------------|
+| `project` | Project name, version, language, Robo version, build mode, and build time |
+| `plugins` | Array of installed plugins with their namespaces, routes, and hooks |
+| `routes` | All registered routes grouped by type (commands, events, api, context, middleware) |
+| `hooks` | Lifecycle hooks present in the project |
+| `config` | Merged project configuration |
+| `env` | Environment variable health: total count, how many are set, empty, or missing |
+
+<Callout type="info">
+The `env.missing` array is one of the most useful fields for diagnostics. Missing environment variables are a common source of runtime errors.
+</Callout>
+
+## robo logs
+
+Query, filter, and stream local log files from `.robo/logs/`.
+
+```bash
+npx robo logs --json --level error
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--json`, `-j` | Output as NDJSON (one JSON object per line) |
+| `--level`, `-l` | Filter by minimum log level (`trace`, `debug`, `info`, `warn`, `error`) |
+| `--source`, `-p` | Filter by source/plugin name (case-insensitive substring match) |
+| `--grep`, `-g` | Filter log messages by text or regex pattern |
+| `--mode`, `-m` | Which mode logs to read (`development`, `production`, or custom) |
+| `--limit`, `-n` | Maximum number of entries to output |
+| `--tail`, `-t` | Watch for new log entries in real time (stream mode) |
+
+### NDJSON output format
+
+Each line is a standalone JSON object:
+
+```json
+{"timestamp":"10:15:32.000","level":"error","source":"discordjs","message":"Failed to connect to gateway"}
+{"timestamp":"10:15:33.100","level":"warn","source":"api","message":"Rate limit approaching for /api/users"}
+{"timestamp":"10:15:34.200","level":"info","source":null,"message":"Reconnecting..."}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | `string` | Log entry timestamp |
+| `level` | `string` | Log level (`trace`, `debug`, `info`, `warn`, `error`, `event`, `ready`, `wait`) |
+| `source` | `string \| null` | Plugin or logger fork name (e.g., `discordjs`, `api`, `ai`) |
+| `message` | `string` | The log message content |
+
+### Filter examples
+
+```bash
+# Recent errors only
+npx robo logs --json --level error
+
+# Logs from the Discord plugin
+npx robo logs --json --source discordjs
+
+# Search for connection issues
+npx robo logs --json --grep "ECONNREFUSED"
+
+# Combine filters: warnings from the API layer, last 20 entries
+npx robo logs --json --level warn --source api --limit 20
+
+# Stream new errors in real time
+npx robo logs --json --level error --tail
+```
+
+### Log level priority
+
+Levels are ordered by priority. The `--level` filter shows entries at or above the specified level:
+
+| Level | Priority | Description |
+|-------|----------|-------------|
+| `trace` | 0 | Fine-grained debugging |
+| `debug` | 1 | Development diagnostics |
+| `info` | 2 | General information |
+| `wait` | 3 | Waiting/loading indicators |
+| `other` | 4 | Standard output |
+| `event` | 5 | Event-driven messages |
+| `ready` | 6 | Startup/ready signals |
+| `warn` | 7 | Warnings |
+| `error` | 8 | Errors |
+
+## robo skills
+
+Manage AI coding skills from plugins.
+
+| Command | Description |
+|---------|-------------|
+| `npx robo skills` | List installed and available skills |
+| `npx robo skills list` | List installed and available skills |
+| `npx robo skills install --all` | Install from all registered plugins |
+| `npx robo skills install <plugin>` | Install from a specific plugin |
+| `npx robo skills remove <plugin>` | Remove skills from a plugin |
+| `npx robo skills update` | Update all installed skills |
+| `npx robo skills update <plugin>` | Update skills from a specific plugin |
+
+### Install options
+
+| Flag | Description |
+|------|-------------|
+| `--all`, `-a` | Install from all registered plugins |
+| `--force`, `-f` | Overwrite existing skills from other plugins |
+| `--yes`, `-y` | Skip confirmation prompts |
+| `--silent`, `-s` | Suppress output |
+| `--verbose`, `-v` | Show debug information |
+
+## How AI tools use these
+
+The workflow is circular: skills reference CLI commands, CLI commands produce structured output, and AI tools reason over that output.
+
+1. A skill (e.g., `robo-debug`) instructs the AI tool to run `npx robo inspect --json`
+2. The CLI reads manifest files and outputs structured JSON
+3. The AI tool parses the JSON to understand project topology
+4. The tool runs `npx robo logs --json --level error` to check for issues
+5. The tool cross-references errors with the project structure and suggests fixes
+
+This pattern means AI tools can diagnose issues, understand your project, and generate correct code without relying on file-reading heuristics alone.
+
+## Next steps
+
+<Cards>
+  <Card
+    href="./skills"
+    title="Skills"
+    description="Instruction sets that reference these CLI commands."
+  />
+  <Card
+    href="./agents-md"
+    title="AGENTS.md"
+    description="Persistent project context for AI tools."
+  />
+</Cards>
