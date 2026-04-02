@@ -164,11 +164,12 @@ This prevents conflicts where multiple progression systems would compete over th
   <Tab value="TypeScript">
     ```ts
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
     	if (storeId !== 'reputation') return
 
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const member = await guild.members.fetch(userId)
 
@@ -181,11 +182,12 @@ This prevents conflicts where multiple progression systems would compete over th
   <Tab value="JavaScript">
     ```js
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
     	if (storeId !== 'reputation') return
 
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const member = await guild.members.fetch(userId)
 

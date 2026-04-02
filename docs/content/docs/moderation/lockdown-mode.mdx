@@ -83,7 +83,7 @@ Use this in your own commands or plugins to respect lockdown status:
   <Tab value="TypeScript">
     ```ts title="src/commands/custom.ts"
     import { getLockdown } from '@robojs/moderation'
-    import type { CommandResult } from 'robo.js'
+    import type { CommandResult } from '@robojs/discordjs'
     import type { ChatInputCommandInteraction } from 'discord.js'
 
     export default (interaction: ChatInputCommandInteraction): CommandResult => {

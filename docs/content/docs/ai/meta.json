@@ -18,6 +18,8 @@
 		"token-usage",
 		"mcp",
 		"web-api",
+		"---Reference---",
+		"cli",
 		"---Advanced---",
 		"custom-engines",
 		"hooks"

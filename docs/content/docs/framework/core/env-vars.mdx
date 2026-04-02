@@ -128,14 +128,14 @@ Robo.js loads your `.env` file automatically at startup. Access values through `
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     export default () => {
     	console.log(process.env.EXAMPLE_VARIABLE)
     }
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     export default () => {
     	console.log(process.env.EXAMPLE_VARIABLE)
     }
@@ -147,7 +147,7 @@ You can also load environment variables manually:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { Env } from 'robo.js'
 
     export default async () => {
@@ -164,7 +164,7 @@ You can also load environment variables manually:
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { Env } from 'robo.js'
 
     export default async () => {

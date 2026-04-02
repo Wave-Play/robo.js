@@ -11,6 +11,10 @@ description: Transform your Robo into an AI-powered copilot with native voice, v
 	github="https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai"
 	platforms={["Bots"]}
 	optional={[{ name: "@robojs/server", href: "/docs/server", description: "Enables /api/ai/chat endpoint" }]}
+	terminal={[
+		{ name: "/ai status", description: "Show AI engine status", href: "./cli" },
+		{ name: "/ai usage", description: "View token usage", href: "./cli" }
+	]}
 />
 
 Turn your Robo into an AI chatbot with native voice conversations, vision, web search with citations, natural language command execution, token tracking, and a pluggable engine architecture. Ships with OpenAI's Responses and Conversations APIs by default, but you can swap in any provider.

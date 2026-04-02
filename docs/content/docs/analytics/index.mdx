@@ -10,6 +10,11 @@ description: Track usage patterns in your Robo with Google Analytics, Plausible,
 	icon={<BarChart />}
 	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/analytics"
 	platforms={["Bots"]}
+	terminal={[
+		{ name: "/analytics status", description: "Show analytics configuration", href: "./cli" },
+		{ name: "/analytics test", description: "Fire a test event", href: "./cli" },
+		{ name: "/analytics fire", description: "Fire a custom event", href: "./cli" }
+	]}
 />
 
 Track usage patterns in your Robo with services like [Google Analytics](https://analytics.google.com), [Plausible](https://plausible.io), or a custom provider. Know how often commands are used, how many servers your bot joins, and more.

@@ -1,0 +1,67 @@
+---
+title: CLI
+description: Terminal commands for inspecting AI engine state and token usage during development.
+---
+
+The AI plugin extends the `robo dev` interactive terminal with `/ai` commands. Monitor your AI engine, check token usage, and inspect configuration without leaving your dev session.
+
+## Terminal Commands
+
+### `/ai`
+
+Show available AI subcommands:
+
+```
+/ai
+```
+
+### `/ai status`
+
+Display an AI engine status dashboard:
+
+```
+/ai status
+```
+
+Shows:
+- Engine info (name, version, model)
+- Ready state
+- Supported features (voice, vision, voice transcription)
+- Active MCP servers
+- Voice session status
+- Channel configuration (whitelist and restrict lists)
+
+### `/ai usage`
+
+View token usage statistics:
+
+```
+/ai usage
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-w, --window <string>` | Time window: `day`, `week`, `month`, or `lifetime` | `lifetime` |
+| `-m, --model <string>` | Filter by model identifier | All models |
+| `-p, --page <number>` | Page number | `1` |
+| `-n, --per-page <number>` | Items per page | `15` |
+
+```
+# Show daily usage
+/ai usage -w day
+
+# Show usage for a specific model
+/ai usage -m gpt-4o
+
+# Show weekly usage, page 2
+/ai usage -w week -p 2
+```
+
+Displays token counts (input, output, total) per model. Shows configured token limits when present.
+
+## Next steps
+
+<Cards>
+	<Card title="Configuration" href="./configuration" description="All plugin and engine options." />
+	<Card title="Token usage" href="./token-usage" description="Token tracking and limit configuration." />
+</Cards>

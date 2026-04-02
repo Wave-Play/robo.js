@@ -27,6 +27,7 @@ A standard Robo.js project contains the following directories:
       <Folder name="events" disabled />
       <Folder name="middleware" disabled />
       <Folder name="modules" disabled />
+      <Folder name="robo" disabled />
     </Folder>
     <File name=".env" />
     <File name="package.json" />
@@ -163,6 +164,29 @@ Modules group related commands, events, and middleware into self-contained units
 </Files>
 
 See **[Modules](./modules)** for more details.
+
+### Lifecycle Hooks
+
+Files in `src/robo/` hook into the Robo.js lifecycle. Each file runs at a specific phase — startup, shutdown, errors, or build.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="robo" defaultOpen>
+      <File name="start.ts" note="Startup hook" />
+      <File name="stop.ts" note="Shutdown hook" />
+      <File name="init.ts" note="Early initialization" />
+      <File name="prepare.ts" note="Resource preparation" />
+      <File name="error.ts" note="Error handling" />
+      <File name="hmr.ts" note="Hot reload hook" />
+      <Folder name="build" defaultOpen>
+        <File name="start.ts" note="Pre-build hook" />
+        <File name="complete.ts" note="Post-build hook" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+See **[Lifecycle Hooks](./lifecycle)** for more details.
 
 ## Configuration
 
@@ -301,6 +325,10 @@ Here is what a fully-featured Discord bot project looks like with commands, even
           </Folder>
           <Folder name="events" disabled />
         </Folder>
+      </Folder>
+      <Folder name="robo" defaultOpen>
+        <File name="start.ts" note="Startup hook" />
+        <File name="stop.ts" note="Shutdown hook" />
       </Folder>
     </Folder>
     <File name=".env" note="Environment variables" />

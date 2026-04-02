@@ -47,7 +47,7 @@ Import `Cron` and pass a cron expression with a callback. The job starts immedia
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { Cron } from '@robojs/cron'
 
     export default () => {
@@ -58,7 +58,7 @@ Import `Cron` and pass a cron expression with a callback. The job starts immedia
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { Cron } from '@robojs/cron'
 
     export default () => {
@@ -70,7 +70,7 @@ Import `Cron` and pass a cron expression with a callback. The job starts immedia
   </Tab>
 </Tabs>
 
-The `_start` event is a good place to register jobs that should run for the lifetime of your Robo.
+The `start` lifecycle hook is a good place to register jobs that should run for the lifetime of your Robo.
 
 ## Using patterns
 
@@ -78,7 +78,7 @@ Don't want to memorize cron syntax? Use the `Patterns` helper for readable sched
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { Cron, Patterns } from '@robojs/cron'
 
     export default () => {
@@ -97,7 +97,7 @@ Don't want to memorize cron syntax? Use the `Patterns` helper for readable sched
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { Cron, Patterns } from '@robojs/cron'
 
     export default () => {
@@ -172,7 +172,7 @@ Instead of inline functions, point to a file that exports a default function. Fi
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { Cron } from '@robojs/cron'
 
     export default () => {
@@ -182,7 +182,7 @@ Instead of inline functions, point to a file that exports a default function. Fi
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { Cron } from '@robojs/cron'
 
     export default () => {
@@ -217,8 +217,8 @@ The job file must export a default function. It receives the job ID as its first
 		<Folder name="cron" defaultOpen>
 			<File name="cleanup.ts" note="Job handler" />
 		</Folder>
-		<Folder name="events" defaultOpen>
-			<File name="_start.ts" note="Registers cron jobs" />
+		<Folder name="robo" defaultOpen>
+			<File name="start.ts" note="Registers cron jobs" />
 		</Folder>
 	</Folder>
 </Files>

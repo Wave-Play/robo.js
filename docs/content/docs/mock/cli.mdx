@@ -189,6 +189,133 @@ npx robo mock start --verbose
 npx robo mock start --no-browser
 ```
 
+## Terminal Commands
+
+During `robo dev --mock`, the interactive terminal provides `/mock` commands for inspecting and managing the mock environment.
+
+### `/mock`
+
+Show available subcommands:
+
+```
+/mock
+```
+
+### `/mock status`
+
+Display the mock session dashboard:
+
+```
+/mock status
+```
+
+Shows:
+- Session ID, name, creation time
+- Bot user and connection count
+- Entity counts (guilds, channels, users, messages, commands, roles)
+- Recorded action count
+- Feature toggles (rate limit simulation, loop protection)
+
+### `/mock stage`
+
+Open the Stage UI in your browser:
+
+```
+/mock stage
+```
+
+Opens the Stage UI for the currently targeted session.
+
+### `/mock actions`
+
+List recorded bot actions:
+
+```
+/mock actions
+```
+
+| Option | Alias | Description | Default |
+|--------|-------|-------------|---------|
+| `--type` | `-t` | Filter by action type | All types |
+| `--limit` | `-l` | Max items to show | `15` |
+| `--clear` | `-c` | Clear all recorded actions | `false` |
+
+```
+# Show last 5 actions
+/mock actions --limit 5
+
+# Filter by type
+/mock actions --type interaction_response
+
+# Clear all actions
+/mock actions --clear
+```
+
+### `/mock reset`
+
+Reset the session state:
+
+```
+/mock reset
+```
+
+Clears entities, actions, and voice servers while preserving the bot user identity and connections.
+
+### `/mock command`
+
+Invoke a slash command as if a user typed it:
+
+```
+/mock command <name>
+```
+
+| Option | Description |
+|--------|-------------|
+| `--channel` | Channel name or ID to dispatch in |
+
+```
+# Invoke /ping
+/mock command ping
+
+# Invoke in a specific channel
+/mock command help --channel general
+```
+
+### `/mock sessions`
+
+List all active sessions:
+
+```
+/mock sessions
+```
+
+Displays a table of all sessions with their ID, name, creation time, connection count, guild count, and action count. The currently targeted session is marked with `>`.
+
+### `/mock use`
+
+Switch which session subsequent commands target:
+
+```
+/mock use <session-id>
+```
+
+| Option | Description |
+|--------|-------------|
+| `--reset` | Clear selection, revert to dev session |
+
+```
+# Switch to a specific session
+/mock use sess_abc123
+
+# Show current target
+/mock use
+
+# Revert to dev session
+/mock use --reset
+```
+
+When multiple sessions are active and no explicit selection has been made, commands show a hint suggesting `/mock sessions`.
+
 ## Session Management
 
 ### Via REST API

@@ -159,7 +159,7 @@ External API requests are not patched by this plugin. If you experience CSP issu
 
 **Problem**: Older Discord Activities or apps that share the same Discord application for both bots and activities may lose the Primary Entry Point command (type 4). Without this command, the Activity's launch button disappears.
 
-**What it does**: On Robo startup, checks whether the entry point command exists. If missing, automatically registers it via the Discord API. This runs as a `_start` lifecycle event -- no manual invocation needed.
+**What it does**: On Robo startup, checks whether the entry point command exists. If missing, automatically registers it via the Discord API. This runs as a `start` lifecycle hook (`src/robo/start.ts`) -- no manual invocation needed.
 
 **Requirements**: Set both environment variables in your `.env` file:
 

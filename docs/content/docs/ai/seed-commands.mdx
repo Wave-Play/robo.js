@@ -35,8 +35,8 @@ Uses `AI.chatSync()` under the hood to get a synchronous response.
   <Tab value="TypeScript">
     ```ts title="src/commands/ai/chat.ts"
     import { AI } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
-    import type { CommandResult } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
+    import type { CommandResult } from '@robojs/discordjs'
     import type { ChatInputCommandInteraction } from 'discord.js'
 
     export const config = createCommandConfig({
@@ -66,7 +66,7 @@ Uses `AI.chatSync()` under the hood to get a synchronous response.
   <Tab value="JavaScript">
     ```js title="src/commands/ai/chat.js"
     import { AI } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
 
     export const config = createCommandConfig({
     	description: 'Chat with the AI directly.',
@@ -113,7 +113,7 @@ Uses `AI.generateImage()` and handles `TokenLimitError` if usage limits are conf
   <Tab value="TypeScript">
     ```ts title="src/commands/ai/imagine.ts"
     import { AI, TokenLimitError } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
     import { AttachmentBuilder } from 'discord.js'
     import type { ChatInputCommandInteraction } from 'discord.js'
 
@@ -158,7 +158,7 @@ Uses `AI.generateImage()` and handles `TokenLimitError` if usage limits are conf
   <Tab value="JavaScript">
     ```js title="src/commands/ai/imagine.js"
     import { AI, TokenLimitError } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
     import { AttachmentBuilder } from 'discord.js'
 
     export const config = createCommandConfig({
@@ -221,7 +221,7 @@ Token usage dashboard for server administrators. Shows daily, weekly, monthly, a
   <Tab value="TypeScript">
     ```ts title="src/commands/ai/usage.ts"
     import { AI } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
     import type { ChatInputCommandInteraction } from 'discord.js'
 
     export const config = createCommandConfig({
@@ -270,7 +270,7 @@ Token usage dashboard for server administrators. Shows daily, weekly, monthly, a
   <Tab value="JavaScript">
     ```js title="src/commands/ai/usage.js"
     import { AI } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
 
     export const config = createCommandConfig({
     	description: 'View AI token usage statistics.',
@@ -337,7 +337,7 @@ Uses `AI.startVoice()` and catches `TokenLimitError` if voice usage limits are a
   <Tab value="TypeScript">
     ```ts title="src/commands/voice/join.ts"
     import { AI, TokenLimitError } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
     import type { ChatInputCommandInteraction } from 'discord.js'
 
     export const config = createCommandConfig({
@@ -375,7 +375,7 @@ Uses `AI.startVoice()` and catches `TokenLimitError` if voice usage limits are a
   <Tab value="JavaScript">
     ```js title="src/commands/voice/join.js"
     import { AI, TokenLimitError } from '@robojs/ai'
-    import { createCommandConfig } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
 
     export const config = createCommandConfig({
     	description: 'Join a voice channel for AI conversation.',

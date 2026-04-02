@@ -59,6 +59,49 @@ Your plugin is now available on npm for other Robo.js users to install.
 **Note:** Keep sensitive information out of your plugin. Avoid including `.env` files or similar data that should not be shared with other users.
 </Callout>
 
+## Lifecycle Hooks
+
+Plugins can hook into the Robo.js lifecycle by creating files in `src/robo/`. These hooks let your plugin run code at startup, shutdown, or during builds.
+
+<Files>
+  <Folder name="src" defaultOpen disabled>
+    <Folder name="robo" defaultOpen>
+      <File name="start.ts" note="Runs on startup" />
+      <File name="stop.ts" note="Runs on shutdown" />
+      <File name="prepare.ts" note="Initialize resources" />
+    </Folder>
+  </Folder>
+</Files>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/robo/start.ts"
+    import type { StartContext } from 'robo.js'
+
+    export default async (context: StartContext) => {
+    	const { pluginConfig, logger } = context
+    	logger.info('My plugin started!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/robo/start.js"
+    export default async (context) => {
+    	const { pluginConfig, logger } = context
+    	logger.info('My plugin started!')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Plugins can also define [route definitions](./routes) to register custom file conventions (like how `@robojs/discordjs` makes `src/commands/` work).
+
+See **[Lifecycle Hooks](../core/lifecycle)** for all available hooks and their execution order.
+
+<Callout type="info">
+Want your plugin to work great with AI coding tools? Learn how to **[create skills](/docs/ai-native/creating-skills)** for your plugin.
+</Callout>
+
 ## Next Steps
 
 <Cards>

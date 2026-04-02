@@ -80,7 +80,7 @@ To preserve module states across restarts, store them in a database and restore 
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { portal } from 'robo.js'
 
     export default async function () {
@@ -103,7 +103,7 @@ To preserve module states across restarts, store them in a database and restore 
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { portal } from 'robo.js'
 
     export default async function () {

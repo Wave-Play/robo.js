@@ -161,11 +161,11 @@ Move commands to `src/commands/`, events to `src/events/`, and remove manual cli
 
 ### Gradual Migration
 
-Use the `_start` lifecycle event to run existing setup code alongside Robo handlers. This lets you migrate handlers incrementally.
+Use the `start` lifecycle hook to run existing setup code alongside Robo handlers. This lets you migrate handlers incrementally.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { getClient } from '@robojs/discordjs'
 
     export default () => {
@@ -181,7 +181,7 @@ Use the `_start` lifecycle event to run existing setup code alongside Robo handl
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { getClient } from '@robojs/discordjs'
 
     export default () => {
@@ -198,13 +198,17 @@ Use the `_start` lifecycle event to run existing setup code alongside Robo handl
   </Tab>
 </Tabs>
 
-New commands and events can use the Robo.js file structure while existing ones continue running through `_start`. As you migrate each handler to a file in `src/events/` or `src/commands/`, remove it from the `_start` event.
+New commands and events can use the Robo.js file structure while existing ones continue running through the `start` hook. As you migrate each handler to a file in `src/events/` or `src/commands/`, remove it from the start hook.
 
 ### Custom Entry Point
 
 Configure a custom entry point in `config/robo.ts` if you need full control over the startup process. This is useful for bots with complex initialization requirements that cannot be easily decomposed into lifecycle events.
 
 ## From Old Robo.js (pre-v0.11)
+
+<Callout type="info">
+For a complete v0.11 migration guide, see **[Upgrading to v0.11](/docs/upgrading)**.
+</Callout>
 
 Existing Robo.js users migrating to v0.11 need to install the `@robojs/discordjs` plugin and update imports. Discord-specific functionality has moved from the core framework into a dedicated plugin.
 
@@ -319,15 +323,21 @@ After:
   <Tab value="TypeScript">
     ```ts
     import { getClient } from '@robojs/discordjs'
-    const client = getClient()
-    client.user?.setPresence({ status: 'idle' })
+
+    export default () => {
+    	const client = getClient()
+    	client.user?.setPresence({ status: 'idle' })
+    }
     ```
   </Tab>
   <Tab value="JavaScript">
     ```js
     import { getClient } from '@robojs/discordjs'
-    const client = getClient()
-    client.user?.setPresence({ status: 'idle' })
+
+    export default () => {
+    	const client = getClient()
+    	client.user?.setPresence({ status: 'idle' })
+    }
     ```
   </Tab>
 </Tabs>

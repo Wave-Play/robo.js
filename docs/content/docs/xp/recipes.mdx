@@ -15,12 +15,14 @@ The XP plugin is designed for extension. These recipes demonstrate common patter
       <File name="seasons.ts" note="Seasonal battle pass" />
       <File name="setup.ts" note="Programmatic setup wizard" />
     </Folder>
-    <Folder name="events" defaultOpen>
-      <Folder name="_start" defaultOpen>
+    <Folder name="robo" defaultOpen>
+      <Folder name="start" defaultOpen>
         <File name="level-announcements.ts" note="Level-up messages" />
         <File name="xp-analytics.ts" note="Analytics tracking" />
         <File name="custom-rewards.ts" note="Milestone rewards" />
       </Folder>
+    </Folder>
+    <Folder name="events" defaultOpen>
       <Folder name="messageCreate" defaultOpen>
         <File name="economy.ts" note="Multi-currency economy" />
       </Folder>
@@ -32,16 +34,17 @@ The XP plugin is designed for extension. These recipes demonstrate common patter
 
 ## Level-up announcements
 
-Send a message when users level up. The plugin seeds a starter template at `seed/events/_start/level-announcements.ts` with rich embeds and customization options.
+Send a message when users level up. The plugin seeds a starter template at `seed/robo/start/level-announcements.ts` with rich embeds and customization options.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start/level-announcements.ts"
+    ```ts title="src/robo/start/level-announcements.ts"
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
     import { EmbedBuilder } from 'discord.js'
 
     events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const member = await guild.members.fetch(userId)
 
@@ -60,12 +63,13 @@ Send a message when users level up. The plugin seeds a starter template at `seed
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start/level-announcements.js"
+    ```js title="src/robo/start/level-announcements.js"
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
     import { EmbedBuilder } from 'discord.js'
 
     events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const member = await guild.members.fetch(userId)
 
@@ -93,7 +97,7 @@ Award bonus XP to contest winners or event participants.
   <Tab value="TypeScript">
     ```ts title="src/commands/contest-winner.ts"
     import { XP } from '@robojs/xp'
-    import type { CommandResult } from 'robo.js'
+    import type { CommandResult } from '@robojs/discordjs'
 
     export default async (interaction) => {
     	const winner = interaction.options.getUser('user', true)
@@ -229,7 +233,7 @@ Forward XP events to an analytics service.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start/xp-analytics.ts"
+    ```ts title="src/robo/start/xp-analytics.ts"
     import { events, XP } from '@robojs/xp'
     import { logger } from 'robo.js'
 
@@ -254,7 +258,7 @@ Forward XP events to an analytics service.
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start/xp-analytics.js"
+    ```js title="src/robo/start/xp-analytics.js"
     import { events, XP } from '@robojs/xp'
     import { logger } from 'robo.js'
 
@@ -329,13 +333,14 @@ Trigger custom actions at specific level milestones.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start/custom-rewards.ts"
+    ```ts title="src/robo/start/custom-rewards.ts"
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
     	if (storeId !== 'default') return
 
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const member = await guild.members.fetch(userId)
 
@@ -354,13 +359,14 @@ Trigger custom actions at specific level milestones.
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start/custom-rewards.js"
+    ```js title="src/robo/start/custom-rewards.js"
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
     	if (storeId !== 'default') return
 
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const member = await guild.members.fetch(userId)
 

@@ -149,7 +149,7 @@ The types file is written to `generated/types.d.ts` inside the plugin package di
 
 Types are regenerated in two scenarios:
 
-1. **Robo startup** — The `_start` lifecycle hook calls `loadLocales()`, which scans files and writes types.
+1. **Robo startup** — The `start` lifecycle hook (`src/robo/start.ts`) calls `loadLocales()`, which scans files and writes types.
 2. **CLI** — Running `npx i18n` triggers the same process.
 
 ### Type widening

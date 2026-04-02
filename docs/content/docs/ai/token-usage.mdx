@@ -181,33 +181,37 @@ Subscribe to usage events for monitoring and alerting:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { tokenLedger } from '@robojs/ai'
 
-    tokenLedger.on('usage.recorded', (event) => {
-    	console.log(`${event.model}: +${event.entry.total} tokens`)
-    })
+    export default () => {
+    	tokenLedger.on('usage.recorded', (event) => {
+    		console.log(`${event.model}: +${event.entry.total} tokens`)
+    	})
 
-    tokenLedger.on('usage.limitReached', (event) => {
-    	for (const breach of event.breaches) {
-    		console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
-    	}
-    })
+    	tokenLedger.on('usage.limitReached', (event) => {
+    		for (const breach of event.breaches) {
+    			console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
+    		}
+    	})
+    }
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { tokenLedger } from '@robojs/ai'
 
-    tokenLedger.on('usage.recorded', (event) => {
-    	console.log(`${event.model}: +${event.entry.total} tokens`)
-    })
+    export default () => {
+    	tokenLedger.on('usage.recorded', (event) => {
+    		console.log(`${event.model}: +${event.entry.total} tokens`)
+    	})
 
-    tokenLedger.on('usage.limitReached', (event) => {
-    	for (const breach of event.breaches) {
-    		console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
-    	}
-    })
+    	tokenLedger.on('usage.limitReached', (event) => {
+    		for (const breach of event.breaches) {
+    			console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
+    		}
+    	})
+    }
     ```
   </Tab>
 </Tabs>
@@ -220,37 +224,41 @@ Configure the ledger at runtime instead of (or in addition to) the plugin config
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { tokenLedger } from '@robojs/ai'
 
-    tokenLedger.configure({
-    	limits: {
-    		perModel: {
-    			'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
+    export default () => {
+    	tokenLedger.configure({
+    		limits: {
+    			perModel: {
+    				'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
+    			}
+    		},
+    		hooks: {
+    			onRecorded: (payload) => { /* ... */ },
+    			onLimitReached: (payload) => { /* ... */ }
     		}
-    	},
-    	hooks: {
-    		onRecorded: (payload) => { /* ... */ },
-    		onLimitReached: (payload) => { /* ... */ }
-    	}
-    })
+    	})
+    }
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { tokenLedger } from '@robojs/ai'
 
-    tokenLedger.configure({
-    	limits: {
-    		perModel: {
-    			'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
+    export default () => {
+    	tokenLedger.configure({
+    		limits: {
+    			perModel: {
+    				'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
+    			}
+    		},
+    		hooks: {
+    			onRecorded: (payload) => { /* ... */ },
+    			onLimitReached: (payload) => { /* ... */ }
     		}
-    	},
-    	hooks: {
-    		onRecorded: (payload) => { /* ... */ },
-    		onLimitReached: (payload) => { /* ... */ }
-    	}
-    })
+    	})
+    }
     ```
   </Tab>
 </Tabs>

@@ -260,12 +260,13 @@ Return `null` to fall through to the next level in the resolution chain. The cal
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts title="config/plugins/robojs/xp.ts"
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
     import type { PluginOptions } from '@robojs/xp'
 
     export default {
     	levels: {
     		getCurve: async (guildId) => {
+    			const client = getClient()
     			const guild = await client.guilds.fetch(guildId)
     			if (guild.memberCount > 1000) {
     				return {
@@ -281,11 +282,12 @@ Return `null` to fall through to the next level in the resolution chain. The cal
   </Tab>
   <Tab value="JavaScript">
     ```js title="config/plugins/robojs/xp.js"
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     export default {
     	levels: {
     		getCurve: async (guildId) => {
+    			const client = getClient()
     			const guild = await client.guilds.fetch(guildId)
     			if (guild.memberCount > 1000) {
     				return {

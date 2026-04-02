@@ -127,7 +127,7 @@ Each ping logs a message like `Sending heartbeat... 2025-10-27T12:00:00.000Z`. T
 
 ## How it works
 
-The plugin starts a `setInterval` timer during the `_start` lifecycle event. Each tick sends a `fetch` request to the heartbeat URL. The response is ignored — only the request matters.
+The plugin starts a `setInterval` timer during the `start` lifecycle hook (`src/robo/start.ts`). Each tick sends a `fetch` request to the heartbeat URL. The response is ignored — only the request matters.
 
 If a fetch fails (network error, DNS issue, etc.), the error is logged at `debug` level and the interval keeps running. Transient failures don't stop the heartbeat system.
 

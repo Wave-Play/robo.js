@@ -62,7 +62,7 @@ Import `createCommandConfig` from `@robojs/i18n` instead of `robo.js`. Pass `nam
     ```ts title="src/commands/ping.ts"
     import { createCommandConfig, t } from '@robojs/i18n'
     import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { CommandOptions } from 'robo.js'
+    import type { CommandOptions } from '@robojs/discordjs'
 
     export const config = createCommandConfig({
     	nameKey: 'commands:ping.name',

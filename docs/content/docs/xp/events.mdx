@@ -219,15 +219,15 @@ Role reward reconciliation only runs for the default store. Custom stores never 
 
 ## Best practices
 
-- Register listeners in `src/events/_start/` files so they activate on Robo startup.
+- Register listeners in `src/robo/start/` files so they activate on Robo startup.
 - Use `async`/`await` in listeners. Errors in listeners are logged but do not propagate to the caller.
 - Include `reason` when calling XP operations to make analytics and audit logs more useful.
 - For heavy work (API calls, database writes), consider using a queue rather than processing inline.
 
 <Files>
   <Folder name="src" defaultOpen disabled>
-    <Folder name="events" defaultOpen>
-      <Folder name="_start" defaultOpen>
+    <Folder name="robo" defaultOpen>
+      <Folder name="start" defaultOpen>
         <File name="xp-analytics.ts" note="XP change tracking" />
       </Folder>
     </Folder>
@@ -236,35 +236,39 @@ Role reward reconciliation only runs for the default store. Custom stores never 
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start/xp-analytics.ts"
+    ```ts title="src/robo/start/xp-analytics.ts"
     import { events } from '@robojs/xp'
 
-    events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
-    	if (storeId !== 'default') return
+    export default () => {
+    	events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+    		if (storeId !== 'default') return
 
-    	await analyticsService.track('xp_change', {
-    		guild: guildId,
-    		user: userId,
-    		amount: delta,
-    		reason
+    		await analyticsService.track('xp_change', {
+    			guild: guildId,
+    			user: userId,
+    			amount: delta,
+    			reason
+    		})
     	})
-    })
+    }
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start/xp-analytics.js"
+    ```js title="src/robo/start/xp-analytics.js"
     import { events } from '@robojs/xp'
 
-    events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
-    	if (storeId !== 'default') return
+    export default () => {
+    	events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+    		if (storeId !== 'default') return
 
-    	await analyticsService.track('xp_change', {
-    		guild: guildId,
-    		user: userId,
-    		amount: delta,
-    		reason
+    		await analyticsService.track('xp_change', {
+    			guild: guildId,
+    			user: userId,
+    			amount: delta,
+    			reason
+    		})
     	})
-    })
+    }
     ```
   </Tab>
 </Tabs>

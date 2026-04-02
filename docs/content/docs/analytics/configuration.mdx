@@ -154,7 +154,7 @@ When no `engine` is set in the config, the plugin reads environment variables at
 | `PLAUSIBLE_DOMAIN` only | `PlausibleAnalytics` |
 | Neither | No engine. Warning logged. |
 
-This detection runs in the plugin's `_start` lifecycle hook. If a custom `engine` is provided in the config, auto-detection is skipped entirely.
+This detection runs in the plugin's `start` lifecycle hook (`src/robo/start.ts`). If a custom `engine` is provided in the config, auto-detection is skipped entirely.
 
 <Callout type="info">
 Setting both Google Analytics and Plausible environment variables automatically sends events to both services. No `ManyEngines` config needed.
@@ -162,7 +162,7 @@ Setting both Google Analytics and Plausible environment variables automatically 
 
 ## Initialization lifecycle
 
-The plugin initializes during the Robo `_start` lifecycle event:
+The plugin initializes during the Robo `start` lifecycle hook (`src/robo/start.ts`):
 
 <Steps>
   <Step>
@@ -217,7 +217,7 @@ The seeded middleware intercepts all slash commands and sends an event:
     ```ts title="src/middleware/track-commands.ts"
     import { Analytics } from '@robojs/analytics'
     import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { MiddlewareData } from 'robo.js'
+    import type { MiddlewareData } from '@robojs/discordjs'
 
     export default async (data: MiddlewareData) => {
     	const { payload, record } = data
@@ -291,11 +291,11 @@ The seeded event handler requires the `Guilds` intent:
   </Tab>
 </Tabs>
 
-Enable the intent in your Robo config if you want this tracking:
+Enable the intent in your Discord plugin config if you want this tracking:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
+    ```ts title="config/plugins/robojs/discordjs.mjs"
     export default {
     	clientOptions: {
     		intents: ['Guilds']
@@ -304,7 +304,7 @@ Enable the intent in your Robo config if you want this tracking:
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
+    ```js title="config/plugins/robojs/discordjs.mjs"
     export default {
     	clientOptions: {
     		intents: ['Guilds']

@@ -36,11 +36,12 @@ A complete level-up announcement system in a few lines:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start/level-announcements.ts"
+    ```ts title="src/robo/start/level-announcements.ts"
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
     	if (!channel?.isTextBased()) return
@@ -50,11 +51,12 @@ A complete level-up announcement system in a few lines:
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start/level-announcements.js"
+    ```js title="src/robo/start/level-announcements.js"
     import { events } from '@robojs/xp'
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+    	const client = getClient()
     	const guild = await client.guilds.fetch(guildId)
     	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
     	if (!channel?.isTextBased()) return

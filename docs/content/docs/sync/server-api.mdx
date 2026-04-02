@@ -233,29 +233,33 @@ Client-side handling:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     import { SyncServer } from '@robojs/sync/server'
 
-    setInterval(() => {
-    	const zone = SyncServer.getZone(['dashboard', 'stats'])
-    	zone.setState({
-    		serverTime: Date.now(),
-    		uptime: process.uptime()
-    	})
-    }, 5000)
+    export default () => {
+    	setInterval(() => {
+    		const zone = SyncServer.getZone(['dashboard', 'stats'])
+    		zone.setState({
+    			serverTime: Date.now(),
+    			uptime: process.uptime()
+    		})
+    	}, 5000)
+    }
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     import { SyncServer } from '@robojs/sync/server'
 
-    setInterval(() => {
-    	const zone = SyncServer.getZone(['dashboard', 'stats'])
-    	zone.setState({
-    		serverTime: Date.now(),
-    		uptime: process.uptime()
-    	})
-    }, 5000)
+    export default () => {
+    	setInterval(() => {
+    		const zone = SyncServer.getZone(['dashboard', 'stats'])
+    		zone.setState({
+    			serverTime: Date.now(),
+    			uptime: process.uptime()
+    		})
+    	}, 5000)
+    }
     ```
   </Tab>
 </Tabs>

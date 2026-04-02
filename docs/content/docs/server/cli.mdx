@@ -1,9 +1,9 @@
 ---
 title: CLI
-description: Command-line tools for managing tunnels and server development.
+description: Command-line tools for managing tunnels, inspecting routes, and server development.
 ---
 
-The server plugin extends the Robo CLI with tunnel management commands and a dev server tunnel flag.
+The server plugin extends the Robo CLI with tunnel management commands and a dev server tunnel flag. It also adds `/server` terminal commands for inspecting server state during development.
 
 ## `robo dev -t`
 
@@ -131,6 +131,88 @@ List all running tunnels with their ID, port, uptime, and public URL:
 ```
 /tunnel list
 ```
+
+## Server Commands
+
+The server plugin also adds `/server` commands for inspecting server state and testing routes during development.
+
+### `/server`
+
+Show available server subcommands:
+
+```
+/server
+```
+
+### `/server status`
+
+Display a server status dashboard:
+
+```
+/server status
+```
+
+Shows server hostname, port, engine type, route count, uptime, tunnel status, and CORS configuration.
+
+### `/server routes`
+
+List all registered API routes:
+
+```
+/server routes
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `-f, --filter <string>` | Filter routes by path pattern | — |
+| `-p, --page <number>` | Page number | `1` |
+| `-n, --per-page <number>` | Items per page | `15` |
+
+```
+# Filter routes by pattern
+/server routes -f users
+
+# Show page 2
+/server routes -p 2
+```
+
+Displays route path, source file, and plugin owner.
+
+### `/server curl`
+
+Test an API route directly from the terminal:
+
+```
+/server curl <method> <path>
+```
+
+| Option | Description |
+|---|---|
+| `-b, --body <string>` | Request body (JSON string) |
+| `-H, --header <string>` | Request header (`Key: Value`) |
+
+```
+# GET request
+/server curl /api/hello
+
+# POST with body
+/server curl POST /api/users -b '{"name":"Robo"}'
+
+# With custom header
+/server curl GET /api/data -H "Authorization: Bearer token"
+```
+
+If no method is specified, defaults to `GET`. Displays status code, response headers, and body.
+
+### `/server openapi`
+
+View a summary of the generated OpenAPI spec:
+
+```
+/server openapi
+```
+
+Reads `.robo/openapi.json` and displays the number of paths, endpoints, and schemas. If the file doesn't exist, prompts you to run `robo build` first.
 
 ## Next steps
 

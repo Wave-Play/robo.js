@@ -1,0 +1,69 @@
+---
+title: CLI
+description: Terminal commands for inspecting and testing analytics during development.
+---
+
+The analytics plugin extends the `robo dev` interactive terminal with `/analytics` commands. Test your analytics integration and inspect configuration without leaving your dev session.
+
+## Terminal Commands
+
+### `/analytics`
+
+Show available analytics subcommands:
+
+```
+/analytics
+```
+
+### `/analytics status`
+
+Display analytics configuration overview:
+
+```
+/analytics status
+```
+
+Shows:
+- Whether analytics is initialized and ready
+- Active engine type (Google Analytics, Plausible, ManyEngines, or custom)
+- Environment variable status (set/not set, values masked)
+
+### `/analytics test`
+
+Fire a test event to verify your analytics integration:
+
+```
+/analytics test
+```
+
+Sends a `terminal_test` event with source and timestamp metadata. Reports success or failure. Use this to confirm your analytics service is receiving events.
+
+### `/analytics fire`
+
+Fire a custom analytics event:
+
+```
+/analytics fire <event-name>
+```
+
+| Option | Description |
+|---|---|
+| `-d, --data <string>` | Key-value pairs as `key=value,key=value` |
+
+```
+# Fire a simple event
+/analytics fire button_click
+
+# Fire with data
+/analytics fire purchase -d item=sword,price=100
+
+# Fire with session context
+/analytics fire page_view -d page=settings
+```
+
+## Next steps
+
+<Cards>
+	<Card title="Configuration" href="./configuration" description="Plugin options and environment variables." />
+	<Card title="API reference" href="./api" description="Full Analytics API documentation." />
+</Cards>

@@ -47,6 +47,12 @@ TypeScript files are compiled to JavaScript and optimized during the build. This
 
 Plugin files are also indexed during the build for faster startup. Since plugins are expected to be pre-built with `robo build plugin` before publishing, no TypeScript processing is needed for them at project build time. Plugins can also inject custom build steps, which is how Robo.js adapts to different platforms.
 
+### Lifecycle Hooks
+
+Robo.js provides a file-based hook system through the `src/robo/` directory. During startup, the framework executes hooks in a defined sequence: `init` (before manifest loading), `prepare` (after portal population), and `start` (main initialization). On shutdown, `stop` hooks run in reverse order — project first, then plugins. Additional hooks handle errors, HMR events, and build phases.
+
+Plugins use the same mechanism to hook into the lifecycle. Hook execution supports a priority system where hooks with the same priority run in parallel, and different priorities run sequentially. See [Lifecycle Hooks](./lifecycle) for the full reference.
+
 ### Registration
 
 Platforms like Discord require information about the slash commands your project registers. Robo.js handles this during the build process, sending registration updates automatically. The manifest tracks changes between builds so that API calls are only made when commands have actually changed.

@@ -7,7 +7,7 @@ description: A basic TypeScript Discord bot template using Robo.js.
 
 Welcome to your fresh **[Robo.js](https://robojs.dev)** project!
 
-Build, deploy, and maintain your Discord bots with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](/docs/discord-bots/file-structure), an [integrated database](/docs/robojs/flashcore), [TypeScript support](/docs/robojs/typescript), and a multitude of [plugin-powered skills](/docs/plugins) to unlock along the way.
+Build, deploy, and maintain your Discord bots with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](/docs/discord-bots/file-structure), an [integrated database](/docs/framework/core/flashcore), [TypeScript support](/docs/framework/core/typescript), and a multitude of [plugin-powered skills](/docs/plugins) to unlock along the way.
 
 <Cards>
   <Card href="/docs/discord-bots" title="Documentation" description="Getting started with Robo.js" />
@@ -36,7 +36,7 @@ npm run dev
 
 <Cards>
   <Card href="/docs/discord-bots/beginner-guide" title="Beginner Guide" description="New to Discord Bots with Robo? Start here!" />
-  <Card href="/docs/robojs/mode#default-modes" title="Run Modes" description="Define profiles for your Robo session." />
+  <Card href="/docs/framework/core/mode#default-modes" title="Run Modes" description="Define profiles for your Robo session." />
 </Cards>
 
 ## Development
@@ -109,7 +109,7 @@ Create a file in `/src/context/message` named after the command. For example, `Q
   <Card href="/docs/discord-bots/commands" title="Slash Commands" description="Your bot follows best practices by default." />
   <Card href="/docs/discord-bots/events" title="Events" description="Know and respond to everything that happens." />
   <Card href="/docs/discord-bots/context-menu" title="Context Commands" description="Extend right click and long press behavior." />
-  <Card href="/docs/robojs/flashcore" title="Flashcore Database" description="Persist data in your Robo with ease." />
+  <Card href="/docs/framework/core/flashcore" title="Flashcore Database" description="Persist data in your Robo with ease." />
 </Cards>
 
 ## Debugging
@@ -127,32 +127,34 @@ You even get `/dev` **[Subcommands](/docs/discord-bots/commands#subcommands)** f
 
 ## Client Configuration
 
-**Robo.js** manages your **Discord.js** `Client` instance. You may import `client` anywhere in your project.
+**Robo.js** manages your **Discord.js** `Client` instance via the `@robojs/discordjs` plugin. Use `getClient()` to access it anywhere in your project.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
     ```ts
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     export default () => {
+    	const client = getClient()
     	return `My name is ${client.user.username}`
     }
     ```
   </Tab>
   <Tab value="JavaScript">
     ```js
-    import { client } from 'robo.js'
+    import { getClient } from '@robojs/discordjs'
 
     export default () => {
+    	const client = getClient()
     	return `My name is ${client.user.username}`
     }
     ```
   </Tab>
 </Tabs>
 
-Intents or other configurations can be set in the `config/robo.mjs` file.
+Intents or other configurations can be set in the `config/plugins/robojs/discordjs.mjs` file.
 
-```javascript title="/config/robo.mjs"
+```javascript title="/config/plugins/robojs/discordjs.mjs"
 export default {
 	clientOptions: {
 		intents: ['Guilds', 'GuildMessages']
@@ -161,12 +163,12 @@ export default {
 ```
 
 <Cards>
-  <Card href="/docs/robojs/config" title="Configuration" description="Customize behavior and features." />
+  <Card href="/docs/framework/core/config" title="Configuration" description="Customize behavior and features." />
 </Cards>
 
 ## Robo Ecosystem
 
-By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](/plugins)**, **[templates](/templates)**, and **[tools](/docs/cli)**. **[Robo Plugins](/docs/plugins)** are special. They can add features with one command.
+By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](/plugins)**, **[templates](/templates)**, and **[tools](/docs/robo-cli)**. **[Robo Plugins](/docs/plugins)** are special. They can add features with one command.
 
 ```bash
 npx robo add @robojs/ai @robojs/moderation

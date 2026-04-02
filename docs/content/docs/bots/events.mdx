@@ -150,20 +150,22 @@ Export a `config` object to control how an event handler behaves.
 | `frequency` | `'always' \| 'once'` | `'always'` | Run on every event or only the first |
 | `priority` | `number` | `0` | Execution order (lower runs first) |
 
-## Lifecycle Events
+## Lifecycle Hooks
 
-Robo.js provides framework-level events that are not Discord events: `_start`, `_stop`, and `_restart`. Place these in `src/events/` like any other handler.
+Robo.js provides framework-level lifecycle hooks that are not Discord events. Place these in `src/robo/`.
 
-- **`_start`** runs after Robo.js initialization (before the Discord connection is established). Use it for setup tasks like database connections.
-- **`ready`** fires after connecting to Discord's gateway. Use it for anything that needs the Discord client.
-- **`_stop`** runs on shutdown with a 5-second timeout. Use it for teardown tasks.
+- **`start`** runs after Robo.js initialization (before the Discord connection is established). Use it for setup tasks like database connections.
+- **`ready`** fires after connecting to Discord's gateway (this is a Discord event, so it stays in `src/events/`). Use it for anything that needs the Discord client.
+- **`stop`** runs on shutdown with a 5-second timeout. Use it for teardown tasks.
 
 <Files>
   <Folder name="src" defaultOpen disabled>
+    <Folder name="robo" defaultOpen>
+      <File name="start.ts" note="Runs on startup" />
+      <File name="stop.ts" note="Runs on shutdown" />
+      <File name="restart.ts" note="Runs on restart" />
+    </Folder>
     <Folder name="events" defaultOpen>
-      <File name="_start.ts" note="Runs on startup" />
-      <File name="_stop.ts" note="Runs on shutdown" />
-      <File name="_restart.ts" note="Runs on restart" />
       <File name="ready.ts" note="Discord gateway ready" />
     </Folder>
   </Folder>
@@ -171,20 +173,24 @@ Robo.js provides framework-level events that are not Discord events: `_start`, `
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
+    ```ts title="src/robo/start.ts"
     export default () => {
     	console.log('Bot is starting up')
     }
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
+    ```js title="src/robo/start.js"
     export default () => {
     	console.log('Bot is starting up')
     }
     ```
   </Tab>
 </Tabs>
+
+<Callout type="info">
+The legacy `src/events/_start.ts` pattern still works but `src/robo/start.ts` is the recommended approach for v0.11+.
+</Callout>
 
 ## Intents
 
