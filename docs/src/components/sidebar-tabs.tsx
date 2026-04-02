@@ -21,7 +21,7 @@ import { FileText, Connect, Boxes, Milestone } from '@/components/ui/icons'
  */
 const groups: { label: string; urls: string[] }[] = [
 	{ label: 'Apps', urls: ['/docs/bots', '/docs/activities'] },
-	{ label: 'Core', urls: ['/docs/framework', '/docs/cli', '/docs/hosting'] },
+	{ label: 'Core', urls: ['/docs/framework', '/docs/cli', '/docs/robo-cli', '/docs/ai-native', '/docs/hosting'] },
 	{ label: 'Testing', urls: ['/docs/mock'] },
 	{ label: 'Ecosystem', urls: [] },
 	// "Plugins" is the catch-all — listed here so we can control its position

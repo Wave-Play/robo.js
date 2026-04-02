@@ -579,7 +579,6 @@
     "variables/default_max_records_per_chunk",
     "variables/default_namespace_separator",
     "variables/default_on_delete",
-    "variables/default_records_per_chunk",
     "variables/default_safety_config",
     "variables/default_safety_limits",
     "variables/default_transaction_settings",

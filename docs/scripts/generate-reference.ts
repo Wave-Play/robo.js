@@ -828,6 +828,7 @@ function generateReferenceIndex(): void {
 		analytics: 'Analytics tracking via Google Analytics, Plausible, and custom engines',
 		auth: 'User authentication and authorization with OAuth2 and credentials',
 		'better-stack': 'Better Stack (Logtail) log ingestion and heartbeat monitoring',
+		cli: 'Build standalone CLI apps with file-based routing',
 		cron: 'Scheduled tasks with cron expressions and persisted jobs',
 		dev: 'Development utilities for inspecting state, flashcore, and modules',
 		giveaways: 'Discord giveaway creation and management',

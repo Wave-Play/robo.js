@@ -126,6 +126,13 @@ export const PACKAGES: PackageEntry[] = [
 		tsconfig: 'packages/plugin-better-stack/tsconfig.json'
 	},
 	{
+		name: '@robojs/cli',
+		slug: 'cli',
+		displayName: '@robojs/cli',
+		entryPoint: 'packages/@robojs/cli/src/index.ts',
+		tsconfig: 'packages/@robojs/cli/tsconfig.json'
+	},
+	{
 		name: '@robojs/cron',
 		slug: 'cron',
 		displayName: '@robojs/cron',

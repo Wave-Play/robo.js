@@ -176,10 +176,11 @@ events.off('xpChange', trackXpChanges)
 
 ```typescript
 import { events } from '@robojs/xp'
-import { client } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
 
 events.on('levelUp', async (event) => {
   // Get guild and user
+  const client = getClient()
   const guild = await client.guilds.fetch(event.guildId)
   const member = await guild.members.fetch(event.userId)
 
