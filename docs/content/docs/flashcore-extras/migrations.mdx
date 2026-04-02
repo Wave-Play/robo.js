@@ -1,0 +1,177 @@
+---
+title: Migrations
+description: Manage schema changes with versioned migrations and auto-repair.
+---
+
+When you change a model's schema (add fields, remove fields, change types), migrations keep your existing data consistent with the new schema.
+
+## Schema Validation
+
+Flashcore validates schemas at startup. When `@robojs/flashcore-extras` is installed, the system detects changes and classifies them:
+
+- **Safe changes** — Adding an optional field, adding a field with a default. Applied automatically.
+- **Breaking changes** — Removing a field, changing a field type, making a field required. Require a migration.
+
+Use the `/db diff` terminal command to preview pending schema changes.
+
+## Schema Diff
+
+See what changed since the last validation:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const changes = await Flashcore.$.validateSchemas()
+    // Returns an array of SchemaChange objects:
+    // { model: 'Warning', field: 'severity', type: 'added', safe: true }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const changes = await Flashcore.$.validateSchemas()
+    // Returns an array of SchemaChange objects:
+    // { model: 'Warning', field: 'severity', type: 'added', safe: true }
+    ```
+  </Tab>
+</Tabs>
+
+## Defining Migrations
+
+Create migration files for breaking changes:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="migrations/001_add_role_field.ts"
+    import { defineMigration } from '@robojs/flashcore-extras/migrations'
+
+    export default defineMigration({
+    	name: 'add_role_field',
+
+    	async up(ctx) {
+    		// Add default value for existing records
+    		await ctx.model('User').updateMany({
+    			where: {},
+    			data: { role: 'member' }
+    		})
+    		ctx.progress('Applied default role to all users')
+    	},
+
+    	async down(ctx) {
+    		ctx.progress('Rollback not needed — field is additive')
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="migrations/001_add_role_field.js"
+    import { defineMigration } from '@robojs/flashcore-extras/migrations'
+
+    export default defineMigration({
+    	name: 'add_role_field',
+
+    	async up(ctx) {
+    		// Add default value for existing records
+    		await ctx.model('User').updateMany({
+    			where: {},
+    			data: { role: 'member' }
+    		})
+    		ctx.progress('Applied default role to all users')
+    	},
+
+    	async down(ctx) {
+    		ctx.progress('Rollback not needed — field is additive')
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Each migration must have:
+- **`name`** — A unique identifier (typically prefixed with a timestamp)
+- **`up(ctx)`** — Forward migration logic
+- **`down(ctx)`** — Optional rollback logic
+
+The migration context (`ctx`) provides:
+- `ctx.model(name)` — Access a model for CRUD operations
+- `ctx.progress(message)` — Log migration progress
+
+## Migration Runner
+
+Run pending migrations programmatically:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const runner = Flashcore.$.createMigrationRunner()
+
+    // Run all pending migrations
+    const results = await runner.runPending()
+
+    // Run with options
+    const results = await runner.runPending({
+    	dryRun: true,      // Preview without applying
+    	target: '003',     // Migrate up to this version
+    	forceUnlock: false  // Force-release a stale lock
+    })
+
+    // Rollback a specific migration by name
+    await runner.rollback('add_role_field')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const runner = Flashcore.$.createMigrationRunner()
+
+    // Run all pending migrations
+    const results = await runner.runPending()
+
+    // Run with options
+    const results = await runner.runPending({
+    	dryRun: true,      // Preview without applying
+    	target: '003',     // Migrate up to this version
+    	forceUnlock: false  // Force-release a stale lock
+    })
+
+    // Rollback a specific migration by name
+    await runner.rollback('add_role_field')
+    ```
+  </Tab>
+</Tabs>
+
+## Schema History
+
+Flashcore tracks schema changes over time. Each validation creates a history entry with a snapshot of the current schema:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const history = await Flashcore.$.getSchemaHistory()
+    // Array of { version, timestamp, changes, checksum }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const history = await Flashcore.$.getSchemaHistory()
+    // Array of { version, timestamp, changes, checksum }
+    ```
+  </Tab>
+</Tabs>
+
+## Auto-Repair
+
+For safe changes, Flashcore can auto-repair data on startup. This applies default values to existing records for newly added optional fields.
+
+## CLI Commands
+
+Manage migrations from the terminal:
+
+| Command | Description |
+|---------|-------------|
+| `/db migrate` | Run pending migrations |
+| `/db migrate --dry-run` | Preview migrations without applying |
+| `/db migrate --rollback <name>` | Rollback a specific migration by name |
+| `/db diff` | Show schema changes since last validation |
+| `/db history` | Show schema version history |
+| `/db status` | Show migration and schema status |
+
+See [CLI Commands](./cli) for the full reference.

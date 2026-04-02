@@ -1,0 +1,189 @@
+---
+title: Upgrading from Pre-v0.11
+description: Migrate Flashcore data and code from the old KV-only API to v0.11.
+---
+
+Flashcore in v0.11 evolved from a simple key-value store into a full database with models, schemas, and relations. This guide covers what changed and how to upgrade.
+
+<Callout type="info">
+This page covers Flashcore-specific migration details. For the complete v0.11 migration guide, see **[Upgrading to v0.11](/docs/upgrading)**.
+</Callout>
+
+## What Changed
+
+| Aspect | Pre-v0.11 | v0.11+ |
+|--------|-----------|--------|
+| Storage | KV-only via Keyv | KV + typed models |
+| Default adapter | `LegacyFileAdapter` (`.robo/data/`) | `FileAdapter` (`.robo/flashcore/`) |
+| Data format | One JSON file per key | Chunked catalog system |
+| Import | `import { Flashcore } from 'robo.js'` | Same for KV, `robo.js/flashcore` for models |
+| Features | get/set/delete/on/off/namespaces | + models, relations, queries, bulk ops, plugins |
+
+## KV API Is Unchanged
+
+All existing `Flashcore.get`, `Flashcore.set`, `Flashcore.delete`, `Flashcore.on`, `Flashcore.off`, and namespace calls work without modification:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // This still works exactly the same
+    import { Flashcore } from 'robo.js'
+
+    await Flashcore.set('key', 'value')
+    const value = await Flashcore.get<string>('key')
+    await Flashcore.delete('key')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // This still works exactly the same
+    import { Flashcore } from 'robo.js'
+
+    await Flashcore.set('key', 'value')
+    const value = await Flashcore.get('key')
+    await Flashcore.delete('key')
+    ```
+  </Tab>
+</Tabs>
+
+No code changes needed for the KV API.
+
+## Automatic Data Migration
+
+v0.11 includes a `RuntimeMigrationAdapter` that transparently migrates data from the legacy `.robo/data/` directory to the new `.robo/flashcore/` format.
+
+### How It Works
+
+1. On first startup, if `.robo/data/` exists and `.robo/flashcore/` is empty, Flashcore creates a backup at `.robo/flashcore-backups/legacy-{timestamp}/`.
+2. The adapter enters **lazy-read-through** mode: when a key is read that does not exist in `.robo/flashcore/`, it checks `.robo/data/` and copies it forward.
+3. New writes always go to `.robo/flashcore/`.
+4. Over time, all actively used keys are migrated automatically.
+
+<Callout type="info">
+Your legacy data in `.robo/data/` is never modified or deleted. A backup is also created before migration begins.
+</Callout>
+
+### Migration Modes
+
+The adapter operates in two modes:
+
+| Mode | Behavior |
+|------|----------|
+| `idle` | No legacy data found, or migration complete. All reads/writes use `.robo/flashcore/` only. |
+| `lazy-read-through` | Legacy data exists. Reads fall through to `.robo/data/` on cache miss. |
+
+### Deletes During Migration
+
+If you delete a key during migration, a tombstone is written to prevent re-reading the value from legacy storage.
+
+## Keyv Adapter Config
+
+The old `flashcore.keyv` configuration still works. It is automatically wrapped in a `KeyvAdapter`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    // This still works — no changes needed
+    import KeyvSqlite from '@keyv/sqlite'
+
+    export default {
+    	flashcore: {
+    		keyv: {
+    			store: new KeyvSqlite('sqlite://robo.db')
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    // This still works — no changes needed
+    import KeyvSqlite from '@keyv/sqlite'
+
+    export default {
+    	flashcore: {
+    		keyv: {
+    			store: new KeyvSqlite('sqlite://robo.db')
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+When using a Keyv adapter, the automatic lazy-migration from `.robo/data/` is not used. The Keyv store is your source of truth.
+</Callout>
+
+## Import Paths
+
+| What | Import From |
+|------|-------------|
+| KV API (`Flashcore.get/set/delete/on/off`) | `robo.js` |
+| Models (`createModel`, `f`, `compoundUnique`) | `robo.js/flashcore` |
+| Errors (`ValidationError`, `UniqueConstraintError`) | `robo.js/flashcore` |
+| Types (`InferModelType`, `WhereClause`, etc.) | `robo.js/flashcore` |
+| Adapters (`FileAdapter`, `KeyvAdapter`) | `robo.js/flashcore` |
+| Plugin utilities (`definePlugin`, `defineIndex`) | `robo.js/flashcore` |
+| Extras (`AdapterBuilder`, `defineMigration`) | `@robojs/flashcore-extras/*` |
+
+## Adding Models
+
+You can start using models alongside KV at any time. Models and KV storage are independent:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/models/GuildSettings.ts"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const GuildSettings = createModel('GuildSettings', {
+    	id: f.id(),
+    	guildId: f.string().unique(),
+    	prefix: f.string().default('!'),
+    	locale: f.string().default('en'),
+    	createdAt: f.date().default(() => new Date())
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/models/GuildSettings.js"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const GuildSettings = createModel('GuildSettings', {
+    	id: f.id(),
+    	guildId: f.string().unique(),
+    	prefix: f.string().default('!'),
+    	locale: f.string().default('en'),
+    	createdAt: f.date().default(() => new Date())
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Models store data separately from KV keys. There is no collision risk.
+
+## Explicit Legacy Migration
+
+For a full one-time migration of all legacy data, install `@robojs/flashcore-extras` and run the `/db legacy-migrate` terminal command:
+
+```
+/db legacy-migrate
+```
+
+This reads every key from `.robo/data/` and copies it to `.robo/flashcore/`, then disables the lazy read-through.
+
+See [CLI Commands](/docs/flashcore-extras/cli) for more database management commands.
+
+## Step-by-Step Checklist
+
+1. **Update Robo.js** to v0.11+. No code changes are needed for existing KV usage.
+2. **Verify data** — Start your Robo and confirm existing `Flashcore.get()` calls return the expected values. The lazy migration handles this automatically.
+3. **Check `.robo/flashcore-backups/`** — A backup of your legacy data was created on first startup.
+4. **Add models** (optional) — Define models with `createModel` and `f` for any structured data you want to migrate from flat KV.
+5. **Install `@robojs/flashcore-extras`** (optional) — For migrations, transactions, integrity tools, and `/db` terminal commands.
+6. **Run `/db legacy-migrate`** (optional) — For a complete one-time migration of all legacy KV data.
+7. **Clean up** — Once you have verified everything works, you can optionally remove the `.robo/data/` directory.
+
+<Callout type="warn">
+Do not delete `.robo/data/` until you have confirmed all keys have been migrated. The lazy migration only copies keys as they are read.
+</Callout>

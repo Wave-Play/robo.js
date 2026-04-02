@@ -1,0 +1,76 @@
+---
+title: Write-Ahead Log
+description: Crash safety with write-ahead logging and automatic recovery.
+---
+
+The Write-Ahead Log (WAL) ensures data consistency if your Robo crashes during a multi-step operation. Before any write is applied, the intended changes are persisted as a WAL entry. If the process dies mid-operation, the WAL replays or rolls back incomplete entries on the next startup.
+
+## How It Works
+
+Every model write follows this sequence:
+
+1. **Plan** — Build the delta set (what will change)
+2. **Log** — Write the WAL entry to storage (phase: `pending`)
+3. **Execute** — Apply all authoritative deltas (chunks, catalog) and derived deltas (indexes, filters)
+4. **Complete** — Mark the WAL entry as complete
+5. **Cleanup** — Delete the WAL entry
+
+If the process crashes between steps 2 and 3, the WAL entry remains in storage with `pending` phase. On next startup, the recovery system detects it and replays the authoritative deltas to complete the operation.
+
+## Delta Types
+
+WAL entries contain three categories of deltas:
+
+| Category | Description | Examples |
+|----------|-------------|---------|
+| **Authoritative** | Changes to the source of truth | Chunk puts/patches/deletes, catalog updates |
+| **Inverse** | Undo instructions for rollback | Previous chunk values, old catalog entries |
+| **Derived** | Changes to derived structures | Filter adds/removes, index upserts, unique key changes |
+
+## Recovery
+
+Recovery happens automatically when `@robojs/flashcore-extras` is installed and the adapter supports `scan`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Recovery runs automatically during Flashcore.$.init()
+    // No manual action needed
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Recovery runs automatically during Flashcore.$.init()
+    // No manual action needed
+    ```
+  </Tab>
+</Tabs>
+
+The recovery process:
+1. Scans for WAL entries by prefix
+2. For `pending`-phase entries: replays authoritative deltas to complete the operation (derived deltas are skipped — they are rebuilt from authoritative data)
+3. For stale entries (older than the stale threshold): rolls back using inverse deltas
+4. Cleans up all processed entries
+
+## Requirements
+
+- **Adapter must support `scan`** — The `FileAdapter` (default) supports this. Keyv adapters may or may not, depending on the backend.
+- **`@robojs/flashcore-extras` must be installed** — The WAL manager implementation lives in this plugin.
+
+<Callout type="info">
+If your adapter does not support `scan`, the WAL is automatically disabled. Operations still work, but crash recovery guarantees are reduced.
+</Callout>
+
+## Configuration
+
+WAL behavior can be configured through constants:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Stale threshold | 5 minutes | Entries older than this are considered stale and rolled back |
+| Clock skew tolerance | 30 seconds | Tolerance for clock differences in distributed setups |
+| Segment size | 64 KB | WAL entries larger than this are split into segments |
+
+## Segmented Entries
+
+Large WAL entries (e.g., bulk operations) are automatically split into segments. Each segment is stored as a separate key, and the header entry tracks the segment count. This prevents individual adapter values from exceeding size limits.

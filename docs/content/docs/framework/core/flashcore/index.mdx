@@ -1,0 +1,333 @@
+---
+title: Flashcore Database
+description: Built-in database with key-value storage, typed models, relations, and queries.
+---
+
+Flashcore is the built-in database for Robo.js. It stores data that survives restarts and offers two modes:
+
+- **Key-Value** — Simple `get`/`set`/`delete` for quick storage needs.
+- **Models** — Prisma-like typed models with schemas, relations, queries, bulk operations, and more.
+
+Both modes work side by side. Start with key-value for simple data and graduate to models when you need structure.
+
+## Quick Start — Key-Value
+
+Store and retrieve data with `Flashcore.get` and `Flashcore.set`. All operations are asynchronous.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/update-score.ts"
+    import { Flashcore } from 'robo.js'
+    import type { CommandInteraction } from 'discord.js'
+
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
+    	const score = interaction.options.get('score')?.value as number
+
+    	await Flashcore.set(userId, score)
+    	return `New high score of ${score} saved.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/update-score.js"
+    import { Flashcore } from 'robo.js'
+
+    export default async (interaction) => {
+    	const userId = interaction.user.id
+    	const score = interaction.options.get('score')?.value
+
+    	await Flashcore.set(userId, score)
+    	return `New high score of ${score} saved.`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Retrieve it later:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const score = await Flashcore.get<number>(userId)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const score = await Flashcore.get(userId)
+    ```
+  </Tab>
+</Tabs>
+
+Delete a key with `Flashcore.delete(key)`.
+
+<Callout type="info">
+Always `await` Flashcore calls. They return promises because the underlying storage may be asynchronous.
+</Callout>
+
+## Quick Start — Models
+
+For structured data, define a model with `createModel` and the `f` field builder:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/models/Warning.ts"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const Warning = createModel('Warning', {
+    	id: f.id(),
+    	guildId: f.string(),
+    	userId: f.string(),
+    	reason: f.string(),
+    	moderatorId: f.string(),
+    	createdAt: f.date().default(() => new Date())
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/models/Warning.js"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const Warning = createModel('Warning', {
+    	id: f.id(),
+    	guildId: f.string(),
+    	userId: f.string(),
+    	reason: f.string(),
+    	moderatorId: f.string(),
+    	createdAt: f.date().default(() => new Date())
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Then use it with familiar CRUD methods:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/warn.ts"
+    import { Warning } from '../models/Warning.js'
+    import type { CommandInteraction } from 'discord.js'
+
+    export default async (interaction: CommandInteraction) => {
+    	const user = interaction.options.getUser('user', true)
+
+    	const warning = await Warning.create({
+    		guildId: interaction.guildId!,
+    		userId: user.id,
+    		reason: interaction.options.getString('reason') ?? 'No reason provided',
+    		moderatorId: interaction.user.id
+    	})
+
+    	const count = await Warning.count({
+    		where: { guildId: interaction.guildId!, userId: user.id }
+    	})
+
+    	return `Warning issued to ${user.username}. They now have ${count} warning(s).`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/warn.js"
+    import { Warning } from '../models/Warning.js'
+
+    export default async (interaction) => {
+    	const user = interaction.options.getUser('user', true)
+
+    	const warning = await Warning.create({
+    		guildId: interaction.guildId,
+    		userId: user.id,
+    		reason: interaction.options.getString('reason') ?? 'No reason provided',
+    		moderatorId: interaction.user.id
+    	})
+
+    	const count = await Warning.count({
+    		where: { guildId: interaction.guildId, userId: user.id }
+    	})
+
+    	return `Warning issued to ${user.username}. They now have ${count} warning(s).`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Data Types
+
+Flashcore supports any serializable data type for key-value storage. Primitives and plain objects work, but functions and class instances do not.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Flashcore.set('banned', true)
+    await Flashcore.set('score', 40)
+    await Flashcore.set('top-name', 'Robo')
+    await Flashcore.set('top-user', {
+    	name: 'Robo',
+    	score: 40
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Flashcore.set('banned', true)
+    await Flashcore.set('score', 40)
+    await Flashcore.set('top-name', 'Robo')
+    await Flashcore.set('top-user', {
+    	name: 'Robo',
+    	score: 40
+    })
+    ```
+  </Tab>
+</Tabs>
+
+When retrieved, data retains its original type:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const isBanned = await Flashcore.get<boolean>('banned')
+    const score = await Flashcore.get<number>('score')
+    const topName = await Flashcore.get<string>('top-name')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const isBanned = await Flashcore.get('banned')
+    const score = await Flashcore.get('score')
+    const topName = await Flashcore.get('top-name')
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Generics only inform TypeScript of the expected return type. They do not validate the stored data.
+</Callout>
+
+## Watching for Changes
+
+The `on()` function lets you observe changes to a key's value:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Flashcore.on(userId, (oldScore, newScore) => {
+    	console.log(`Score updated: ${oldScore} → ${newScore}`)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Flashcore.on(userId, (oldScore, newScore) => {
+    	console.log(`Score updated: ${oldScore} → ${newScore}`)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Remove a watcher with `Flashcore.off(key)`.
+
+## Namespaces
+
+Namespaces prevent key collisions by categorizing data into separate groups. This is useful when managing data across multiple servers.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Store per-server settings using guild ID as namespace
+    await Flashcore.set('prefix', '!', {
+    	namespace: interaction.guildId
+    })
+
+    // Retrieve with the same namespace
+    const prefix = await Flashcore.get<string>('prefix', {
+    	namespace: interaction.guildId
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Store per-server settings using guild ID as namespace
+    await Flashcore.set('prefix', '!', {
+    	namespace: interaction.guildId
+    })
+
+    // Retrieve with the same namespace
+    const prefix = await Flashcore.get('prefix', {
+    	namespace: interaction.guildId
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Each namespace acts as an isolated group, so the same key in different namespaces stores independent values.
+
+## Flashcore vs. State
+
+Use Flashcore when data needs to survive restarts or be stored externally. Use [State](../state) for fast, in-memory values that only need to last for the current session.
+
+- **Persistence:** Flashcore stores data permanently. State clears on shutdown.
+- **Operations:** Flashcore is asynchronous. State is synchronous.
+- **External storage:** Flashcore supports adapters for databases like PostgreSQL. State is in-memory only.
+- **Data types:** Flashcore requires serializable data. State can hold any JavaScript value.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./models"
+    title="Models & Schemas"
+    description="Define structured data with typed fields and validation."
+  />
+  <Card
+    href="./queries"
+    title="Queries"
+    description="Filter, sort, paginate, and project data with Prisma-like syntax."
+  />
+  <Card
+    href="./relations"
+    title="Relations"
+    description="Define relationships between models with foreign keys and includes."
+  />
+  <Card
+    href="./bulk-operations"
+    title="Bulk Operations"
+    description="Batch creates, updates, deletes, and upserts."
+  />
+  <Card
+    href="./adapters"
+    title="Adapters"
+    description="Configure storage backends like Redis, SQLite, or PostgreSQL."
+  />
+  <Card
+    href="./plugins"
+    title="Plugins"
+    description="Extend Flashcore with middleware, custom indexes, and extensions."
+  />
+  <Card
+    href="./migration-guide"
+    title="Upgrading from Pre-v0.11"
+    description="Migrate existing data and code to the new model system."
+  />
+  <Card
+    href="/docs/flashcore-extras"
+    title="@robojs/flashcore-extras"
+    description="Advanced features: adapter wrappers, migrations, transactions, and more."
+  />
+</Cards>
+
+## Troubleshooting
+
+### Data not persisting across restarts
+
+Verify that you are using `Flashcore` and not `State`. State values clear on shutdown unless the `persist` option is set. Also ensure that the `.robo/flashcore` directory exists and is not being deleted by your deployment process.
+
+### Namespace conflicts
+
+If data from different contexts (e.g., different servers) is overlapping, make sure you are passing a unique `namespace` value to each Flashcore call. Using `interaction.guildId` as the namespace is a common pattern for per-server data.
+
+### Model not found
+
+Ensure you are importing `createModel` and `f` from `robo.js/flashcore` (not `robo.js`). Models must be created before use — typically in a shared module that gets imported by your commands.
+
+### Keyv adapter errors
+
+If you configured an external storage adapter and see connection errors, verify that the database is running and accessible. Check the connection string in your `config/robo.mjs` and ensure the adapter package is installed as a dependency.

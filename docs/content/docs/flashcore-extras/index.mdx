@@ -1,0 +1,120 @@
+---
+title: "README"
+icon: Database
+description: Advanced Flashcore features — adapter wrappers, migrations, integrity checks, transactions, and CLI commands.
+---
+
+<PluginHero
+	name="@robojs/flashcore-extras"
+	description="Advanced Flashcore features — adapter wrappers, migrations, integrity checks, transactions, and CLI commands."
+	icon={<Database />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/flashcore-extras"
+	platforms={["Bots", "Activities", "Web"]}
+	terminal={[
+		{ name: "/db status", description: "Show database status", href: "./cli" },
+		{ name: "/db check", description: "Run integrity checks", href: "./cli" },
+		{ name: "/db migrate", description: "Run pending migrations", href: "./cli" }
+	]}
+/>
+
+Extend Flashcore with production-grade features. This plugin registers extension implementations for migration, integrity, transaction, and WAL subsystems that are defined as interfaces in the core framework.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<Blocks />} title="Adapter Wrappers" description="Add caching, compression, encryption, and resilience to any adapter" />
+	<Feature icon={<RefreshSync />} title="Migrations" description="Versioned schema migrations with auto-repair" />
+	<Feature icon={<Lock />} title="Transactions" description="ACID-like serial and optimistic concurrency modes" />
+	<Feature icon={<Shield />} title="Integrity" description="Verify and repair indexes, filters, and catalogs" />
+	<Feature icon={<FileText />} title="Write-Ahead Log" description="Crash safety with automatic recovery" />
+	<Feature icon={<Terminal />} title="CLI Commands" description="/db terminal commands for database management" />
+</FeatureGrid>
+
+## Installation
+
+```bash
+npx robo add @robojs/flashcore-extras
+```
+
+## How It Works
+
+When your Robo starts, the plugin's start hook registers implementations for Flashcore's extension points:
+
+- **Migration** — schema metadata, history tracking, diff analysis, and the migration runner
+- **Integrity** — checker, repair engine, and catalog rebuild
+- **Transaction** — context management, serial queue, and optimistic locking
+- **WAL** — write-ahead log manager, recovery, and delta builders
+
+These extensions are only loaded when `@robojs/flashcore-extras` is installed. The core Flashcore framework defines the interfaces but delegates the implementations to this plugin.
+
+## Quick Example
+
+Add caching and compression to any adapter:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    const adapter = new AdapterBuilder(new FileAdapter())
+    	.withCompression({ threshold: 512 })
+    	.withCache({ maxSize: 1000 })
+    	.build()
+
+    export default {
+    	flashcore: { adapter }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    const adapter = new AdapterBuilder(new FileAdapter())
+    	.withCompression({ threshold: 512 })
+    	.withCache({ maxSize: 1000 })
+    	.build()
+
+    export default {
+    	flashcore: { adapter }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./adapter-wrappers"
+    title="Adapter Wrappers"
+    description="Add caching, compression, encryption, and resilience to any adapter."
+  />
+  <Card
+    href="./migrations"
+    title="Migrations"
+    description="Manage schema changes with versioned migrations."
+  />
+  <Card
+    href="./transactions"
+    title="Transactions"
+    description="ACID-like transactions with serial and optimistic modes."
+  />
+  <Card
+    href="./integrity"
+    title="Integrity & Repair"
+    description="Verify and repair database integrity."
+  />
+  <Card
+    href="./wal"
+    title="Write-Ahead Log"
+    description="Crash safety with automatic recovery."
+  />
+  <Card
+    href="./cli"
+    title="CLI Commands"
+    description="Terminal commands for database management."
+  />
+</Cards>

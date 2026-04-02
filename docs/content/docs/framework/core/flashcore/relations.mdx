@@ -1,0 +1,343 @@
+---
+title: Relations
+description: Define relationships between models with foreign keys, includes, and cascade policies.
+---
+
+Flashcore supports four relation types for linking models together. Relations enable includes (eager loading), cascade deletes, and foreign key validation.
+
+## Belongs To (Many-to-One)
+
+A model that stores a foreign key pointing to another model. Use `f.relation()`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/models/Warning.ts"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const Warning = createModel('Warning', {
+    	id: f.id(),
+    	reason: f.string(),
+    	userId: f.string(),
+    	user: f.relation('User', 'userId'),
+    	guildId: f.string(),
+    	createdAt: f.date().default(() => new Date())
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/models/Warning.js"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const Warning = createModel('Warning', {
+    	id: f.id(),
+    	reason: f.string(),
+    	userId: f.string(),
+    	user: f.relation('User', 'userId'),
+    	guildId: f.string(),
+    	createdAt: f.date().default(() => new Date())
+    })
+    ```
+  </Tab>
+</Tabs>
+
+The second argument to `f.relation()` is the foreign key field name on this model.
+
+## Has Many (One-to-Many)
+
+The inverse of belongs-to. A model that is referenced by many records in another model:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/models/User.ts"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const User = createModel('User', {
+    	id: f.id(),
+    	username: f.string().unique(),
+    	warnings: f.hasMany('Warning', { foreignKey: 'userId' })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/models/User.js"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    export const User = createModel('User', {
+    	id: f.id(),
+    	username: f.string().unique(),
+    	warnings: f.hasMany('Warning', { foreignKey: 'userId' })
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Has One (One-to-One)
+
+Like has-many but expects at most one related record:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export const User = createModel('User', {
+    	id: f.id(),
+    	username: f.string(),
+    	profile: f.hasOne('Profile', { foreignKey: 'userId' })
+    })
+
+    export const Profile = createModel('Profile', {
+    	id: f.id(),
+    	userId: f.string().unique(),
+    	user: f.relation('User', 'userId'),
+    	bio: f.string().optional(),
+    	avatar: f.string().optional()
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const User = createModel('User', {
+    	id: f.id(),
+    	username: f.string(),
+    	profile: f.hasOne('Profile', { foreignKey: 'userId' })
+    })
+
+    export const Profile = createModel('Profile', {
+    	id: f.id(),
+    	userId: f.string().unique(),
+    	user: f.relation('User', 'userId'),
+    	bio: f.string().optional(),
+    	avatar: f.string().optional()
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Many-to-Many
+
+Links two models through an auto-managed junction table:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export const Post = createModel('Post', {
+    	id: f.id(),
+    	title: f.string(),
+    	tags: f.manyToMany('Tag')
+    })
+
+    export const Tag = createModel('Tag', {
+    	id: f.id(),
+    	name: f.string().unique(),
+    	posts: f.manyToMany('Post')
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const Post = createModel('Post', {
+    	id: f.id(),
+    	title: f.string(),
+    	tags: f.manyToMany('Tag')
+    })
+
+    export const Tag = createModel('Tag', {
+    	id: f.id(),
+    	name: f.string().unique(),
+    	posts: f.manyToMany('Post')
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Flashcore automatically creates and manages the junction table. Use `connect`, `disconnect`, and `set` in create/update operations:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Connect tags when creating a post
+    await Post.create({
+    	title: 'My Post',
+    	tags: { connect: ['tag-id-1', 'tag-id-2'] }
+    })
+
+    // Update connections
+    await Post.update({
+    	where: { id: 'post-id' },
+    	data: {
+    		tags: { disconnect: ['tag-id-1'], connect: ['tag-id-3'] }
+    	}
+    })
+
+    // Replace all connections
+    await Post.update({
+    	where: { id: 'post-id' },
+    	data: {
+    		tags: { set: ['tag-id-4', 'tag-id-5'] }
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Connect tags when creating a post
+    await Post.create({
+    	title: 'My Post',
+    	tags: { connect: ['tag-id-1', 'tag-id-2'] }
+    })
+
+    // Update connections
+    await Post.update({
+    	where: { id: 'post-id' },
+    	data: {
+    		tags: { disconnect: ['tag-id-1'], connect: ['tag-id-3'] }
+    	}
+    })
+
+    // Replace all connections
+    await Post.update({
+    	where: { id: 'post-id' },
+    	data: {
+    		tags: { set: ['tag-id-4', 'tag-id-5'] }
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Including Related Data
+
+Use `include` to eagerly load related records:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Include warnings for a user
+    const user = await User.findUnique({
+    	where: { id: 'user-id' },
+    	include: { warnings: true }
+    })
+    // user.warnings is an array of Warning records
+
+    // Include with nested options
+    const user = await User.findUnique({
+    	where: { id: 'user-id' },
+    	include: {
+    		warnings: {
+    			select: { reason: true, createdAt: true }
+    		}
+    	}
+    })
+
+    // Nested includes
+    const post = await Post.findUnique({
+    	where: { id: 'post-id' },
+    	include: {
+    		tags: true,
+    		author: {
+    			include: { profile: true }
+    		}
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Include warnings for a user
+    const user = await User.findUnique({
+    	where: { id: 'user-id' },
+    	include: { warnings: true }
+    })
+    // user.warnings is an array of Warning records
+
+    // Include with nested options
+    const user = await User.findUnique({
+    	where: { id: 'user-id' },
+    	include: {
+    		warnings: {
+    			select: { reason: true, createdAt: true }
+    		}
+    	}
+    })
+
+    // Nested includes
+    const post = await Post.findUnique({
+    	where: { id: 'post-id' },
+    	include: {
+    		tags: true,
+    		author: {
+    			include: { profile: true }
+    		}
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Includes also work with `findMany`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789' },
+    	include: { user: true }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789' },
+    	include: { user: true }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Cascade Delete
+
+Control what happens to related records when a parent is deleted. Set the policy with `.onDelete()` on the **parent side** (`hasMany` or `hasOne`):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export const User = createModel('User', {
+    	id: f.id(),
+    	username: f.string(),
+    	warnings: f.hasMany('Warning', { foreignKey: 'userId' }).onDelete('cascade') // [!code highlight]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const User = createModel('User', {
+    	id: f.id(),
+    	username: f.string(),
+    	warnings: f.hasMany('Warning', { foreignKey: 'userId' }).onDelete('cascade') // [!code highlight]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+When a `User` is deleted, all their `Warning` records are automatically deleted too.
+
+| Policy | Behavior |
+|--------|----------|
+| `restrict` | Block deletion if related records exist (default) |
+| `cascade` | Delete related records automatically |
+| `setNull` | Set the foreign key to `null` on related records |
+
+## Foreign Key Validation
+
+Flashcore automatically validates foreign keys on create and update. If the referenced record does not exist, a `ValidationError` is thrown.
+
+## Depth Limits
+
+To prevent infinite loops and excessive queries:
+
+- **`MAX_CASCADE_DEPTH`** — Maximum depth for cascade delete operations. Default: **50**.
+- **`MAX_INCLUDE_DEPTH`** — Maximum depth for nested includes. Default: **10**.
+
+<Callout type="warn">
+Deeply nested includes can load large amounts of data. Use `select` within includes to limit the fields returned, and avoid unnecessary nesting.
+</Callout>

@@ -1,0 +1,449 @@
+---
+title: Models & Schemas
+description: Define structured data with typed fields, validation, and auto-generated IDs.
+---
+
+Models give Flashcore a Prisma-like API for structured data. Define a schema with the `f` field builder and get type-safe CRUD operations.
+
+## Defining a Model
+
+Import `createModel` and `f` from `robo.js/flashcore`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/models/Warning.ts"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    const schema = {
+    	id: f.id(),
+    	guildId: f.string(),
+    	userId: f.string(),
+    	reason: f.string(),
+    	severity: f.enum(['low', 'medium', 'high']),
+    	points: f.number().default(1),
+    	active: f.boolean().default(true),
+    	metadata: f.json<{ notes?: string }>().optional(),
+    	createdAt: f.date().default(() => new Date())
+    }
+
+    export const Warning = createModel('Warning', schema)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/models/Warning.js"
+    import { createModel, f } from 'robo.js/flashcore'
+
+    const schema = {
+    	id: f.id(),
+    	guildId: f.string(),
+    	userId: f.string(),
+    	reason: f.string(),
+    	severity: f.enum(['low', 'medium', 'high']),
+    	points: f.number().default(1),
+    	active: f.boolean().default(true),
+    	metadata: f.json().optional(),
+    	createdAt: f.date().default(() => new Date())
+    }
+
+    export const Warning = createModel('Warning', schema)
+    ```
+  </Tab>
+</Tabs>
+
+## Field Types
+
+The `f` builder provides methods for each supported type:
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `f.id()` | `string` | Auto-generated primary key (time-sortable ID) |
+| `f.string()` | `string` | Text values |
+| `f.number()` | `number` | Numeric values |
+| `f.boolean()` | `boolean` | True/false values |
+| `f.date()` | `Date` | Date/time values (serialized automatically) |
+| `f.json<T>()` | `T` | Arbitrary JSON data with optional type parameter |
+| `f.enum(values)` | `string` | String constrained to specified values |
+
+## Field Modifiers
+
+Chain modifiers after any field type:
+
+| Modifier | Description |
+|----------|-------------|
+| `.optional()` | Field can be `undefined` (omitted on create) |
+| `.unique()` | Value must be unique across all records |
+| `.default(value)` | Auto-fill on create. Accepts a value or factory function |
+| `.indexed()` | Create a sorted index for faster queries |
+| `.version()` | Auto-incrementing version for optimistic locking |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const schema = {
+    	id: f.id(),
+    	email: f.string().unique(),
+    	nickname: f.string().optional(),
+    	role: f.enum(['member', 'moderator', 'admin']).default('member'),
+    	xp: f.number().default(0).indexed(),
+    	lastSeen: f.date().default(() => new Date()),
+    	version: f.number().version()
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const schema = {
+    	id: f.id(),
+    	email: f.string().unique(),
+    	nickname: f.string().optional(),
+    	role: f.enum(['member', 'moderator', 'admin']).default('member'),
+    	xp: f.number().default(0).indexed(),
+    	lastSeen: f.date().default(() => new Date()),
+    	version: f.number().version()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Compound Unique Constraints
+
+Enforce uniqueness across a combination of fields with `compoundUnique`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { createModel, f, compoundUnique } from 'robo.js/flashcore'
+
+    export const GuildMember = createModel('GuildMember', {
+    	id: f.id(),
+    	guildId: f.string(),
+    	userId: f.string(),
+    	nickname: f.string().optional(),
+    	_guildUser: compoundUnique(['guildId', 'userId'])
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { createModel, f, compoundUnique } from 'robo.js/flashcore'
+
+    export const GuildMember = createModel('GuildMember', {
+    	id: f.id(),
+    	guildId: f.string(),
+    	userId: f.string(),
+    	nickname: f.string().optional(),
+    	_guildUser: compoundUnique(['guildId', 'userId'])
+    })
+    ```
+  </Tab>
+</Tabs>
+
+The constraint name (prefixed with `_`) is only used for identification. Attempting to create a duplicate throws a `UniqueConstraintError`.
+
+## CRUD Operations
+
+### Create
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const warning = await Warning.create({
+    	guildId: '123456789',
+    	userId: '987654321',
+    	reason: 'Spam in general chat',
+    	severity: 'medium'
+    })
+    // warning.id is auto-generated
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const warning = await Warning.create({
+    	guildId: '123456789',
+    	userId: '987654321',
+    	reason: 'Spam in general chat',
+    	severity: 'medium'
+    })
+    // warning.id is auto-generated
+    ```
+  </Tab>
+</Tabs>
+
+Fields with defaults are filled automatically. The `id` field is auto-generated unless you provide one.
+
+### Find Unique
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const warning = await Warning.findUnique({ where: { id: 'abc123' } })
+    // Returns null if not found
+
+    // Find by unique field
+    const member = await GuildMember.findUnique({
+    	where: { email: 'user@example.com' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const warning = await Warning.findUnique({ where: { id: 'abc123' } })
+    // Returns null if not found
+
+    // Find by unique field
+    const member = await GuildMember.findUnique({
+    	where: { email: 'user@example.com' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Find Many
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789', active: true },
+    	orderBy: { createdAt: 'desc' },
+    	take: 10
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789', active: true },
+    	orderBy: { createdAt: 'desc' },
+    	take: 10
+    })
+    ```
+  </Tab>
+</Tabs>
+
+See [Queries](./queries) for the full filtering, sorting, and pagination API.
+
+### Update
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const updated = await Warning.update({
+    	where: { id: 'abc123' },
+    	data: { active: false, reason: 'Updated reason' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const updated = await Warning.update({
+    	where: { id: 'abc123' },
+    	data: { active: false, reason: 'Updated reason' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Delete
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const deleted = await Warning.delete({ where: { id: 'abc123' } })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const deleted = await Warning.delete({ where: { id: 'abc123' } })
+    ```
+  </Tab>
+</Tabs>
+
+### Count
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const total = await Warning.count({
+    	where: { guildId: '123456789', active: true }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const total = await Warning.count({
+    	where: { guildId: '123456789', active: true }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Model Hooks
+
+Hooks let you run logic before or after CRUD operations:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export const Warning = createModel('Warning', schema, {
+    	hooks: {
+    		beforeCreate: (data) => {
+    			// Modify data before saving
+    			return { ...data, reason: data.reason.trim() }
+    		},
+    		afterCreate: (record) => {
+    			console.log(`Warning ${record.id} created`)
+    		},
+    		beforeUpdate: (data, existing) => {
+    			return data
+    		},
+    		afterUpdate: (record) => {
+    			console.log(`Warning ${record.id} updated`)
+    		},
+    		beforeDelete: (record) => {
+    			console.log(`About to delete warning ${record.id}`)
+    		},
+    		afterDelete: (record) => {
+    			console.log(`Warning ${record.id} deleted`)
+    		}
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const Warning = createModel('Warning', schema, {
+    	hooks: {
+    		beforeCreate: (data) => {
+    			return { ...data, reason: data.reason.trim() }
+    		},
+    		afterCreate: (record) => {
+    			console.log(`Warning ${record.id} created`)
+    		},
+    		beforeUpdate: (data, existing) => {
+    			return data
+    		},
+    		afterUpdate: (record) => {
+    			console.log(`Warning ${record.id} updated`)
+    		},
+    		beforeDelete: (record) => {
+    			console.log(`About to delete warning ${record.id}`)
+    		},
+    		afterDelete: (record) => {
+    			console.log(`Warning ${record.id} deleted`)
+    		}
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+`beforeCreate` and `beforeUpdate` can return modified data to transform the input.
+
+## Custom Methods
+
+Add reusable methods to your model:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    export const Warning = createModel('Warning', schema, {
+    	methods: {
+    		async getActiveForUser(guildId: string, userId: string) {
+    			return Warning.findMany({
+    				where: { guildId, userId, active: true },
+    				orderBy: { createdAt: 'desc' }
+    			})
+    		}
+    	}
+    })
+
+    // Usage
+    const warnings = await (Warning as any).getActiveForUser('123', '456')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export const Warning = createModel('Warning', schema, {
+    	methods: {
+    		async getActiveForUser(guildId, userId) {
+    			return Warning.findMany({
+    				where: { guildId, userId, active: true },
+    				orderBy: { createdAt: 'desc' }
+    			})
+    		}
+    	}
+    })
+
+    // Usage
+    const warnings = await Warning.getActiveForUser('123', '456')
+    ```
+  </Tab>
+</Tabs>
+
+## TypeScript Inference
+
+Use `InferModelType` to derive a TypeScript type from your schema:
+
+```ts
+import { createModel, f, type InferModelType } from 'robo.js/flashcore'
+
+const schema = {
+	id: f.id(),
+	name: f.string(),
+	score: f.number().optional()
+}
+
+export const Player = createModel('Player', schema)
+
+// Derive the type
+type PlayerRecord = InferModelType<typeof schema>
+// { id: string; name: string; score?: number }
+```
+
+## Error Handling
+
+Flashcore throws specific errors for different failure cases:
+
+| Error | When |
+|-------|------|
+| `ValidationError` | Invalid field value, missing required field, or enum violation |
+| `UniqueConstraintError` | Duplicate value for a unique field |
+| `FeatureNotSupportedError` | Operation requires adapter capabilities not available |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { UniqueConstraintError, ValidationError } from 'robo.js/flashcore'
+
+    try {
+    	await GuildMember.create({ guildId: '123', userId: '456' })
+    } catch (error) {
+    	if (error instanceof UniqueConstraintError) {
+    		return 'This member already exists.'
+    	}
+    	if (error instanceof ValidationError) {
+    		return `Invalid data: ${error.message}`
+    	}
+    	throw error
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { UniqueConstraintError, ValidationError } from 'robo.js/flashcore'
+
+    try {
+    	await GuildMember.create({ guildId: '123', userId: '456' })
+    } catch (error) {
+    	if (error instanceof UniqueConstraintError) {
+    		return 'This member already exists.'
+    	}
+    	if (error instanceof ValidationError) {
+    		return `Invalid data: ${error.message}`
+    	}
+    	throw error
+    }
+    ```
+  </Tab>
+</Tabs>

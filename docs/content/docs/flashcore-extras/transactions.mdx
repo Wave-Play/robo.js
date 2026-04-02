@@ -1,0 +1,168 @@
+---
+title: Transactions
+description: ACID-like transactions with serial and optimistic concurrency modes.
+---
+
+Transactions wrap multiple Flashcore operations in an atomic unit — either all operations succeed, or none do.
+
+## Basic Usage
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Flashcore } from 'robo.js/flashcore'
+
+    const result = await Flashcore.$.transaction(async (ctx) => {
+    	// Read within the transaction
+    	const user = await ctx.read('user:123')
+
+    	// Stage writes (applied on commit)
+    	ctx.set('user:123', { ...user, xp: user.xp + 100 })
+    	ctx.set('audit:latest', { action: 'xp-grant', userId: '123' })
+
+    	return { granted: 100 }
+    })
+
+    console.log(result) // { granted: 100 }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Flashcore } from 'robo.js/flashcore'
+
+    const result = await Flashcore.$.transaction(async (ctx) => {
+    	// Read within the transaction
+    	const user = await ctx.read('user:123')
+
+    	// Stage writes (applied on commit)
+    	ctx.set('user:123', { ...user, xp: user.xp + 100 })
+    	ctx.set('audit:latest', { action: 'xp-grant', userId: '123' })
+
+    	return { granted: 100 }
+    })
+
+    console.log(result) // { granted: 100 }
+    ```
+  </Tab>
+</Tabs>
+
+The transaction context provides:
+- `ctx.read(key)` — Read a value (tracks version for conflict detection)
+- `ctx.set(key, value)` — Stage a write
+- `ctx.delete(key)` — Stage a delete
+- `ctx.mode` — The resolved transaction mode
+
+## Transaction Modes
+
+| Mode | Description | Best For |
+|------|-------------|----------|
+| `serial` | Queue-based — transactions execute one at a time | High-contention keys |
+| `optimistic` | Version-based — retries on conflict | Low-contention, high-throughput |
+| `auto` | Adapter decides the best mode | Default |
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Force serial mode
+    await Flashcore.$.transaction(async (ctx) => {
+    	// ...
+    }, { mode: 'serial' })
+
+    // Force optimistic mode
+    await Flashcore.$.transaction(async (ctx) => {
+    	// ...
+    }, { mode: 'optimistic' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Force serial mode
+    await Flashcore.$.transaction(async (ctx) => {
+    	// ...
+    }, { mode: 'serial' })
+
+    // Force optimistic mode
+    await Flashcore.$.transaction(async (ctx) => {
+    	// ...
+    }, { mode: 'optimistic' })
+    ```
+  </Tab>
+</Tabs>
+
+## Options
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Flashcore.$.transaction(async (ctx) => {
+    	// ...
+    }, {
+    	mode: 'auto',        // Transaction mode
+    	maxRetries: 3,       // Max retries on conflict (optimistic mode)
+    	timeout: 5000        // Timeout in ms
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Flashcore.$.transaction(async (ctx) => {
+    	// ...
+    }, {
+    	mode: 'auto',        // Transaction mode
+    	maxRetries: 3,       // Max retries on conflict (optimistic mode)
+    	timeout: 5000        // Timeout in ms
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Conflict Handling
+
+In optimistic mode, Flashcore tracks versions of read values. On commit, if any read value was modified by another operation, a `TransactionConflictError` is thrown and the transaction is retried (up to `maxRetries`):
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { TransactionConflictError } from 'robo.js/flashcore'
+
+    try {
+    	await Flashcore.$.transaction(async (ctx) => {
+    		const balance = await ctx.read('balance:123')
+    		await ctx.write('balance:123', balance - 100)
+    	}, { mode: 'optimistic', maxRetries: 5 })
+    } catch (error) {
+    	if (error instanceof TransactionConflictError) {
+    		console.log('Transaction failed after max retries')
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { TransactionConflictError } from 'robo.js/flashcore'
+
+    try {
+    	await Flashcore.$.transaction(async (ctx) => {
+    		const balance = await ctx.read('balance:123')
+    		await ctx.write('balance:123', balance - 100)
+    	}, { mode: 'optimistic', maxRetries: 5 })
+    } catch (error) {
+    	if (error instanceof TransactionConflictError) {
+    		console.log('Transaction failed after max retries')
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Requirements
+
+Transaction support depends on adapter capabilities:
+
+- **Serial mode** — Requires `transaction` or `atomicBatch` capability for atomic commit.
+- **Optimistic mode** — Requires `transaction` or `atomicBatch` capability for atomic commit.
+- **Full ACID** — Requires adapter with native `transaction` or `atomicBatch` support.
+
+<Callout type="info">
+For transaction support, use a database-backed adapter like PostgreSQL via Keyv that provides native `transaction()` or `atomicBatch()` capabilities.
+</Callout>

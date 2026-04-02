@@ -1,0 +1,17 @@
+{
+	"title": "@robojs/flashcore-extras",
+	"icon": "Database",
+	"description": "Advanced Flashcore features: adapter wrappers, migrations, transactions, and more.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Features---",
+		"adapter-wrappers",
+		"migrations",
+		"transactions",
+		"integrity",
+		"wal",
+		"---Reference---",
+		"cli"
+	]
+}

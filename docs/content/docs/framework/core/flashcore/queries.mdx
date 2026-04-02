@@ -1,0 +1,377 @@
+---
+title: Queries
+description: Filter, sort, paginate, and project data with Prisma-like query syntax.
+---
+
+Flashcore models support a Prisma-like query API for filtering, sorting, pagination, and projection through `findMany`, `findFirst`, and `count`.
+
+## Filtering with `where`
+
+Pass a `where` object to filter records. Direct values match with equality:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Exact match
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789', active: true }
+    })
+
+    // Find first match
+    const latest = await Warning.findFirst({
+    	where: { userId: '987654321' },
+    	orderBy: { createdAt: 'desc' }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Exact match
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789', active: true }
+    })
+
+    // Find first match
+    const latest = await Warning.findFirst({
+    	where: { userId: '987654321' },
+    	orderBy: { createdAt: 'desc' }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Operators
+
+For advanced filtering, pass an operator object instead of a direct value:
+
+### Comparison
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Equality
+    await Warning.findMany({ where: { severity: { equals: 'high' } } })
+
+    // Negation
+    await Warning.findMany({ where: { severity: { not: 'low' } } })
+
+    // Greater than / less than
+    await Warning.findMany({ where: { points: { gt: 5 } } })
+    await Warning.findMany({ where: { points: { gte: 5 } } })
+    await Warning.findMany({ where: { points: { lt: 10 } } })
+    await Warning.findMany({ where: { points: { lte: 10 } } })
+
+    // Range (combine operators)
+    await Warning.findMany({
+    	where: { points: { gte: 5, lte: 10 } }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Equality
+    await Warning.findMany({ where: { severity: { equals: 'high' } } })
+
+    // Negation
+    await Warning.findMany({ where: { severity: { not: 'low' } } })
+
+    // Greater than / less than
+    await Warning.findMany({ where: { points: { gt: 5 } } })
+    await Warning.findMany({ where: { points: { gte: 5 } } })
+    await Warning.findMany({ where: { points: { lt: 10 } } })
+    await Warning.findMany({ where: { points: { lte: 10 } } })
+
+    // Range (combine operators)
+    await Warning.findMany({
+    	where: { points: { gte: 5, lte: 10 } }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Set Membership
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // In set
+    await Warning.findMany({
+    	where: { severity: { in: ['medium', 'high'] } }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // In set
+    await Warning.findMany({
+    	where: { severity: { in: ['medium', 'high'] } }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### String Matching
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Warning.findMany({ where: { reason: { contains: 'spam' } } })
+    await Warning.findMany({ where: { reason: { startsWith: 'Rule' } } })
+    await Warning.findMany({ where: { reason: { endsWith: 'violation' } } })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Warning.findMany({ where: { reason: { contains: 'spam' } } })
+    await Warning.findMany({ where: { reason: { startsWith: 'Rule' } } })
+    await Warning.findMany({ where: { reason: { endsWith: 'violation' } } })
+    ```
+  </Tab>
+</Tabs>
+
+## Logical Operators
+
+Combine conditions with `AND` and `OR`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // AND — all conditions must match
+    const results = await Warning.findMany({
+    	where: {
+    		AND: [
+    			{ guildId: '123456789' },
+    			{ points: { gte: 5 } },
+    			{ active: true }
+    		]
+    	}
+    })
+
+    // OR — any condition can match
+    const results = await Warning.findMany({
+    	where: {
+    		OR: [
+    			{ severity: 'high' },
+    			{ points: { gte: 10 } }
+    		]
+    	}
+    })
+
+    // NOT — negate a condition
+    const results = await Warning.findMany({
+    	where: {
+    		NOT: { severity: 'low' }
+    	}
+    })
+
+    // Combined
+    const results = await Warning.findMany({
+    	where: {
+    		guildId: '123456789',
+    		OR: [
+    			{ severity: 'high' },
+    			{ AND: [{ severity: 'medium' }, { points: { gte: 5 } }] }
+    		]
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // AND — all conditions must match
+    const results = await Warning.findMany({
+    	where: {
+    		AND: [
+    			{ guildId: '123456789' },
+    			{ points: { gte: 5 } },
+    			{ active: true }
+    		]
+    	}
+    })
+
+    // OR — any condition can match
+    const results = await Warning.findMany({
+    	where: {
+    		OR: [
+    			{ severity: 'high' },
+    			{ points: { gte: 10 } }
+    		]
+    	}
+    })
+
+    // NOT — negate a condition
+    const results = await Warning.findMany({
+    	where: {
+    		NOT: { severity: 'low' }
+    	}
+    })
+
+    // Combined
+    const results = await Warning.findMany({
+    	where: {
+    		guildId: '123456789',
+    		OR: [
+    			{ severity: 'high' },
+    			{ AND: [{ severity: 'medium' }, { points: { gte: 5 } }] }
+    		]
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Ordering
+
+Sort results with `orderBy`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Single field
+    const warnings = await Warning.findMany({
+    	orderBy: { createdAt: 'desc' }
+    })
+
+    // Multiple fields (applied in order)
+    const warnings = await Warning.findMany({
+    	orderBy: [
+    		{ severity: 'desc' },
+    		{ createdAt: 'desc' }
+    	]
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Single field
+    const warnings = await Warning.findMany({
+    	orderBy: { createdAt: 'desc' }
+    })
+
+    // Multiple fields (applied in order)
+    const warnings = await Warning.findMany({
+    	orderBy: [
+    		{ severity: 'desc' },
+    		{ createdAt: 'desc' }
+    	]
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Pagination
+
+Use `skip` and `take` for pagination:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // First page (10 results)
+    const page1 = await Warning.findMany({
+    	orderBy: { createdAt: 'desc' },
+    	take: 10,
+    	skip: 0
+    })
+
+    // Second page
+    const page2 = await Warning.findMany({
+    	orderBy: { createdAt: 'desc' },
+    	take: 10,
+    	skip: 10
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // First page (10 results)
+    const page1 = await Warning.findMany({
+    	orderBy: { createdAt: 'desc' },
+    	take: 10,
+    	skip: 0
+    })
+
+    // Second page
+    const page2 = await Warning.findMany({
+    	orderBy: { createdAt: 'desc' },
+    	take: 10,
+    	skip: 10
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Projection
+
+Use `select` to return only specific fields. The `id` field is always included.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789' },
+    	select: { userId: true, reason: true, createdAt: true }
+    })
+    // Each result only has id, userId, reason, and createdAt
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const warnings = await Warning.findMany({
+    	where: { guildId: '123456789' },
+    	select: { userId: true, reason: true, createdAt: true }
+    })
+    // Each result only has id, userId, reason, and createdAt
+    ```
+  </Tab>
+</Tabs>
+
+## Counting
+
+Count matching records without loading them:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const total = await Warning.count()
+
+    const activeCount = await Warning.count({
+    	where: { guildId: '123456789', active: true }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const total = await Warning.count()
+
+    const activeCount = await Warning.count({
+    	where: { guildId: '123456789', active: true }
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Safety Limits
+
+Flashcore applies default safety limits to prevent accidental full-table scans:
+
+- **`maxDefaultResults`** — Maximum records returned when no `take` is specified. Default: **1,000**.
+- **`warnResultsThreshold`** — Logs a warning when a query returns more results than this threshold.
+
+<Callout type="warn">
+If your query returns exactly 1,000 results, you may be hitting the default limit. Use `take` to explicitly control the result size, or check the logs for safety limit warnings.
+</Callout>
+
+## Operator Reference
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `equals` | Exact match | `{ severity: { equals: 'high' } }` |
+| `not` | Not equal | `{ severity: { not: 'low' } }` |
+| `gt` | Greater than | `{ points: { gt: 5 } }` |
+| `gte` | Greater than or equal | `{ points: { gte: 5 } }` |
+| `lt` | Less than | `{ points: { lt: 10 } }` |
+| `lte` | Less than or equal | `{ points: { lte: 10 } }` |
+| `in` | In array | `{ severity: { in: ['medium', 'high'] } }` |
+| `contains` | String contains | `{ reason: { contains: 'spam' } }` |
+| `startsWith` | String starts with | `{ reason: { startsWith: 'Rule' } }` |
+| `endsWith` | String ends with | `{ reason: { endsWith: 'violation' } }` |

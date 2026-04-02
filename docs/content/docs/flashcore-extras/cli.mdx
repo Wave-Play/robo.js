@@ -1,0 +1,130 @@
+---
+title: CLI Commands
+description: Terminal commands for managing your Flashcore database.
+---
+
+The `@robojs/flashcore-extras` plugin adds a `/db` command namespace to the Robo dev terminal. These commands let you inspect, manage, and repair your database without writing code.
+
+## Command Reference
+
+### `/db status`
+
+Show database status including registered models, record counts, and index information.
+
+```
+/db status
+```
+
+### `/db check`
+
+Run integrity checks on database indexes and filters.
+
+```
+/db check
+/db check --model Warning
+/db check --verbose
+```
+
+| Option | Description |
+|--------|-------------|
+| `--model <name>` | Check a specific model instead of all |
+| `--verbose` | Show detailed results for each check |
+
+### `/db repair`
+
+Repair database integrity issues by rebuilding derived structures from authoritative data.
+
+```
+/db repair
+/db repair --model Warning
+```
+
+| Option | Description |
+|--------|-------------|
+| `--model <name>` | Repair a specific model |
+| `--rebuild <type>` | Rebuild specific structures (`filter`, `indexes`, `unique`, `all`) |
+| `--dry-run` | Show what would be repaired without making changes |
+| `--verbose` | Print detailed information |
+
+### `/db clear`
+
+Clear all data from the database. Requires confirmation.
+
+```
+/db clear
+```
+
+<Callout type="warn">
+This permanently deletes all data. There is no undo.
+</Callout>
+
+### `/db diff`
+
+Show schema changes since the last validation. Useful for previewing what migrations are needed.
+
+```
+/db diff
+```
+
+### `/db export`
+
+Export database data to JSON.
+
+```
+/db export
+```
+
+### `/db history`
+
+Show the schema version history — a timeline of all schema changes detected by the system.
+
+```
+/db history
+```
+
+### `/db migrate`
+
+Run pending schema migrations.
+
+```
+/db migrate
+/db migrate --dry-run
+/db migrate --rollback add_role_field
+/db migrate --target 003
+/db migrate --force-unlock
+```
+
+| Option | Description |
+|--------|-------------|
+| `--dry-run` | Preview migrations without applying |
+| `--rollback <name>` | Rollback a specific migration by name |
+| `--target <name>` | Migrate up to a specific version |
+| `--force-unlock` | Force-release a stale migration lock |
+
+### `/db rebuild-indexes`
+
+Rebuild all indexes from scratch. Useful after data corruption or manual data edits.
+
+```
+/db rebuild-indexes
+```
+
+### `/db backup`
+
+Create a backup of the `.robo/flashcore/` directory.
+
+```
+/db backup
+```
+
+Backups are saved to `.robo/flashcore-backups/` with a timestamp.
+
+### `/db legacy-migrate`
+
+Migrate all data from the legacy `.robo/data/` format to `.robo/flashcore/`. This is a one-time operation that reads every key from the old format and writes it to the new format.
+
+```
+/db legacy-migrate
+```
+
+See the [Migration Guide](/docs/framework/core/flashcore/migration-guide) for context on when to use this.

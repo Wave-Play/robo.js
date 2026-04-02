@@ -1,0 +1,252 @@
+---
+title: Adapters
+description: Configure storage backends — filesystem, Keyv, or custom adapters.
+---
+
+Flashcore uses the local filesystem by default but supports pluggable adapters for any storage backend.
+
+## Built-in Adapters
+
+### FileAdapter (Default)
+
+Stores data as JSON files in `.robo/flashcore/`. This is the default adapter with no configuration needed.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    const adapter = new FileAdapter({
+    	baseDir: '.robo/flashcore' // default
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    const adapter = new FileAdapter({
+    	baseDir: '.robo/flashcore' // default
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Supports: `scan`, `setIfNotExists`.
+
+### LegacyFileAdapter
+
+Compatible with the pre-v0.11 `.robo/data/` format. Used internally by the migration adapter for backward compatibility.
+
+### KeyvAdapter
+
+Wraps any [Keyv](https://github.com/jaredwray/keyv) instance, giving you access to dozens of storage backends.
+
+## Configuration
+
+### Robo Config
+
+Set the adapter in your Robo configuration:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    export default {
+    	flashcore: {
+    		adapter: new FileAdapter({ baseDir: '.data/flashcore' })
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    export default {
+    	flashcore: {
+    		adapter: new FileAdapter({ baseDir: '.data/flashcore' })
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Keyv Adapters
+
+Use the `flashcore.keyv` config to connect to external databases:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    import KeyvRedis from '@keyv/redis'
+
+    export default {
+    	flashcore: {
+    		keyv: {
+    			store: new KeyvRedis('redis://localhost:6379')
+    		}
+    	}
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    import KeyvRedis from '@keyv/redis'
+
+    export default {
+    	flashcore: {
+    		keyv: {
+    			store: new KeyvRedis('redis://localhost:6379')
+    		}
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Other popular adapters:
+
+```ts
+// SQLite
+import KeyvSqlite from '@keyv/sqlite'
+store: new KeyvSqlite('sqlite://robo.db')
+
+// PostgreSQL
+import KeyvPostgres from '@keyv/postgres'
+store: new KeyvPostgres('postgresql://user:pass@localhost:5432/mydb')
+
+// MongoDB
+import KeyvMongo from '@keyv/mongo'
+store: new KeyvMongo('mongodb://localhost:27017/mydb')
+```
+
+<Callout type="info">
+See the [Keyv documentation](https://github.com/jaredwray/keyv/tree/main#storage-adapters) for the full list of available storage adapters.
+</Callout>
+
+### Programmatic Init
+
+Initialize Flashcore manually with a custom adapter:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Flashcore } from 'robo.js'
+
+    await Flashcore.$.init({
+    	adapter: myCustomAdapter
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Flashcore } from 'robo.js'
+
+    await Flashcore.$.init({
+    	adapter: myCustomAdapter
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Adapter Capabilities
+
+Not all adapters support the same features. Flashcore detects capabilities at initialization and gates features accordingly:
+
+| Capability | Description | Required For |
+|-----------|-------------|-------------|
+| `scan` | List keys by prefix | WAL recovery, integrity checks |
+| `setIfNotExists` | Atomic create-if-absent | Race-free unique constraints |
+| `compareAndSwap` | Atomic read-modify-write | Optimistic concurrency |
+| `atomicBatch` | Multi-key atomic writes | Bulk operations |
+| `transaction` | Native transaction support | Full ACID transactions |
+
+The built-in `FileAdapter` supports `scan`, `setIfNotExists`, and `compareAndSwap`. For full ACID transaction support, use a Keyv adapter backed by a database that supports transactions (like PostgreSQL).
+
+<Callout type="warn">
+If an adapter lacks a required capability, Flashcore throws a `FeatureNotSupportedError` when the unsupported operation is attempted.
+</Callout>
+
+## Custom Adapters
+
+Implement the `FlashcoreAdapter` interface to create your own adapter:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import type { FlashcoreAdapter } from 'robo.js/flashcore'
+
+    export class MyAdapter implements FlashcoreAdapter {
+    	readonly name = 'MyAdapter'
+
+    	async get(key: string): Promise<unknown> {
+    		// Read from your storage
+    	}
+
+    	async set(key: string, value: unknown): Promise<boolean> {
+    		// Write to your storage
+    		return true
+    	}
+
+    	async delete(key: string): Promise<boolean> {
+    		// Delete from your storage
+    		return true
+    	}
+
+    	async has(key: string): Promise<boolean> {
+    		// Check existence
+    		return false
+    	}
+
+    	async clear(): Promise<void> {
+    		// Clear all data
+    	}
+
+    	// Optional methods for advanced capabilities:
+    	// async scan(prefix: string): Promise<string[]> { ... }
+    	// async setIfNotExists(key: string, value: unknown): Promise<boolean> { ... }
+    	// async compareAndSwap(key: string, expected: unknown, value: unknown): Promise<boolean> { ... }
+    	// async atomicBatch(ops: BatchOperation[]): Promise<void> { ... }
+
+    	// Optional: self-report capabilities
+    	// capabilities() { return { isolation: 'serializable' } }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    export class MyAdapter {
+    	name = 'MyAdapter'
+
+    	async get(key) {
+    		// Read from your storage
+    	}
+
+    	async set(key, value) {
+    		// Write to your storage
+    		return true
+    	}
+
+    	async delete(key) {
+    		// Delete from your storage
+    		return true
+    	}
+
+    	async has(key) {
+    		// Check existence
+    		return false
+    	}
+
+    	async clear() {
+    		// Clear all data
+    	}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Adapter Wrappers
+
+For production deployments, `@robojs/flashcore-extras` provides adapter wrappers that add caching, compression, encryption, and retry logic to any adapter. See [Adapter Wrappers](/docs/flashcore-extras/adapter-wrappers) for details.

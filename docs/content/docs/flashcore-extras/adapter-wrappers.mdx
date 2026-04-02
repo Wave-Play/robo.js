@@ -1,0 +1,269 @@
+---
+title: Adapter Wrappers
+description: Add caching, compression, encryption, and resilience to any Flashcore adapter.
+---
+
+Adapter wrappers add cross-cutting features to any Flashcore adapter without modifying its implementation. Stack them using the fluent `AdapterBuilder` API.
+
+## AdapterBuilder
+
+Compose wrappers in a fluent chain:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/robo.mjs"
+    import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    const adapter = new AdapterBuilder(new FileAdapter())
+    	.withResilience({ maxRetries: 3 })
+    	.withCompression({ threshold: 512 })
+    	.withEncryption({ key: process.env.FLASHCORE_SECRET })
+    	.withCache({ maxSize: 1000 })
+    	.build()
+
+    export default {
+    	flashcore: { adapter }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/robo.mjs"
+    import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    const adapter = new AdapterBuilder(new FileAdapter())
+    	.withResilience({ maxRetries: 3 })
+    	.withCompression({ threshold: 512 })
+    	.withEncryption({ key: process.env.FLASHCORE_SECRET })
+    	.withCache({ maxSize: 1000 })
+    	.build()
+
+    export default {
+    	flashcore: { adapter }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Data Flow
+
+Wrappers are applied in the order they are added. The outermost wrapper (last added) processes requests first:
+
+```
+get() → Cache → Encryption → Compression → Resilience → Base Adapter
+set() → Cache → Encryption → Compression → Resilience → Base Adapter
+```
+
+## Cache Wrapper
+
+In-memory LRU cache that reduces reads to the underlying adapter. Cache entries are invalidated on writes.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new AdapterBuilder(base)
+    	.withCache({
+    		maxSize: 1000,    // Maximum entries (default: 1000)
+    		maxAge: 60_000,   // TTL in milliseconds (default: none)
+    		trackStats: true  // Enable hit/miss tracking
+    	})
+    	.build()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new AdapterBuilder(base)
+    	.withCache({
+    		maxSize: 1000,    // Maximum entries (default: 1000)
+    		maxAge: 60_000,   // TTL in milliseconds (default: none)
+    		trackStats: true  // Enable hit/miss tracking
+    	})
+    	.build()
+    ```
+  </Tab>
+</Tabs>
+
+## Compression Wrapper
+
+Gzip compression for values above a configurable threshold. Compressed values are tagged with a `__gz__:` prefix and decompressed automatically on read.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new AdapterBuilder(base)
+    	.withCompression({
+    		threshold: 512,  // Min bytes to compress (default: 512)
+    		level: 6         // Gzip level 1-9 (default: 6)
+    	})
+    	.build()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new AdapterBuilder(base)
+    	.withCompression({
+    		threshold: 512,  // Min bytes to compress (default: 512)
+    		level: 6         // Gzip level 1-9 (default: 6)
+    	})
+    	.build()
+    ```
+  </Tab>
+</Tabs>
+
+## Encryption Wrapper
+
+AES-256-GCM encryption for all values. Encrypted values are tagged with a `__enc__:` prefix and decrypted automatically on read. Each value gets a unique IV.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new AdapterBuilder(base)
+    	.withEncryption({
+    		key: process.env.FLASHCORE_SECRET  // Required: 32-byte key (or string to derive from)
+    	})
+    	.build()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new AdapterBuilder(base)
+    	.withEncryption({
+    		key: process.env.FLASHCORE_SECRET  // Required: 32-byte key (or string to derive from)
+    	})
+    	.build()
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Store your encryption key securely (e.g., in environment variables). If the key is lost, encrypted data cannot be recovered.
+</Callout>
+
+## Resilience Wrapper
+
+Automatic retry with exponential backoff for transient errors (network issues, timeouts).
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new AdapterBuilder(base)
+    	.withResilience({
+    		maxRetries: 3,       // Max retry attempts (default: 3)
+    		retryBaseDelay: 100, // Base delay in ms (default: 100)
+    		jitter: 0.1          // Jitter factor 0-1 (default: 0.1)
+    	})
+    	.build()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new AdapterBuilder(base)
+    	.withResilience({
+    		maxRetries: 3,       // Max retry attempts (default: 3)
+    		retryBaseDelay: 100, // Base delay in ms (default: 100)
+    		jitter: 0.1          // Jitter factor 0-1 (default: 0.1)
+    	})
+    	.build()
+    ```
+  </Tab>
+</Tabs>
+
+## Memory Adapter
+
+An in-memory adapter for testing. All data is lost when the process exits.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { MemoryAdapter } from '@robojs/flashcore-extras/adapters'
+
+    const adapter = new MemoryAdapter()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { MemoryAdapter } from '@robojs/flashcore-extras/adapters'
+
+    const adapter = new MemoryAdapter()
+    ```
+  </Tab>
+</Tabs>
+
+## Presets
+
+`AdapterPresets` provides recommended stacks for common use cases:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { AdapterPresets } from '@robojs/flashcore-extras/adapters'
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    // Production: Cache → Encryption → Compression → Resilience → Adapter
+    const prod = AdapterPresets.production(new FileAdapter(), {
+    	encryptionKey: process.env.FLASHCORE_SECRET,
+    	cacheSize: 2000,
+    	compressionThreshold: 512,
+    	maxRetries: 5
+    })
+
+    // Development: Cache → Compression → Adapter
+    const dev = AdapterPresets.development(new FileAdapter())
+
+    // Testing: Cache → Adapter
+    const test = AdapterPresets.testing(new FileAdapter())
+
+    // Resilient: Cache → Resilience → Adapter
+    const resilient = AdapterPresets.resilient(new FileAdapter(), {
+    	maxRetries: 5
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { AdapterPresets } from '@robojs/flashcore-extras/adapters'
+    import { FileAdapter } from 'robo.js/flashcore'
+
+    // Production: Cache → Encryption → Compression → Resilience → Adapter
+    const prod = AdapterPresets.production(new FileAdapter(), {
+    	encryptionKey: process.env.FLASHCORE_SECRET,
+    	cacheSize: 2000,
+    	compressionThreshold: 512,
+    	maxRetries: 5
+    })
+
+    // Development: Cache → Compression → Adapter
+    const dev = AdapterPresets.development(new FileAdapter())
+
+    // Testing: Cache → Adapter
+    const test = AdapterPresets.testing(new FileAdapter())
+
+    // Resilient: Cache → Resilience → Adapter
+    const resilient = AdapterPresets.resilient(new FileAdapter(), {
+    	maxRetries: 5
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Custom Wrappers
+
+Use `.with()` to add your own wrapper:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    new AdapterBuilder(base)
+    	.with((adapter) => new MyCustomWrapper(adapter), 'custom')
+    	.build()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    new AdapterBuilder(base)
+    	.with((adapter) => new MyCustomWrapper(adapter), 'custom')
+    	.build()
+    ```
+  </Tab>
+</Tabs>

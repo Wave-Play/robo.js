@@ -1,0 +1,167 @@
+---
+title: Integrity & Repair
+description: Verify and repair database integrity, rebuild indexes, and recover catalogs.
+---
+
+Flashcore maintains derived structures (indexes, filters, unique constraints) alongside authoritative data (chunks, catalogs). Over time, these can drift due to crashes, bugs, or unexpected shutdowns. The integrity system detects and repairs these issues.
+
+## Checking Integrity
+
+Verify a model's derived structures against its authoritative data:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Flashcore } from 'robo.js/flashcore'
+
+    const report = await Flashcore.$.checkIntegrity('Warning', {
+    	checkFilter: true,
+    	checkSortedIndexes: true,
+    	checkUniqueIndexes: true
+    })
+
+    console.log(report.isValid)
+    console.log(report.filter)          // { isValid, orphanedInFilter, missingInFilter }
+    console.log(report.sortedIndexes)   // Array of per-field results
+    console.log(report.uniqueIndex)     // { isValid, orphanedKeys, duplicates }
+    console.log(report.warnings)
+    console.log(report.durationMs)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Flashcore } from 'robo.js/flashcore'
+
+    const report = await Flashcore.$.checkIntegrity('Warning', {
+    	checkFilter: true,
+    	checkSortedIndexes: true,
+    	checkUniqueIndexes: true
+    })
+
+    console.log(report.isValid)
+    console.log(report.filter)          // { isValid, orphanedInFilter, missingInFilter }
+    console.log(report.sortedIndexes)   // Array of per-field results
+    console.log(report.uniqueIndex)     // { isValid, orphanedKeys, duplicates }
+    console.log(report.warnings)
+    console.log(report.durationMs)
+    ```
+  </Tab>
+</Tabs>
+
+### Check Types
+
+| Check | What It Verifies |
+|-------|-----------------|
+| `checkFilter` | Cuckoo filter matches catalog entries |
+| `checkSortedIndexes` | Sorted indexes match actual record values |
+| `checkUniqueIndexes` | Unique keys point to existing records, no duplicates |
+
+### Progress Tracking
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Flashcore.$.checkIntegrity('Warning', {
+    	checkFilter: true,
+    	checkSortedIndexes: true,
+    	onProgress: (progress) => {
+    		console.log(`${progress.phase}: ${progress.checked}/${progress.total}`)
+    	}
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Flashcore.$.checkIntegrity('Warning', {
+    	checkFilter: true,
+    	checkSortedIndexes: true,
+    	onProgress: (progress) => {
+    		console.log(`${progress.phase}: ${progress.checked}/${progress.total}`)
+    	}
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Repairing
+
+Fix integrity issues detected by the checker:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const result = await Flashcore.$.repair('Warning')
+    // result.filter     — { success, repaired, unrepaired, warnings, durationMs }
+    // result.sortedIndexes — Map<field, RepairResult>
+    // result.uniqueIndex — RepairResult
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const result = await Flashcore.$.repair('Warning')
+    // result.filter     — { success, repaired, unrepaired, warnings, durationMs }
+    // result.sortedIndexes — Map<field, RepairResult>
+    // result.uniqueIndex — RepairResult
+    ```
+  </Tab>
+</Tabs>
+
+Repair rebuilds derived structures from the authoritative chunk data. This is always safe — it does not modify your actual records.
+
+## Rebuilding Indexes
+
+Rebuild all indexes for a model from scratch:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Flashcore.$.rebuildIndexes('Warning')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Flashcore.$.rebuildIndexes('Warning')
+    ```
+  </Tab>
+</Tabs>
+
+## Catalog Rebuild
+
+If the catalog itself is corrupted, rebuild it from chunk files:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { rebuildCatalogFromChunks } from '@robojs/flashcore-extras/integrity'
+
+    await rebuildCatalogFromChunks(adapter, 'Warning')
+    // With explicit namespace:
+    // await rebuildCatalogFromChunks(adapter, 'Warning', 'my-namespace')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { rebuildCatalogFromChunks } from '@robojs/flashcore-extras/integrity'
+
+    await rebuildCatalogFromChunks(adapter, 'Warning')
+    // With explicit namespace:
+    // await rebuildCatalogFromChunks(adapter, 'Warning', 'my-namespace')
+    ```
+  </Tab>
+</Tabs>
+
+## CLI Commands
+
+Manage integrity from the terminal:
+
+| Command | Description |
+|---------|-------------|
+| `/db check` | Check integrity for all models |
+| `/db check --model Warning` | Check a specific model |
+| `/db check --verbose` | Show detailed results |
+| `/db repair` | Repair all models |
+| `/db repair --model Warning` | Repair a specific model |
+| `/db repair --dry-run` | Show what would be repaired without making changes |
+| `/db rebuild-indexes` | Rebuild all indexes |
+
+See [CLI Commands](./cli) for the full reference.
