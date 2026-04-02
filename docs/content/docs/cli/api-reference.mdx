@@ -1,0 +1,142 @@
+---
+title: API Reference
+description: Full API documentation for @robojs/cli exports.
+---
+
+# API Reference
+
+The `@robojs/cli` package re-exports CLI primitives from `robo.js/cli.js` for convenience. You can import from either package.
+
+```ts
+// These are equivalent
+import { Command, parseCliOptions } from '@robojs/cli'
+import { Command, parseCliOptions } from 'robo.js/cli.js'
+```
+
+## Functions
+
+### createCliCommandConfig
+
+Type-safe configuration helper that enables TypeScript inference for command options. This is an identity function — it returns the config object unchanged but provides type narrowing.
+
+```ts
+import { createCliCommandConfig } from 'robo.js/cli.js'
+
+export const config = createCliCommandConfig({
+  description: 'My command',
+  options: [
+    { alias: '-n', name: '--name', type: 'string', required: true }
+  ]
+} as const) // Don't forget `as const`!
+```
+
+<Callout type="info">
+The `as const` assertion is required for type inference. Without it, option types are widened and `CliContext` cannot infer specific option types.
+</Callout>
+
+### parseCliOptions
+
+Parses raw command-line arguments into typed options. Used internally by the `Command` class but available for custom parsing scenarios.
+
+```ts
+import { parseCliOptions } from 'robo.js/cli.js'
+
+const result = parseCliOptions(process.argv.slice(2), [
+  { alias: '-n', name: '--name', description: 'Name', type: 'string' },
+  { alias: '-v', name: '--verbose', description: 'Verbose', type: 'boolean' }
+])
+
+console.log(result.parsedOptions)  // { name: '...', verbose: true }
+console.log(result.positionalArgs) // remaining positional args
+console.log(result.errors)         // validation errors
+```
+
+## Classes
+
+### Command
+
+CLI command builder class. Handles argument parsing, subcommand routing, help generation, and handler execution.
+
+```ts
+import { Command } from 'robo.js/cli.js'
+
+const cmd = new Command('mycli')
+cmd.version('1.0.0')
+cmd.description('My CLI tool')
+cmd.option('-h', '--help', 'Shows this help menu')
+cmd.parse()
+```
+
+<Callout>
+You typically don't need to use `Command` directly. The generated entry point handles command registration automatically. It's available for advanced use cases like programmatic CLI construction.
+</Callout>
+
+## Types
+
+### CliContext\<C\>
+
+Handler context object passed to every command handler. When a config type parameter `C` is provided, `options` is typed based on the config's option definitions.
+
+<TypeTable
+	type={{
+		args: { description: 'Positional arguments', type: 'string[]' },
+		options: { description: 'Parsed option values (typed when using createCliCommandConfig)', type: 'object' },
+		logger: { description: 'Robo.js logger instance', type: 'Logger' },
+		cwd: { description: 'Current working directory', type: 'string' },
+		argv: { description: 'Raw arguments after the command name', type: 'string[]' },
+		result: { description: 'Command return value (available in after hooks)', type: 'unknown' }
+	}}
+/>
+
+### CliCommandConfig
+
+Configuration shape for a CLI command.
+
+<TypeTable
+	type={{
+		description: { description: 'Help text for the command', type: 'string' },
+		options: { description: 'Array of option definitions', type: 'CliOptionConfig[]' },
+		positionalArgs: { description: 'Enable positional argument parsing', type: 'boolean' }
+	}}
+/>
+
+### CliOptionConfig
+
+Configuration for an individual command option.
+
+<TypeTable
+	type={{
+		alias: { description: 'Short flag (e.g., -n)', type: 'string' },
+		name: { description: 'Long flag (e.g., --name)', type: 'string' },
+		description: { description: 'Help text', type: 'string' },
+		type: { description: 'Value type', type: "'string' | 'boolean' | 'number'" },
+		required: { description: 'Whether the option is required', type: 'boolean' },
+		default: { description: 'Default value', type: 'any' }
+	}}
+/>
+
+### CliHandler
+
+Type for command handler functions.
+
+```ts
+type CliHandler = (context: CliContext) => unknown | Promise<unknown>
+```
+
+### ParseCliOptionsConfig
+
+Configuration for the `parseCliOptions` function.
+
+<TypeTable
+	type={{
+		allowSpacesInOptions: { description: 'Allow spaces in option values', type: 'boolean' },
+		suppressUnknownWarnings: { description: 'Suppress warnings for unknown options', type: 'boolean' }
+	}}
+/>
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Learn about file-based command routing." />
+	<Card href="./configuration" title="Configuration" description="Plugin build configuration reference." />
+</Cards>

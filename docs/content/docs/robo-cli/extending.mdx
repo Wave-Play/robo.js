@@ -14,18 +14,18 @@ Create commands by placing files in `src/robo/cli/commands/`. These become avail
 <Files>
   <Folder name="src/robo/cli/commands" defaultOpen disabled>
     <File name="tunnel.ts" note="npx robo tunnel" />
-    <Folder name="db" defaultOpen>
-      <File name="index.ts" note="npx robo db" />
-      <File name="migrate.ts" note="npx robo db migrate" />
-      <File name="seed.ts" note="npx robo db seed" />
+    <Folder name="inspect" defaultOpen>
+      <File name="index.ts" note="npx robo inspect" />
+      <File name="routes.ts" note="npx robo inspect routes" />
+      <File name="state.ts" note="npx robo inspect state" />
     </Folder>
   </Folder>
 </Files>
 
 The file path determines the command name:
 - `tunnel.ts` → `npx robo tunnel`
-- `db/migrate.ts` → `npx robo db migrate`
-- `db/index.ts` → `npx robo db` (parent command)
+- `inspect/routes.ts` → `npx robo inspect routes`
+- `inspect/index.ts` → `npx robo inspect` (parent command)
 
 ### Basic Command
 
@@ -656,6 +656,6 @@ This shows:
 ## Next Steps
 
 <Cards>
-  <Card href="/docs/cli/robo" title="Robo CLI Reference" description="Built-in command reference." />
+  <Card href="/docs/robo-cli/robo" title="Robo CLI Reference" description="Built-in command reference." />
   <Card href="/docs/framework/plugins/create" title="Creating Plugins" description="Build plugins with CLI commands." />
 </Cards>

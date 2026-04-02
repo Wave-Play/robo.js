@@ -1,13 +1,142 @@
 ---
-title: CLI Overview
+title: "README"
 icon: Terminal
+description: Build standalone CLI apps with file-based routing powered by Robo.js.
 ---
 
-Robo.js provides a suite of CLI tools for creating, developing, building, and deploying projects. The **[Robo CLI](./robo)** is built into every project, while **[Create Robo](./create-robo)** scaffolds new projects and plugins. Plugins and projects can also **[extend the CLI](./extending)** with custom commands and hooks.
+<PluginHero
+	name="@robojs/cli"
+	description="Build standalone CLI apps with file-based routing powered by Robo.js."
+	icon={<Terminal />}
+	github="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/cli"
+	platforms={["Bots", "Activities", "Web"]}
+/>
+
+Create professional command-line applications with minimal boilerplate. Define commands as files, and `@robojs/cli` generates a standalone executable during `robo build`. Full TypeScript inference, automatic help generation, subcommand nesting, and extensible hooks come out of the box.
+
+## Features
+
+<FeatureGrid>
+	<Feature icon={<FileText />} title="File-based Routing" description="Commands map directly to files in your project" />
+	<Feature icon={<Shield />} title="Type-safe Options" description="Full TypeScript inference for command options" />
+	<Feature icon={<Boxes />} title="Subcommands" description="Nested directories become subcommands automatically" />
+	<Feature icon={<BookText />} title="Auto Help" description="Help text generated from your config" />
+	<Feature icon={<Zap />} title="Zero Config" description="Works out of the box with sensible defaults" />
+</FeatureGrid>
+
+## Installation
+
+Add to your existing Robo.js project:
+
+```bash
+npx robo add @robojs/cli
+```
+
+Or scaffold a new project with the plugin:
+
+```package-install
+npx create-robo my-cli -p @robojs/cli
+```
+
+## Quick start
+
+<Steps>
+	<Step>
+		### Create a command
+
+		<Files>
+			<Folder name="src" defaultOpen disabled>
+				<Folder name="cli" defaultOpen disabled>
+					<File name="hello.ts" />
+				</Folder>
+			</Folder>
+		</Files>
+
+		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+			<Tab value="TypeScript">
+				```ts title="src/cli/hello.ts"
+				import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+
+				export const config = createCliCommandConfig({
+					description: 'Say hello to someone',
+					options: [
+						{ alias: '-n', name: '--name', description: 'Name to greet', type: 'string', default: 'World' }
+					]
+				} as const)
+
+				export default (ctx: CliContext<typeof config>) => {
+					console.log(`Hello, ${ctx.options.name}!`)
+				}
+				```
+			</Tab>
+			<Tab value="JavaScript">
+				```js title="src/cli/hello.js"
+				export const config = {
+					description: 'Say hello to someone',
+					options: [
+						{ alias: '-n', name: '--name', description: 'Name to greet', type: 'string', default: 'World' }
+					]
+				}
+
+				export default (ctx) => {
+					console.log(`Hello, ${ctx.options.name}!`)
+				}
+				```
+			</Tab>
+		</Tabs>
+	</Step>
+	<Step>
+		### Build and link
+
+		```bash
+		npx robo build
+		npm link
+		```
+
+		The `bin` field is automatically added to `package.json` during build, and `npm link` makes your CLI available by name.
+	</Step>
+	<Step>
+		### Run
+
+		```bash
+		my-cli hello
+		# Hello, World!
+
+		my-cli hello --name Robo
+		# Hello, Robo!
+		```
+
+		<Callout type="info">
+		During `robo dev`, you can also use `/cli link` in the interactive terminal or `/cli run` to test commands inline. See the [Development](./development) guide for more.
+		</Callout>
+	</Step>
+</Steps>
+
+## Project structure
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="cli" defaultOpen>
+			<File name="hello.ts" note="mycli hello" />
+			<Folder name="db" defaultOpen>
+				<File name="migrate.ts" note="mycli db migrate" />
+				<File name="seed.ts" note="mycli db seed" />
+			</Folder>
+			<Folder name="extend">
+				<File name="build.ts" note="extends: mycli build" />
+			</Folder>
+		</Folder>
+	</Folder>
+	<Folder name="config">
+		<File name="robo.ts" />
+	</Folder>
+	<File name="package.json" />
+</Files>
+
+## Next steps
 
 <Cards>
-  <Card href="./create-robo" title="Create Robo" description="Scaffold new projects and plugins." />
-  <Card href="./robo" title="Robo CLI" description="Build, run, and manage your Robo project." />
-  <Card href="./terminal" title="Interactive Terminal" description="Built-in and custom slash commands." />
-  <Card href="./extending" title="Extending the CLI" description="Add custom commands and hooks." />
+	<Card href="./commands" title="Commands" description="Learn how file-based routing maps files to CLI commands." />
+	<Card href="./options" title="Options" description="Add typed flags and positional arguments to commands." />
+	<Card href="./publishing" title="Publishing" description="Package and publish your CLI to npm." />
 </Cards>

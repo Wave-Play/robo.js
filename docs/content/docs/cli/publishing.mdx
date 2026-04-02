@@ -1,0 +1,71 @@
+---
+title: Publishing
+description: Package and publish your CLI to npm.
+---
+
+# Publishing
+
+Once your CLI is built, you can publish it to npm so users can install and run it globally or with `npx`.
+
+## 1. Configure package.json
+
+Point the `bin` field to the generated entry point and include the build output in `files`:
+
+```json title="package.json"
+{
+  "name": "my-awesome-cli",
+  "version": "1.0.0",
+  "description": "My awesome CLI tool",
+  "bin": {
+    "mycli": ".robo/build/cli.js"
+  },
+  "files": [
+    ".robo/build"
+  ],
+  "dependencies": {
+    "robo.js": "^0.11.0"
+  }
+}
+```
+
+<Callout type="warn">
+`robo.js` must be listed as a dependency (not just devDependency). The generated CLI entry point imports from `robo.js/cli.js` at runtime.
+</Callout>
+
+## 2. Build
+
+```bash
+npx robo build
+```
+
+This generates `.robo/build/cli.js` — a standalone executable with all your commands registered.
+
+## 3. Publish
+
+```bash
+npm publish
+```
+
+## Usage
+
+After publishing, users can run your CLI in several ways:
+
+```bash
+# Run directly with npx (no install needed)
+npx my-awesome-cli hello
+
+# Install globally
+npm install -g my-awesome-cli
+mycli hello
+
+# Install locally in a project
+npm install my-awesome-cli
+npx mycli hello
+```
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Learn about file-based command routing." />
+	<Card href="./configuration" title="Configuration" description="Customize the plugin's build behavior." />
+</Cards>

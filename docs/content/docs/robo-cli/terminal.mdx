@@ -5,6 +5,10 @@ description: Built-in and custom slash commands for the interactive terminal.
 
 When running `robo dev` or `robo start` in a TTY environment, Robo.js launches an interactive terminal. Type `/` followed by a command name to inspect state, manage Flashcore, view environment variables, and more.
 
+<Callout type="info">
+For an overview of how terminal commands fit into the AI-native development experience, see **[AI Native](/docs/ai-native)**.
+</Callout>
+
 The terminal activates automatically when all of these conditions are met:
 - `stdout` and `stdin` are TTY (not piped or redirected)
 - Terminal is at least 10 rows by 40 columns
@@ -78,7 +82,8 @@ The interactive terminal includes several quality-of-life features:
 
 - **Command history** — Use the up/down arrow keys to cycle through previously entered commands.
 - **Autocomplete hints** — As you type a `/` command, matching command names and descriptions appear as suggestions.
-- **Status indicator** — The input line shows the current Robo status (`ready`, `restarting`, `error`, `stopped`).
+- **Status indicator** — The input line shows the current Robo status (`building`, `restarting`, `starting X/Y`, `ready`, `error`, `stopping`, `stopped`). During startup, the `[starting X/Y]` badge tracks plugin initialization progress automatically.
+- **Hint line** — A contextual line below the input prompt cycles through layers: startup progress, plugin status items (reported via [`Robo.status`](/docs/framework/core/lifecycle#reporting-status)), and tips.
 - **Scroll regions** — Log output and the input line occupy separate regions, so your typing is never interrupted by log messages.
 
 ## Custom Terminal Commands
@@ -156,6 +161,7 @@ Handlers receive a `TerminalContext` object with:
 | `config` | `Config` | Project configuration |
 | `runtime` | `RuntimeProvider` | Access to state and Flashcore |
 | `write` | `(text: string) => void` | Write text to stdout |
+| `drawer` | `object \| undefined` | Drawer API (only available in interactive mode) |
 
 The `runtime` property provides methods for interacting with state and Flashcore:
 
@@ -236,6 +242,82 @@ Project-level commands receive a priority boost of `+100` over plugin commands, 
 
 <Callout type="info">
 Custom terminal commands cannot override built-in commands like `/help`, `/clear`, `/restart`, `/state`, `/flashcore`, `/env`, `/status`, or `/plugins`.
+</Callout>
+
+## Drawer API
+
+Terminal commands can display persistent content below the input prompt using the drawer. This is useful for showing multi-line output like system status, plugin info, or formatted tables without cluttering the log stream.
+
+The drawer is accessed via `ctx.drawer`, which is only available when the interactive terminal is active. Always check for its existence before using it.
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `show` | `(lines: string[]) => void` | Display content lines below the input prompt |
+| `hide` | `() => void` | Collapse the drawer and restore normal layout |
+| `isOpen` | `() => boolean` | Whether the drawer is currently visible |
+
+Any keypress automatically dismisses the drawer.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+	<Tab value="TypeScript">
+		```typescript
+		// src/robo/terminal/commands/info.ts
+		import { createTerminalCommandConfig } from 'robo.js'
+		import type { TerminalContext } from 'robo.js'
+
+		export const config = createTerminalCommandConfig({
+			description: 'Show plugin status'
+		})
+
+		export default async function (ctx: TerminalContext<typeof config>) {
+			const lines = [
+				'╭───────────────────────╮',
+				'│  Plugin Status        │',
+				'│  Database: connected  │',
+				'│  Cache: warm          │',
+				'│  Uptime: 2h 15m      │',
+				'╰───────────────────────╯'
+			]
+
+			if (ctx.drawer) {
+				ctx.drawer.show(lines)
+			} else {
+				ctx.write(lines.join('\n') + '\n')
+			}
+		}
+		```
+	</Tab>
+	<Tab value="JavaScript">
+		```js
+		// src/robo/terminal/commands/info.mjs
+		import { createTerminalCommandConfig } from 'robo.js'
+
+		export const config = createTerminalCommandConfig({
+			description: 'Show plugin status'
+		})
+
+		export default async function (ctx) {
+			const lines = [
+				'╭───────────────────────╮',
+				'│  Plugin Status        │',
+				'│  Database: connected  │',
+				'│  Cache: warm          │',
+				'│  Uptime: 2h 15m      │',
+				'╰───────────────────────╯'
+			]
+
+			if (ctx.drawer) {
+				ctx.drawer.show(lines)
+			} else {
+				ctx.write(lines.join('\n') + '\n')
+			}
+		}
+		```
+	</Tab>
+</Tabs>
+
+<Callout type="info">
+When `ctx.drawer` is `undefined` (non-interactive environments like CI or piped output), fall back to `ctx.write()` so your command still works everywhere.
 </Callout>
 
 ## Next Steps

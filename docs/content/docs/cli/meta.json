@@ -1,16 +1,19 @@
 {
-  "title": "CLI",
-  "icon": "Terminal",
-  "description": "CLI tools for managing your Robo.js projects",
-  "root": true,
-  "pages": [
-    "index",
-    "---Tools---",
-    "create-robo",
-    "robo",
-    "terminal",
-    "---Advanced---",
-    "extending",
-    "win-exec-policies"
-  ]
+	"title": "@robojs/cli",
+	"icon": "Terminal",
+	"description": "Build standalone CLI apps with file-based routing.",
+	"root": true,
+	"pages": [
+		"index",
+		"---Getting Started---",
+		"commands",
+		"options",
+		"subcommands",
+		"---Guides---",
+		"development",
+		"publishing",
+		"---Reference---",
+		"configuration",
+		"api-reference"
+	]
 }

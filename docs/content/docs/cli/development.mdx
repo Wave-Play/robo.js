@@ -1,0 +1,145 @@
+---
+title: Development
+description: Develop and test CLI commands with watch mode, local linking, and terminal commands.
+---
+
+# Development
+
+Developing a CLI with `@robojs/cli` is fast thanks to Robo's built-in dev workflow. This page covers watch mode, testing with your real CLI name, and the interactive terminal commands.
+
+## Watch mode
+
+Start the dev server to automatically rebuild your CLI on file changes:
+
+```bash
+npx robo dev
+```
+
+Every time you save a file in `src/cli/`, Robo rebuilds your CLI automatically. Once linked, you can test changes immediately using your CLI name.
+
+## Using your CLI name
+
+Link your package to test with your actual CLI name during development.
+
+<Steps>
+	<Step>
+		### The `bin` field
+
+		The `bin` field in `package.json` tells npm which file to use as your CLI entry point. **Robo automatically adds this during `robo build`** if it doesn't exist yet:
+
+		```json title="package.json"
+		{
+			"name": "my-awesome-cli",
+			"bin": {
+				"my-awesome-cli": ".robo/build/cli.js"
+			}
+		}
+		```
+
+		The name is derived from your package name (with any `@scope/` prefix stripped). You can customize it manually if you'd like a different command name.
+	</Step>
+	<Step>
+		### Link your package
+
+		The quickest way to link during development is the `/cli link` terminal command:
+
+		```
+		/cli link
+		```
+
+		This detects your package manager and runs the appropriate link command (`npm link`, `pnpm link --global`, etc.).
+
+		You can also link manually from a separate terminal:
+
+		```bash
+		npm link
+		```
+
+		<Callout type="note">
+		**pnpm users:** Use `pnpm link --global` instead.
+		</Callout>
+	</Step>
+	<Step>
+		### Test with your CLI name
+
+		Now you can run commands using the real name:
+
+		```bash
+		mycli hello --name Robo
+		# Hello, Robo!
+		```
+
+		Changes are picked up after each rebuild (automatic during `robo dev`).
+	</Step>
+</Steps>
+
+### Cleanup
+
+When you're done, unlink the package:
+
+```bash
+npm unlink -g my-awesome-cli
+```
+
+## Terminal commands
+
+During `robo dev`, the interactive terminal provides built-in commands for testing your CLI without leaving the dev session.
+
+### /cli link
+
+Link your CLI for local development. Detects your package manager and runs the appropriate link command:
+
+```
+/cli link
+```
+
+This is equivalent to running `npm link` (or `pnpm link --global`, `yarn link`, `bun link`) but without leaving the dev session.
+
+### /cli list
+
+List all registered CLI commands with their descriptions:
+
+```
+/cli list
+```
+
+```
+Registered CLI Commands
+
+COMMAND       DESCRIPTION
+─────────────────────────────
+hello         Say hello to someone
+db migrate    Run database migrations
+db seed       Seed the database
+
+Page 1 of 1 (3 total)
+```
+
+Use `--page` and `--per-page` to paginate large command sets:
+
+```
+/cli list --per-page 5 --page 2
+```
+
+### /cli run
+
+Execute a CLI command directly in the terminal:
+
+```
+/cli run hello --name Robo
+```
+
+This resolves the command from your build output, parses options, and runs the handler inline. It's a fast way to iterate without switching terminals.
+
+Subcommands work the same way:
+
+```
+/cli run db migrate --target latest
+```
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Learn how file-based routing maps files to CLI commands." />
+	<Card href="./publishing" title="Publishing" description="Package and publish your CLI to npm." />
+</Cards>

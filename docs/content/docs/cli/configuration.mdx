@@ -1,0 +1,70 @@
+---
+title: Configuration
+description: Customize the @robojs/cli plugin's build behavior.
+---
+
+# Configuration
+
+The `@robojs/cli` plugin works with zero configuration out of the box. For advanced use cases, you can customize the plugin's behavior through its config file.
+
+## Plugin config
+
+Create a plugin configuration file at `config/plugins/robojs/cli.ts`:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="config/plugins/robojs/cli.ts"
+    export default {
+      // Plugin options go here
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="config/plugins/robojs/cli.mjs"
+    export default {
+      // Plugin options go here
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## How it works
+
+The `@robojs/cli` plugin is a **build-time only** plugin. It has no runtime lifecycle hooks — it only runs during `robo build`:
+
+1. **Route discovery** — Robo scans `src/cli/` for command files
+2. **Manifest generation** — Commands are indexed with metadata (description, options, parent-child relationships)
+3. **Code generation** — The `build/complete` hook generates `.robo/build/cli.js`
+4. **Executable output** — The generated file is marked as executable (chmod 755)
+
+## Route config
+
+The plugin's route definition controls how files are scanned and processed:
+
+<TypeTable
+	type={{
+		'key.style': { description: 'How file paths map to command names', type: "'filepath'", default: "'filepath'" },
+		'key.separator': { description: 'Separator between path segments in command names', type: 'string', default: "' ' (space)" },
+		'nesting.maxDepth': { description: 'Maximum subcommand depth', type: 'number', default: '3' },
+		'nesting.allowIndex': { description: 'Whether index files are treated as commands', type: 'boolean', default: 'false' },
+		'exports.default': { description: 'Whether the default export (handler) is required', type: "'required'", default: "'required'" },
+		'exports.config': { description: 'Whether the config export is required', type: "'optional'", default: "'optional'" }
+	}}
+/>
+
+## Generated entry point
+
+After `robo build`, the plugin generates `.robo/build/cli.js`. This file:
+
+- Has a `#!/usr/bin/env node` shebang for direct execution
+- Imports all command handlers from the build output
+- Registers each command with the `Command` class from `robo.js/cli.js`
+- Reads `name`, `version`, and `description` from your `package.json`
+- Includes auto-generated help via the `-h` / `--help` flag
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Learn about file-based command routing." />
+	<Card href="./api-reference" title="API Reference" description="Full API documentation for all exports." />
+</Cards>

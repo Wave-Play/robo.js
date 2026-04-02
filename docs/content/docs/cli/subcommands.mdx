@@ -1,0 +1,119 @@
+---
+title: Subcommands
+description: Create nested command hierarchies with directories.
+---
+
+# Subcommands
+
+Nested directories in `src/cli/` automatically become subcommands. This lets you organize related commands into groups like `db migrate`, `config set`, or `auth login`.
+
+## Directory mapping
+
+| File | Command |
+| ---- | ------- |
+| `db/migrate.ts` | `mycli db migrate` |
+| `db/seed.ts` | `mycli db seed` |
+| `config/get.ts` | `mycli config get` |
+| `config/set.ts` | `mycli config set` |
+| `auth/login.ts` | `mycli auth login` |
+| `auth/logout.ts` | `mycli auth logout` |
+
+<Files>
+	<Folder name="src" defaultOpen disabled>
+		<Folder name="cli" defaultOpen disabled>
+			<Folder name="db" defaultOpen>
+				<File name="migrate.ts" note="mycli db migrate" />
+				<File name="seed.ts" note="mycli db seed" />
+			</Folder>
+			<Folder name="config" defaultOpen>
+				<File name="get.ts" note="mycli config get" />
+				<File name="set.ts" note="mycli config set" />
+			</Folder>
+		</Folder>
+	</Folder>
+</Files>
+
+## Nesting depth
+
+Subcommands support up to **3 levels** of nesting. Parent groups are created automatically when the plugin encounters nested files — you only need to create the leaf command files.
+
+```
+src/cli/
+├── cloud/
+│   └── deploy/
+│       └── staging.ts    # mycli cloud deploy staging (3 levels)
+```
+
+## Example subcommand
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/cli/db/migrate.ts"
+    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+
+    export const config = createCliCommandConfig({
+      description: 'Run database migrations',
+      options: [
+        { alias: '-t', name: '--target', description: 'Target version', type: 'string', default: 'latest' },
+        { alias: '-f', name: '--force', description: 'Force migration', type: 'boolean' }
+      ]
+    } as const)
+
+    export default async (ctx: CliContext<typeof config>) => {
+      console.log(`Migrating to ${ctx.options.target}...`)
+      if (ctx.options.force) {
+        console.log('Force mode enabled')
+      }
+      // Migration logic here
+      console.log('Migration complete!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/cli/db/migrate.js"
+    export const config = {
+      description: 'Run database migrations',
+      options: [
+        { alias: '-t', name: '--target', description: 'Target version', type: 'string', default: 'latest' },
+        { alias: '-f', name: '--force', description: 'Force migration', type: 'boolean' }
+      ]
+    }
+
+    export default async (ctx) => {
+      console.log(`Migrating to ${ctx.options.target}...`)
+      if (ctx.options.force) {
+        console.log('Force mode enabled')
+      }
+      // Migration logic here
+      console.log('Migration complete!')
+    }
+    ```
+  </Tab>
+</Tabs>
+
+```bash
+mycli db migrate --target v2 --force
+# Migrating to v2...
+# Force mode enabled
+# Migration complete!
+```
+
+## Auto-generated help
+
+Running a parent command without a subcommand shows available subcommands:
+
+```bash
+mycli db --help
+# Usage: mycli db <command>
+#
+# Commands:
+#   migrate  Run database migrations
+#   seed     Seed the database
+```
+
+## Next steps
+
+<Cards>
+	<Card href="./commands" title="Commands" description="Learn about file-based command routing." />
+	<Card href="./options" title="Options" description="Add typed options and flags to your commands." />
+</Cards>
