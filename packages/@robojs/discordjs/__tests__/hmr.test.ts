@@ -13,7 +13,7 @@
  * - recordsToContext filters by context type
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import { afterAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
 
 // Helper for typed mocks
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,6 +67,9 @@ const mockRest = discordMock.getRestMock()
 
 // Import HMR module
 const { config, default: hmrHook } = await import('../src/robo/hmr.js')
+const originalDiscordToken = process.env.DISCORD_TOKEN
+const originalDiscordClientId = process.env.DISCORD_CLIENT_ID
+const originalDiscordGuildId = process.env.DISCORD_GUILD_ID
 
 describe('HMR Hook', () => {
 	beforeEach(() => {
@@ -85,11 +88,25 @@ describe('HMR Hook', () => {
 			DISCORD_TOKEN: 'test-token-1234567890',
 			DISCORD_CLIENT_ID: '123456789012345678'
 		})
+		process.env.DISCORD_TOKEN = 'test-token-1234567890'
+		process.env.DISCORD_CLIENT_ID = '123456789012345678'
+		delete process.env.DISCORD_GUILD_ID
 
 		portal.importHandler.mockResolvedValue(undefined)
 		portal.ensureRoute.mockResolvedValue(undefined)
 		portal.getByType.mockReturnValue({})
 		getPluginOptions.mockReturnValue(null)
+	})
+
+	afterAll(() => {
+		if (originalDiscordToken === undefined) delete process.env.DISCORD_TOKEN
+		else process.env.DISCORD_TOKEN = originalDiscordToken
+
+		if (originalDiscordClientId === undefined) delete process.env.DISCORD_CLIENT_ID
+		else process.env.DISCORD_CLIENT_ID = originalDiscordClientId
+
+		if (originalDiscordGuildId === undefined) delete process.env.DISCORD_GUILD_ID
+		else process.env.DISCORD_GUILD_ID = originalDiscordGuildId
 	})
 
 	describe('config', () => {
@@ -98,15 +115,11 @@ describe('HMR Hook', () => {
 			expect(config.namespaces).toContain('discordjs')
 		})
 
-		it('should only trigger for commands and context routes', () => {
+		it('should trigger for commands, context, and events routes', () => {
 			expect(config.routes).toBeDefined()
 			expect(config.routes).toContain('commands')
 			expect(config.routes).toContain('context')
-			expect(config.routes).toHaveLength(2)
-		})
-
-		it('should not include events route', () => {
-			expect(config.routes).not.toContain('events')
+			expect(config.routes).toContain('events')
 		})
 	})
 
@@ -194,6 +207,8 @@ describe('HMR Hook', () => {
 	describe('background registration', () => {
 		it('should warn when credentials are missing', async () => {
 			Env.data.mockReturnValue({}) // No token or client ID
+			delete process.env.DISCORD_TOKEN
+			delete process.env.DISCORD_CLIENT_ID
 
 			// Force a definition change to trigger registration
 			portal.getRecord.mockReturnValueOnce({ metadata: { v: 1 } })
@@ -211,7 +226,7 @@ describe('HMR Hook', () => {
 			// Wait for async registration attempt
 			await new Promise((r) => setTimeout(r, 50))
 
-			expect(discordLogger.warn).toHaveBeenCalledWith(expect.stringContaining('missing DISCORD_CLIENT_ID or DISCORD_TOKEN'))
+			expect(discordLogger.warn).toHaveBeenCalledWith(expect.stringContaining('missing credentials'))
 		})
 
 		it('should use guild ID from environment when available', async () => {
@@ -220,6 +235,9 @@ describe('HMR Hook', () => {
 				DISCORD_CLIENT_ID: '123456789',
 				DISCORD_GUILD_ID: '987654321'
 			})
+			process.env.DISCORD_TOKEN = 'test-token'
+			process.env.DISCORD_CLIENT_ID = '123456789'
+			process.env.DISCORD_GUILD_ID = '987654321'
 
 			portal.getByType.mockReturnValue({
 				ping: { metadata: { description: 'Ping' } }
@@ -250,6 +268,9 @@ describe('HMR Hook', () => {
 				DISCORD_TOKEN: 'test-token',
 				DISCORD_CLIENT_ID: '123456789'
 			})
+			process.env.DISCORD_TOKEN = 'test-token'
+			process.env.DISCORD_CLIENT_ID = '123456789'
+			delete process.env.DISCORD_GUILD_ID
 
 			getPluginOptions.mockReturnValue({
 				testServers: ['111222333']
@@ -284,6 +305,8 @@ describe('HMR Hook', () => {
 				DISCORD_TOKEN: 'test-token',
 				DISCORD_CLIENT_ID: '123456789'
 			})
+			process.env.DISCORD_TOKEN = 'test-token'
+			process.env.DISCORD_CLIENT_ID = '123456789'
 
 			portal.getByType.mockReturnValue({
 				ping: { metadata: { description: 'Ping' } }
@@ -322,6 +345,8 @@ describe('HMR Hook', () => {
 				DISCORD_TOKEN: 'test-token',
 				DISCORD_CLIENT_ID: '123456789'
 			})
+			process.env.DISCORD_TOKEN = 'test-token'
+			process.env.DISCORD_CLIENT_ID = '123456789'
 
 			portal.getByType.mockImplementation((type: string) => {
 				if (type === 'discordjs:commands') {
@@ -357,6 +382,8 @@ describe('HMR Hook', () => {
 				DISCORD_TOKEN: 'test-token',
 				DISCORD_CLIENT_ID: '123456789'
 			})
+			process.env.DISCORD_TOKEN = 'test-token'
+			process.env.DISCORD_CLIENT_ID = '123456789'
 
 			portal.getByType.mockImplementation((type: string) => {
 				if (type === 'discordjs:commands') {
@@ -424,15 +451,80 @@ describe('HMR Hook', () => {
 			expect(portal.getByType).toHaveBeenCalledWith('discordjs:context')
 		})
 	})
+
+	describe('HMR - event route changes', () => {
+		it('event route triggers syncEventListenersFromPortal when client exists', async () => {
+			// Set up a client so hasClient() returns true
+			const { setClient, clearClient } = await import('../src/core/client.js')
+			const { Client } = await import('discord.js')
+			setClient(new (Client as any)() as any)
+
+			const context = createMockHmrContext([
+				{ route: 'events', handlers: [{ key: 'messageCreate' }, { key: 'guildCreate' }] }
+			])
+
+			await hmrHook(context as any)
+
+			// The hook calls syncEventListenersFromPortal which calls ensureRoute
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
+
+			clearClient()
+		})
+
+		it('event route is skipped when no client exists', async () => {
+			const { clearClient } = await import('../src/core/client.js')
+			clearClient()
+
+			const context = createMockHmrContext([
+				{
+					route: 'events',
+					handlers: [{ key: 'messageCreate', changeType: 'remove' as const }]
+				}
+			])
+
+			await hmrHook(context as any)
+
+			// Without a client, ensureRoute for events should NOT be called
+			expect(portal.ensureRoute).not.toHaveBeenCalledWith('discordjs', 'events')
+		})
+
+		it('mixed command+event changes handles both paths', async () => {
+			// Set up a client so event processing works
+			const { setClient, clearClient } = await import('../src/core/client.js')
+			const { Client } = await import('discord.js')
+			setClient(new (Client as any)() as any)
+
+			portal.getRecord.mockReturnValueOnce({ metadata: { v: 1 } })
+
+			const context = createMockHmrContext([
+				{ route: 'commands', handlers: [{ key: 'ping' }] },
+				{ route: 'events', handlers: [{ key: 'messageCreate' }] }
+			])
+
+			await hmrHook(context as any)
+
+			// Events should call ensureRoute for events
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
+			// Commands should import handler
+			expect(portal.importHandler).toHaveBeenCalledWith('discordjs', 'commands', 'ping')
+
+			clearClient()
+		})
+	})
 })
 
 // Helper to create mock HMR context
-function createMockHmrContext(routes: Array<{ route: string; handlers: Array<{ key: string }> }>) {
+function createMockHmrContext(
+	routes: Array<{ route: string; handlers: Array<{ key: string; changeType?: 'add' | 'remove' | 'change' }> }>
+) {
 	return {
 		routes: routes.map((r) => ({
 			namespace: 'discordjs',
 			route: r.route,
-			handlers: r.handlers
+			handlers: r.handlers.map((handler) => ({
+				...handler,
+				changeType: handler.changeType ?? 'change'
+			}))
 		})),
 		changeType: 'change' as const,
 		files: [],
