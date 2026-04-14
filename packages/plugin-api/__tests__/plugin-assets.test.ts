@@ -50,7 +50,7 @@ describe('handlePluginStaticFile()', () => {
 
 	describe('file serving', () => {
 		it('should serve existing HTML file', async () => {
-			const result = await handlePluginStaticFile('/index.html', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/index.html', MOCK_PUBLIC_DIR, '/index.html', mockCallback)
 
 			expect(result).toBe(true)
 			expect(mockCallback).toHaveBeenCalledWith(
@@ -60,7 +60,7 @@ describe('handlePluginStaticFile()', () => {
 		})
 
 		it('should serve JavaScript file with correct MIME type', async () => {
-			const result = await handlePluginStaticFile('/app.js', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/app.js', MOCK_PUBLIC_DIR, '/app.js', mockCallback)
 
 			expect(result).toBe(true)
 			expect(mockCallback).toHaveBeenCalledWith(
@@ -70,7 +70,7 @@ describe('handlePluginStaticFile()', () => {
 		})
 
 		it('should serve CSS file with correct MIME type', async () => {
-			const result = await handlePluginStaticFile('/css/style.css', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/css/style.css', MOCK_PUBLIC_DIR, '/css/style.css', mockCallback)
 
 			expect(result).toBe(true)
 			expect(mockCallback).toHaveBeenCalledWith(
@@ -80,7 +80,7 @@ describe('handlePluginStaticFile()', () => {
 		})
 
 		it('should serve nested files', async () => {
-			const result = await handlePluginStaticFile('/nested/deep/file.json', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/nested/deep/file.json', MOCK_PUBLIC_DIR, '/nested/deep/file.json', mockCallback)
 
 			expect(result).toBe(true)
 			expect(mockCallback).toHaveBeenCalledWith(
@@ -90,7 +90,7 @@ describe('handlePluginStaticFile()', () => {
 		})
 
 		it('should return false for non-existent file', async () => {
-			const result = await handlePluginStaticFile('/non-existent.txt', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/non-existent.txt', MOCK_PUBLIC_DIR, '/non-existent.txt', mockCallback)
 
 			expect(result).toBe(false)
 			expect(mockCallback).not.toHaveBeenCalled()
@@ -99,7 +99,7 @@ describe('handlePluginStaticFile()', () => {
 
 	describe('directory handling', () => {
 		it('should serve index.html from directory', async () => {
-			const result = await handlePluginStaticFile('/subdir', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/subdir', MOCK_PUBLIC_DIR, '/subdir', mockCallback)
 
 			expect(result).toBe(true)
 			expect(mockCallback).toHaveBeenCalledWith(
@@ -109,7 +109,7 @@ describe('handlePluginStaticFile()', () => {
 		})
 
 		it('should return false for directory without index file', async () => {
-			const result = await handlePluginStaticFile('/empty-dir', MOCK_PUBLIC_DIR, mockCallback)
+			const result = await handlePluginStaticFile('/empty-dir', MOCK_PUBLIC_DIR, '/empty-dir', mockCallback)
 
 			expect(result).toBe(false)
 		})
@@ -118,7 +118,7 @@ describe('handlePluginStaticFile()', () => {
 	describe('security', () => {
 		it('should block path traversal attempts', async () => {
 			await expect(
-				handlePluginStaticFile('/../../../etc/passwd', MOCK_PUBLIC_DIR, mockCallback)
+				handlePluginStaticFile('/../../../etc/passwd', MOCK_PUBLIC_DIR, '/../../../etc/passwd', mockCallback)
 			).rejects.toBeInstanceOf(Response)
 
 			expect(mockCallback).not.toHaveBeenCalled()
@@ -126,7 +126,7 @@ describe('handlePluginStaticFile()', () => {
 
 		it('should block encoded path traversal', async () => {
 			await expect(
-				handlePluginStaticFile('/%2e%2e/%2e%2e/etc/passwd', MOCK_PUBLIC_DIR, mockCallback)
+				handlePluginStaticFile('/%2e%2e/%2e%2e/etc/passwd', MOCK_PUBLIC_DIR, '/%2e%2e/%2e%2e/etc/passwd', mockCallback)
 			).rejects.toBeInstanceOf(Response)
 
 			expect(mockCallback).not.toHaveBeenCalled()
@@ -167,7 +167,7 @@ describe('MIME Type Detection', () => {
 			const testFile = path.join(MIME_TEST_DIR, `test.${ext}`)
 			writeFileSync(testFile, 'content')
 
-			await handlePluginStaticFile(`/test.${ext}`, MIME_TEST_DIR, mockCallback)
+			await handlePluginStaticFile(`/test.${ext}`, MIME_TEST_DIR, `/test.${ext}`, mockCallback)
 
 			expect(mockCallback).toHaveBeenCalledWith(testFile, expected)
 
@@ -180,7 +180,7 @@ describe('MIME Type Detection', () => {
 		const testFile = path.join(MIME_TEST_DIR, 'file.xyz')
 		writeFileSync(testFile, 'unknown content')
 
-		await handlePluginStaticFile('/file.xyz', MIME_TEST_DIR, mockCallback)
+		await handlePluginStaticFile('/file.xyz', MIME_TEST_DIR, '/file.xyz', mockCallback)
 
 		expect(mockCallback).toHaveBeenCalledWith(testFile, 'application/octet-stream')
 
