@@ -3,6 +3,7 @@
  *
  * Handles building Discord API payloads and registering commands.
  */
+import { createRequire } from 'node:module'
 import {
 	APIApplicationCommandOptionChoice,
 	ApplicationIntegrationType,
@@ -25,6 +26,8 @@ import type {
 	ContextEntry,
 	DiscordConfig
 } from '../types/index.js'
+
+const resolvePackage = createRequire(import.meta.url).resolve
 
 /**
  * Default configuration values.
@@ -83,12 +86,12 @@ export function buildContextCommands(
 		if (defaultMemberPermissions !== undefined) {
 			commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
 		}
-		if (entry.dmPermission !== undefined) {
-			commandBuilder.setDMPermission(entry.dmPermission)
-		}
+			if (entry.dmPermission !== undefined) {
+				commandBuilder.setDMPermission(entry.dmPermission)
+			}
 
-		return commandBuilder
-	})
+			return commandBuilder
+		})
 }
 
 /**
@@ -193,18 +196,22 @@ export function buildSlashCommands(
 			entry.options?.forEach((option) => {
 				addOptionToCommandBuilder(commandBuilder, option.type, option)
 			})
+		}
 
-			const defaultMemberPermissions = entry.defaultMemberPermissions ?? config?.defaults?.defaultMemberPermissions
-			if (defaultMemberPermissions !== undefined) {
-				commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
-			}
+		// Apply permissions regardless of whether the command has subcommands
+		const defaultMemberPermissions = entry.defaultMemberPermissions ?? config?.defaults?.defaultMemberPermissions
+		if (defaultMemberPermissions !== undefined) {
+			commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
+		}
 			if (entry.dmPermission !== undefined) {
 				commandBuilder.setDMPermission(entry.dmPermission)
 			}
-		}
+			if (entry.nsfw !== undefined) {
+				commandBuilder.setNSFW(entry.nsfw)
+			}
 
-		return commandBuilder
-	})
+			return commandBuilder
+		})
 }
 
 /**
@@ -747,7 +754,7 @@ function createTimeout<T>(callback: () => T, ms: number): Promise<T> {
 function hasProjectPackage(name: string): boolean {
 	try {
 		// Use dynamic import resolution to check for package existence
-		require.resolve(name, { paths: [process.cwd()] })
+		resolvePackage(name, { paths: [process.cwd()] })
 		return true
 	} catch {
 		return false
@@ -809,7 +816,100 @@ export function recordsToCommands(
 		}
 	}
 
+	bubbleSubcommandMetadata(commands)
+
 	return commands
+}
+
+/**
+ * Bubble subcommand metadata up to synthesized root commands.
+ *
+ * When subcommands exist without an explicit root command file, the root entry
+ * is synthesized with no metadata. This function merges metadata from subcommands
+ * to the root so Discord receives the correct registration payload.
+ *
+ * Rules:
+ * - integrationTypes: union of all subcommand values
+ * - contexts: union of all subcommand values
+ * - defaultMemberPermissions: only bubble if ALL subcommands agree on the same value
+ * - dmPermission: set false only if ALL subcommands explicitly set false
+ * - Explicit root metadata (from a root command file) is never overridden
+ */
+export function bubbleSubcommandMetadata(commands: Record<string, CommandEntry>): void {
+	for (const entry of Object.values(commands)) {
+		if (!entry.subcommands) continue
+
+		// Collect leaf subcommand entries (walk both direct subcommands and groups)
+		const leaves: CommandEntry[] = []
+		for (const sub of Object.values(entry.subcommands)) {
+			if (sub.subcommands) {
+				// Subcommand group — collect its children
+				for (const leaf of Object.values(sub.subcommands)) {
+					leaves.push(leaf)
+				}
+			} else {
+				leaves.push(sub)
+			}
+		}
+
+		if (leaves.length === 0) continue
+
+		// integrationTypes — union, only if root doesn't already have it
+		if (entry.integrationTypes === undefined) {
+			const allTypes = new Set<CommandIntegrationType>()
+			let anyDefined = false
+			for (const leaf of leaves) {
+				if (leaf.integrationTypes) {
+					anyDefined = true
+					for (const t of leaf.integrationTypes) allTypes.add(t)
+				}
+			}
+			if (anyDefined) {
+				entry.integrationTypes = Array.from(allTypes)
+			}
+		}
+
+		// contexts — union, only if root doesn't already have it
+		if (entry.contexts === undefined) {
+			const allContexts = new Set<CommandContext>()
+			let anyDefined = false
+			for (const leaf of leaves) {
+				if (leaf.contexts) {
+					anyDefined = true
+					for (const c of leaf.contexts) allContexts.add(c)
+				}
+			}
+			if (anyDefined) {
+				entry.contexts = Array.from(allContexts)
+			}
+		}
+
+		// defaultMemberPermissions — bubble only if ALL defining subcommands agree
+		if (entry.defaultMemberPermissions === undefined) {
+			let agreed: string | number | bigint | undefined = undefined
+			let conflict = false
+			for (const leaf of leaves) {
+				if (leaf.defaultMemberPermissions !== undefined) {
+					if (agreed === undefined) {
+						agreed = leaf.defaultMemberPermissions
+					} else if (String(agreed) !== String(leaf.defaultMemberPermissions)) {
+						conflict = true
+						break
+					}
+				}
+			}
+			if (!conflict && agreed !== undefined) {
+				entry.defaultMemberPermissions = agreed
+			}
+		}
+
+		// dmPermission — set false only if ALL subcommands explicitly set false
+		if (entry.dmPermission === undefined) {
+			if (leaves.length > 0 && leaves.every((l) => l.dmPermission === false)) {
+				entry.dmPermission = false
+			}
+		}
+	}
 }
 
 /**
@@ -899,11 +999,6 @@ export async function registerCommandsAtRuntime(options?: RuntimeRegistrationOpt
 		...userContextCommands.map((cmd) => cmd.toJSON()),
 		...messageContextCommands.map((cmd) => cmd.toJSON())
 	]
-
-	if (commandData.length === 0) {
-		discordLogger.debug('No commands to register')
-		return
-	}
 
 	// Create REST with mock API URL if set
 	const rest = createConfiguredRest(token)

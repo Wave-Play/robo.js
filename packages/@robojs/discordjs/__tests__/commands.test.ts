@@ -49,9 +49,11 @@ function clearLoggerMocks() {
 const {
 	buildSlashCommands,
 	buildContextCommands,
+	bubbleSubcommandMetadata,
 	getContextType,
 	getIntegrationType,
-	findCommandDifferences
+	findCommandDifferences,
+	recordsToCommands
 } = await import('../src/core/commands.js')
 
 describe('Command Building', () => {
@@ -782,6 +784,206 @@ describe('Command Building', () => {
 			expect(result).toContain('ping')
 			expect(result).toContain('pong')
 			expect(result).toContain('help')
+		})
+	})
+
+	describe('bubbleSubcommandMetadata', () => {
+		it('should bubble integrationTypes from subcommands to synthesized root', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', integrationTypes: ['UserInstall'] } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', integrationTypes: ['UserInstall'] } }
+			})
+
+			expect(commands.rp.integrationTypes).toEqual(['UserInstall'])
+		})
+
+		it('should union different integrationTypes across siblings', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', integrationTypes: ['UserInstall'] } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', integrationTypes: ['GuildInstall'] } }
+			})
+
+			expect(commands.rp.integrationTypes).toEqual(expect.arrayContaining(['UserInstall', 'GuildInstall']))
+			expect(commands.rp.integrationTypes).toHaveLength(2)
+		})
+
+		it('should bubble contexts from subcommands to synthesized root', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', contexts: ['Guild'] } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', contexts: ['Guild', 'BotDM'] } }
+			})
+
+			expect(commands.rp.contexts).toEqual(expect.arrayContaining(['Guild', 'BotDM']))
+			expect(commands.rp.contexts).toHaveLength(2)
+		})
+
+		it('should bubble defaultMemberPermissions when all subcommands agree', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', defaultMemberPermissions: '8' } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', defaultMemberPermissions: '8' } }
+			})
+
+			expect(commands.rp.defaultMemberPermissions).toBe('8')
+		})
+
+		it('should NOT bubble defaultMemberPermissions when subcommands conflict', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', defaultMemberPermissions: '8' } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', defaultMemberPermissions: '16' } }
+			})
+
+			expect(commands.rp.defaultMemberPermissions).toBeUndefined()
+		})
+
+		it('should bubble dmPermission false only when ALL subcommands say false', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', dmPermission: false } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', dmPermission: false } }
+			})
+
+			expect(commands.rp.dmPermission).toBe(false)
+		})
+
+		it('should NOT bubble dmPermission when subcommands have mixed values', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', dmPermission: false } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', dmPermission: true } }
+			})
+
+			expect(commands.rp.dmPermission).toBeUndefined()
+		})
+
+		it('should NOT override explicit root metadata with subcommand values', () => {
+			const commands = recordsToCommands({
+				'rp': { metadata: { description: 'Root', integrationTypes: ['GuildInstall'], contexts: ['Guild'] } },
+				'rp cmd1': { metadata: { description: 'Cmd 1', integrationTypes: ['UserInstall'], contexts: ['BotDM'] } }
+			})
+
+			expect(commands.rp.integrationTypes).toEqual(['GuildInstall'])
+			expect(commands.rp.contexts).toEqual(['Guild'])
+		})
+
+		it('should apply defaultMemberPermissions even with subcommands in buildSlashCommands', () => {
+			const commands = {
+				admin: {
+					description: 'Admin commands',
+					defaultMemberPermissions: '8',
+					subcommands: {
+						ban: { description: 'Ban user' },
+						kick: { description: 'Kick user' }
+					}
+				}
+			}
+
+			const result = buildSlashCommands(commands)
+			const json = result[0].toJSON()
+
+			expect(json.default_member_permissions).toBe('8')
+		})
+
+		it('should bubble metadata through three-level subcommand groups', () => {
+			const commands = recordsToCommands({
+				'rp group cmd1': { metadata: { description: 'Cmd 1', integrationTypes: ['UserInstall'], contexts: ['Guild'] } },
+				'rp group cmd2': { metadata: { description: 'Cmd 2', integrationTypes: ['GuildInstall'], contexts: ['BotDM'] } }
+			})
+
+			expect(commands.rp.integrationTypes).toEqual(expect.arrayContaining(['UserInstall', 'GuildInstall']))
+			expect(commands.rp.integrationTypes).toHaveLength(2)
+			expect(commands.rp.contexts).toEqual(expect.arrayContaining(['Guild', 'BotDM']))
+			expect(commands.rp.contexts).toHaveLength(2)
+		})
+
+		it('should NOT bubble dmPermission false when only some subcommands define it', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', dmPermission: false } },
+				'rp cmd2': { metadata: { description: 'Cmd 2' } }
+			})
+
+			// cmd2 never opted out, so root should NOT get false
+			expect(commands.rp.dmPermission).toBeUndefined()
+		})
+
+		it('should bubble defaultMemberPermissions when only some subcommands define it', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', defaultMemberPermissions: '8' } },
+				'rp cmd2': { metadata: { description: 'Cmd 2' } }
+			})
+
+			// Only one defines it, no conflict — bubble the value
+			expect(commands.rp.defaultMemberPermissions).toBe('8')
+		})
+
+		it('should not modify root when no subcommand defines any metadata', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1' } },
+				'rp cmd2': { metadata: { description: 'Cmd 2' } }
+			})
+
+			expect(commands.rp.integrationTypes).toBeUndefined()
+			expect(commands.rp.contexts).toBeUndefined()
+			expect(commands.rp.defaultMemberPermissions).toBeUndefined()
+			expect(commands.rp.dmPermission).toBeUndefined()
+		})
+
+		it('should handle empty subcommands object without error', () => {
+			const commands = { empty: { subcommands: {} } as any }
+			bubbleSubcommandMetadata(commands)
+
+			expect(commands.empty.integrationTypes).toBeUndefined()
+			expect(commands.empty.contexts).toBeUndefined()
+		})
+
+		it('should union integrationTypes when some subcommands define and others do not', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', integrationTypes: ['UserInstall'] } },
+				'rp cmd2': { metadata: { description: 'Cmd 2' } } // No integrationTypes
+			})
+
+			// Only cmd1 defines it, so root should get its value
+			expect(commands.rp.integrationTypes).toEqual(['UserInstall'])
+		})
+
+		it('should union contexts when some subcommands define and others do not', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', contexts: ['Guild', 'BotDM'] } },
+				'rp cmd2': { metadata: { description: 'Cmd 2' } } // No contexts
+			})
+
+			// Only cmd1 defines it, so root should get its value
+			expect(commands.rp.contexts).toEqual(expect.arrayContaining(['Guild', 'BotDM']))
+			expect(commands.rp.contexts).toHaveLength(2)
+		})
+
+		it('should NOT bubble dmPermission when only one subcommand sets undefined (implicit true)', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1', dmPermission: false } },
+				'rp cmd2': { metadata: { description: 'Cmd 2' } } // dmPermission undefined
+			})
+
+			// Not ALL subcommands explicitly set false, so root should be undefined
+			expect(commands.rp.dmPermission).toBeUndefined()
+		})
+
+		it('should NOT override explicit root defaultMemberPermissions with subcommand value', () => {
+			const commands = recordsToCommands({
+				'rp': { metadata: { description: 'Root', defaultMemberPermissions: '0' } },
+				'rp cmd1': { metadata: { description: 'Cmd 1', defaultMemberPermissions: '8' } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', defaultMemberPermissions: '8' } }
+			})
+
+			// Root has explicit value, should not be overridden
+			expect(commands.rp.defaultMemberPermissions).toBe('0')
+		})
+
+		it('should NOT override explicit root dmPermission with subcommand value', () => {
+			const commands = recordsToCommands({
+				'rp': { metadata: { description: 'Root', dmPermission: true } },
+				'rp cmd1': { metadata: { description: 'Cmd 1', dmPermission: false } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', dmPermission: false } }
+			})
+
+			// Root has explicit value, should not be overridden
+			expect(commands.rp.dmPermission).toBe(true)
 		})
 	})
 })
