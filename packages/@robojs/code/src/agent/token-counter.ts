@@ -6,7 +6,7 @@
  */
 
 import { getEncoding, type Tiktoken } from 'js-tiktoken'
-import { AIMessage, HumanMessage, ToolMessage, SystemMessage, type BaseMessage } from '@langchain/core/messages'
+import { AIMessage, ToolMessage, type BaseMessage } from '@langchain/core/messages'
 import type { ToolSchema } from '../tools/types.js'
 
 /**

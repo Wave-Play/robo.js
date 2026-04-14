@@ -182,7 +182,7 @@ export class StageServer {
 	/**
 	 * Handle new WebSocket connection
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	private handleConnection(ws: WebSocket, _req: IncomingMessage): void {
 		mockLogger.debug('handleConnection called, ws.readyState:', ws.readyState, 'OPEN=', WebSocket.OPEN)
 

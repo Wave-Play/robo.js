@@ -674,7 +674,7 @@ async function startHmrMode(options: StartMockRoboOptions): Promise<MockRoboHand
 	// Track HMR and restart events via counters
 	let hmrReloadCount = 0
 	let fullRestartCount = 0
-	// eslint-disable-next-line no-control-regex
+	 
 	const ansiPattern = /\x1B\[[0-9;]*[a-zA-Z]/g
 	const stripAnsi = (str: string) => str.replace(ansiPattern, '')
 
@@ -918,7 +918,7 @@ async function startDirectMode(options: StartMockRoboOptions = {}): Promise<Mock
 	// Create a drain that POSTs logs to the control API
 	const { logger: getLogger } = await import('robo.js')
 
-	// eslint-disable-next-line no-control-regex
+	 
 	const ANSI_REGEX = /\x1b\[.*?m/g
 
 	const sessionLogDrain = async (_loggerInstance: unknown, level: string, ...data: unknown[]): Promise<void> => {

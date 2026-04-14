@@ -391,7 +391,7 @@ export class IndexedDBCheckpointSaver implements BaseCheckpointSaver {
 	/**
 	 * Save pending writes to IndexedDB
 	 */
-	async putWrites(config: RunnableConfig, writes: PendingWrite[], taskId: string): Promise<void> {
+	async putWrites(config: RunnableConfig, writes: PendingWrite[], _taskId: string): Promise<void> {
 		const db = await this.getDb()
 		const configurable = config.configurable ?? {}
 		const threadId = configurable.thread_id ?? this.threadId

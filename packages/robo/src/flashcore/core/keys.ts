@@ -21,7 +21,7 @@ import { SafetyError } from './errors.js'
  */
 export function normalizeNamespace(
 	namespace: string | string[] | undefined,
-	separator: string = DEFAULT_NAMESPACE_SEPARATOR
+	_separator: string = DEFAULT_NAMESPACE_SEPARATOR
 ): string[] {
 	if (!namespace) {
 		return []

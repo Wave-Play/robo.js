@@ -6,7 +6,6 @@ import { z } from 'zod'
 import type { ToolDefinition, ToolContext, ToolResult } from '../types.js'
 import { successResult, errorResult } from '../types.js'
 import { checkFilePolicy } from '../runtime/policy.js'
-import { CodeAgentError } from '../../errors/index.js'
 
 /**
  * Input schema for fs_read_many

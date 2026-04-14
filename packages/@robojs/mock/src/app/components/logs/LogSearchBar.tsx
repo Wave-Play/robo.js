@@ -26,7 +26,7 @@ export function LogSearchBar({ className }: LogSearchBarProps) {
 	// Sync input value with filters (for external changes)
 	useEffect(() => {
 		// Build display value from current filters
-		let value = filters.search
+		const value = filters.search
 		// If level filter is active, we show it as a chip, not in the input
 		setInputValue(value)
 	}, [filters.search])

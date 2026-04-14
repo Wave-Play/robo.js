@@ -125,7 +125,7 @@ export const GET = define(
 	async (request) => {
 		const resolved = resolveMessage(request as unknown as RoboRequest)
 		if (resolved instanceof Response) return resolved
-		const { session, channel, channelId, messageId, message } = resolved
+		const { session, _channel, channelId, messageId, message } = resolved
 
 		// Check permissions
 		const permError = enforcePermissions(

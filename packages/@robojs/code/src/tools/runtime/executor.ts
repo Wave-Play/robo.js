@@ -8,7 +8,6 @@
 import { z } from 'zod'
 import type {
 	ToolContext,
-	ToolDefinition,
 	ToolResult,
 	ToolCallResult,
 	ToolExecutorConfig,

@@ -33,7 +33,7 @@ import {
 /**
  * Context for upsert operation.
  */
-export interface UpsertContext<T> {
+export interface UpsertContext<_T> {
 	modelName: string
 	modelKey: string
 	schema: NormalizedSchema

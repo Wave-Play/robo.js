@@ -1,4 +1,3 @@
-import path from 'path'
 import { getPluginOptions } from 'robo.js'
 
 export let serverPrefix = '/api'

@@ -14,7 +14,7 @@ import { codeLogger } from '../core/logger.js'
 /**
  * Known Robo.js package names for detection
  */
-const ROBO_PACKAGES = ['robo.js', '@robojs/discordjs', '@robojs/server', '@robojs/mock'] as const
+const _ROBO_PACKAGES = ['robo.js', '@robojs/discordjs', '@robojs/server', '@robojs/mock'] as const
 
 /**
  * Known Robo.js directories

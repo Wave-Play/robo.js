@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useSyncDrag } from './useSyncDrag.js'
 import type { DragBounds, DragOptions, DragState } from './useSyncDrag.js'
-import type { InterpolateConfig, SyncContext } from './types.js'
+import type { InterpolateConfig } from './types.js'
 
 /**
  * Render props for SyncDraggable children.
@@ -20,7 +20,7 @@ export interface SyncDraggableRenderProps<T extends DragState> {
 /**
  * Props for SyncDraggable component.
  */
-export interface SyncDraggableProps<T extends DragState = DragState, ClientData = unknown> {
+export interface SyncDraggableProps<T extends DragState = DragState, _ClientData = unknown> {
 	/** Key suffix for state synchronization */
 	id: (string | null)[]
 	/** Initial state (must include x, y) */

@@ -408,7 +408,7 @@ export class SlashCommandBuilder {
 		return {
 			name: this.name,
 			description: this.description,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			options: this.options.map((opt: any) =>
 				typeof opt.toJSON === 'function' ? opt.toJSON() : opt
 			),

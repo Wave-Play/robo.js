@@ -291,7 +291,7 @@ export const PATCH = define(
 	async (request) => {
 		const resolved = resolveGuild(request)
 		if (resolved instanceof Response) return resolved
-		const { session, guild, guildId } = resolved
+		const { session, _guild, guildId } = resolved
 
 		// Check permissions
 		const permError = enforcePermissions(session, 'PATCH', `/guilds/${guildId}/channels`, undefined, guildId)

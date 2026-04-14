@@ -2,7 +2,7 @@
  * Planner node - transforms user input into acceptance criteria
  */
 
-import { HumanMessage, AIMessage } from '@langchain/core/messages'
+import { AIMessage } from '@langchain/core/messages'
 import type { AgentState, AgentStateUpdate, PendingQuestion } from '../state.js'
 import type { AcceptanceCriteria, Requirements, ScenarioSpec } from '../../types/acceptance.js'
 import type { TaskStep } from '../../types/run.js'

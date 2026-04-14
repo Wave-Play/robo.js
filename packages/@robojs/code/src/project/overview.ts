@@ -14,7 +14,7 @@ import type { AgentPolicy } from '../types/policy.js'
 import type { ProjectOverview, PackageInfo, KeyFile, Decision, ChangeLogEntry, RefreshOptions } from '../types/scale.js'
 import { OVERVIEW_CAPS, type OverviewCaps } from './caps.js'
 import { ProjectIndexer } from './indexer.js'
-import { buildRoboOverview, parsePackageJson, getRoboVersion, hasRoboConfig } from './robo-detection.js'
+import { buildRoboOverview, parsePackageJson } from './robo-detection.js'
 import { codeLogger } from '../core/logger.js'
 
 /**

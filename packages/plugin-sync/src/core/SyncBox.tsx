@@ -20,8 +20,7 @@ import type {
 	SyncBoxProps,
 	SyncBoxRenderFunction,
 	SyncBoxSetState,
-	SyncStatus,
-	ThrottleConfig
+	SyncStatus
 } from './types.js'
 
 // Internal state shape when lockable is enabled
@@ -61,17 +60,6 @@ function interpolateState<T>(
 		}
 	}
 	return result
-}
-
-// Get throttle value for a specific field or default
-function getThrottleForField<T>(
-	throttle: ThrottleConfig<T> | undefined,
-	field?: keyof T
-): number | undefined {
-	if (throttle === undefined) return undefined
-	if (typeof throttle === 'number') return throttle
-	if (field && throttle[field] !== undefined) return throttle[field]
-	return undefined
 }
 
 /**
@@ -175,7 +163,7 @@ function SyncBoxInner<T = unknown, ClientData = unknown>(
 	const interpolateConfigKey = interpolateConfig ? JSON.stringify(interpolateConfig) : null
 	useEffect(() => {
 		interpolateConfigRef.current = interpolateConfig
-	}, [interpolateConfigKey]) // eslint-disable-line react-hooks/exhaustive-deps
+	}, [interpolateConfigKey])
 
 	// Keep callback refs updated
 	useEffect(() => {

@@ -157,7 +157,7 @@ function mapTestScenario(scenario: ScenarioSpec, context: ScenarioMappingContext
 /**
  * Map a mock scenario to a mock action
  */
-function mapMockScenario(scenario: ScenarioSpec, context: ScenarioMappingContext): MockVerificationAction {
+function mapMockScenario(scenario: ScenarioSpec, _context: ScenarioMappingContext): MockVerificationAction {
 	return {
 		type: 'mock',
 		scenarioId: scenario.id,

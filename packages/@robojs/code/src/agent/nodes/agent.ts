@@ -16,9 +16,9 @@ import {
 	createContextCompactingEvent,
 	createContextCompactedEvent
 } from '../events/debug-events.js'
-import { countContextTokens, countMessagesTokens } from '../token-counter.js'
+import { countContextTokens } from '../token-counter.js'
 import { getModelContextLimit } from '../token-limits.js'
-import type { ChatRequest, ChatResponse, StreamChunk, ToolCall } from '../../types/llm.js'
+import type { ChatRequest, ToolCall } from '../../types/llm.js'
 
 /**
  * LangGraph config passed to nodes for custom streaming
@@ -370,7 +370,7 @@ export function agentNode(context: CodeAgentContext) {
 /**
  * Build context-aware system prompt
  */
-function buildSystemPrompt(state: AgentState, context: CodeAgentContext): string {
+function buildSystemPrompt(state: AgentState, _context: CodeAgentContext): string {
 	const parts: string[] = []
 
 	// CRITICAL: Include the user's original instruction

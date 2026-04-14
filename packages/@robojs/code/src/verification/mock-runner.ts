@@ -6,7 +6,7 @@
  */
 
 import type { ExecutionProvider } from '../types/execution.js'
-import type { TerminalSessionHandle, TerminalChunk } from '../types/terminal.js'
+import type { TerminalSessionHandle } from '../types/terminal.js'
 import type { AgentEvent } from '../types/events.js'
 import type { MockScenarioResult, MockAssertion } from '../types/robo.js'
 import type { ScenarioStep } from '../types/acceptance.js'
@@ -408,7 +408,7 @@ export class MockRunner {
 	/**
 	 * Parse a scenario step into a dispatch command
 	 */
-	private parseStepToCommand(step: ScenarioStep, session: MockSession): DispatchCommand | null {
+	private parseStepToCommand(step: ScenarioStep, _session: MockSession): DispatchCommand | null {
 		const action = step.action.toLowerCase()
 
 		// Get first channel for default

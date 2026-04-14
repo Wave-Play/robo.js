@@ -213,7 +213,7 @@ export class IntegrityChecker {
 		catalog: Catalog,
 		field: string,
 		index: SortedIndex,
-		namespace?: string
+		_namespace?: string
 	): Promise<IndexIntegrityResult> {
 		const result: IndexIntegrityResult = {
 			field,
@@ -354,7 +354,7 @@ export class IntegrityChecker {
 		modelName: string,
 		catalog: Catalog,
 		filter?: CuckooFilter,
-		namespace?: string
+		_namespace?: string
 	): Promise<{ healthy: boolean; issues: string[] }> {
 		const issues: string[] = []
 

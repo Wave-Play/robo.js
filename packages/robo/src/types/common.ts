@@ -4,7 +4,7 @@ import type { LogLevel } from '../core/logger.js'
  * Handler object returned after lazy import.
  * Contains the default export, config, and any named exports.
  */
-export interface HandlerModule<THandler = unknown, TNamedExports = Record<string, unknown>> {
+export interface HandlerModule<THandler = unknown, _TNamedExports = Record<string, unknown>> {
 	default?: THandler
 	config?: unknown
 	module?: string

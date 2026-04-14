@@ -156,7 +156,7 @@ export class NodeProvider implements ExecutionProvider {
 		const absPath = this.resolvePath(dirPath)
 		const entries: DirEntry[] = []
 
-		const readDir = async (currentPath: string, basePath: string) => {
+		const readDir = async (currentPath: string, _basePath: string) => {
 			const items = await fs.readdir(currentPath, { withFileTypes: true })
 
 			for (const item of items) {

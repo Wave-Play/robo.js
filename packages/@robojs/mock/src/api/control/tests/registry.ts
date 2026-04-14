@@ -9,7 +9,7 @@ import { readRegistry } from '../../../session/registry.js'
  *   registry: TestSessionRegistry | null
  * }
  */
-export async function GET(request: RoboRequest) {
+export async function GET(_request: RoboRequest) {
 	const registry = readRegistry()
 
 	return {

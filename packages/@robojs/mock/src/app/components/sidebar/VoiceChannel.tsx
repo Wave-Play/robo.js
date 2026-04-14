@@ -23,7 +23,7 @@ interface VoiceChannelProps {
 	onSelect?: () => void
 }
 
-export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave, currentUserId, currentUserSpeaking = false, onOpenPanel, onSelect }: VoiceChannelProps) {
+export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave: _onLeave, currentUserId, currentUserSpeaking = false, onOpenPanel, onSelect }: VoiceChannelProps) {
 	const { roles, commands, currentUser, botUser, openDM } = useStageData()
 	// Filter voice states for this channel
 	const membersInChannel = voiceStates.filter((vs) => vs.channel_id === channel.id)

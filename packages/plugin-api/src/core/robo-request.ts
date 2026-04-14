@@ -71,7 +71,7 @@ export class RoboRequest extends Request {
 		const rawProto = Array.isArray(rawProtoHeader) ? rawProtoHeader[0] : rawProtoHeader || 'http'
 		const protocol = rawProto.split(',')[0].trim()
 		const host = req.headers.host
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const path = (req as any).originalUrl || req.url
 		const url = `${protocol}://${host}${path}`
 

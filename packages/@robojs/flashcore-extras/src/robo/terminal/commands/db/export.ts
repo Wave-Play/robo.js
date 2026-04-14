@@ -16,7 +16,7 @@ export const config = createTerminalCommandConfig({
 const Indent = '   '
 
 export default async function (ctx: TerminalContext<typeof config>) {
-	const { format: formatOpt, output: outputPath, verbose } = ctx.options
+	const { format: formatOpt, output: outputPath, verbose: _verbose } = ctx.options
 	const format = formatOpt || 'md'
 
 	try {

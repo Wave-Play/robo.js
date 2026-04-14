@@ -15,7 +15,7 @@ import {
 	SlashCommandSubcommandBuilder
 } from 'discord.js'
 import type { ApplicationCommandOptionBase, APIApplicationCommand } from 'discord.js'
-import { color, Env, Flashcore, Logger, logger } from 'robo.js'
+import { color, Env, Flashcore, Logger } from 'robo.js'
 import { Boot } from 'robo.js/unstable.js'
 import { discordLogger } from './logger.js'
 import type {

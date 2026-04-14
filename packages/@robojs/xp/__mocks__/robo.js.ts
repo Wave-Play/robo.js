@@ -20,7 +20,7 @@ export const Flashcore = {
 		mockFlashcore.get(key, options),
 	set: (key: string, value: unknown, options?: { namespace?: string | string[] }) =>
 		mockFlashcore.set(key, value, options),
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	delete: (key: string, options?: { namespace?: string | string[] }) => mockFlashcore.delete(key, options as any)
 }
 

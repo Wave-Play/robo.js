@@ -12,7 +12,6 @@ import styles from './ChannelList.module.css'
 import { FixedTooltip } from '../common/FixedTooltip'
 import CogwheelIcon from '../icons/cogwheel'
 import InviteIcon from '../icons/invite'
-import CreateIcon from '../icons/create'
 import ChannelIcon from '../icons/channel'
 import VoiceChannelIcon from '../icons/voice_channel'
 import ForumIcon from '../icons/forum'
@@ -232,7 +231,6 @@ export function ChannelList({
 			map[cat.id] = getChannelsInCategory(cat.id).map((c) => c.id)
 		}
 		return map
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [categories, regularChannels])
 
 	const activeChannel = activeId ? channels.find((c) => c.id === activeId) ?? null : null
@@ -352,7 +350,6 @@ export function ChannelList({
 				onReorderChannels(updated)
 			}
 		},
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[channels, regularChannels, categories, uncategorizedChannels, insertIndicator, onReorderChannels]
 	)
 
@@ -731,7 +728,7 @@ function ChannelItemWithThreads({
 	selectedThreadId,
 	onClick,
 	onThreadSelect,
-	onCreateChannel,
+	onCreateChannel: _onCreateChannel,
 	activity
 }: ChannelItemWithThreadsProps) {
 	const hasActivity = activity?.isOpen && activity.channelId === channel.id

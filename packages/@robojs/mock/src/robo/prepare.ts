@@ -70,7 +70,7 @@ export default async () => {
  * This ensures WebSocket handlers are registered before start hooks run.
  */
 function registerEngineCallback(): void {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const globalAny = globalThis as any
 	if (!globalAny.__roboServerEngineCallbacks) {
 		globalAny.__roboServerEngineCallbacks = []

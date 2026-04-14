@@ -19,7 +19,7 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction
 } from 'discord.js'
-import type { CommandConfig, CommandOption, DiscordConfig } from '../types/index.js'
+import type { CommandConfig, CommandOption } from '../types/index.js'
 import type { HandlerEntry } from 'robo.js'
 import { getPluginConfig } from '../core/client.js'
 

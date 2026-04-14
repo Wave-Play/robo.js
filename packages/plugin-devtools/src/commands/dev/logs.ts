@@ -21,7 +21,7 @@ export const config: CommandConfig = {
 	}
 }
 
-export default async function (interaction: ChatInputCommandInteraction) {
+export default async function (_interaction: ChatInputCommandInteraction) {
 	const logs = await Flashcore.get<string[]>('__robo_logs')
 
 	if (!logs || logs.length === 0) {

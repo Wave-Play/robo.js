@@ -7,7 +7,7 @@
 import { logger } from '../../logger.js'
 import { color, composeColors, Mode } from 'robo.js'
 import { Nanocore } from 'robo.js/unstable.js'
-import { execSync, spawn, type SpawnOptions } from 'node:child_process'
+import { execSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import https from 'node:https'
 import path from 'node:path'

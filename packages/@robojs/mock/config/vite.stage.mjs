@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync, writeFileSync } from 'fs'
+import { copyFileSync, writeFileSync } from 'fs'
 import { createRequire } from 'module'
 
 /**

@@ -10,14 +10,14 @@ import { MemorySaver } from '@langchain/langgraph/web'
 import type { BaseCheckpointSaver } from '@langchain/langgraph'
 import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { buildAgentGraph, type CompiledAgentGraph } from './graph.js'
-import { AgentStateAnnotation, type AgentState, createInitialState } from './state.js'
+import { type AgentState, createInitialState } from './state.js'
 import { RECURSION_LIMIT } from './constants.js'
 import { createStreamAdapter, type StreamAdapter } from './events/index.js'
 import { codeLogger } from '../core/logger.js'
 import type { McpClientManager } from '../mcp/McpClientManager.js'
 import type { CodeAgentContext, RoboConfig } from './types.js'
 import type { ExecutionProvider, LocalServiceDiscovery } from '../types/execution.js'
-import type { AgentPolicy, DEFAULT_POLICY } from '../types/policy.js'
+import type { AgentPolicy } from '../types/policy.js'
 import type { LLMProvider } from '../types/llm.js'
 import type { ToolRegistry } from '../tools/types.js'
 import type { ToolExecutor } from '../tools/runtime/executor.js'
@@ -609,7 +609,7 @@ export class CodeAgent {
 	private buildLimitMessage(
 		phase: string,
 		stepProgress?: { current: number; total: number; label: string },
-		iterations?: number
+		_iterations?: number
 	): string {
 		const parts: string[] = []
 

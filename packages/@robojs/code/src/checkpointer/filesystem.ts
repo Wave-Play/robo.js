@@ -351,7 +351,7 @@ export class FilesystemCheckpointSaver implements BaseCheckpointSaver {
 	/**
 	 * Save pending writes to filesystem
 	 */
-	async putWrites(config: RunnableConfig, writes: PendingWrite[], taskId: string): Promise<void> {
+	async putWrites(config: RunnableConfig, writes: PendingWrite[], _taskId: string): Promise<void> {
 		const configurable = config.configurable ?? {}
 		const threadId = configurable.thread_id ?? this.threadId
 		const checkpointNs = configurable.checkpoint_ns ?? ''

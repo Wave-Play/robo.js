@@ -110,7 +110,7 @@ export function hasTraversalAttempt(path: string): boolean {
 	}
 
 	// Normalize and check if .. would escape root
-	const normalized = normalizePath(path)
+	const _normalized = normalizePath(path)
 
 	// Count .. segments in original path
 	const segments = path.replace(/\\/g, '/').split('/')

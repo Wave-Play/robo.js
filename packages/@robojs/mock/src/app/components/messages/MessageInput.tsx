@@ -20,7 +20,7 @@ interface MessageInputProps {
 
 export function MessageInput({ channelId, channelName }: MessageInputProps) {
 	const { sendMessage, replyingTo, clearReplyingTo, commands, invokeCommand, members, roles, launchActivity } = useStageData()
-	const { selectedGuildId } = useSession()
+	const { selectedGuildId: _selectedGuildId } = useSession()
 	// Filter to only slash commands (type 1 = ChatInput)
 	const slashCommands = useMemo(() => commands.filter((c) => (c.type ?? 1) === 1), [commands])
 	const [inputValue, setInputValue] = useState('') // Plain text for autocomplete detection

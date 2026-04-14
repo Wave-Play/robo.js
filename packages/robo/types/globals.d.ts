@@ -1,4 +1,4 @@
-/* eslint-disable no-var */
+ 
 import type { FlashcoreAdapter } from '../types/index.js'
 import type Keyv from 'keyv'
 

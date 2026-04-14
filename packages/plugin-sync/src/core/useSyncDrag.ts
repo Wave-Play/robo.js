@@ -2,7 +2,7 @@ import { SyncContext } from './context.js'
 import { useZoneKey } from './SyncZone.js'
 import { useSyncState } from './useSyncState.js'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import type { Client, InterpolateConfig, LockContext, SyncContext as SyncContextType } from './types.js'
+import type { InterpolateConfig, LockContext, SyncContext as SyncContextType } from './types.js'
 
 /**
  * Bounds configuration for draggable elements.

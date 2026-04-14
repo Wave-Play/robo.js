@@ -97,7 +97,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get route handler entries.
 	 */
-	async routes(namespace: string, route: string, options?: ManifestOptions): Promise<HandlerEntry[]> {
+	async routes(namespace: string, route: string, _options?: ManifestOptions): Promise<HandlerEntry[]> {
 		return this.load(namespace, route)
 	}
 
@@ -105,7 +105,7 @@ class ManifestLoader implements ManifestAPI {
 	 * Get route handler entries synchronously.
 	 * Throws if not pre-loaded.
 	 */
-	routesSync(namespace: string, route: string, options?: ManifestOptions): HandlerEntry[] {
+	routesSync(namespace: string, route: string, _options?: ManifestOptions): HandlerEntry[] {
 		const key = this.routeKey(namespace, route)
 		const cached = this._cache.routes.get(key)
 
@@ -150,7 +150,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get all route definitions.
 	 */
-	routeDefinitions(options?: ManifestOptions): RouteDefinitions {
+	routeDefinitions(_options?: ManifestOptions): RouteDefinitions {
 		if (!this._cache.routeDefinitions) {
 			throw new Error('Route definitions not loaded. Call initialize() first.')
 		}
@@ -160,7 +160,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get route definitions for a specific namespace.
 	 */
-	routeDefinitionsForNamespace(namespace: string, options?: ManifestOptions): NamespaceRouteDefinitions | undefined {
+	routeDefinitionsForNamespace(namespace: string, _options?: ManifestOptions): NamespaceRouteDefinitions | undefined {
 		if (!this._cache.routeDefinitions) {
 			throw new Error('Route definitions not loaded. Call initialize() first.')
 		}
@@ -171,7 +171,7 @@ class ManifestLoader implements ManifestAPI {
 	 * Get lifecycle hook entries.
 	 * If not cached, attempts synchronous load from disk.
 	 */
-	hooks(hook: string, options?: ManifestOptions): HookEntry[] {
+	hooks(hook: string, _options?: ManifestOptions): HookEntry[] {
 		const cached = this._cache.hooks.get(hook)
 		if (cached) {
 			return cached
@@ -193,7 +193,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get merged config.
 	 */
-	config(options?: ManifestOptions): Config {
+	config(_options?: ManifestOptions): Config {
 		if (!this._cache.config) {
 			throw new Error('Config not loaded. Call initialize() first.')
 		}
@@ -204,7 +204,7 @@ class ManifestLoader implements ManifestAPI {
 	 * Get config for a specific plugin.
 	 * Lazy loads from config/{plugin}.json if not cached.
 	 */
-	pluginConfig(plugin: string, options?: ManifestOptions): Record<string, unknown> {
+	pluginConfig(plugin: string, _options?: ManifestOptions): Record<string, unknown> {
 		const cached = this._cache.pluginConfigs.get(plugin)
 		if (cached) {
 			return cached
@@ -227,7 +227,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get environment variable status.
 	 */
-	env(options?: ManifestOptions): EnvMetadata {
+	env(_options?: ManifestOptions): EnvMetadata {
 		if (!this._cache.env) {
 			throw new Error('Environment metadata not loaded. Call initialize() first.')
 		}
@@ -237,7 +237,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get all plugin info.
 	 */
-	plugins(options?: ManifestOptions): PluginInfo[] {
+	plugins(_options?: ManifestOptions): PluginInfo[] {
 		if (!this._cache.plugins) {
 			return []
 		}
@@ -247,7 +247,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get info for a specific plugin.
 	 */
-	plugin(name: string, options?: ManifestOptions): PluginInfo | undefined {
+	plugin(name: string, _options?: ManifestOptions): PluginInfo | undefined {
 		return this._cache.plugins?.[name]
 	}
 
@@ -271,7 +271,7 @@ class ManifestLoader implements ManifestAPI {
 	metadata<T extends AggregatedMetadata = AggregatedMetadata>(
 		namespace: string,
 		sourceOrOptions?: string | ManifestOptions,
-		options?: ManifestOptions
+		_options?: ManifestOptions
 	): T | Partial<T> | undefined {
 		// Determine if second param is source or options
 		const isSourceOverload = typeof sourceOrOptions === 'string'
@@ -332,7 +332,7 @@ class ManifestLoader implements ManifestAPI {
 	 * Get seed configuration for a plugin.
 	 * If not cached, attempts synchronous load from disk.
 	 */
-	seeds(pluginName: string, options?: ManifestOptions): SeedConfig | undefined {
+	seeds(pluginName: string, _options?: ManifestOptions): SeedConfig | undefined {
 		const cached = this._cache.seeds.get(pluginName)
 		if (cached) {
 			return cached
@@ -355,7 +355,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get the seeds index (map of plugin names to boolean indicating they have seeds).
 	 */
-	seedsIndex(options?: ManifestOptions): SeedsIndex {
+	seedsIndex(_options?: ManifestOptions): SeedsIndex {
 		if (this._cache.seedsIndex) {
 			return this._cache.seedsIndex
 		}
@@ -374,7 +374,7 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Get project metadata.
 	 */
-	project(options?: ManifestOptions): ProjectMetadata {
+	project(_options?: ManifestOptions): ProjectMetadata {
 		if (!this._cache.project) {
 			throw new Error('Project metadata not loaded. Call initialize() first.')
 		}

@@ -16,7 +16,7 @@ export const config = createTerminalCommandConfig({
 const Indent = '   '
 
 export default async function (ctx: TerminalContext<typeof config>) {
-	const { model: modelOpt, verbose } = ctx.options
+	const { model: modelOpt, verbose: _verbose } = ctx.options
 	const modelName = modelOpt || ctx.args[0]
 
 	try {

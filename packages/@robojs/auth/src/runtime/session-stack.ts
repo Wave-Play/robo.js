@@ -1,7 +1,7 @@
 import type { Adapter, AdapterUser } from '@auth/core/adapters'
 import type { AuthConfig } from '@auth/core'
 import type { CookiesOptions } from '@auth/core/types'
-import type { RoboRequest, RoboReply } from '@robojs/server'
+import type { RoboRequest } from '@robojs/server'
 import { Server } from '@robojs/server'
 import { serializeCookie } from '../utils/cookies.js'
 import { verifyCsrfToken } from '../utils/csrf.js'
@@ -226,7 +226,7 @@ interface UpdateStackParams {
  * (sign-in), updates the session stack cookie on the response.
  */
 export async function updateStack(params: UpdateStackParams): Promise<Response> {
-	const { request, response, adapter, cookies, config } = params
+	const { request, response, adapter, cookies, config: _config } = params
 	const sessionCookieName = cookies.sessionToken?.name ?? 'authjs.session-token'
 	const stackCookieName = deriveStackCookieName(sessionCookieName)
 

@@ -34,7 +34,7 @@ export function ThreadPanel({
 	const messagesRef = useRef<HTMLDivElement>(null)
 	const menuRef = useRef<HTMLDivElement>(null)
 
-	const parentChannel = useMemo(
+	const _parentChannel = useMemo(
 		() => channels.find((channel) => channel.id === parentChannelId) || null,
 		[channels, parentChannelId]
 	)

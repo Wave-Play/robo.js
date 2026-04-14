@@ -693,7 +693,7 @@ export function removeAssigneeMapping(guildId: string, jiraName: string): void {
 	const currentSettings = getSettings(guildId)
 	const assigneeMapping = currentSettings.assigneeMapping ?? {}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	const { [jiraName]: _, ...remaining } = assigneeMapping
 
 	updateSettings(guildId, {
@@ -789,7 +789,7 @@ export function removeColumnMapping(guildId: string, status: string): void {
 	const currentSettings = getSettings(guildId)
 	const columnMapping = currentSettings.columnMapping ?? {}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	const { [status]: _, ...remaining } = columnMapping
 
 	updateSettings(guildId, {

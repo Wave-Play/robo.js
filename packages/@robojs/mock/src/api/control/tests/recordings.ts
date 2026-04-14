@@ -15,7 +15,7 @@ import { readRegistry } from '../../../session/registry.js'
  *   }>
  * }
  */
-export async function GET(request: RoboRequest) {
+export async function GET(_request: RoboRequest) {
 	const recordings = listRecordings()
 	const registry = readRegistry()
 

@@ -7,7 +7,7 @@
  */
 
 import type { LocalServiceDiscovery, ServiceType } from '../../types/execution.js'
-import type { ServiceStartOptions, TerminalSessionHandle } from '../../types/terminal.js'
+import type { ServiceStartOptions } from '../../types/terminal.js'
 import { CodeAgentError } from '../../errors/index.js'
 import { codeLogger } from '../../core/logger.js'
 
@@ -211,7 +211,7 @@ export class WebContainerServiceDiscovery implements LocalServiceDiscovery {
 		codeLogger.debug(`Starting service: ${serviceId} (${service}) on port ${port}`)
 
 		// Build command with port override if needed
-		let args = [...config.args]
+		const args = [...config.args]
 		if (opts?.port) {
 			// Add port argument (service-specific)
 			if (service === 'mock' || service === 'dev') {

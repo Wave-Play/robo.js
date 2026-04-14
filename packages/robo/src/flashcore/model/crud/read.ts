@@ -17,7 +17,7 @@ import { extractIdFromWhere, applySelect, loadRecordByEntry, validateWhereClause
 /**
  * Context for read operation.
  */
-export interface ReadContext<T> {
+export interface ReadContext<_T> {
 	modelName: string
 	schema: NormalizedSchema
 	catalog: Catalog

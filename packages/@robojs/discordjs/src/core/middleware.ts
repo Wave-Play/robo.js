@@ -8,7 +8,7 @@ import { portal, color } from 'robo.js'
 import { discordLogger } from './logger.js'
 import type { HandlerRecord } from 'robo.js'
 import type { HandlerModule } from './handler-types.js'
-import type { MiddlewareData, MiddlewareHandler, MiddlewareResult } from '../types/index.js'
+import type { MiddlewareData, MiddlewareHandler } from '../types/index.js'
 
 /**
  * Get all middleware records from the portal

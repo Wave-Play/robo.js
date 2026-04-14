@@ -18,7 +18,7 @@ export const config = createTerminalCommandConfig({
 const Indent = '   '
 
 export default async function (ctx: TerminalContext<typeof config>) {
-	const { 'dry-run': dryRun, 'force-unlock': forceUnlock, target, rollback, verbose } = ctx.options
+	const { 'dry-run': dryRun, 'force-unlock': forceUnlock, target, rollback, verbose: _verbose } = ctx.options
 
 	try {
 		const { Flashcore } = await import('robo.js/flashcore')

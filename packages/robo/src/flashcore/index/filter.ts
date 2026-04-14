@@ -355,7 +355,7 @@ export class CuckooFilter {
 	private fingerprint(id: string): number {
 		// Use a simple hash and take 16 bits
 		// Must never return 0 (reserved for empty)
-		let hash = fnv1a32(id)
+		const hash = fnv1a32(id)
 		let fp = hash & 0xffff
 		if (fp === 0) fp = 1
 		return fp

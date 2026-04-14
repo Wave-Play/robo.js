@@ -284,10 +284,8 @@ export async function executeDelete<T extends { id: string }>(
 	}
 
 	// Execute delete with appropriate locking
-	let result: T | null
-
 	// Use catalog lock for the operation
-	result = await ctx.catalogLock.withCatalogLock(ctx.modelKey, async () => {
+	const result: T | null = await ctx.catalogLock.withCatalogLock(ctx.modelKey, async () => {
 		if (isSegmented) {
 			// Segmented records don't use chunk lock
 			return performDelete()

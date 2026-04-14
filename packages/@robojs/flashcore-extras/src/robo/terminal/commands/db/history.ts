@@ -16,7 +16,7 @@ export const config = createTerminalCommandConfig({
 const Indent = '   '
 
 export default async function (ctx: TerminalContext<typeof config>) {
-	const { namespace: namespaceOpt, limit: limitOpt, verbose } = ctx.options
+	const { namespace: namespaceOpt, limit: limitOpt, verbose: _verbose } = ctx.options
 	const namespace = namespaceOpt || 'default'
 	const limit = limitOpt ? parseInt(limitOpt, 10) : 20
 

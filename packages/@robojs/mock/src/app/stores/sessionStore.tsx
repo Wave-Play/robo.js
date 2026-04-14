@@ -1327,7 +1327,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
 				case 'playback_state_changed':
 					// Sync playback state from server broadcast (for multi-client sync)
-					// eslint-disable-next-line no-case-declarations
+					 
 					const externalState = event.data as {
 						mode: 'live' | 'playback'
 						isPlaying: boolean

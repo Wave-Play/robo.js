@@ -11,7 +11,7 @@ import { createVerificationDetailEvent } from '../events/debug-events.js'
 /**
  * Default build commands to try
  */
-const DEFAULT_BUILD_COMMANDS = [
+const _DEFAULT_BUILD_COMMANDS = [
 	{ cmd: 'robo', args: ['build'] },
 	{ cmd: 'npm', args: ['run', 'build'] },
 	{ cmd: 'pnpm', args: ['run', 'build'] },
@@ -28,7 +28,7 @@ export function verifyBuildNode(context: CodeAgentContext) {
 	return async (state: AgentState): Promise<AgentStateUpdate> => {
 		codeLogger.debug('Node: verify_build')
 
-		const { provider, policy } = context
+		const { provider, policy: _policy } = context
 		const startTime = Date.now()
 
 		// Determine build command

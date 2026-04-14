@@ -1,5 +1,4 @@
 import { controller } from '../robo/routes/api.js'
-import type { ApiHandlerModule } from '../robo/routes/api.js'
 import type { HandlerModule } from 'robo.js'
 import { createTestRequest } from './create-test-request.js'
 import type { TestRouteOptions, TestRouteResult, TestableModule, TestRequestOptions } from './types.js'

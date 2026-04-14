@@ -16,7 +16,7 @@ import type { PluginData } from '../types/index.js'
 export async function executeEventHandler(
 	plugins: Map<string, PluginData> | null,
 	eventName: string,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	..._eventData: unknown[]
 ): Promise<void> {
 	// Only handle lifecycle events in core

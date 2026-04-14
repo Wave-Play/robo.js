@@ -17,7 +17,7 @@ export const config = createTerminalCommandConfig({
 const Indent = '   '
 
 export default async function (ctx: TerminalContext<typeof config>) {
-	const { model, rebuild, 'dry-run': dryRun, verbose } = ctx.options
+	const { model, rebuild, 'dry-run': dryRun, verbose: _verbose } = ctx.options
 
 	try {
 		const { Flashcore } = await import('robo.js/flashcore')

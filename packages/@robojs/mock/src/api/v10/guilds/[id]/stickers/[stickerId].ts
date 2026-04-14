@@ -117,7 +117,7 @@ export const PATCH = define(
 	async (request) => {
 		const resolved = resolveSticker(request)
 		if (resolved instanceof Response) return resolved
-		const { session, guildId, sticker, stickerId } = resolved
+		const { session, guildId, _sticker, stickerId } = resolved
 
 		let body: {
 			name?: string

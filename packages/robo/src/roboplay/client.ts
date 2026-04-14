@@ -187,7 +187,7 @@ export async function requestStream<T = unknown>(
 	}
 }
 
-// eslint-disable-next-line no-control-regex
+ 
 const AsciiRegex = new RegExp(/[^\x00-\x7F]/g)
 
 /**

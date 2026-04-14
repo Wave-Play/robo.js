@@ -175,7 +175,7 @@ export default async function mockCommand({ options, logger }: CliContext) {
 	}
 
 	// 7. Get engine from @robojs/server
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const engine = (globalThis as any).roboServer?.engine as BaseEngine | undefined
 	if (!engine) {
 		logger.error('Failed to initialize server engine - @robojs/server prepare hook may have failed')

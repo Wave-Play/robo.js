@@ -17,7 +17,7 @@ import {
 	withEphemeralDefer,
 	withEphemeralReply
 } from '../utils.js'
-import type { ChatInputCommandInteraction, Message } from 'discord.js'
+import type { ChatInputCommandInteraction } from 'discord.js'
 import type { HandlerModule } from '../handler-types.js'
 import type { CommandConfig } from '../../types/index.js'
 

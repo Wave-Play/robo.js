@@ -142,13 +142,9 @@ export class LegacyFileAdapter<K = string, V = unknown> implements FlashcoreAdap
 	}
 
 	async clear(): Promise<boolean> {
-		try {
-			await fs.rm(this.dataDir, { recursive: true, force: true })
-			await fs.mkdir(this.dataDir, { recursive: true })
-			return true
-		} catch (e) {
-			throw e
-		}
+		await fs.rm(this.dataDir, { recursive: true, force: true })
+		await fs.mkdir(this.dataDir, { recursive: true })
+		return true
 	}
 
 	// ─────────────────────────────────────────────────────────────

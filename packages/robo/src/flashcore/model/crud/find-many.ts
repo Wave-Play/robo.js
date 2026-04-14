@@ -23,7 +23,7 @@ import { applySelect } from './shared.js'
 /**
  * Context for findMany operations.
  */
-export interface FindManyContext<T> {
+export interface FindManyContext<_T> {
 	modelName: string
 	schema: NormalizedSchema
 	catalog: Catalog
@@ -121,7 +121,7 @@ export async function executeFindMany<T extends { id: string }>(
 
 				// Apply pagination
 				const skip = Math.max(0, args.skip ?? 0)
-				let take = args.take ?? safetyConfig.maxDefaultResults
+				const take = args.take ?? safetyConfig.maxDefaultResults
 
 				if (records.length > safetyConfig.warnResultsThreshold && args.take === undefined) {
 					logger.warn(

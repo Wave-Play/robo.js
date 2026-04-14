@@ -69,11 +69,11 @@ export const fsReadTool: ToolDefinition<FsReadInput, FsReadOutput> = {
 		try {
 			// Get file stat for size check and stale detection
 			let mtimeMs: number | null = null
-			let totalSize: number | null = null
+			let _totalSize: number | null = null
 			try {
 				const stat = await context.provider.stat(path)
 				mtimeMs = stat.mtimeMs ?? null
-				totalSize = stat.size ?? null
+				_totalSize = stat.size ?? null
 			} catch {
 				// Stat failed but file might still be readable
 			}

@@ -13,7 +13,7 @@ import { codeLogger } from '../../core/logger.js'
  * Used for file listing, drift detection, and Robo-aware signals.
  */
 export function refreshIndexNode(context: CodeAgentContext) {
-	return async (state: AgentState): Promise<AgentStateUpdate> => {
+	return async (_state: AgentState): Promise<AgentStateUpdate> => {
 		codeLogger.debug('Node: refresh_index')
 
 		const { projectIndexer } = context

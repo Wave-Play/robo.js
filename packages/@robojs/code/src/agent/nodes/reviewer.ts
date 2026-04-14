@@ -135,7 +135,7 @@ export function reviewerNode(context: CodeAgentContext) {
 /**
  * Evaluate what's needed for completion
  */
-function evaluateCompletion(state: AgentState, context: CodeAgentContext): ReviewDecision {
+function evaluateCompletion(state: AgentState, _context: CodeAgentContext): ReviewDecision {
 	const decision: ReviewDecision = {
 		needsBuild: false,
 		needsTests: false,

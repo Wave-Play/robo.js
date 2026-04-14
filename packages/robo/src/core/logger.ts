@@ -44,7 +44,7 @@ export interface LoggerOptions {
 
 export const DEBUG_MODE = env?.ROBO_DEV === 'true'
 
-// eslint-disable-next-line no-control-regex
+ 
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
 const pendingDrains = new Set<Promise<void>>()
@@ -326,7 +326,7 @@ function ansiToBrowserFormat(text: string): { fmt: string; css: string[] } {
 	let currentStyle: Record<string, string> = {}
 
 	// Match one or more codes at a time (e.g. "\x1b[1;36m")
-	// eslint-disable-next-line no-control-regex
+	 
 	const pattern = /\x1b\[([0-9;]+)m/g
 	let match: RegExpExecArray | null
 

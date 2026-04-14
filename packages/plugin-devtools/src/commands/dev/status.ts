@@ -20,7 +20,7 @@ export const config: CommandConfig = {
 	}
 }
 
-export default async function (interaction: ChatInputCommandInteraction) {
+export default async function (_interaction: ChatInputCommandInteraction) {
 	const uptime = process.uptime()
 	const hours = Math.floor(uptime / 3600)
 	const minutes = Math.floor((uptime % 3600) / 60)

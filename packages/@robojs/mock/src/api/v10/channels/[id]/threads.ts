@@ -1,5 +1,4 @@
 import { define } from '@robojs/server'
-import type { RoboRequest } from '@robojs/server'
 import { z } from 'zod'
 import type { Snowflake } from 'discord-api-types/v10'
 import { sessionManager } from '../../../../core/manager.js'

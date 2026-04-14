@@ -328,8 +328,8 @@ export function MessageArea({ channelId, chatOnly, onOpenThreads, onOpenThread }
 		botUser,
 		currentUser,
 		voicePanelMode,
-		setVoicePanelMode,
-		closeVoicePanel,
+		setVoicePanelMode: _setVoicePanelMode,
+		closeVoicePanel: _closeVoicePanel,
 		messages,
 		channelMessages,
 		channelTypingUsers,
@@ -368,7 +368,7 @@ export function MessageArea({ channelId, chatOnly, onOpenThreads, onOpenThread }
 	// Use playback typing users when in playback mode, otherwise use session typing users
 	const displayTypingUsers = isPlaybackMode && playbackTypingUsers !== null ? playbackTypingUsers : channelTypingUsers
 	const voiceUsers = botUser && !users.some((user) => user.id === botUser.id) ? [...users, botUser] : users
-	const guildMembers = selectedGuildId
+	const _guildMembers = selectedGuildId
 		? members.filter((member) => member.guild_id === selectedGuildId)
 		: members
 	const visibleMessages = dismissedEphemeralIds.length
@@ -500,7 +500,7 @@ export function MessageArea({ channelId, chatOnly, onOpenThreads, onOpenThread }
 		)
 	}
 
-	const isThreadChannel =
+	const _isThreadChannel =
 		selectedChannel.type === 10 ||
 		selectedChannel.type === 11 ||
 		selectedChannel.type === 12
@@ -868,16 +868,6 @@ function estimateTextHeight(content: string, maxLineLength = 70): number {
 	return Math.ceil(totalLines * 19)
 }
 
-function MoreIcon() {
-	return (
-		<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-			<circle cx="5" cy="12" r="2" />
-			<circle cx="12" cy="12" r="2" />
-			<circle cx="19" cy="12" r="2" />
-		</svg>
-	)
-}
-
 function CheckIcon() {
 	return (
 		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -886,10 +876,3 @@ function CheckIcon() {
 	)
 }
 
-function CloseIcon() {
-	return (
-		<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-			<path d="M18 6L6 18M6 6l12 12" />
-		</svg>
-	)
-}

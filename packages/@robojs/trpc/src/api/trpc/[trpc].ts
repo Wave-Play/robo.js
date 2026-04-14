@@ -2,13 +2,12 @@ import { initTRPC } from '@trpc/server'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { Robo } from 'robo.js'
 import { serverPrefix } from '../../robo/start.js'
-import { trpcLogger } from '../../core/loggers.js'
 import type { RoboReply, RoboRequest } from '@robojs/server'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export let appRouter: any | null = null
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type AnyFunction = (...args: any[]) => any
 
 function createWrapper<F extends AnyFunction>(fn: F): F {

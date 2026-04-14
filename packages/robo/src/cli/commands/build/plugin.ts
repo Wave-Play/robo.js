@@ -292,7 +292,7 @@ async function printPluginBuildSummary(
 	routeEntries: RouteEntries,
 	totalSize: number,
 	startTime: number,
-	pluginName: string
+	_pluginName: string
 ): Promise<void> {
 	const entries: Array<{ type: string; name: string; description?: string; extra?: { parent?: string; type?: string } }> = []
 

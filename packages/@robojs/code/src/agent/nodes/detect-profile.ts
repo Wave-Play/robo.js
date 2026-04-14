@@ -15,7 +15,7 @@ import { codeLogger } from '../../core/logger.js'
  * This node runs at the start of every run to establish context.
  */
 export function detectProfileNode(context: CodeAgentContext) {
-	return async (state: AgentState): Promise<AgentStateUpdate> => {
+	return async (_state: AgentState): Promise<AgentStateUpdate> => {
 		codeLogger.debug('Node: detect_profile')
 
 		const { provider } = context

@@ -44,7 +44,7 @@ export async function helpCommandHandler(_context: CliContext) {
 	)
 
 	// Load extensions for all core commands
-	let extensionMap: Record<string, string[]> = {}
+	const extensionMap: Record<string, string[]> = {}
 	try {
 		const { loadCliManifest, getExtensions } = await import('../utils/cli-loader.js')
 		const manifest = await loadCliManifest()

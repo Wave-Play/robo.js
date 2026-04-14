@@ -701,7 +701,7 @@ export class ManifestGenerator {
 		return definition
 	}
 
-	private processEntriesToHandlers(entries: ProcessedEntry[], namespace: string): HandlerEntry[] {
+	private processEntriesToHandlers(entries: ProcessedEntry[], _namespace: string): HandlerEntry[] {
 		return entries.map((entry, index) => {
 			// Determine source based on build type and entry module
 			let isPlugin = entry.module?.startsWith('@') || entry.module?.startsWith('robo-plugin-')
@@ -738,7 +738,7 @@ export class ManifestGenerator {
 		})
 	}
 
-	private processEntriesToSummaries(entries: ProcessedEntry[], namespace: string): HandlerSummary[] {
+	private processEntriesToSummaries(entries: ProcessedEntry[], _namespace: string): HandlerSummary[] {
 		return entries.map((entry, index) => {
 			let isPlugin = entry.module?.startsWith('@') || entry.module?.startsWith('robo-plugin-')
 			let plugin = isPlugin ? entry.module : null

@@ -18,7 +18,7 @@ let _cachedSessionManager: { get: (id: string) => Session | undefined } | null =
 function getSessionManagerSync(): { get: (id: string) => Session | undefined } {
 	if (!_cachedSessionManager) {
 		// Dynamic require for synchronous resolution - works in Node.js/Jest environments
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		 
 		const mod = require('../core/manager.js') as {
 			sessionManager: { get: (id: string) => Session | undefined }
 		}

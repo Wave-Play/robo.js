@@ -370,7 +370,7 @@ export class RepairEngine {
 		catalog: Catalog,
 		chunkManager: ChunkManager,
 		field: string,
-		namespace?: string
+		_namespace?: string
 	): Promise<SortedIndex> {
 		const index = new SortedIndex(field)
 		const chunkIds = catalog.getChunkIds()

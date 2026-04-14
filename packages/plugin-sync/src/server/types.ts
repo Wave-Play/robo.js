@@ -1,4 +1,4 @@
-import type { Client, ServerZone } from '../core/types.js'
+import type { Client } from '../core/types.js'
 
 // ============================================================================
 // Handler Context Types

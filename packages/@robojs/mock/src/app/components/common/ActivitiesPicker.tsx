@@ -281,7 +281,7 @@ export function ActivitiesPicker({ onClose, position, onPlayActivity }: Activiti
 			if (first.launchUrl) setCustomUrl(first.launchUrl)
 			if (first.applicationId) setCustomAppId(first.applicationId)
 		}
-	}, [detectedActivities]) // eslint-disable-line react-hooks/exhaustive-deps
+	}, [detectedActivities])
 
 	// Keep displayed activity in sync, but preserve it during slide-out
 	if (selectedActivity) {

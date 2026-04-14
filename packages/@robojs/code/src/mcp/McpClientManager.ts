@@ -18,8 +18,7 @@ import type {
 	McpServerConfig,
 	McpServerInfo,
 	McpServerStatus,
-	McpToolMetadata,
-	DISCOVERED_URL
+	McpToolMetadata
 } from './types.js'
 
 /**

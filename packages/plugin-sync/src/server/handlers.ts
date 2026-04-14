@@ -1,5 +1,4 @@
 import { syncLogger } from '../core/logger.js'
-import { normalizeKey } from '../core/utils.js'
 import { validateSchema } from './schema.js'
 import { portal } from 'robo.js'
 import type {
@@ -11,10 +10,9 @@ import type {
 	SyncMiddlewareContext,
 	SyncCallContext,
 	HandlerClient,
-	MiddlewareResult,
 	CallHandler
 } from './types.js'
-import type { Client, ServerZone } from '../core/types.js'
+import type { ServerZone } from '../core/types.js'
 
 // ============================================================================
 // Handler Registry

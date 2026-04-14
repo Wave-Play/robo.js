@@ -7,7 +7,6 @@
 
 import { AIMessage, ToolMessage, type BaseMessage } from '@langchain/core/messages'
 import type { AgentEvent, StreamOptions, DebugEvent } from '../../types/events.js'
-import { isDebugEvent } from '../../types/events.js'
 import type { AgentState } from '../state.js'
 import { codeLogger } from '../../core/logger.js'
 

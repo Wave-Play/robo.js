@@ -13,7 +13,7 @@ import { codeLogger } from '../../core/logger.js'
  * This includes package info, Robo details, key files, and agent memory.
  */
 export function refreshOverviewNode(context: CodeAgentContext) {
-	return async (state: AgentState): Promise<AgentStateUpdate> => {
+	return async (_state: AgentState): Promise<AgentStateUpdate> => {
 		codeLogger.debug('Node: refresh_overview')
 
 		const { projectOverviewBuilder } = context

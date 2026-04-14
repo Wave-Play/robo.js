@@ -7,7 +7,6 @@ import type { ToolDefinition, ToolContext, ToolResult } from '../types.js'
 import { successResult, errorResult, approvalRequired } from '../types.js'
 import { checkFilePolicy, checkDiffPolicy } from '../runtime/policy.js'
 import type { FileChange, FileDiff } from '../../types/changes.js'
-import { CodeAgentError } from '../../errors/index.js'
 import { codeLogger } from '../../core/logger.js'
 import { checkStaleness } from '../tracking/file-tracker.js'
 

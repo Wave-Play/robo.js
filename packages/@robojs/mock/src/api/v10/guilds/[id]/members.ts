@@ -1,6 +1,5 @@
 import { define } from '@robojs/server'
 import { z } from 'zod'
-import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { mockGuildMemberToAPIMember } from '../../../../discord/payloads.js'

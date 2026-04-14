@@ -274,7 +274,7 @@ export async function applySafeChangesImpl(
 	model: FlashcoreModel<{ id: string }>,
 	changes: SchemaChange[],
 	logger: Logger,
-	metrics: FlashcoreMetrics
+	_metrics: FlashcoreMetrics
 ): Promise<void> {
 	for (const change of changes) {
 		switch (change.type) {

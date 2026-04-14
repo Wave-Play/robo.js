@@ -39,7 +39,7 @@ import {
 /**
  * Context for bulk operations.
  */
-export interface BulkContext<T> {
+export interface BulkContext<_T> {
 	modelName: string
 	modelKey: string
 	schema: NormalizedSchema

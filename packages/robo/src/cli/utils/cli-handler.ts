@@ -217,7 +217,7 @@ export class Command {
 
 		// Load extension options
 		let allOptions = [...this._options]
-		let extensionSources: Map<string, string> = new Map()
+		const extensionSources: Map<string, string> = new Map()
 
 		try {
 			const { loadCliManifest, getExtensions, mergeOptions } = await import('./cli-loader.js')

@@ -6,7 +6,7 @@
  *
  * This is OPT-IN only and clearly marked in DevTools.
  */
-export function buildSdkShimScript(proxyOrigin: string): string {
+export function buildSdkShimScript(_proxyOrigin: string): string {
 	return `
 <script data-mock-sdk-shim="true">
 // @robojs/mock SDK origin shim (opt-in)

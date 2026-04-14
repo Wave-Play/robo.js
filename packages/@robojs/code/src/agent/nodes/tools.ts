@@ -5,7 +5,7 @@
 import { ToolMessage, AIMessage, type BaseMessage } from '@langchain/core/messages'
 import type { AgentState, AgentStateUpdate } from '../state.js'
 import type { CodeAgentContext } from '../types.js'
-import { createToolCall, type ToolExecutor } from '../../tools/runtime/executor.js'
+import { createToolCall } from '../../tools/runtime/executor.js'
 import { codeLogger } from '../../core/logger.js'
 import type { FileDiff, FileChange } from '../../types/changes.js'
 import { createToolTimingEvent } from '../events/debug-events.js'

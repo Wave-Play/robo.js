@@ -636,7 +636,7 @@ export abstract class BaseEngine {
 	 * @param _options Voice session options supplied by the caller.
 	 * @throws Always throws when not overridden by subclasses.
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	public async startVoiceSession(_options: VoiceSessionStartOptions): Promise<VoiceSessionHandle> {
 		throw new Error(`${this.constructor.name} does not support voice sessions`)
 	}
@@ -647,7 +647,7 @@ export abstract class BaseEngine {
 	 * @param _handle Voice session handle.
 	 * @throws Always throws when voice is unsupported.
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	public async stopVoiceSession(_handle: VoiceSessionHandle): Promise<void> {
 		throw new Error(`${this.constructor.name} does not support voice sessions`)
 	}

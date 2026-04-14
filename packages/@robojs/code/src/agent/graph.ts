@@ -86,7 +86,7 @@ export function buildAgentGraph(config: GraphConfig) {
 	const { context, checkpointer = new MemorySaver(), disableQuestionGate = false } = config
 
 	// Create state graph with annotation
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const graph = new StateGraph(AgentStateAnnotation) as any
 
 	// Add all nodes with bound context
