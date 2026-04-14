@@ -1,5 +1,72 @@
 # robo.js
 
+## 0.11.0-next.0
+
+### Minor Changes
+
+- refactor: remove legacy HTTP types from core exports
+
+  Removed `types/api.ts` and its exports (RoboRequest, RoboReply, RouteHandler, Api, ApiEntry, HttpMethod). These types now live in @robojs/server. Added new HandlerSummary interface and route summary APIs (routeSummaries, routeSummariesSync, reloadRouteSummaries) to manifest v1.
+
+- refactor(cli): remove `robo db` command suite
+
+  Removed all 9 database CLI commands (check, clear, diff, export, history, migrate, rebuild-indexes, repair, status) as they relied on the removed migration/integrity systems. Database management is now handled automatically by the simplified Flashcore adapter.
+
+- feat(cli): inspect and logs diagnostic commands
+
+  New `robo inspect` command displays project structure, installed plugins, routes, hooks, configuration, and environment variable status with optional `--json` output. New `robo logs` command queries, filters, and streams local log files with support for level, source, pattern, time range, and session filtering.
+
+- feat(cli): lazy command loading, nested extensions, and performance tracking
+
+  CLI commands now load lazily for faster startup. Nested CLI command extensions via folder structure for better organization. Performance tracking utilities for benchmarking startup and build times. Spirit worker output routing improvements with proper shutdown sequencing and environment variable forwarding.
+
+- feat(cli): AI coding skills system
+
+  `robo add` now detects and installs AI coding skills bundled with plugins. New `--no-skills` flag to skip skill installation. Skills are scanned from plugin `skills/` directories and installed to the project's `.claude/` or equivalent coding tool target.
+
+- refactor!: decouple Discord.js from core framework
+
+  Breaking: `client` is no longer exported from `robo.js` — use `getClient()` from `@robojs/discordjs` instead. `Robo.start()` now accepts a `Config` object instead of a Discord.js `Client`. Discord environment variables (`DISCORD_TOKEN`, `DISCORD_CLIENT_ID`) are no longer auto-loaded by the core `Env` module; the Discord.js plugin now owns the client lifecycle entirely. The `shard` option has been removed from start options. The `registerSlashCommands` and `createCommandConfig` exports have been removed from `robo.js` (use `@robojs/discordjs` equivalents).
+
+- feat(flashcore): simplified architecture with lazy migration from legacy storage
+
+  Complete Flashcore rewrite: removed adapter wrapper stack (cache, compression, encryption, resilience), migration system, integrity/repair system, transaction system, and WAL recovery. Replaced with a simpler direct adapter model and RuntimeMigrationAdapter that lazily migrates data from legacy `.robo/data` to `.robo/flashcore`. Added fsync for durability and structured DataCorruptionError handling. Advanced features extracted to @robojs/flashcore-extras package.
+
+- feat(logger): multi drain support & built-in file drain
+- feat(cli): interactive terminal for dev mode
+
+  New split-pane terminal UI during `robo dev` with ANSI scroll regions: log output in the top area and a pinned input area at the bottom. Features character-by-character stdin handling, command history with arrow key navigation, real-time hints/autocomplete, resize handling, and graceful degradation for non-TTY environments. Disable with `ROBO_NON_INTERACTIVE=true`. Terminal commands registered by plugins appear in the interactive prompt.
+
+- feat: "prepare" and "error" lifecycle hooks with priority system
+
+  New `prepare` hook runs before main startup for early initialization. New `error` hook provides runtime error handling. All lifecycle hooks now support a priority system for controlling execution order.
+
+- feat: manifest v1 with plugin prefix, seed manifests, and start context
+
+  Plugin prefix construct for namespaced manifests. Seed manifest generation for plugin scaffolding. Granular plugin configuration support. Key transform system for flexible manifest routing. Start context improvements for plugin initialization.
+
+- feat: new "init" and "setup" hooks
+- feat: "start" and "stop" hooks
+- perf: parallel I/O, startup optimization, env caching, and IPC protocol
+
+  Parallelized I/O operations during config loading, hooks, portal initialization, and startup. Optimized startup path for `robo start`. Environment variable loading now caches to prevent redundant file reads. New lightweight IPC protocol for inter-process communication.
+
+- feat(cli): true hmr
+- feat: new build hooks (complete, start, transform)
+- feat: runtime status system
+
+  New Status API accessible via `Robo.Status` for tracking and broadcasting runtime state. Supports status-set, status-remove, status-flash, and status-progress events through the spirit message protocol.
+
+- refactor: modular type system
+
+  Reorganized type definitions into focused modules: `types/cli.ts` (CLI and terminal command types), `types/lifecycle.ts` (lifecycle hook types with priority), `types/manifest-v1.ts` (manifest v1 schema), `types/portal.ts` (portal API types), and `types/routes.ts` (route definition types). Removed `types/commands.ts` (merged into `@robojs/discordjs`). New exports include `createCliCommandConfig`, `createTerminalCommandConfig`, `registerEnvPattern`, `createPluginState`, hook priority helpers (`setHookPriority`, `prioritizeHookBefore`, `prioritizeHookAfter`), and `Manifest` class.
+
+### Patch Changes
+
+- refactor(cli): cleaner type errors
+- feat: auto file drain logging
+- feat(logger): file drain color maps
+
 ## 0.10.32
 
 ### Patch Changes

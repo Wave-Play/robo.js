@@ -1,29 +1,52 @@
 {
   "name": "@robojs/flashcore-extras",
   "description": "Advanced Flashcore features: adapter wrappers, migrations, integrity checks, transactions, and db CLI commands",
-  "version": "0.11.0",
+  "version": "0.12.0-next.0",
   "type": "module",
   "private": false,
   "main": ".robo/build/index.js",
   "license": "MIT",
   "exports": {
-    ".": { "import": "./.robo/build/index.js", "types": "./.robo/build/index.d.ts" },
-    "./adapters": { "import": "./.robo/build/adapters/index.js", "types": "./.robo/build/adapters/index.d.ts" },
-    "./migrations": { "import": "./.robo/build/migrations/index.js", "types": "./.robo/build/migrations/index.d.ts" },
-    "./integrity": { "import": "./.robo/build/integrity/index.js", "types": "./.robo/build/integrity/index.d.ts" },
-    "./transactions": { "import": "./.robo/build/transactions/index.js", "types": "./.robo/build/transactions/index.d.ts" },
-    "./wal": { "import": "./.robo/build/wal/index.js", "types": "./.robo/build/wal/index.d.ts" }
+    ".": {
+      "import": "./.robo/build/index.js",
+      "types": "./.robo/build/index.d.ts"
+    },
+    "./adapters": {
+      "import": "./.robo/build/adapters/index.js",
+      "types": "./.robo/build/adapters/index.d.ts"
+    },
+    "./migrations": {
+      "import": "./.robo/build/migrations/index.js",
+      "types": "./.robo/build/migrations/index.d.ts"
+    },
+    "./integrity": {
+      "import": "./.robo/build/integrity/index.js",
+      "types": "./.robo/build/integrity/index.d.ts"
+    },
+    "./transactions": {
+      "import": "./.robo/build/transactions/index.js",
+      "types": "./.robo/build/transactions/index.d.ts"
+    },
+    "./wal": {
+      "import": "./.robo/build/wal/index.js",
+      "types": "./.robo/build/wal/index.d.ts"
+    }
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "files": [".robo/", "LICENSE"],
+  "files": [
+    ".robo/",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "robo build plugin",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest"
   },
-  "peerDependencies": { "robo.js": ">=0.11.0" },
+  "peerDependencies": {
+    "robo.js": ">=0.11.0"
+  },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.12",

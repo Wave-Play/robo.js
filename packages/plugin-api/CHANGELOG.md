@@ -1,5 +1,53 @@
 # @roboplay/plugin-api
 
+## 0.7.0-next.0
+
+### Minor Changes
+
+- feat: plugin static asset merging
+- feat: auto increment port
+- feat: extract core API routing utilities
+
+  New api-routing module with reusable utilities: normalizeServerPrefix() for prefix handling, getApiRoutePath() for path conversion, createRegisteredApiRoutes() for route registration, and createMethodDispatcher() for HTTP method-based routing. Enables shared route handling between dev and prod startup paths.
+
+- feat: add ApiRuntime for dev-mode route management
+
+  New ApiRuntime class that manages API handler slots, route topology, and mutations for development mode. Supports handler staling for cache invalidation, topology syncing when routes are added or removed, and rollback on failure. Enables instant HMR without server restart.
+
+- feat: typed endpoints with `define()`, tunnel support, and testing utilities
+
+  New `define()` function for type-safe API route handlers with schema validation. Cloudflare tunnel integration (`CloudflareProvider`) with terminal commands (`/tunnel start`, `/tunnel stop`, `/tunnel list`). Port utilities (`isPortAvailable`, `findAvailablePort`). HTTP method named exports for route handlers. Plugin route registry for prefix management. Testing utilities for route handlers.
+
+- feat: add route mutation API to engines
+
+  New abstract methods on BaseEngine: unregisterRoute(), replaceRoute(), hasRoute(), supportsRouteMutation(). NodeEngine implements full route mutation support via router delegation. FastifyEngine signals unsupported with debug logging. Both engines use Robo.status.set() for startup logging and prevent concurrent stop calls.
+
+- feat: add HMR hook for API route topology and handler changes
+
+  New HMR hook that listens for server:api route changes, syncs topology when routes are added or removed, and marks handlers stale for cache invalidation. Stop hook updated to dispose ApiRuntime, stop dev-reload, clear Robo status, and reset ready flag.
+
+- feat: OpenAPI spec generation and lazy handler loading
+
+  Multi-phase OpenAPI implementation for automatic API documentation. Lazy handler loading for improved startup performance. Named exports support for route handlers.
+
+- feat: enhance router for HMR-driven route mutations
+
+  Radix3 remove() improved with proper empty node pruning via new shouldPruneNode() helper. Router gains addRoute() upsert behavior (replace if exists), removeRoute() with boolean return, and hasRoute() for existence checks.
+
+- refactor: separate dev and prod startup paths
+
+  Start hook refactored to split dev/prod logic: dev mode uses ApiRuntime for HMR-driven route mutations and lazy loading, prod mode uses eager portal loading. Extracted createMethodDispatcher and lazy handler logic into api-routing module. Added globalThis.roboServer metadata (port, hostname, startedAt, registeredPaths).
+
+- fix: TypeScript compatibility and schema target update
+
+  Add type assertions for Response.json() and getSetCookie() to handle TypeScript strict mode compatibility. Update Zod JSON schema generation target from openapi-3.0 to draft-2020-12 for better schema compatibility.
+
+- feat: plugin namespacing
+
+### Patch Changes
+
+- feat: improved cors support
+
 ## 0.6.6
 
 ### Patch Changes

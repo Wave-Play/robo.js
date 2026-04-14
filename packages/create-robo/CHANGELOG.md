@@ -1,5 +1,15 @@
 # create-robo
 
+## 0.15.0-next.0
+
+### Minor Changes
+
+- feat: updated templates for v0.11
+
+  Bot templates updated to use `clientReady` event instead of `ready`. Skills system integration for plugin installation. Updated dependency versions and configurations for v0.11 compatibility.
+
+- feat: new "init" and "setup" hooks
+
 ## 0.14.12
 
 ### Patch Changes

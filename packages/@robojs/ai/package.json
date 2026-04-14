@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/ai",
 	"description": "Transform your Robo into a personalized AI chatbot! Supports Discord command execution.",
-	"version": "0.6.0",
+	"version": "0.7.0-next.0",
 	"private": false,
 	"type": "module",
 	"main": ".robo/build/index.js",
