@@ -18,7 +18,7 @@ Note: This file is for AI agents and maintainers, not end users.
   - `src/engines/google-analytics.ts` – Google Analytics implementation
   - `src/engines/plausible.ts` – Plausible implementation
   - `src/engines/many.ts` – Multi-engine wrapper
-  - `src/events/_start.ts` – Lifecycle hook for engine initialization
+  - `src/robo/start.ts` – Lifecycle hook for engine initialization
   - `seed/middleware/track-commands.ts` – Middleware for tracking slash commands
   - `seed/commands/test-analytics.ts` – Test command demonstrating API usage
   - `seed/events/guildCreate.ts` – Event tracking bot server joins
@@ -166,7 +166,7 @@ GOOGLE_ANALYTICS_SECRET="abcdef123456"
 PLAUSIBLE_DOMAIN="example.com"
 ```
 
-### Auto-Detection Logic (in `src/events/_start.ts`)
+### Auto-Detection Logic (in `src/robo/start.ts`)
 - Precedence: custom engine > both (ManyEngines) > Google only > Plausible only > warn
 - Detects via env vars; logs warning if none configured with docs link
 

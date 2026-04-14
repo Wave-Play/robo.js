@@ -1,6 +1,6 @@
 import { Analytics } from '@robojs/analytics'
 import type { ChatInputCommandInteraction } from 'discord.js'
-import type { MiddlewareData } from 'robo.js'
+import type { MiddlewareData } from '@robojs/discordjs'
 
 /*
  * This middleware tracks every time a slash command is used.

@@ -1,5 +1,5 @@
 import { Analytics } from '@robojs/analytics'
-import { createCommandConfig } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
 import type { ChatInputCommandInteraction } from 'discord.js'
 
 export const config = createCommandConfig({
