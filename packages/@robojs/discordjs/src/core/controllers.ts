@@ -9,6 +9,7 @@ import type {
 	ContextController,
 	EventController,
 	MiddlewareController,
+	PrefixCommandController,
 	PluginState
 } from '../types/index.js'
 
@@ -145,6 +146,44 @@ export function createEventController(
 			const restrictions = state.serverRestrictions.get(`event:${name}`)
 			if (!restrictions) return true
 			return restrictions.includes(serverId)
+		}
+	}
+}
+
+/**
+ * Factory function for prefix command controllers.
+ * Called by core when user accesses portal.discordjs.prefixCommand()
+ */
+export function createPrefixCommandController(
+	name: string,
+	record: ControllerRecord,
+	pluginState: unknown
+): PrefixCommandController {
+	const state = ensurePluginState(pluginState)
+
+	return {
+		isEnabled() {
+			return record.enabled
+		},
+
+		setEnabled(value: boolean) {
+			record.enabled = value
+		},
+
+		setServerOnly(serverIds: string | string[]) {
+			const ids = Array.isArray(serverIds) ? serverIds : [serverIds]
+			state.serverRestrictions.set(`prefixCommand:${name}`, ids)
+		},
+
+		isEnabledForServer(serverId: string) {
+			if (!record.enabled) return false
+			const restrictions = state.serverRestrictions.get(`prefixCommand:${name}`)
+			if (!restrictions) return true // No restrictions = enabled everywhere
+			return restrictions.includes(serverId)
+		},
+
+		getMetadata() {
+			return record.metadata
 		}
 	}
 }

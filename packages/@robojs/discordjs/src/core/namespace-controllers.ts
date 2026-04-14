@@ -5,10 +5,11 @@
  * of a specific route type. They're different from per-handler controllers
  * which operate on individual handlers.
  */
-import { portal } from 'robo.js'
+import { Manifest, portal } from 'robo.js'
 import { executeCommandHandler } from './handlers/command.js'
 import { executeEventHandler } from './handlers/event.js'
-import type { ChatInputCommandInteraction, ClientEvents } from 'discord.js'
+import { executePrefixCommandHandler } from './handlers/prefix-command.js'
+import type { ChatInputCommandInteraction, ClientEvents, Message } from 'discord.js'
 import type {
 	CommandHandler,
 	CommandsNamespaceController,
@@ -18,7 +19,9 @@ import type {
 	EventsNamespaceController,
 	MiddlewareChainEntry,
 	MiddlewareHandler,
-	MiddlewareNamespaceController
+	MiddlewareNamespaceController,
+	PrefixCommandHandler,
+	PrefixCommandsNamespaceController
 } from '../types/index.js'
 
 /**
@@ -37,8 +40,7 @@ export function createCommandsNamespaceController(): CommandsNamespaceController
 		},
 
 		list(): string[] {
-			const commandsData = portal.getByType('discordjs:commands')
-			return Object.keys(commandsData)
+			return Manifest.routeSummariesSync('discordjs', 'commands').map((summary) => summary.key)
 		},
 
 		async execute(name: string, interaction: ChatInputCommandInteraction): Promise<void> {
@@ -54,6 +56,7 @@ export function createCommandsNamespaceController(): CommandsNamespaceController
 export function createEventsNamespaceController(): EventsNamespaceController {
 	return {
 		async get<K extends keyof ClientEvents = keyof ClientEvents>(name: K): Promise<EventHandler<K>[]> {
+			await portal.ensureRoute('discordjs', 'events')
 			const eventsData = portal.getByType('discordjs:events')
 			const records = eventsData[name as string]
 
@@ -77,8 +80,7 @@ export function createEventsNamespaceController(): EventsNamespaceController {
 		},
 
 		list(): string[] {
-			const eventsData = portal.getByType('discordjs:events')
-			return Object.keys(eventsData)
+			return Manifest.routeSummariesSync('discordjs', 'events').map((summary) => summary.key)
 		},
 
 		async emit<K extends keyof ClientEvents>(name: K, ...args: ClientEvents[K]): Promise<void> {
@@ -103,8 +105,32 @@ export function createContextNamespaceController(): ContextNamespaceController {
 		},
 
 		list(): string[] {
-			const contextData = portal.getByType('discordjs:context')
-			return Object.keys(contextData)
+			return Manifest.routeSummariesSync('discordjs', 'context').map((summary) => summary.key)
+		}
+	}
+}
+
+/**
+ * Create a namespace controller for prefix commands.
+ * Provides list/get/execute methods for all prefix commands.
+ */
+export function createPrefixCommandsNamespaceController(): PrefixCommandsNamespaceController {
+	return {
+		async get(name: string): Promise<PrefixCommandHandler | null> {
+			try {
+				const handler = await portal.getHandler<PrefixCommandHandler>('discordjs', 'prefixCommands', name)
+				return handler?.default ?? null
+			} catch {
+				return null
+			}
+		},
+
+		list(): string[] {
+			return Manifest.routeSummariesSync('discordjs', 'prefixCommands').map((summary) => summary.key)
+		},
+
+		async execute(name: string, message: Message, args?: string[]): Promise<void> {
+			await executePrefixCommandHandler(message, name, args?.join(' ') ?? '')
 		}
 	}
 }
@@ -116,11 +142,11 @@ export function createContextNamespaceController(): ContextNamespaceController {
 export function createMiddlewareNamespaceController(): MiddlewareNamespaceController {
 	return {
 		list(): string[] {
-			const middlewareData = portal.getByType('discordjs:middleware')
-			return Object.keys(middlewareData)
+			return Manifest.routeSummariesSync('discordjs', 'middleware').map((summary) => summary.key)
 		},
 
 		async chain(): Promise<MiddlewareChainEntry[]> {
+			await portal.ensureRoute('discordjs', 'middleware')
 			const middlewareData = portal.getByType('discordjs:middleware')
 			const entries: MiddlewareChainEntry[] = []
 
@@ -132,12 +158,13 @@ export function createMiddlewareNamespaceController(): MiddlewareNamespaceContro
 					await portal.importHandler('discordjs', 'middleware', key)
 				}
 
-				if (record.handler?.default && record.enabled) {
+				const isEnabled = record.enabled && record.metadata?.enabled !== false && record.metadata?.disabled !== true
+				if (record.handler?.default && isEnabled) {
 					entries.push({
 						key,
 						handler: record.handler.default as MiddlewareHandler,
 						order: (record.metadata?.order as number) ?? 0,
-						enabled: record.enabled
+						enabled: isEnabled
 					})
 				}
 			}

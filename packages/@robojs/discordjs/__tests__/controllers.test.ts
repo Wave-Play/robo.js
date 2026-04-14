@@ -17,34 +17,43 @@ const fn = jest.fn as any
 
 // Import from 'robo.js' to use the mocked module
 const roboMock = (await import('robo.js')) as unknown as {
+	Manifest: {
+		routeSummariesSync: jest.Mock
+	}
 	portal: {
 		getByType: jest.Mock
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		getHandler: jest.Mock<any>
 		importHandler: jest.Mock
+		ensureRoute: jest.Mock
 	}
+	setRouteSummaries: (namespace: string, route: string, summaries: Array<{ key: string }>) => void
+	clearRouteSummaries: () => void
 }
 
-const { portal } = roboMock
+const { portal, setRouteSummaries, clearRouteSummaries } = roboMock
 
 // Import controllers
 import {
 	createCommandController,
 	createContextController,
 	createEventController,
-	createMiddlewareController
+	createMiddlewareController,
+	createPrefixCommandController
 } from '../src/core/controllers.js'
 
 import {
 	createCommandsNamespaceController,
 	createEventsNamespaceController,
 	createContextNamespaceController,
-	createMiddlewareNamespaceController
+	createMiddlewareNamespaceController,
+	createPrefixCommandsNamespaceController
 } from '../src/core/namespace-controllers.js'
 
 describe('Controllers', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
+		clearRouteSummaries()
 	})
 
 	describe('createCommandController', () => {
@@ -226,20 +235,100 @@ describe('Controllers', () => {
 			expect(record.metadata.order).toBe(5)
 		})
 	})
+
+	describe('createPrefixCommandController', () => {
+		it('should return controller with all methods', () => {
+			const record = { enabled: true, metadata: {} }
+			const controller = createPrefixCommandController('ping', record, null)
+
+			expect(controller.isEnabled).toBeDefined()
+			expect(controller.setEnabled).toBeDefined()
+			expect(controller.setServerOnly).toBeDefined()
+			expect(controller.isEnabledForServer).toBeDefined()
+			expect(controller.getMetadata).toBeDefined()
+		})
+
+		it('should toggle enabled state', () => {
+			const record = { enabled: true, metadata: {} }
+			const controller = createPrefixCommandController('ping', record, null)
+
+			expect(controller.isEnabled()).toBe(true)
+			controller.setEnabled(false)
+			expect(controller.isEnabled()).toBe(false)
+			controller.setEnabled(true)
+			expect(controller.isEnabled()).toBe(true)
+		})
+
+		it('should handle string server restriction', () => {
+			const record = { enabled: true, metadata: {} }
+			const state = { serverRestrictions: new Map(), config: {} }
+			const controller = createPrefixCommandController('ping', record, state)
+
+			controller.setServerOnly('123456789')
+
+			expect(controller.isEnabledForServer('123456789')).toBe(true)
+			expect(controller.isEnabledForServer('987654321')).toBe(false)
+		})
+
+		it('should handle array server restrictions', () => {
+			const record = { enabled: true, metadata: {} }
+			const state = { serverRestrictions: new Map(), config: {} }
+			const controller = createPrefixCommandController('ping', record, state)
+
+			controller.setServerOnly(['123', '456'])
+
+			expect(controller.isEnabledForServer('123')).toBe(true)
+			expect(controller.isEnabledForServer('456')).toBe(true)
+			expect(controller.isEnabledForServer('789')).toBe(false)
+		})
+
+		it('should return true for all servers when no restrictions', () => {
+			const record = { enabled: true, metadata: {} }
+			const state = { serverRestrictions: new Map(), config: {} }
+			const controller = createPrefixCommandController('ping', record, state)
+
+			expect(controller.isEnabledForServer('any-server')).toBe(true)
+		})
+
+		it('should return false when disabled regardless of server', () => {
+			const record = { enabled: false, metadata: {} }
+			const state = { serverRestrictions: new Map(), config: {} }
+			const controller = createPrefixCommandController('ping', record, state)
+
+			controller.setServerOnly('123')
+
+			expect(controller.isEnabledForServer('123')).toBe(false)
+		})
+
+		it('should use prefixCommand: key prefix for restrictions', () => {
+			const record = { enabled: true, metadata: {} }
+			const state = { serverRestrictions: new Map(), config: {} }
+			const controller = createPrefixCommandController('ping', record, state)
+
+			controller.setServerOnly('123')
+
+			expect(state.serverRestrictions.has('prefixCommand:ping')).toBe(true)
+		})
+
+		it('should return metadata reference', () => {
+			const metadata = { description: 'Test', aliases: ['p'] }
+			const record = { enabled: true, metadata }
+			const controller = createPrefixCommandController('ping', record, null)
+
+			expect(controller.getMetadata()).toBe(metadata)
+		})
+	})
 })
 
 describe('Namespace Controllers', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
+		clearRouteSummaries()
 	})
 
 	describe('createCommandsNamespaceController', () => {
 		it('should list all command keys', () => {
-			portal.getByType.mockReturnValue({
-				ping: { enabled: true },
-				help: { enabled: true },
-				'user info': { enabled: true }
-			})
+			setRouteSummaries('discordjs', 'commands', [{ key: 'ping' }, { key: 'help' }, { key: 'user info' }])
 
 			const controller = createCommandsNamespaceController()
 			const keys = controller.list()
@@ -248,8 +337,6 @@ describe('Namespace Controllers', () => {
 		})
 
 		it('should return empty array when no commands', () => {
-			portal.getByType.mockReturnValue({})
-
 			const controller = createCommandsNamespaceController()
 			const keys = controller.list()
 
@@ -288,11 +375,7 @@ describe('Namespace Controllers', () => {
 
 	describe('createEventsNamespaceController', () => {
 		it('should list all event keys', () => {
-			portal.getByType.mockReturnValue({
-				ready: [{}],
-				messageCreate: [{}],
-				guildCreate: [{}]
-			})
+			setRouteSummaries('discordjs', 'events', [{ key: 'ready' }, { key: 'messageCreate' }, { key: 'guildCreate' }])
 
 			const controller = createEventsNamespaceController()
 			const keys = controller.list()
@@ -306,6 +389,7 @@ describe('Namespace Controllers', () => {
 			const controller = createEventsNamespaceController()
 			const handlers = await controller.get('unknown' as any)
 
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
 			expect(handlers).toEqual([])
 		})
 
@@ -323,6 +407,7 @@ describe('Namespace Controllers', () => {
 			const controller = createEventsNamespaceController()
 			const handlers = await controller.get('messageCreate')
 
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
 			expect(handlers).toEqual([handler1, handler2])
 		})
 
@@ -336,6 +421,7 @@ describe('Namespace Controllers', () => {
 			const controller = createEventsNamespaceController()
 			const handlers = await controller.get('ready')
 
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
 			expect(handlers).toEqual([handler])
 		})
 
@@ -363,10 +449,7 @@ describe('Namespace Controllers', () => {
 
 	describe('createContextNamespaceController', () => {
 		it('should list all context menu keys', () => {
-			portal.getByType.mockReturnValue({
-				'Get User Info': { enabled: true },
-				'Report Message': { enabled: true }
-			})
+			setRouteSummaries('discordjs', 'context', [{ key: 'Get User Info' }, { key: 'Report Message' }])
 
 			const controller = createContextNamespaceController()
 			const keys = controller.list()
@@ -395,12 +478,70 @@ describe('Namespace Controllers', () => {
 		})
 	})
 
+	describe('createPrefixCommandsNamespaceController', () => {
+		it('should list all prefix command keys', () => {
+			setRouteSummaries('discordjs', 'prefixCommands', [{ key: 'ping' }, { key: 'admin ban' }])
+
+			const controller = createPrefixCommandsNamespaceController()
+			const keys = controller.list()
+
+			expect(keys).toEqual(['ping', 'admin ban'])
+		})
+
+		it('should return empty array when no prefix commands', () => {
+			const controller = createPrefixCommandsNamespaceController()
+			const keys = controller.list()
+
+			expect(keys).toEqual([])
+		})
+
+		it('should get handler by name', async () => {
+			const mockHandler = fn()
+			portal.getHandler.mockResolvedValue({ default: mockHandler })
+
+			const controller = createPrefixCommandsNamespaceController()
+			const handler = await controller.get('ping')
+
+			expect(handler).toBe(mockHandler)
+			expect(portal.getHandler).toHaveBeenCalledWith('discordjs', 'prefixCommands', 'ping')
+		})
+
+		it('should return null when handler not found', async () => {
+			portal.getHandler.mockRejectedValue(new Error('Not found'))
+
+			const controller = createPrefixCommandsNamespaceController()
+			const handler = await controller.get('unknown')
+
+			expect(handler).toBeNull()
+		})
+
+		it('should return null when handler has no default', async () => {
+			portal.getHandler.mockResolvedValue({})
+
+			const controller = createPrefixCommandsNamespaceController()
+			const handler = await controller.get('ping')
+
+			expect(handler).toBeNull()
+		})
+
+		it('should execute prefix command with joined args', async () => {
+			// execute() calls executePrefixCommandHandler which imports from prefix-command.ts
+			// We'll verify it calls through to portal.ensureRoute at minimum
+			portal.ensureRoute.mockResolvedValue(undefined)
+			portal.getRecord.mockReturnValue(null)
+
+			const controller = createPrefixCommandsNamespaceController()
+			const mockMessage = { reply: fn(), author: { id: '1' }, guild: null } as any
+			await controller.execute('ping', mockMessage, ['arg1', 'arg2'])
+
+			// It should have tried to ensure the route
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'prefixCommands')
+		})
+	})
+
 	describe('createMiddlewareNamespaceController', () => {
 		it('should list all middleware keys', () => {
-			portal.getByType.mockReturnValue({
-				auth: { enabled: true },
-				logging: { enabled: true }
-			})
+			setRouteSummaries('discordjs', 'middleware', [{ key: 'auth' }, { key: 'logging' }])
 
 			const controller = createMiddlewareNamespaceController()
 			const keys = controller.list()
@@ -422,6 +563,7 @@ describe('Namespace Controllers', () => {
 			const controller = createMiddlewareNamespaceController()
 			const chain = await controller.chain()
 
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'middleware')
 			expect(chain).toHaveLength(3)
 			expect(chain[0].key).toBe('auth')
 			expect(chain[0].order).toBe(5)
@@ -443,6 +585,7 @@ describe('Namespace Controllers', () => {
 			const controller = createMiddlewareNamespaceController()
 			const chain = await controller.chain()
 
+			expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'middleware')
 			expect(chain).toHaveLength(1)
 			expect(chain[0].key).toBe('auth')
 		})
