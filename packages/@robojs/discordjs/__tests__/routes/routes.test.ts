@@ -7,24 +7,11 @@
  * - Namespace controllers provide list/get/execute/emit methods
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeAll, beforeEach, jest } from '@jest/globals'
 
 // Helper for typed mocks
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fn = jest.fn as any
-
-// Import from 'robo.js' to use the mocked module
-const roboMock = (await import('robo.js')) as unknown as {
-	portal: {
-		getByType: jest.Mock
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		getHandler: jest.Mock<any>
-		getRecord: jest.Mock
-		importHandler: jest.Mock
-	}
-}
-
-const { portal } = roboMock
 
 // Mock handlers to prevent actual execution
 jest.unstable_mockModule('../../src/core/handlers/command.js', () => ({
@@ -35,12 +22,19 @@ jest.unstable_mockModule('../../src/core/handlers/event.js', () => ({
 	executeEventHandler: jest.fn()
 }))
 
-const { executeCommandHandler } = (await import('../../src/core/handlers/command.js')) as {
-	executeCommandHandler: jest.Mock
+// Declare variables for async imports (assigned in beforeAll)
+let portal: {
+	getByType: jest.Mock
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	getHandler: jest.Mock<any>
+	getRecord: jest.Mock
+	importHandler: jest.Mock
+	ensureRoute: jest.Mock
 }
-const { executeEventHandler } = (await import('../../src/core/handlers/event.js')) as {
-	executeEventHandler: jest.Mock
-}
+let setRouteSummaries: (namespace: string, route: string, summaries: Array<{ key: string }>) => void
+let clearRouteSummaries: () => void
+let executeCommandHandler: jest.Mock
+let executeEventHandler: jest.Mock
 
 // Import route modules
 import commandsRoute, { config as commandsConfig, NamespaceController as CommandsNS } from '../../src/robo/routes/commands.js'
@@ -49,8 +43,27 @@ import eventsRoute, { config as eventsConfig, NamespaceController as EventsNS } 
 import middlewareRoute, { config as middlewareConfig, NamespaceController as MiddlewareNS } from '../../src/robo/routes/middleware.js'
 
 describe('Route Definitions', () => {
+	beforeAll(async () => {
+		// Import from 'robo.js' to use the mocked module
+		const roboMock = (await import('robo.js')) as unknown as {
+			setRouteSummaries: (namespace: string, route: string, summaries: Array<{ key: string }>) => void
+			clearRouteSummaries: () => void
+			portal: typeof portal
+		}
+		portal = roboMock.portal
+		setRouteSummaries = roboMock.setRouteSummaries
+		clearRouteSummaries = roboMock.clearRouteSummaries
+
+		const commandMod = (await import('../../src/core/handlers/command.js')) as { executeCommandHandler: jest.Mock }
+		executeCommandHandler = commandMod.executeCommandHandler
+
+		const eventMod = (await import('../../src/core/handlers/event.js')) as { executeEventHandler: jest.Mock }
+		executeEventHandler = eventMod.executeEventHandler
+	})
+
 	beforeEach(() => {
 		jest.clearAllMocks()
+		clearRouteSummaries()
 	})
 
 	describe('Commands Route', () => {
@@ -174,11 +187,7 @@ describe('Route Definitions', () => {
 
 		describe('NamespaceController', () => {
 			it('should list all command keys', () => {
-				portal.getByType.mockReturnValue({
-					ping: {},
-					help: {},
-					'user ban': {}
-				})
+				setRouteSummaries('discordjs', 'commands', [{ key: 'ping' }, { key: 'help' }, { key: 'user ban' }])
 
 				const controller = CommandsNS(portal as any)
 				const keys = controller.list()
@@ -277,10 +286,7 @@ describe('Route Definitions', () => {
 
 		describe('NamespaceController', () => {
 			it('should list all context menu keys', () => {
-				portal.getByType.mockReturnValue({
-					'Get User Info': {},
-					'Report Message': {}
-				})
+				setRouteSummaries('discordjs', 'context', [{ key: 'Get User Info' }, { key: 'Report Message' }])
 
 				const controller = ContextNS(portal as any)
 				const keys = controller.list()
@@ -373,10 +379,7 @@ describe('Route Definitions', () => {
 
 		describe('NamespaceController', () => {
 			it('should list all event keys', () => {
-				portal.getByType.mockReturnValue({
-					ready: [{}],
-					messageCreate: [{}]
-				})
+				setRouteSummaries('discordjs', 'events', [{ key: 'ready' }, { key: 'messageCreate' }])
 
 				const controller = EventsNS(portal as any)
 				const keys = controller.list()
@@ -398,6 +401,7 @@ describe('Route Definitions', () => {
 				const controller = EventsNS(portal as any)
 				const handlers = await controller.get('messageCreate')
 
+				expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
 				expect(handlers).toEqual([handler1, handler2])
 			})
 
@@ -407,6 +411,7 @@ describe('Route Definitions', () => {
 				const controller = EventsNS(portal as any)
 				const handlers = await controller.get('unknown' as any)
 
+				expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'events')
 				expect(handlers).toEqual([])
 			})
 
@@ -534,10 +539,7 @@ describe('Route Definitions', () => {
 
 		describe('NamespaceController', () => {
 			it('should list all middleware keys', () => {
-				portal.getByType.mockReturnValue({
-					auth: {},
-					logging: {}
-				})
+				setRouteSummaries('discordjs', 'middleware', [{ key: 'auth' }, { key: 'logging' }])
 
 				const controller = MiddlewareNS(portal as any)
 				const keys = controller.list()
@@ -559,6 +561,7 @@ describe('Route Definitions', () => {
 				const controller = MiddlewareNS(portal as any)
 				const chain = await controller.chain()
 
+				expect(portal.ensureRoute).toHaveBeenCalledWith('discordjs', 'middleware')
 				expect(chain).toHaveLength(3)
 				expect(chain[0].key).toBe('auth')
 				expect(chain[0].order).toBe(5)

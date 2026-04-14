@@ -2,6 +2,7 @@
  * Route definition for Discord slash commands.
  * Directory inferred from filename: /src/commands/
  */
+import { Manifest } from 'robo.js'
 import type { PortalAPI, RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
 import type { ChatInputCommandInteraction } from 'discord.js'
 import type { CommandHandler, CommandController, CommandConfig, CommandsNamespaceController } from '../../types/commands.js'
@@ -38,9 +39,7 @@ export const NamespaceController = (portal: PortalAPI): CommandsNamespaceControl
 	},
 
 	list(): string[] {
-		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
-		const commandsData = portalApi.getByType('discordjs:commands')
-		return Object.keys(commandsData)
+		return Manifest.routeSummariesSync('discordjs', 'commands').map((summary) => summary.key)
 	},
 
 	async execute(name: string, interaction: ChatInputCommandInteraction): Promise<void> {
@@ -89,13 +88,17 @@ export default function (entry: ScannedEntry): ProcessedEntry {
 		},
 		metadata: {
 			description: handlerConfig?.description ?? 'No description provided',
+			descriptionLocalizations: handlerConfig?.descriptionLocalizations,
 			options: handlerConfig?.options ?? [],
 			defaultMemberPermissions: handlerConfig?.defaultMemberPermissions,
+			disabled: handlerConfig?.disabled ?? false,
 			dmPermission: handlerConfig?.dmPermission ?? true,
 			contexts: handlerConfig?.contexts,
 			integrationTypes: handlerConfig?.integrationTypes,
+			nameLocalizations: handlerConfig?.nameLocalizations,
 			nsfw: handlerConfig?.nsfw ?? false,
-			sage: handlerConfig?.sage
+			sage: handlerConfig?.sage,
+			serverOnly: handlerConfig?.serverOnly
 		},
 		extra: isSubcommand
 			? {

@@ -2,6 +2,7 @@
  * Route definition for Discord context menu commands.
  * Directory inferred from filename: /src/context/
  */
+import { Manifest } from 'robo.js'
 import type { PortalAPI, RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
 import type { ContextHandler, ContextController, ContextConfig, ContextNamespaceController } from '../../types/context.js'
 import { createContextController } from '../../core/controllers.js'
@@ -12,7 +13,7 @@ import { createContextController } from '../../core/controllers.js'
 export type Handler = ContextHandler
 
 /**
- * Controller type for method access (portal.discordjs.context())
+ * Controller type for method access (portal.discordjs.contextMenu())
  */
 export type Controller = ContextController
 
@@ -36,9 +37,7 @@ export const NamespaceController = (portal: PortalAPI): ContextNamespaceControll
 	},
 
 	list(): string[] {
-		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
-		const contextData = portalApi.getByType('discordjs:context')
-		return Object.keys(contextData)
+		return Manifest.routeSummariesSync('discordjs', 'context').map((summary) => summary.key)
 	}
 })
 
@@ -53,6 +52,7 @@ export const config: RouteConfig = {
 		maxDepth: 2, // context/{user|message}/Name.ts
 		allowIndex: false
 	},
+	singular: 'contextMenu',
 	exports: {
 		default: 'required',
 		config: 'optional'
@@ -83,10 +83,15 @@ export default function (entry: ScannedEntry): ProcessedEntry {
 		},
 		metadata: {
 			contextType,
+			contexts: handlerConfig?.contexts,
 			description: handlerConfig?.description,
 			defaultMemberPermissions: handlerConfig?.defaultMemberPermissions,
+			disabled: handlerConfig?.disabled ?? false,
 			dmPermission: handlerConfig?.dmPermission ?? true,
-			sage: handlerConfig?.sage
+			integrationTypes: handlerConfig?.integrationTypes,
+			nameLocalizations: handlerConfig?.nameLocalizations,
+			sage: handlerConfig?.sage,
+			serverOnly: handlerConfig?.serverOnly
 		}
 	}
 }

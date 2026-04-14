@@ -2,6 +2,7 @@
  * Route definition for Discord gateway events.
  * Directory inferred from filename: /src/events/
  */
+import { Manifest } from 'robo.js'
 import type { PortalAPI, RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
 import type { ClientEvents } from 'discord.js'
 import type { EventHandler, EventController, EventConfig, EventsNamespaceController } from '../../types/events.js'
@@ -29,6 +30,7 @@ export { createEventController as controller }
  */
 export const NamespaceController = (portal: PortalAPI): EventsNamespaceController => ({
 	async get<K extends keyof ClientEvents = keyof ClientEvents>(name: K): Promise<EventHandler<K>[]> {
+		await portal.ensureRoute('discordjs', 'events')
 		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown[]> }
 		const eventsData = portalApi.getByType('discordjs:events')
 		const records = eventsData[name as string]
@@ -54,9 +56,7 @@ export const NamespaceController = (portal: PortalAPI): EventsNamespaceControlle
 	},
 
 	list(): string[] {
-		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
-		const eventsData = portalApi.getByType('discordjs:events')
-		return Object.keys(eventsData)
+		return Manifest.routeSummariesSync('discordjs', 'events').map((summary) => summary.key)
 	},
 
 	async emit<K extends keyof ClientEvents>(name: K, ...args: ClientEvents[K]): Promise<void> {
@@ -98,7 +98,11 @@ export default function (entry: ScannedEntry): ProcessedEntry {
 			named: []
 		},
 		metadata: {
-			frequency: handlerConfig?.frequency ?? 'always'
+			disabled: handlerConfig?.disabled ?? false,
+			frequency: handlerConfig?.frequency ?? 'always',
+			priority: handlerConfig?.priority ?? 0,
+			serverOnly: handlerConfig?.serverOnly,
+			timeout: handlerConfig?.timeout
 		}
 	}
 }

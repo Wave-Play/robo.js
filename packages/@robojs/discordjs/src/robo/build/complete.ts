@@ -8,14 +8,15 @@
  * - Discord build summary output
  */
 import crypto from 'node:crypto'
-import type { BuildCompleteContext, HandlerEntry, ProcessedEntry } from 'robo.js'
-import { color, Env, Flashcore, Mode } from 'robo.js'
+import type { BuildCompleteContext, Config, HandlerEntry, ProcessedEntry } from 'robo.js'
+import { color, Env, Flashcore, getPluginOptions, Mode } from 'robo.js'
 import { GatewayIntentBits, REST } from 'discord.js'
 import { discordLogger } from '../../core/logger.js'
 import { inferIntents, getIntentNames, REQUIRED_INTENTS } from '../../core/intents.js'
 import {
 	buildSlashCommands,
 	buildContextCommands,
+	bubbleSubcommandMetadata,
 	registerCommandsToDiscord,
 	FLASHCORE_KEY_COMMAND_HASH_PREFIX
 } from '../../core/commands.js'
@@ -76,13 +77,17 @@ export function computeCommandHash(
 	token: string,
 	guildId: string | undefined
 ): string {
+	// Sort entries by key for deterministic hashing regardless of scan order
+	const sortedCommands = [...commandEntries].sort((a, b) => a.key.localeCompare(b.key))
+	const sortedContext = [...contextEntries].sort((a, b) => a.key.localeCompare(b.key))
+
 	const data = {
 		clientId,
 		token,
 		guildId: guildId ?? null,
 		defaults: defaults ?? {},
-		commands: commandEntries.map((e) => ({ key: e.key, metadata: e.metadata })),
-		context: contextEntries.map((e) => ({ key: e.key, metadata: e.metadata }))
+		commands: sortedCommands.map((e) => ({ key: e.key, metadata: e.metadata })),
+		context: sortedContext.map((e) => ({ key: e.key, metadata: e.metadata }))
 	}
 
 	// Sort keys recursively for deterministic output
@@ -101,7 +106,7 @@ function getCommandHashKey(guildId: string | undefined): string {
 
 export default async function (context: BuildCompleteContext) {
 	const { entries, mode, store, registerMetadataAggregator } = context
-	const discordConfig = context.config as unknown as DiscordConfig | undefined
+	const discordConfig = resolveDiscordConfig(context)
 	const envData = Env.data() ?? {}
 
 	// Register metadata aggregator for discordjs namespace
@@ -113,17 +118,29 @@ export default async function (context: BuildCompleteContext) {
 	const commandEntries = entries.get('discordjs', 'commands') ?? []
 	const contextEntries = entries.get('discordjs', 'context') ?? []
 	const eventEntries = entries.get('discordjs', 'events') ?? []
+	const prefixCommandEntries = entries.get('discordjs', 'prefixCommands') ?? []
 
-	discordLogger.debug(`Found ${commandEntries.length} commands, ${contextEntries.length} context menus, ${eventEntries.length} events`)
+	discordLogger.debug(`Found ${commandEntries.length} commands, ${contextEntries.length} context menus, ${eventEntries.length} events, ${prefixCommandEntries.length} prefix commands`)
 
 	// Print Discord build summary (skip in dev mode)
 	if (!Mode.isDev()) {
-		printDiscordSummary(commandEntries, contextEntries, eventEntries)
+		printDiscordSummary(commandEntries, contextEntries, eventEntries, prefixCommandEntries)
 	}
 
 	// Analyze and validate intents
 	const eventNames = eventEntries.map((e: ProcessedEntry) => e.key)
 	const inferredIntents = inferIntents(eventNames)
+
+	// If prefix commands exist, add required intents for messageCreate + MessageContent
+	// Missing intent warnings are handled at runtime by checkPrefixIntents() where the actual
+	// client intents are available (build-time context only has the global config, not plugin config)
+	if (prefixCommandEntries.length > 0) {
+		inferredIntents.add(GatewayIntentBits.GuildMessages)
+		inferredIntents.add(GatewayIntentBits.MessageContent)
+		if (prefixCommandEntries.some((entry) => entry.metadata?.dmPermission !== false)) {
+			inferredIntents.add(GatewayIntentBits.DirectMessages)
+		}
+	}
 
 	if (inferredIntents.size > 0) {
 		const intentNames = getIntentNames(inferredIntents)
@@ -235,13 +252,6 @@ export default async function (context: BuildCompleteContext) {
 			...messageContextCommands.map((cmd) => cmd.toJSON())
 		]
 
-		if (commandData.length === 0) {
-			discordLogger.debug('No commands to register')
-			// Still store hash so subsequent builds with no commands hit cache
-			await Flashcore.set(hashKey, currentHash)
-			return
-		}
-
 		// Register with Discord API
 		const rest = new REST({ version: '10' }).setToken(token)
 		await registerCommandsToDiscord(rest, clientId, guildId, commandData, false)
@@ -258,27 +268,55 @@ export default async function (context: BuildCompleteContext) {
 }
 
 /**
+ * Resolve this plugin's config from runtime options or project config.
+ */
+function resolveDiscordConfig(context: BuildCompleteContext): DiscordConfig | undefined {
+	try {
+		const pluginConfig = getPluginOptions('@robojs/discordjs') as DiscordConfig | null
+		if (pluginConfig) {
+			return pluginConfig
+		}
+	} catch {
+		// Runtime config may not be initialized during plugin builds.
+	}
+
+	const projectConfig = context.config as Config
+	for (const plugin of projectConfig?.plugins ?? []) {
+		if (Array.isArray(plugin) && plugin[0] === '@robojs/discordjs') {
+			return (plugin[1] as DiscordConfig) ?? undefined
+		}
+	}
+
+	return undefined
+}
+
+/**
  * Print a Discord-specific build summary showing commands, context menus, and events.
  */
 function printDiscordSummary(
 	commandEntries: ProcessedEntry[],
 	contextEntries: ProcessedEntry[],
-	eventEntries: ProcessedEntry[]
+	eventEntries: ProcessedEntry[],
+	prefixCommandEntries: ProcessedEntry[] = []
 ) {
 	// Skip if there's nothing to show
-	if (commandEntries.length === 0 && contextEntries.length === 0 && eventEntries.length === 0) {
+	if (commandEntries.length === 0 && contextEntries.length === 0 && eventEntries.length === 0 && prefixCommandEntries.length === 0) {
 		return
 	}
+
+	// Resolve prefix for display
+	const prefixDisplay = '!'
 
 	// Calculate max lengths for formatting
 	const allKeys = [
 		...commandEntries.map((c) => '/' + c.key),
 		...contextEntries.map((c) => c.key),
-		...eventEntries.map((e) => e.key)
+		...eventEntries.map((e) => e.key),
+		...prefixCommandEntries.map((p) => prefixDisplay + p.key)
 	]
 	const maxLength = Math.min(Math.max(...allKeys.map((k) => k.length), 15), 30)
 	const maxTypeNameLength = Math.max(
-		...['Command', 'Subcommand', 'Subcommand Group', 'Context', 'Event'].map((type) => type.length)
+		...['Command', 'Subcommand', 'Subcommand Group', 'Context', 'Event', 'Prefix'].map((type) => type.length)
 	)
 
 	const headerType = 'Type'
@@ -341,6 +379,24 @@ function printDiscordSummary(
 			'\n' + color.bold(color.magenta(type + typeSpacing + autoSymbol)) + `${color.bold(entry.key).padEnd(maxLength + 1)}`
 	}
 
+	// Log prefix commands
+	for (const entry of prefixCommandEntries) {
+		const isAuto = entry.metadata?.auto === true
+		const autoSymbol = isAuto ? '  Δ ' : '    '
+		if (isAuto) autoGeneratedExists = true
+
+		const type = 'Prefix'
+		const typeSpacing = ' '.repeat(maxTypeNameLength - type.length + 1)
+		const description = (entry.metadata?.description as string) ?? ''
+		const aliases = entry.metadata?.aliases as string[] | undefined
+		const aliasStr = aliases?.length ? ` (${aliases.map((a) => prefixDisplay + a).join(', ')})` : ''
+
+		summary +=
+			'\n' +
+			color.bold(color.yellow(type + typeSpacing + autoSymbol)) +
+			`${color.bold((prefixDisplay + entry.key).padEnd(maxLength + 1))} ${description}${aliasStr}`
+	}
+
 	if (autoGeneratedExists) {
 		summary += '\n' + color.cyan(`\n${color.bold('Δ')} = Automatically generated`)
 	}
@@ -390,6 +446,8 @@ function entriesToCommands(entries: ProcessedEntry[]) {
 			(subcommands[keyParts[1]].subcommands as Record<string, unknown>)[keyParts[2]] = entry.metadata
 		}
 	}
+
+	bubbleSubcommandMetadata(commands as Record<string, import('../../types/index.js').CommandEntry>)
 
 	return commands
 }
