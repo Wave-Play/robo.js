@@ -1,5 +1,6 @@
 import { Colors } from 'discord.js'
-import { createCommandConfig, Flashcore, logger } from 'robo.js'
+import { Flashcore, logger } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
 
 /*
  * Customize your subcommand details and options here.

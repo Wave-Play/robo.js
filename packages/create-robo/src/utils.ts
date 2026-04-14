@@ -69,10 +69,6 @@ export const ROBO_CONFIG = `// @ts-check
  * @type {import('robo.js').Config}
  **/
 export default {
-	clientOptions: {
-		intents: ['Guilds', 'GuildMessages']
-	},
-	plugins: [],
 	type: 'robo'
 }\n`
 
@@ -82,10 +78,6 @@ export const ROBO_CONFIG_APP = `// @ts-check
  * @type {import('robo.js').Config}
  **/
 export default {
-	experimental: {
-		disableBot: true
-	},
-	plugins: [],
 	type: 'robo',
 	watcher: {
 		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app', 'src${IS_WINDOWS ? '\\\\' : '/'}components', 'src${

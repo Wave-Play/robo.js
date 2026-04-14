@@ -22,6 +22,7 @@ import {
 import { type RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 import { color, logger } from 'robo.js'
+// @ts-expect-error - internal robo.js path without type declarations
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
 import { existsSync } from 'node:fs'
 import { Env } from './env.js'
@@ -396,7 +397,7 @@ export default class Robo {
 				})
 			await Promise.all(pendingConfigs)
 
-			const cleanPlugins = pluginChoices.filter((p) => !(p instanceof Separator)) as Choice[]
+			const cleanPlugins = (pluginChoices as readonly (Choice | Separator)[]).filter((p): p is Choice => !(p instanceof Separator))
 			const pluginNames = this._selectedPlugins.map(
 				(p) => cleanPlugins.find((plugin) => plugin.value === p)?.short ?? p
 			)
@@ -528,7 +529,10 @@ export default class Robo {
 			this._cliOptions.kit = 'app'
 			this._isApp = true
 			logger.debug(`Detected app kit from package.json.`)
-		} else if (this._packageJson.dependencies['discord.js'] !== undefined) {
+		} else if (
+			this._packageJson.dependencies['discord.js'] !== undefined ||
+			this._packageJson.dependencies['@robojs/discordjs'] !== undefined
+		) {
 			this._cliOptions.kit = 'bot'
 			this._isApp = false
 			logger.debug(`Detected bot kit from package.json.`)
@@ -663,7 +667,7 @@ export default class Robo {
 			license: this._isPlugin ? 'MIT' : undefined,
 			author: this._isPlugin ? `Your Name <email>` : undefined,
 			contributors: this._isPlugin ? [`Your Name <email>`] : undefined,
-			files: this._isPlugin ? ['.robo/', 'src/', 'LICENSE', 'README.md'] : undefined,
+			files: this._isPlugin ? ['.robo/', 'LICENSE', 'README.md'] : undefined,
 			publishConfig: this._isPlugin ? npmRegistry : undefined,
 			scripts: this._isPlugin ? pluginScripts : roboScripts,
 			dependencies: {},
@@ -694,18 +698,21 @@ export default class Robo {
 
 		if (!this._isPlugin) {
 			dependencies.push(roboDep)
-			dependencies.push(this._isApp ? '@discord/embedded-app-sdk' : 'discord.js')
 			if (this._isApp) {
-				devDependencies.push('discord.js')
+				dependencies.push('@discord/embedded-app-sdk')
+			} else {
+				dependencies.push('@robojs/discordjs')
+				dependencies.push('discord.js')
 			}
 		} else {
 			devDependencies.push(roboDep)
+			devDependencies.push('@robojs/discordjs')
 			devDependencies.push('discord.js')
 			if (this._isApp) {
 				devDependencies.push('@discord/embedded-app-sdk')
 			}
 			this._packageJson.peerDependencies = {
-				[roboPkg]: '^0.10.1'
+				[roboPkg]: '^0.11.0'
 			}
 			this._packageJson.peerDependenciesMeta = {
 				[roboPkg]: {
@@ -847,6 +854,19 @@ export default class Robo {
 		logger.debug(`Writing Robo config file...`)
 		await fs.writeFile(path.join(this._workingDir, 'config', `robo.${ext}`), roboConfig, 'utf-8')
 		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
+
+		// Generate discordjs plugin config for bot kit
+		if (!this._isApp && !this._isPlugin && kit !== 'web') {
+			const discordPluginDir = path.join(this._workingDir, 'config', 'plugins', 'robojs')
+			await fs.mkdir(discordPluginDir, { recursive: true })
+
+			const discordConfig = this._useTypeScript
+				? `import type { DiscordConfig } from '@robojs/discordjs'\n\nexport default {\n\tclientOptions: {\n\t\tintents: ['Guilds', 'GuildMessages']\n\t}\n} satisfies DiscordConfig\n`
+				: `export default {\n\tclientOptions: {\n\t\tintents: ['Guilds', 'GuildMessages']\n\t}\n}\n`
+
+			await fs.writeFile(path.join(discordPluginDir, `discordjs.${ext}`), discordConfig, 'utf-8')
+			logger.debug(`Wrote discordjs plugin config file.`)
+		}
 
 		// Sort keywords, scripts, dependencies, and devDependencies alphabetically (this is important to me)
 		this._packageJson.keywords.sort()

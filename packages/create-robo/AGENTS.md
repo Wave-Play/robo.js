@@ -276,8 +276,9 @@ Keywords:
 - Plugin keywords appended from Plugin DB.
 
 Dependencies:
-- Non-plugin: `robo.js@<version>`, plus `discord.js` (bot) or `@discord/embedded-app-sdk` (app).
-- Plugin: `robo.js` and Discord deps as dev deps; peer `robo.js ^0.10.1`.
+- Non-plugin bot: `robo.js@<version>`, `@robojs/discordjs`, `discord.js`.
+- Non-plugin app: `robo.js@<version>`, `@discord/embedded-app-sdk`.
+- Plugin: `robo.js`, `@robojs/discordjs`, `discord.js` as dev deps; peer `robo.js ^0.11.0`.
 - Features add their deps/devDeps accordingly (TS, React, ESLint, Prettier, Extensionless, Vite for app/web).
 
 Install + sort:
@@ -295,8 +296,6 @@ ROBO_CONFIG (bot/plugin):
 // @ts-check
 /** @type {import('robo.js').Config} */
 export default {
-  clientOptions: { intents: ['Guilds', 'GuildMessages'] },
-  plugins: [],
   type: 'robo'
 }
 ```
@@ -306,8 +305,6 @@ ROBO_CONFIG_APP (app):
 // @ts-check
 /** @type {import('robo.js').Config} */
 export default {
-  experimental: { disableBot: true },
-  plugins: [],
   type: 'robo',
   watcher: { ignore: ['src/app', 'src/components', 'src/hooks'] }
 }
@@ -318,6 +315,8 @@ Notes:
 - TypeScript variant uses `import type { Config } from 'robo.js'` and `export default <Config>{ ... }`.
 - Windows watcher ignore uses backslashes when `IS_WINDOWS` is true.
 - File path: `config/robo.ts` or `config/robo.mjs`.
+- Bot kit auto-generates `config/plugins/robojs/discordjs.(ts|mjs)` with `clientOptions` and intents.
+- TS variant uses `satisfies DiscordConfig` from `@robojs/discordjs`; JS variant is a plain export.
 
 ESLint config (lines 793–806):
 - `config/eslint.(ts|mjs)` using `@eslint/js`, `globals`, plus `typescript-eslint` and React plugins as needed.
@@ -387,7 +386,7 @@ Rationale: ensures correct module resolution under Bun.
 - Plugins may arrive as a single string; split by space/comma safely.
 
 6) Template kit detection (lines 527–535):
-- Detects `app` if `@discord/embedded-app-sdk`, `bot` if `discord.js`; overrides `--kit`.
+- Detects `app` if `@discord/embedded-app-sdk`, `bot` if `discord.js` or `@robojs/discordjs`; overrides `--kit`.
 
 7) TypeScript inferred from template (line 524).
 
@@ -468,7 +467,8 @@ Configuration:
 - Robo.js core: Config files (`config/robo.(ts|mjs)`) typed via `import type { Config } from 'robo.js'` (TS) or JSDoc (JS). CLI commands (`robo build/dev/...`) generated in scripts.
 - @inquirer/prompts: `input`, `select`, `checkbox`, `Separator` with `clearPromptOnDone` for clean output.
 - Package managers: detection via `npm_config_user_agent`; install via `spawn` with PM-specific args.
-- Discord.js: dependency for bots; devDependency for apps/plugins; templates use it where appropriate.
+- @robojs/discordjs: dependency for bots; devDependency for plugins. Provides `createCommandConfig`, `CommandOptions`, `CommandResult`, `getClient`.
+- Discord.js: dependency for bots; devDependency for plugins; templates use it for types and Discord API constants.
 - Vite: devDependency for app/web; templates include `vite.mjs` config and React plugin when selected.
 - GitHub: templates fetched via GitHub API + `codeload.github.com` tarballs with filtering/strip.
 - NPM registry: update check against `create-robo` latest.

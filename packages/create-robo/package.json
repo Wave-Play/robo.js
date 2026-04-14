@@ -23,7 +23,6 @@
 	"files": [
 		"docs/",
 		"dist/",
-		"src/",
 		"templates/",
 		"LICENSE",
 		"README.md"
