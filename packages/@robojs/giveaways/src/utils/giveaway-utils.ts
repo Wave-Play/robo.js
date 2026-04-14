@@ -167,7 +167,8 @@ async function updateGiveawayMessage(giveaway: Giveaway, winners?: string[]) {
   }
 
   try {
-    const { client } = await import('robo.js')
+    const { getClient } = await import('@robojs/discordjs')
+    const client = getClient()
     const channel = await client.channels.fetch(giveaway.channelId)
 
     // Type guard for text-based channels with send method
@@ -265,7 +266,8 @@ async function updateGiveawayMessage(giveaway: Giveaway, winners?: string[]) {
  * @returns Promise that resolves after all DM attempts have completed.
  */
 async function dmWinners(giveaway: Giveaway, winners: string[]) {
-  const { client } = await import('robo.js')
+  const { getClient } = await import('@robojs/discordjs')
+  const client = getClient()
 
   for (const winnerId of winners) {
     try {

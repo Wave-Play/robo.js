@@ -1,5 +1,6 @@
-import { createCommandConfig, Flashcore } from 'robo.js'
-import type { CommandOptions, CommandResult } from 'robo.js'
+import { Flashcore } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import type { CommandOptions, CommandResult } from '@robojs/discordjs'
 import type { CommandInteraction, TextChannel, NewsChannel } from 'discord.js'
 import { EmbedBuilder } from 'discord.js'
 import type { Giveaway } from '../../types/giveaway.js'

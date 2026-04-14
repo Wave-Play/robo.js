@@ -1,5 +1,6 @@
-import { createCommandConfig, Flashcore } from 'robo.js'
-import type { CommandOptions, CommandResult } from 'robo.js'
+import { Flashcore } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import type { CommandOptions, CommandResult } from '@robojs/discordjs'
 import type { CommandInteraction } from 'discord.js'
 import type { GuildSettings } from '../../../types/giveaway.js'
 import { DEFAULT_SETTINGS } from '../../../types/giveaway.js'

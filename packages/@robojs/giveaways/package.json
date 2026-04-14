@@ -36,7 +36,6 @@
   "homepage": "https://github.com/AdityaTel89/robojs-giveaways#readme",
   "files": [
     ".robo/",
-    "src/",
     "config/",
     "LICENSE",
     "README.md"
@@ -70,6 +69,7 @@
   },
   "devDependencies": {
     "@robojs/cron": "workspace:*",
+    "@robojs/discordjs": "workspace:*",
     "@robojs/server": "workspace:*",
     "@swc/core": "^1.13.5",
     "@types/node": "^24.7.0",
@@ -79,12 +79,16 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
+    "@robojs/discordjs": ">=0.1.0",
     "discord.js": ">=14.22.0",
     "robo.js": ">=0.10.1"
   },
   "peerDependenciesMeta": {
     "@robojs/cron": {
       "optional": true
+    },
+    "@robojs/discordjs": {
+      "optional": false
     },
     "@robojs/server": {
       "optional": true

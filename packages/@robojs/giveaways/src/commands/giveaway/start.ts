@@ -1,5 +1,6 @@
-import { createCommandConfig, Flashcore } from 'robo.js'
-import type { CommandOptions, CommandResult } from 'robo.js'
+import { Flashcore } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import type { CommandOptions, CommandResult } from '@robojs/discordjs'
 import type { CommandInteraction, TextChannel, NewsChannel } from 'discord.js'
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from 'discord.js'
 import { ulid } from 'ulid'
@@ -132,8 +133,8 @@ export default async (
 
   // Create giveaway data
   const giveawayId = ulid()
-  const allowRoleIds = allow_roles ? allow_roles.split(',').map(r => r.trim()) : []
-  const denyRoleIds = deny_roles ? deny_roles.split(',').map(r => r.trim()) : []
+  const allowRoleIds = allow_roles ? allow_roles.split(',').map((r: string) => r.trim()) : []
+  const denyRoleIds = deny_roles ? deny_roles.split(',').map((r: string) => r.trim()) : []
 
   const embed = new EmbedBuilder()
     .setTitle(`🎉 Giveaway: ${prize}`)
