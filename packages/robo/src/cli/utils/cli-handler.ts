@@ -343,7 +343,7 @@ export class Command {
 		// Merge positional args from before options with any found during parsing
 		const allPositionalArgs = [...positionalArgs, ...additionalArgs]
 
-		if (parsedOptions.help) {
+		if (parsedOptions.help || (!command._suppressUnknownWarnings && args.includes('--help'))) {
 			await command.showHelp()
 			return
 		}

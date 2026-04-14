@@ -6,6 +6,7 @@ import update from './update.js'
 
 const command = new Command('skills')
 	.description('Manage AI coding skills from plugins.')
+	.option('-h', '--help', 'Shows the available command options')
 	.handler(listAction)
 	.addCommand(install)
 	.addCommand(list)

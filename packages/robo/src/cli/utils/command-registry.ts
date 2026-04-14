@@ -226,6 +226,9 @@ export function createLazyCommand(meta: CommandMetadata): Command {
 	// For commands with subcommands, we need to load the full module
 	// and re-parse arguments through it so subcommands are properly routed
 	if (meta.hasSubcommands) {
+		// Subcommand names must pass through as positional args to reach the handler
+		cmd.positionalArgs(true)
+
 		cmd.handler(async (context: CliContext) => {
 			const module = await import(meta.modulePath)
 			const loadedCommand = module.default as Command
@@ -243,6 +246,9 @@ export function createLazyCommand(meta: CommandMetadata): Command {
 				// Route to the subcommand with remaining args
 				const remainingArgs = argsToReparse.slice(1)
 				await loadedCommand.parse([firstArg, ...remainingArgs])
+			} else if (context.argv.some((a) => a === '--help' || a === '-h')) {
+				// Delegate help to loaded command which knows about subcommands
+				await loadedCommand.parse(argsToReparse)
 			} else if (loadedCommand.getHandler()) {
 				// No subcommand match, call the parent handler
 				return loadedCommand.getHandler()!(context)
