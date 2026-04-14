@@ -29,7 +29,7 @@ Replace manual `Client` setup with file-based routing entirely. Robo.js handles 
       <File name="ping.ts" note="/ping" />
     </Folder>
     <Folder name="events" defaultOpen>
-      <File name="ready.ts" note="Client ready" />
+      <File name="clientReady.ts" note="Client ready" />
     </Folder>
   </Folder>
   <Folder name="config" defaultOpen disabled>
@@ -107,7 +107,7 @@ Replace manual `Client` setup with file-based routing entirely. Robo.js handles 
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/ready.ts"
+    ```ts title="src/events/clientReady.ts"
     import type { EventConfig } from '@robojs/discordjs'
     import type { Client } from 'discord.js'
 
@@ -121,7 +121,7 @@ Replace manual `Client` setup with file-based routing entirely. Robo.js handles 
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/ready.js"
+    ```js title="src/events/clientReady.js"
     export const config = {
     	frequency: 'once'
     }
@@ -197,7 +197,7 @@ Use `src/robo/start.ts` to keep existing code running while you migrate handlers
 New commands and events use the Robo.js file structure while existing ones continue running through `robo/start.ts`. As you migrate each handler to `src/events/` or `src/commands/`, remove it from the start file.
 
 <Callout type="info">
-You can also use the legacy `src/events/_start.ts` event for the same purpose, but `src/robo/start.ts` is the recommended approach for new migration efforts. See [Lifecycle](./lifecycle) for details on the difference.
+Use `src/robo/start.ts` for startup work while migrating. Underscore-prefixed files in `src/events/` are not indexed as Discord gateway handlers.
 </Callout>
 
 ### Custom entry point
@@ -377,9 +377,9 @@ export default (member: GuildMember) => {
 }
 ```
 
-### `_start` / `_stop` events
+### Legacy lifecycle events
 
-If you used `_start` or `_stop` events, consider migrating them to the recommended `robo/start.ts` and `robo/stop.ts` lifecycle files. See [Lifecycle](./lifecycle) for details.
+If you used `_start` or `_stop` events in older Robo.js versions, migrate them to `src/robo/start.ts` and `src/robo/stop.ts`. See [Lifecycle](./lifecycle) for the current hook structure.
 
 ## Next steps
 

@@ -198,7 +198,7 @@ There are two levels of control:
 Use the `portal` to get a controller for a specific handler by name:
 
 ```ts
-import { portal } from '@robojs/discordjs'
+import { portal } from 'robo.js'
 
 // Get a controller for a specific command
 const pingController = portal.discordjs.command('ping')
@@ -206,8 +206,11 @@ const pingController = portal.discordjs.command('ping')
 // Get a controller for a specific event
 const messageHandler = portal.discordjs.event('messageCreate')
 
+// Get a controller for a specific context menu
+const infoMenuController = portal.discordjs.contextMenu('Get Info')
+
 // Get a controller for a specific middleware
-const rateLimitController = portal.discordjs.middleware('rate-limit')
+const rateLimitController = portal.discordjs.middlewareItem('rate-limit')
 
 // Get a controller for a specific prefix command
 const pingPrefixController = portal.discordjs.prefixCommand('ping')
@@ -284,7 +287,7 @@ interface PrefixCommandController {
 Disable a specific command at runtime using its per-handler controller:
 
 ```ts
-import { portal } from '@robojs/discordjs'
+import { portal } from 'robo.js'
 
 // Disable a specific command handler
 const pingController = portal.discordjs.command('ping')
@@ -294,19 +297,10 @@ pingController.setEnabled(false)
 pingController.setEnabled(true)
 ```
 
-You can also disable all commands at once using the namespace controller:
-
-```ts
-import { portal } from '@robojs/discordjs'
-
-// Disable all command handlers
-portal.discordjs.commands.setEnabled(false)
-```
-
 Here is a full example of an admin command that toggles any command by name:
 
 ```ts title="src/commands/admin/toggle.ts"
-import { portal } from '@robojs/discordjs'
+import { portal } from 'robo.js'
 
 export const config = {
 	description: 'Toggle a command on or off',

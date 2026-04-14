@@ -9,7 +9,7 @@ Event handlers are created by placing files in the `src/events/` directory. The 
 
 <Files>
   <Folder name="src/events" defaultOpen disabled>
-    <File name="ready.ts" note="client ready event" />
+    <File name="clientReady.ts" note="client ready event" />
     <File name="messageCreate.ts" note="message create event" />
     <File name="guildMemberAdd.ts" note="guild member add event" />
   </Folder>
@@ -49,17 +49,17 @@ Export a `config` object to configure the event handler.
 <TypeTable
   type={{
     frequency: { type: "'always' | 'once'", description: "Whether the handler runs on every event or only the first occurrence. When set to 'once', the handler is disabled after its first execution and re-enables on restart.", default: "'always'" },
-    priority: { type: "number", description: "Accepted in config but does not currently affect execution order. All handlers run concurrently.", default: "0" },
+    priority: { type: "number", description: "Execution priority when multiple handlers listen to the same event. Lower values start first.", default: "0" },
     description: { type: "string", description: "Handler description.", default: "undefined" },
     disabled: { type: "boolean", description: "Whether the handler is disabled.", default: "undefined" },
     serverOnly: { type: "string | string[]", description: "Restrict to specific server IDs.", default: "undefined" },
-    timeout: { type: "number", description: "Timeout in milliseconds. Only enforced for lifecycle events (_start, _stop), not regular Discord gateway events.", default: "undefined" },
+    timeout: { type: "number", description: "Reserved for handlers that enforce timeouts.", default: "undefined" },
   }}
 />
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/ready.ts"
+    ```ts title="src/events/clientReady.ts"
     import type { EventConfig } from '@robojs/discordjs'
     import type { Client } from 'discord.js'
 
@@ -73,7 +73,7 @@ Export a `config` object to configure the event handler.
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/ready.js"
+    ```js title="src/events/clientReady.js"
     export const config = {
     	frequency: 'once'
     }
@@ -98,33 +98,33 @@ Create a directory with the event name and place multiple handler files inside. 
   </Folder>
 </Files>
 
-When multiple handlers exist for the same event, they run concurrently. Each handler runs independently and in parallel via `Promise.all`.
+When multiple handlers exist for the same event, Robo starts them in priority order and waits for them concurrently. Each handler runs independently.
 
 ## Priority field
 
-The `priority` field is accepted in `EventConfig` but does not currently affect execution order. The route processor stores only `frequency` in handler metadata, so `priority` values are not persisted. Even if they were, all handlers for an event run concurrently via `Promise.all`, so sort order would not determine execution sequence.
+The `priority` field controls the order handlers are started. Lower values run first. Async handlers still complete independently, so use shared functions or middleware when later logic must wait on earlier logic.
 
 ```ts title="src/events/messageCreate/moderation.ts"
 import type { EventConfig } from '@robojs/discordjs'
 
 export const config: EventConfig = {
-	priority: -10  // accepted but has no effect on execution order
+	priority: -10  // starts before handlers with priority 0
 }
 
 export default (message) => {
-	// Runs concurrently with all other messageCreate handlers
+	// Starts before default-priority messageCreate handlers
 }
 ```
 
-If you need guaranteed ordering, use [middleware](./middleware) to run logic before event handlers, or call shared functions explicitly from a single handler.
+If you need one handler to wait for another handler's async work, call shared functions explicitly from a single handler.
 
 ## Frequency control
 
 When `frequency: 'once'` is set, the handler is disabled at runtime after its first execution. Internally, this sets the handler record's `enabled` flag to `false`, preventing it from running again. The handler re-enables on restart since the flag is not persisted.
 
-This is useful for one-time setup logic like the `ready` event:
+This is useful for one-time setup logic like the `clientReady` event:
 
-```ts title="src/events/ready.ts"
+```ts title="src/events/clientReady.ts"
 import type { EventConfig } from '@robojs/discordjs'
 import type { Client } from 'discord.js'
 

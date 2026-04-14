@@ -104,13 +104,13 @@ Runs during shutdown. Use it for cleanup, disconnecting external services, or sa
 These are just two of six lifecycle hooks. Robo.js also supports `init.ts`, `prepare.ts`, `error.ts`, and `hmr.ts`. See **[Lifecycle Hooks](/docs/framework/core/lifecycle)** for the complete reference.
 </Callout>
 
-## The `ready` event
+## The `clientReady` event
 
-The `ready` event is a Discord.js gateway event that fires when the client's caches are populated and the bot is fully connected. This is different from `robo/start.ts` -- the `ready` event fires *after* the client has connected to Discord's gateway and populated its cache.
+The `clientReady` event is a Discord.js gateway event that fires when the client's caches are populated and the bot is fully connected. This is different from `robo/start.ts` -- the `clientReady` event fires *after* the client has connected to Discord's gateway and populated its cache.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
   <Tab value="TypeScript">
-    ```ts title="src/events/ready.ts"
+    ```ts title="src/events/clientReady.ts"
     import type { EventConfig } from '@robojs/discordjs'
     import type { Client } from 'discord.js'
 
@@ -125,7 +125,7 @@ The `ready` event is a Discord.js gateway event that fires when the client's cac
     ```
   </Tab>
   <Tab value="JavaScript">
-    ```js title="src/events/ready.js"
+    ```js title="src/events/clientReady.js"
     export const config = {
     	frequency: 'once'
     }
@@ -139,65 +139,17 @@ The `ready` event is a Discord.js gateway event that fires when the client's cac
 </Tabs>
 
 <Callout type="info">
-Use `frequency: 'once'` on the `ready` event since it should typically only run on the initial connection. The handler is disabled at runtime after its first execution and re-enables on restart.
+Use `frequency: 'once'` on the `clientReady` event since it should typically only run on the initial connection. The handler is disabled at runtime after its first execution and re-enables on restart.
 </Callout>
 
-### `robo/start.ts` vs `ready` event
+### `robo/start.ts` vs `clientReady` event
 
-| | `robo/start.ts` | `ready` event |
+| | `robo/start.ts` | `clientReady` event |
 |---|---|---|
 | **When** | During Robo startup | After Discord gateway connection |
 | **Client state** | Client exists but may not be logged in | Client is fully connected, caches populated |
 | **Use for** | General startup logic, data loading | Discord-specific setup that needs cached data |
 | **Framework** | Robo.js (works for all project types) | Discord.js gateway event |
-
-## Legacy `_start` / `_stop` / `_restart` events
-
-<Callout type="warn">
-These event-style lifecycle hooks exist primarily for **migration** from older Robo.js patterns or from plain Discord.js. New projects should use `robo/start.ts` and `robo/stop.ts` files instead.
-</Callout>
-
-The plugin supports legacy lifecycle events placed in `src/events/`:
-
-- `src/events/_start.ts` -- Runs during plugin startup
-- `src/events/_stop.ts` -- Runs during plugin shutdown
-- `src/events/_restart.ts` -- Runs during hot-reload restarts
-
-These events have an enforced **5-second timeout**. If a handler exceeds this timeout, a warning is logged and execution continues. Plugin handlers with `failSafe` enabled will log a warning instead of throwing on `_start` failure, allowing the bot to continue starting even if a plugin's initialization fails.
-
-<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/_start.ts"
-    import { getClient } from '@robojs/discordjs'
-
-    export default () => {
-    	const client = getClient()
-
-    	// Legacy pattern: register additional event listeners
-    	client.on('messageCreate', (message) => {
-    		if (message.content === '!hello') {
-    			message.reply('Hello from legacy handler!')
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/_start.js"
-    import { getClient } from '@robojs/discordjs'
-
-    export default () => {
-    	const client = getClient()
-
-    	client.on('messageCreate', (message) => {
-    		if (message.content === '!hello') {
-    			message.reply('Hello from legacy handler!')
-    		}
-    	})
-    }
-    ```
-  </Tab>
-</Tabs>
 
 ## Handler loading
 

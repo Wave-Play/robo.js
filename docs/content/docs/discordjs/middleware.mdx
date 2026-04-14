@@ -117,17 +117,13 @@ export default (data) => {
 
 ## Execution order
 
-The `order` field is accepted in middleware config and stored in handler metadata. However, the runtime execution path does **not** sort middleware by `order` — it iterates in portal insertion order (the order files are indexed during build).
-
-The `middleware.chain()` namespace controller API **does** sort by `order`, so it controls the sequence returned when accessing the middleware chain programmatically:
+The `order` field is accepted in middleware config and controls runtime execution order. Lower values run first. The `middleware.chain()` namespace controller returns the same ordered chain programmatically:
 
 ```
-order: -10  →  first in middleware.chain()
-order: 0    →  default
-order: 10   →  last in middleware.chain()
+order: -10  ->  first
+order: 0    ->  default
+order: 10   ->  last
 ```
-
-For runtime execution, the order depends on how middleware files are discovered and registered during the build step. If you need deterministic runtime ordering, verify your file structure and build output.
 
 ## Next steps
 
