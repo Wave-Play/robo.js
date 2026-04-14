@@ -1168,10 +1168,10 @@ importers:
         specifier: ^1.4.3
         version: 1.4.3
       '@robojs/mock':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/mock
+        specifier: workspace:*
         version: link:../../../packages/@robojs/mock
       '@robojs/server':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api
+        specifier: workspace:*
         version: link:../../../packages/plugin-api
       react:
         specifier: ^18.3.1
@@ -1180,7 +1180,7 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       robo.js:
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/robo
+        specifier: workspace:*
         version: link:../../../packages/robo
     devDependencies:
       '@swc/core':
@@ -1220,19 +1220,19 @@ importers:
   templates/discord-bots/mockbot-ts:
     dependencies:
       '@robojs/discordjs':
-        specifier: link:..\..\..\packages\@robojs\discordjs
+        specifier: workspace:*
         version: link:../../../packages/@robojs/discordjs
       '@robojs/mock':
-        specifier: link:..\..\..\packages\@robojs\mock
+        specifier: workspace:*
         version: link:../../../packages/@robojs/mock
       '@robojs/server':
-        specifier: link:..\..\..\packages\plugin-api
+        specifier: workspace:*
         version: link:../../../packages/plugin-api
       discord.js:
         specifier: ^14.25.1
         version: 14.25.1
       robo.js:
-        specifier: link:..\..\..\packages\robo
+        specifier: workspace:*
         version: link:../../../packages/robo
     devDependencies:
       '@swc/core':

@@ -33,11 +33,11 @@
 	},
 	"dependencies": {
 		"@discord/embedded-app-sdk": "^1.4.3",
-		"@robojs/mock": "link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/mock",
-		"@robojs/server": "link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api",
+		"@robojs/mock": "workspace:*",
+		"@robojs/server": "workspace:*",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"robo.js": "link:/Users/pkmmte/Documents/GitHub/robo/packages/robo"
+		"robo.js": "workspace:*"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.15.4",

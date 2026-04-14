@@ -26,11 +26,11 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"@robojs/discordjs": "link:..\\..\\..\\packages\\@robojs\\discordjs",
-		"@robojs/mock": "link:..\\..\\..\\packages\\@robojs\\mock",
-		"@robojs/server": "link:..\\..\\..\\packages\\plugin-api",
+		"@robojs/discordjs": "workspace:*",
+		"@robojs/mock": "workspace:*",
+		"@robojs/server": "workspace:*",
 		"discord.js": "^14.25.1",
-		"robo.js": "link:..\\..\\..\\packages\\robo"
+		"robo.js": "workspace:*"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.15.4",
