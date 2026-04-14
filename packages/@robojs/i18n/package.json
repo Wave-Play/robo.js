@@ -65,6 +65,9 @@
 		"tstyche": "^4.3.0",
 		"typescript": "^5.9.2"
 	},
+	"peerDependencies": {
+		"robo.js": "^0.10.28"
+	},
 	"peerDependenciesMeta": {
 		"robo.js": {
 			"optional": false

@@ -79,7 +79,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@robojs/discordjs": ">=0.1.0",
+    "@robojs/discordjs": ">=0.0.0",
     "discord.js": ">=14.22.0",
     "robo.js": ">=0.10.1"
   },
