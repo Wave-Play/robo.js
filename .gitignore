@@ -1,3 +1,6 @@
+# Claude Code
+.claude/
+
 # Logs
 /logs
 *.log
@@ -68,6 +71,7 @@ dist
 
 # Temporary files
 temp
+tmp
 
 # Personal VS Code settings
 .vscode/settings.json
