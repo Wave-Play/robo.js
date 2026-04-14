@@ -5,3 +5,6 @@ packages:
   - '!packages/@robojs/tauri'
   - 'packages/robo/__tests__/fixtures/*'
   - 'scripts'
+  - 'templates/discord-bots/mockbot-ts'
+  - 'templates/discord-bots/showcase-ts'
+  - 'templates/discord-activities/mockbot-ts'
