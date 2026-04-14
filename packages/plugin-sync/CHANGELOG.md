@@ -1,5 +1,17 @@
 # @robojs/sync
 
+## 0.2.0-next.0
+
+### Minor Changes
+
+- feat: broadcast and context apis
+- feat: SyncZone, SyncBox, useZoneKey, and server APIs
+- feat: realtime Flashcore state subscriptions
+
+  New subscription system that synchronizes Flashcore persistent storage with connected WebSocket clients in real-time. Clients can subscribe to Flashcore key changes and receive automatic updates when server-side state mutates. Includes subscription lifecycle management with limits and cleanup.
+
+- feat: high level primitive apis
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/plugin-poll",
-	"version": "0.1.2",
+	"version": "0.2.0-next.0",
 	"description": "Poll command made easy with Robo.js",
 	"private": false,
 	"scripts": {

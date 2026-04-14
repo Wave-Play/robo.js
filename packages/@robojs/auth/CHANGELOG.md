@@ -1,5 +1,13 @@
 # @robojs/auth
 
+## 0.2.0-next.0
+
+### Minor Changes
+
+- feat: multi-session support
+
+  Users can now maintain multiple concurrent sessions. Session stack management with proper lifecycle handling.
+
 ## 0.1.0
 
 ### Minor Changes
