@@ -1,10 +1,11 @@
+import type { StartContext } from 'robo.js'
 import type { PluginOptions } from '../types.js'
 import { setGlobalConfig } from '../config.js'
-import { getPluginOptions, logger } from 'robo.js'
+import { logger } from 'robo.js'
 
-export default async () => {
+export default async (context: StartContext<PluginOptions>) => {
 	try {
-		const options = getPluginOptions('@robojs/xp') as PluginOptions | undefined
+		const options = context.pluginConfig
 
 		if (options?.defaults) {
 			await setGlobalConfig(options.defaults)

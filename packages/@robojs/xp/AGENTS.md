@@ -636,7 +636,7 @@ Common recipes:
 - Custom rewards: observe `levelUp`, grant currency/items.
 - Leaderboard commands: `leaderboard.get` and `leaderboard.getRank` for embeds.
 
-Listener best practices: register in `src/events/_start/`; use async/await; never throw from listeners; prefer queues for heavy work; use `reason` for audit.
+Listener best practices: register in `src/robo/start.ts`; use async/await; never throw from listeners; prefer queues for heavy work; use `reason` for audit.
 
 ## 18. Hidden Gotchas & Edge Cases
 
