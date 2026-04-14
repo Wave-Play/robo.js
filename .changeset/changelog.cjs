@@ -1,7 +1,3 @@
-const { getInfo } = require("@changesets/get-github-info");
-
-const repo = "Wave-Play/robo.js";
-
 async function getDependencyReleaseLine() {
 	return "";
 }
