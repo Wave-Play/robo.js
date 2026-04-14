@@ -10,70 +10,70 @@ Configure Mock Server through plugin options and environment variables.
 Create your mock plugin config file:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    export default {
-      // Auto-open Stage UI in browser when starting mock mode
-      autoOpenStage: true,
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+export default {
+  // Auto-open Stage UI in browser when starting mock mode
+  autoOpenStage: true,
 
-      // Default session configuration for robo mock start
-      defaultSessionConfig: {
-        botUser: {
-          username: 'TestBot',
-          discriminator: '0001'
-        },
-        guilds: [{
-          name: 'Test Server',
-          channels: [
-            { name: 'general', type: 0 },      // 0 = Text
-            { name: 'bot-commands', type: 0 }   // 0 = Text
-          ]
-        }],
-        users: [
-          { username: 'TestUser' }
-        ]
-      },
+  // Default session configuration for robo mock start
+  defaultSessionConfig: {
+    botUser: {
+      username: 'TestBot',
+      discriminator: '0001'
+    },
+    guilds: [{
+      name: 'Test Server',
+      channels: [
+        { name: 'general', type: 0 },      // 0 = Text
+        { name: 'bot-commands', type: 0 }   // 0 = Text
+      ]
+    }],
+    users: [
+      { username: 'TestUser' }
+    ]
+  },
 
-      // Port for standalone mock server (default: 6625)
-      standalonePort: 6625,
+  // Port for standalone mock server (default: 6625)
+  standalonePort: 6625,
 
-      // Data directory relative to .robo (default: 'mock')
-      dataDirectory: 'mock'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    export default {
-      // Auto-open Stage UI in browser when starting mock mode
-      autoOpenStage: true,
+  // Data directory relative to .robo (default: 'mock')
+  dataDirectory: 'mock'
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+export default {
+  // Auto-open Stage UI in browser when starting mock mode
+  autoOpenStage: true,
 
-      // Default session configuration for robo mock start
-      defaultSessionConfig: {
-        botUser: {
-          username: 'TestBot',
-          discriminator: '0001'
-        },
-        guilds: [{
-          name: 'Test Server',
-          channels: [
-            { name: 'general', type: 0 },      // 0 = Text
-            { name: 'bot-commands', type: 0 }   // 0 = Text
-          ]
-        }],
-        users: [
-          { username: 'TestUser' }
-        ]
-      },
+  // Default session configuration for robo mock start
+  defaultSessionConfig: {
+    botUser: {
+      username: 'TestBot',
+      discriminator: '0001'
+    },
+    guilds: [{
+      name: 'Test Server',
+      channels: [
+        { name: 'general', type: 0 },      // 0 = Text
+        { name: 'bot-commands', type: 0 }   // 0 = Text
+      ]
+    }],
+    users: [
+      { username: 'TestUser' }
+    ]
+  },
 
-      // Port for standalone mock server (default: 6625)
-      standalonePort: 6625,
+  // Port for standalone mock server (default: 6625)
+  standalonePort: 6625,
 
-      // Data directory relative to .robo (default: 'mock')
-      dataDirectory: 'mock'
-    }
-    ```
-  </Tab>
+  // Data directory relative to .robo (default: 'mock')
+  dataDirectory: 'mock'
+}
+```
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -100,90 +100,90 @@ Configure session defaults for testing:
 ### Bot User
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    defaultSessionConfig: {
-      botUser: {
-        username: 'MyBot',
-        discriminator: '1234',
-        avatar: null,
-        bot: true
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    defaultSessionConfig: {
-      botUser: {
-        username: 'MyBot',
-        discriminator: '1234',
-        avatar: null,
-        bot: true
-      }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+defaultSessionConfig: {
+  botUser: {
+    username: 'MyBot',
+    discriminator: '1234',
+    avatar: null,
+    bot: true
+  }
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+defaultSessionConfig: {
+  botUser: {
+    username: 'MyBot',
+    discriminator: '1234',
+    avatar: null,
+    bot: true
+  }
+}
+```
+</Tab>
 </Tabs>
 
 ### Guilds
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    defaultSessionConfig: {
-      guilds: [{
-        name: 'Test Server',
-        ownerId: '123456789',
-        channels: [
-          { name: 'general', type: 0 },         // 0 = Text
-          { name: 'announcements', type: 5 },    // 5 = Announcement
-          { name: 'Voice', type: 2 }             // 2 = Voice
-        ]
-      }]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    defaultSessionConfig: {
-      guilds: [{
-        name: 'Test Server',
-        ownerId: '123456789',
-        channels: [
-          { name: 'general', type: 0 },         // 0 = Text
-          { name: 'announcements', type: 5 },    // 5 = Announcement
-          { name: 'Voice', type: 2 }             // 2 = Voice
-        ]
-      }]
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+defaultSessionConfig: {
+  guilds: [{
+    name: 'Test Server',
+    ownerId: '123456789',
+    channels: [
+      { name: 'general', type: 0 },         // 0 = Text
+      { name: 'announcements', type: 5 },    // 5 = Announcement
+      { name: 'Voice', type: 2 }             // 2 = Voice
+    ]
+  }]
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+defaultSessionConfig: {
+  guilds: [{
+    name: 'Test Server',
+    ownerId: '123456789',
+    channels: [
+      { name: 'general', type: 0 },         // 0 = Text
+      { name: 'announcements', type: 5 },    // 5 = Announcement
+      { name: 'Voice', type: 2 }             // 2 = Voice
+    ]
+  }]
+}
+```
+</Tab>
 </Tabs>
 
 ### Users
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    defaultSessionConfig: {
-      users: [
-        { username: 'TestUser', bot: false },
-        { username: 'AnotherBot', bot: true }
-      ]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    defaultSessionConfig: {
-      users: [
-        { username: 'TestUser', bot: false },
-        { username: 'AnotherBot', bot: true }
-      ]
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+defaultSessionConfig: {
+  users: [
+    { username: 'TestUser', bot: false },
+    { username: 'AnotherBot', bot: true }
+  ]
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+defaultSessionConfig: {
+  users: [
+    { username: 'TestUser', bot: false },
+    { username: 'AnotherBot', bot: true }
+  ]
+}
+```
+</Tab>
 </Tabs>
 
 ### Intents
@@ -191,40 +191,40 @@ Configure session defaults for testing:
 Control which intents (event categories your bot subscribes to) are enforced:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    import { GatewayIntentBits } from 'discord-api-types/v10'
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+import { GatewayIntentBits } from 'discord-api-types/v10'
 
-    defaultSessionConfig: {
-      enforceIntents: true,
-      // Approve specific privileged intents using a bigint bitmask.
-      // Each intent is a bit flag -- combining them with | (bitwise OR)
-      // produces a single number representing all approved intents.
-      approvedPrivilegedIntents: BigInt(
-        GatewayIntentBits.GuildMembers |    // 1 << 1
-        GatewayIntentBits.GuildPresences |  // 1 << 8
-        GatewayIntentBits.MessageContent    // 1 << 15
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    import { GatewayIntentBits } from 'discord-api-types/v10'
+defaultSessionConfig: {
+  enforceIntents: true,
+  // Approve specific privileged intents using a bigint bitmask.
+  // Each intent is a bit flag -- combining them with | (bitwise OR)
+  // produces a single number representing all approved intents.
+  approvedPrivilegedIntents: BigInt(
+    GatewayIntentBits.GuildMembers |    // 1 << 1
+    GatewayIntentBits.GuildPresences |  // 1 << 8
+    GatewayIntentBits.MessageContent    // 1 << 15
+  )
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+import { GatewayIntentBits } from 'discord-api-types/v10'
 
-    defaultSessionConfig: {
-      enforceIntents: true,
-      // Approve specific privileged intents using a bigint bitmask.
-      // Each intent is a bit flag -- combining them with | (bitwise OR)
-      // produces a single number representing all approved intents.
-      approvedPrivilegedIntents: BigInt(
-        GatewayIntentBits.GuildMembers |    // 1 << 1
-        GatewayIntentBits.GuildPresences |  // 1 << 8
-        GatewayIntentBits.MessageContent    // 1 << 15
-      )
-    }
-    ```
-  </Tab>
+defaultSessionConfig: {
+  enforceIntents: true,
+  // Approve specific privileged intents using a bigint bitmask.
+  // Each intent is a bit flag -- combining them with | (bitwise OR)
+  // produces a single number representing all approved intents.
+  approvedPrivilegedIntents: BigInt(
+    GatewayIntentBits.GuildMembers |    // 1 << 1
+    GatewayIntentBits.GuildPresences |  // 1 << 8
+    GatewayIntentBits.MessageContent    // 1 << 15
+  )
+}
+```
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -236,20 +236,20 @@ Control which intents (event categories your bot subscribes to) are enforced:
 Control how strictly permissions are checked:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    defaultSessionConfig: {
-      permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    defaultSessionConfig: {
-      permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+defaultSessionConfig: {
+  permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+defaultSessionConfig: {
+  permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
+}
+```
+</Tab>
 </Tabs>
 
 | Level | Description |
@@ -295,28 +295,28 @@ Control how strictly permissions are checked:
 Mock Server integrates with @robojs/server. Configure server options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.ts"
-    export default {
-      cors: true,
-      port: 3000,
-      pluginPrefixes: {
-        '@robojs/mock': '/mock'
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-      cors: true,
-      port: 3000,
-      pluginPrefixes: {
-        '@robojs/mock': '/mock'
-      }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/server.ts"
+export default {
+  cors: true,
+  port: 3000,
+  pluginPrefixes: {
+    '@robojs/mock': '/mock'
+  }
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/server.mjs"
+export default {
+  cors: true,
+  port: 3000,
+  pluginPrefixes: {
+    '@robojs/mock': '/mock'
+  }
+}
+```
+</Tab>
 </Tabs>
 
 ### Plugin Prefix
@@ -332,45 +332,45 @@ Mock Server routes are prefixed by default:
 ### Custom Prefix
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.ts"
-    pluginPrefixes: {
-      '@robojs/mock': '/test'  // Stage at /test/stage/
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    pluginPrefixes: {
-      '@robojs/mock': '/test'  // Stage at /test/stage/
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/server.ts"
+pluginPrefixes: {
+  '@robojs/mock': '/test'  // Stage at /test/stage/
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/server.mjs"
+pluginPrefixes: {
+  '@robojs/mock': '/test'  // Stage at /test/stage/
+}
+```
+</Tab>
 </Tabs>
 
 ### Disable Prefix
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.ts"
-    pluginPrefixes: {
-      '@robojs/mock': {
-        api: false,
-        static: false
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    pluginPrefixes: {
-      '@robojs/mock': {
-        api: false,
-        static: false
-      }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/server.ts"
+pluginPrefixes: {
+  '@robojs/mock': {
+    api: false,
+    static: false
+  }
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/server.mjs"
+pluginPrefixes: {
+  '@robojs/mock': {
+    api: false,
+    static: false
+  }
+}
+```
+</Tab>
 </Tabs>
 
 ## Activity Configuration
@@ -434,20 +434,20 @@ Activity authentication simulation supports three modes, configurable via DevToo
 The mock server generates an application ID automatically for each session. If your activity requires a specific application ID, pass it in the session config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/mock.ts"
-    defaultSessionConfig: {
-      applicationId: '1234567890'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/mock.mjs"
-    defaultSessionConfig: {
-      applicationId: '1234567890'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/mock.ts"
+defaultSessionConfig: {
+  applicationId: '1234567890'
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/mock.mjs"
+defaultSessionConfig: {
+  applicationId: '1234567890'
+}
+```
+</Tab>
 </Tabs>
 
 ## Loop Protection
@@ -455,20 +455,20 @@ The mock server generates an application ID automatically for each session. If y
 Mock Server detects infinite loops when bots trigger themselves:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Defaults (not configurable via config file)
-    loopThreshold: 10,      // Events per second
-    loopCooldown: 5000      // Milliseconds
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Defaults (not configurable via config file)
-    loopThreshold: 10,      // Events per second
-    loopCooldown: 5000      // Milliseconds
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+// Defaults (not configurable via config file)
+loopThreshold: 10,      // Events per second
+loopCooldown: 5000      // Milliseconds
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+// Defaults (not configurable via config file)
+loopThreshold: 10,      // Events per second
+loopCooldown: 5000      // Milliseconds
+```
+</Tab>
 </Tabs>
 
 When 10+ `MESSAGE_CREATE` events occur in 1 second, loop protection triggers a 5-second cooldown. DevTools shows when this happens.
@@ -476,16 +476,16 @@ When 10+ `MESSAGE_CREATE` events occur in 1 second, loop protection triggers a 5
 To disable for a specific session (via code):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    session.loopProtectionEnabled = false
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    session.loopProtectionEnabled = false
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+session.loopProtectionEnabled = false
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+session.loopProtectionEnabled = false
+```
+</Tab>
 </Tabs>
 
 ## Session Limits

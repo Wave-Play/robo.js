@@ -25,125 +25,125 @@ Extend `BaseEngine` and implement the `event()` and `view()` methods:
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/engines/my-engine.ts"
-    import { BaseEngine } from '@robojs/analytics'
-    import type { EventOptions, ViewOptions } from '@robojs/analytics'
+<Tab value="TypeScript">
+```ts title="src/engines/my-engine.ts"
+import { BaseEngine } from '@robojs/analytics'
+import type { EventOptions, ViewOptions } from '@robojs/analytics'
 
-    export class MyEngine extends BaseEngine {
-    	private apiKey: string
+export class MyEngine extends BaseEngine {
+	private apiKey: string
 
-    	constructor(apiKey: string) {
-    		super()
-    		this.apiKey = apiKey
-    	}
+	constructor(apiKey: string) {
+		super()
+		this.apiKey = apiKey
+	}
 
-    	async event(name: string, options?: EventOptions): Promise<void> {
-    		await fetch('https://api.my-analytics.com/track', {
-    			method: 'POST',
-    			headers: {
-    				'Authorization': `Bearer ${this.apiKey}`,
-    				'Content-Type': 'application/json'
-    			},
-    			body: JSON.stringify({
-    				event: name,
-    				properties: options?.data,
-    				userId: options?.userId,
-    				sessionId: options?.sessionId,
-    				timestamp: Date.now()
-    			})
-    		})
-    	}
+	async event(name: string, options?: EventOptions): Promise<void> {
+		await fetch('https://api.my-analytics.com/track', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${this.apiKey}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				event: name,
+				properties: options?.data,
+				userId: options?.userId,
+				sessionId: options?.sessionId,
+				timestamp: Date.now()
+			})
+		})
+	}
 
-    	async view(page: string, options?: ViewOptions): Promise<void> {
-    		await this.event('page_view', {
-    			...options,
-    			data: { page, ...((options?.data as Record<string, unknown>) ?? {}) }
-    		})
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/engines/my-engine.js"
-    import { BaseEngine } from '@robojs/analytics'
+	async view(page: string, options?: ViewOptions): Promise<void> {
+		await this.event('page_view', {
+			...options,
+			data: { page, ...((options?.data as Record<string, unknown>) ?? {}) }
+		})
+	}
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="src/engines/my-engine.js"
+import { BaseEngine } from '@robojs/analytics'
 
-    export class MyEngine extends BaseEngine {
-    	constructor(apiKey) {
-    		super()
-    		this.apiKey = apiKey
-    	}
+export class MyEngine extends BaseEngine {
+	constructor(apiKey) {
+		super()
+		this.apiKey = apiKey
+	}
 
-    	async event(name, options) {
-    		await fetch('https://api.my-analytics.com/track', {
-    			method: 'POST',
-    			headers: {
-    				'Authorization': `Bearer ${this.apiKey}`,
-    				'Content-Type': 'application/json'
-    			},
-    			body: JSON.stringify({
-    				event: name,
-    				properties: options?.data,
-    				userId: options?.userId,
-    				sessionId: options?.sessionId,
-    				timestamp: Date.now()
-    			})
-    		})
-    	}
+	async event(name, options) {
+		await fetch('https://api.my-analytics.com/track', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${this.apiKey}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				event: name,
+				properties: options?.data,
+				userId: options?.userId,
+				sessionId: options?.sessionId,
+				timestamp: Date.now()
+			})
+		})
+	}
 
-    	async view(page, options) {
-    		await this.event('page_view', {
-    			...options,
-    			data: { page, ...((options?.data) ?? {}) }
-    		})
-    	}
-    }
-    ```
-  </Tab>
+	async view(page, options) {
+		await this.event('page_view', {
+			...options,
+			data: { page, ...((options?.data) ?? {}) }
+		})
+	}
+}
+```
+</Tab>
 </Tabs>
 
 Register it in your plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { MyEngine } from '../src/engines/my-engine.js'
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/analytics.mjs"
+import { MyEngine } from '../src/engines/my-engine.js'
 
-    export default {
-    	engine: new MyEngine(process.env.MY_ANALYTICS_KEY)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { MyEngine } from '../src/engines/my-engine.js'
+export default {
+	engine: new MyEngine(process.env.MY_ANALYTICS_KEY)
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/analytics.mjs"
+import { MyEngine } from '../src/engines/my-engine.js'
 
-    export default {
-    	engine: new MyEngine(process.env.MY_ANALYTICS_KEY)
-    }
-    ```
-  </Tab>
+export default {
+	engine: new MyEngine(process.env.MY_ANALYTICS_KEY)
+}
+```
+</Tab>
 </Tabs>
 
 ### The BaseEngine contract
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    abstract class BaseEngine {
-    	abstract event(name: string, options?: EventOptions): Promise<void> | void
-    	abstract view(page: string, options?: ViewOptions): Promise<void> | void
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    class BaseEngine {
-    	event(name, options) { /* abstract */ }
-    	view(page, options) { /* abstract */ }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+abstract class BaseEngine {
+	abstract event(name: string, options?: EventOptions): Promise<void> | void
+	abstract view(page: string, options?: ViewOptions): Promise<void> | void
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+class BaseEngine {
+	event(name, options) { /* abstract */ }
+	view(page, options) { /* abstract */ }
+}
+```
+</Tab>
 </Tabs>
 
 Both methods can be synchronous or asynchronous. The `Analytics` singleton delegates directly to your implementation.
@@ -152,20 +152,21 @@ Both methods can be synchronous or asynchronous. The `Analytics` singleton deleg
 
 - **Catch errors internally.** Log failures instead of throwing. Unhandled errors from your engine can disrupt your bot's event flow.
 - **Use the analytics logger.** Import `analyticsLogger` for consistent log formatting:
-  <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-    <Tab value="TypeScript">
-      ```ts
-        import { analyticsLogger } from '@robojs/analytics/src/core/loggers.js'
-        analyticsLogger.debug('Event sent successfully')
-      ```
-    </Tab>
-    <Tab value="JavaScript">
-      ```js
-        import { analyticsLogger } from '@robojs/analytics/src/core/loggers.js'
-        analyticsLogger.debug('Event sent successfully')
-      ```
-    </Tab>
-  </Tabs>
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+<Tab value="TypeScript">
+```ts
+import { analyticsLogger } from '@robojs/analytics/src/core/loggers.js'
+analyticsLogger.debug('Event sent successfully')
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { analyticsLogger } from '@robojs/analytics/src/core/loggers.js'
+analyticsLogger.debug('Event sent successfully')
+```
+</Tab>
+</Tabs>
 
 Events are sent to all engines simultaneously using `Promise.all()`. Each engine handles its own errors independently.
 
@@ -174,32 +175,32 @@ Events are sent to all engines simultaneously using `Promise.all()`. Each engine
 Combine built-in engines with your own:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
-    import { MyEngine } from '../src/engines/my-engine.js'
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/analytics.mjs"
+import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
+import { MyEngine } from '../src/engines/my-engine.js'
 
-    export default {
-    	engine: new ManyEngines(
-    		new GoogleAnalytics(),
-    		new MyEngine(process.env.MY_ANALYTICS_KEY)
-    	)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
-    import { MyEngine } from '../src/engines/my-engine.js'
+export default {
+	engine: new ManyEngines(
+		new GoogleAnalytics(),
+		new MyEngine(process.env.MY_ANALYTICS_KEY)
+	)
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/analytics.mjs"
+import { GoogleAnalytics, ManyEngines } from '@robojs/analytics'
+import { MyEngine } from '../src/engines/my-engine.js'
 
-    export default {
-    	engine: new ManyEngines(
-    		new GoogleAnalytics(),
-    		new MyEngine(process.env.MY_ANALYTICS_KEY)
-    	)
-    }
-    ```
-  </Tab>
+export default {
+	engine: new ManyEngines(
+		new GoogleAnalytics(),
+		new MyEngine(process.env.MY_ANALYTICS_KEY)
+	)
+}
+```
+</Tab>
 </Tabs>
 
 ### Auto-detection shortcut

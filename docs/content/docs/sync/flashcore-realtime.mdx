@@ -12,26 +12,26 @@ This is a server-side feature. It runs in the Robo backend, not in the browser.
 ## Setup
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Flashcore } from 'robo.js'
-    import { realtime } from '@robojs/sync/flashcore'
+<Tab value="TypeScript">
+```ts
+import { Flashcore } from 'robo.js'
+import { realtime } from '@robojs/sync/flashcore'
 
-    await Flashcore.init({
-    	plugins: [realtime()]
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Flashcore } from 'robo.js'
-    import { realtime } from '@robojs/sync/flashcore'
+await Flashcore.init({
+	plugins: [realtime()]
+})
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { Flashcore } from 'robo.js'
+import { realtime } from '@robojs/sync/flashcore'
 
-    await Flashcore.init({
-    	plugins: [realtime()]
-    })
-    ```
-  </Tab>
+await Flashcore.init({
+	plugins: [realtime()]
+})
+```
+</Tab>
 </Tabs>
 
 ## Configuration
@@ -39,26 +39,26 @@ This is a server-side feature. It runs in the Robo backend, not in the browser.
 Pass a config object to customize limits and timeouts.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    realtime({
-    	maxSubscriptionsPerModel: 500,
-    	maxTotalSubscriptions: 5000,
-    	idleTimeout: 1800000,          // 30 minutes
-    	maxRecordsPerSubscription: 5000
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    realtime({
-    	maxSubscriptionsPerModel: 500,
-    	maxTotalSubscriptions: 5000,
-    	idleTimeout: 1800000,          // 30 minutes
-    	maxRecordsPerSubscription: 5000
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+realtime({
+	maxSubscriptionsPerModel: 500,
+	maxTotalSubscriptions: 5000,
+	idleTimeout: 1800000,          // 30 minutes
+	maxRecordsPerSubscription: 5000
+})
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+realtime({
+	maxSubscriptionsPerModel: 500,
+	maxTotalSubscriptions: 5000,
+	idleTimeout: 1800000,          // 30 minutes
+	maxRecordsPerSubscription: 5000
+})
+```
+</Tab>
 </Tabs>
 
 | Option | Type | Default | Description |
@@ -73,38 +73,38 @@ Pass a config object to customize limits and timeouts.
 Once initialized, Flashcore models gain a `.subscribe()` method.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const unsubscribe = User.subscribe({
-    	where: { status: 'active' },
-    	callbacks: {
-    		onAdd: (user) => console.log('New active user:', user),
-    		onChange: (user, patches) => console.log('User changed:', user.id, patches),
-    		onRemove: (user) => console.log('User no longer active:', user),
-    		onComplete: () => console.log('Subscription ended')
-    	}
-    })
+<Tab value="TypeScript">
+```ts
+const unsubscribe = User.subscribe({
+	where: { status: 'active' },
+	callbacks: {
+		onAdd: (user) => console.log('New active user:', user),
+		onChange: (user, patches) => console.log('User changed:', user.id, patches),
+		onRemove: (user) => console.log('User no longer active:', user),
+		onComplete: () => console.log('Subscription ended')
+	}
+})
 
-    // Stop listening
-    unsubscribe()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const unsubscribe = User.subscribe({
-    	where: { status: 'active' },
-    	callbacks: {
-    		onAdd: (user) => console.log('New active user:', user),
-    		onChange: (user, patches) => console.log('User changed:', user.id, patches),
-    		onRemove: (user) => console.log('User no longer active:', user),
-    		onComplete: () => console.log('Subscription ended')
-    	}
-    })
+// Stop listening
+unsubscribe()
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+const unsubscribe = User.subscribe({
+	where: { status: 'active' },
+	callbacks: {
+		onAdd: (user) => console.log('New active user:', user),
+		onChange: (user, patches) => console.log('User changed:', user.id, patches),
+		onRemove: (user) => console.log('User no longer active:', user),
+		onComplete: () => console.log('Subscription ended')
+	}
+})
 
-    // Stop listening
-    unsubscribe()
-    ```
-  </Tab>
+// Stop listening
+unsubscribe()
+```
+</Tab>
 </Tabs>
 
 ## Callback reference
@@ -121,48 +121,48 @@ Once initialized, Flashcore models gain a `.subscribe()` method.
 The `onChange` callback receives an array of [RFC 6902](https://tools.ietf.org/html/rfc6902) JSON Patches describing what changed.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface JSONPatch {
-    	op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test'
-    	path: string
-    	value?: unknown
-    	from?: string
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
+```ts
+interface JSONPatch {
+	op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test'
+	path: string
+	value?: unknown
+	from?: string
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js
 
-    ```
-  </Tab>
+```
+</Tab>
 </Tabs>
 
 Example:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    onChange: (user, patches) => {
-    	for (const patch of patches) {
-    		if (patch.path === '/score' && patch.op === 'replace') {
-    			console.log('Score changed to:', patch.value)
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    onChange: (user, patches) => {
-    	for (const patch of patches) {
-    		if (patch.path === '/score' && patch.op === 'replace') {
-    			console.log('Score changed to:', patch.value)
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+onChange: (user, patches) => {
+	for (const patch of patches) {
+		if (patch.path === '/score' && patch.op === 'replace') {
+			console.log('Score changed to:', patch.value)
+		}
+	}
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+onChange: (user, patches) => {
+	for (const patch of patches) {
+		if (patch.path === '/score' && patch.op === 'replace') {
+			console.log('Score changed to:', patch.value)
+		}
+	}
+}
+```
+</Tab>
 </Tabs>
 
 ## Subscription limits
@@ -170,34 +170,34 @@ Example:
 Exceeding configured limits throws a `SubscriptionLimitError`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { SubscriptionLimitError } from '@robojs/sync/flashcore'
+<Tab value="TypeScript">
+```ts
+import { SubscriptionLimitError } from '@robojs/sync/flashcore'
 
-    try {
-    	User.subscribe({ where: { status: 'active' }, callbacks: { onAdd: () => {} } })
-    } catch (error) {
-    	if (error instanceof SubscriptionLimitError) {
-    		console.log('Limit exceeded:', error.type)
-    		// error.type: 'per-model' | 'total' | 'records'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { SubscriptionLimitError } from '@robojs/sync/flashcore'
+try {
+	User.subscribe({ where: { status: 'active' }, callbacks: { onAdd: () => {} } })
+} catch (error) {
+	if (error instanceof SubscriptionLimitError) {
+		console.log('Limit exceeded:', error.type)
+		// error.type: 'per-model' | 'total' | 'records'
+	}
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { SubscriptionLimitError } from '@robojs/sync/flashcore'
 
-    try {
-    	User.subscribe({ where: { status: 'active' }, callbacks: { onAdd: () => {} } })
-    } catch (error) {
-    	if (error instanceof SubscriptionLimitError) {
-    		console.log('Limit exceeded:', error.type)
-    		// error.type: 'per-model' | 'total' | 'records'
-    	}
-    }
-    ```
-  </Tab>
+try {
+	User.subscribe({ where: { status: 'active' }, callbacks: { onAdd: () => {} } })
+} catch (error) {
+	if (error instanceof SubscriptionLimitError) {
+		console.log('Limit exceeded:', error.type)
+		// error.type: 'per-model' | 'total' | 'records'
+	}
+}
+```
+</Tab>
 </Tabs>
 
 ## Client extensions
@@ -205,18 +205,18 @@ Exceeding configured limits throws a `SubscriptionLimitError`:
 Query subscription counts from the Flashcore client:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const totalSubs = Flashcore.getSubscriptionCount()
-    const userSubs = Flashcore.getModelSubscriptionCount('User')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const totalSubs = Flashcore.getSubscriptionCount()
-    const userSubs = Flashcore.getModelSubscriptionCount('User')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+const totalSubs = Flashcore.getSubscriptionCount()
+const userSubs = Flashcore.getModelSubscriptionCount('User')
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+const totalSubs = Flashcore.getSubscriptionCount()
+const userSubs = Flashcore.getModelSubscriptionCount('User')
+```
+</Tab>
 </Tabs>
 
 ## Idle cleanup

@@ -10,34 +10,34 @@ Role rewards grant Discord roles when users reach specific levels. The plugin ha
 Configure level-to-role mappings via `/xp config` or the API. When a user's level changes, the plugin reconciles their roles based on the configured rewards and mode.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { config } from '@robojs/xp'
+<Tab value="TypeScript">
+```ts
+import { config } from '@robojs/xp'
 
-    await config.set(guildId, {
-    	roleRewards: [
-    		{ level: 5, roleId: '111111111111111111' },
-    		{ level: 10, roleId: '222222222222222222' },
-    		{ level: 25, roleId: '333333333333333333' },
-    		{ level: 50, roleId: '444444444444444444' }
-    	]
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { config } from '@robojs/xp'
+await config.set(guildId, {
+	roleRewards: [
+		{ level: 5, roleId: '111111111111111111' },
+		{ level: 10, roleId: '222222222222222222' },
+		{ level: 25, roleId: '333333333333333333' },
+		{ level: 50, roleId: '444444444444444444' }
+	]
+})
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { config } from '@robojs/xp'
 
-    await config.set(guildId, {
-    	roleRewards: [
-    		{ level: 5, roleId: '111111111111111111' },
-    		{ level: 10, roleId: '222222222222222222' },
-    		{ level: 25, roleId: '333333333333333333' },
-    		{ level: 50, roleId: '444444444444444444' }
-    	]
-    })
-    ```
-  </Tab>
+await config.set(guildId, {
+	roleRewards: [
+		{ level: 5, roleId: '111111111111111111' },
+		{ level: 10, roleId: '222222222222222222' },
+		{ level: 25, roleId: '333333333333333333' },
+		{ level: 50, roleId: '444444444444444444' }
+	]
+})
+```
+</Tab>
 </Tabs>
 
 ## Reward modes
@@ -47,16 +47,16 @@ Configure level-to-role mappings via `/xp config` or the API. When a user's leve
 Users keep all role rewards from previous levels. A level 25 user has the level 5, 10, and 25 roles.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await config.set(guildId, { rewardsMode: 'stack' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await config.set(guildId, { rewardsMode: 'stack' })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+await config.set(guildId, { rewardsMode: 'stack' })
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+await config.set(guildId, { rewardsMode: 'stack' })
+```
+</Tab>
 </Tabs>
 
 ### Replace mode
@@ -64,16 +64,16 @@ Users keep all role rewards from previous levels. A level 25 user has the level 
 Users only keep the highest qualifying role. A level 25 user has only the level 25 role -- lower rewards are removed.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await config.set(guildId, { rewardsMode: 'replace' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await config.set(guildId, { rewardsMode: 'replace' })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+await config.set(guildId, { rewardsMode: 'replace' })
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+await config.set(guildId, { rewardsMode: 'replace' })
+```
+</Tab>
 </Tabs>
 
 Replace mode is useful when rewards represent tiers (Bronze, Silver, Gold) where only the current tier should be visible.
@@ -83,16 +83,16 @@ Replace mode is useful when rewards represent tiers (Bronze, Silver, Gold) where
 By default, users keep their role rewards even if they lose levels (e.g., from `/xp remove`). Enable `removeRewardOnXpLoss` to remove roles when users drop below the required level.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await config.set(guildId, { removeRewardOnXpLoss: true })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await config.set(guildId, { removeRewardOnXpLoss: true })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+await config.set(guildId, { removeRewardOnXpLoss: true })
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+await config.set(guildId, { removeRewardOnXpLoss: true })
+```
+</Tab>
 </Tabs>
 
 In stack mode, roles above the user's new level are removed. In replace mode, the user's role is updated to match their new highest qualifying level.
@@ -118,26 +118,26 @@ Role reconciliation runs automatically when:
 Trigger reconciliation programmatically when needed (e.g., after changing reward configuration):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { rewards, config, XP } from '@robojs/xp'
+<Tab value="TypeScript">
+```ts
+import { rewards, config, XP } from '@robojs/xp'
 
-    const guildConfig = await config.get(guildId)
-    const userLevel = await XP.getLevel(guildId, userId)
+const guildConfig = await config.get(guildId)
+const userLevel = await XP.getLevel(guildId, userId)
 
-    await rewards.reconcile(guildId, userId, userLevel, guildConfig)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { rewards, config, XP } from '@robojs/xp'
+await rewards.reconcile(guildId, userId, userLevel, guildConfig)
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { rewards, config, XP } from '@robojs/xp'
 
-    const guildConfig = await config.get(guildId)
-    const userLevel = await XP.getLevel(guildId, userId)
+const guildConfig = await config.get(guildId)
+const userLevel = await XP.getLevel(guildId, userId)
 
-    await rewards.reconcile(guildId, userId, userLevel, guildConfig)
-    ```
-  </Tab>
+await rewards.reconcile(guildId, userId, userLevel, guildConfig)
+```
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -161,42 +161,42 @@ Role rewards only trigger for the default store. Custom stores (e.g., `'reputati
 This prevents conflicts where multiple progression systems would compete over the same roles. If you need role rewards for a custom store, build a custom listener:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { events } from '@robojs/xp'
-    import { getClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
+```ts
+import { events } from '@robojs/xp'
+import { getClient } from '@robojs/discordjs'
 
-    events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
-    	if (storeId !== 'reputation') return
+events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
+	if (storeId !== 'reputation') return
 
-    	const client = getClient()
-    	const guild = await client.guilds.fetch(guildId)
-    	const member = await guild.members.fetch(userId)
+	const client = getClient()
+	const guild = await client.guilds.fetch(guildId)
+	const member = await guild.members.fetch(userId)
 
-    	if (newLevel >= 10) {
-    		await member.roles.add('REPUTATION_ROLE_ID')
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { events } from '@robojs/xp'
-    import { getClient } from '@robojs/discordjs'
+	if (newLevel >= 10) {
+		await member.roles.add('REPUTATION_ROLE_ID')
+	}
+})
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { events } from '@robojs/xp'
+import { getClient } from '@robojs/discordjs'
 
-    events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
-    	if (storeId !== 'reputation') return
+events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
+	if (storeId !== 'reputation') return
 
-    	const client = getClient()
-    	const guild = await client.guilds.fetch(guildId)
-    	const member = await guild.members.fetch(userId)
+	const client = getClient()
+	const guild = await client.guilds.fetch(guildId)
+	const member = await guild.members.fetch(userId)
 
-    	if (newLevel >= 10) {
-    		await member.roles.add('REPUTATION_ROLE_ID')
-    	}
-    })
-    ```
-  </Tab>
+	if (newLevel >= 10) {
+		await member.roles.add('REPUTATION_ROLE_ID')
+	}
+})
+```
+</Tab>
 </Tabs>
 
 ## Duplicate handling
@@ -217,18 +217,18 @@ If the same role appears at multiple levels, the plugin keeps only the highest l
 Check that `removeRewardOnXpLoss` is enabled:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const guildConfig = await config.get(guildId)
-    console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const guildConfig = await config.get(guildId)
-    console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+const guildConfig = await config.get(guildId)
+console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+const guildConfig = await config.get(guildId)
+console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
+```
+</Tab>
 </Tabs>
 
 ## Next steps

@@ -8,31 +8,31 @@ When multiple Robo apps need the same auth backend, configure upstream proxy mod
 ## Basic setup
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    import type { AuthPluginOptions } from '@robojs/auth'
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/auth.ts"
+import type { AuthPluginOptions } from '@robojs/auth'
 
-    export default <AuthPluginOptions>{
-      basePath: '/api/auth',
-      upstream: {
-        baseUrl: process.env.AUTH_UPSTREAM_URL!,
-        headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
+export default <AuthPluginOptions>{
+  basePath: '/api/auth',
+  upstream: {
+    baseUrl: process.env.AUTH_UPSTREAM_URL!,
+    headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
+  }
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/auth.js"
 
-    export default {
-      basePath: '/api/auth',
-      upstream: {
-        baseUrl: process.env.AUTH_UPSTREAM_URL!,
-        headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
-      }
-    }
-    ```
-  </Tab>
+export default {
+  basePath: '/api/auth',
+  upstream: {
+    baseUrl: process.env.AUTH_UPSTREAM_URL!,
+    headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
+  }
+}
+```
+</Tab>
 </Tabs>
 
 In proxy mode, no adapter, providers, or email config is needed locally. The upstream handles everything.
@@ -66,24 +66,24 @@ The proxy behavior works like this:
 Providing `upstream.secret` enables local JWT decoding:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    upstream: {
-      baseUrl: 'https://auth.myapp.com',
-      secret: process.env.AUTH_SECRET,
-      sessionStrategy: 'jwt'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    upstream: {
-      baseUrl: 'https://auth.myapp.com',
-      secret: process.env.AUTH_SECRET,
-      sessionStrategy: 'jwt'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/auth.ts"
+upstream: {
+  baseUrl: 'https://auth.myapp.com',
+  secret: process.env.AUTH_SECRET,
+  sessionStrategy: 'jwt'
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/auth.js"
+upstream: {
+  baseUrl: 'https://auth.myapp.com',
+  secret: process.env.AUTH_SECRET,
+  sessionStrategy: 'jwt'
+}
+```
+</Tab>
 </Tabs>
 
 This cuts network traffic roughly in half — `getToken()` decodes locally instead of calling the upstream. Without a secret, call `getToken(request, { raw: true })` to get the raw cookie value, or use `getServerSession()` which always consults the upstream.
@@ -91,32 +91,28 @@ This cuts network traffic roughly in half — `getToken()` decodes locally inste
 ## Cross-origin considerations
 
 <Callout type="warn">
-When the frontend and auth server run on different origins:
-
-- Set cookies with `SameSite=None; Secure` on the auth server
-- Add the frontend origin to your CORS allowlist
-- Set `AUTH_REDIRECT_PROXY_URL` for OAuth callback handling
+When the frontend and auth server run on different origins, set cookies with `SameSite=None; Secure` on the auth server, add the frontend origin to your CORS allowlist, and set `AUTH_REDIRECT_PROXY_URL` for OAuth callback handling.
 </Callout>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    // Frontend Robo app (proxy mode)
-    upstream: {
-      baseUrl: 'https://auth.myapp.com',
-      headers: { 'x-tenant': 'frontend-app' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    // Frontend Robo app (proxy mode)
-    upstream: {
-      baseUrl: 'https://auth.myapp.com',
-      headers: { 'x-tenant': 'frontend-app' }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts title="config/plugins/robojs/auth.ts"
+// Frontend Robo app (proxy mode)
+upstream: {
+  baseUrl: 'https://auth.myapp.com',
+  headers: { 'x-tenant': 'frontend-app' }
+}
+```
+</Tab>
+<Tab value="JavaScript">
+```js title="config/plugins/robojs/auth.js"
+// Frontend Robo app (proxy mode)
+upstream: {
+  baseUrl: 'https://auth.myapp.com',
+  headers: { 'x-tenant': 'frontend-app' }
+}
+```
+</Tab>
 </Tabs>
 
 ## Client-side usage
@@ -124,39 +120,39 @@ When the frontend and auth server run on different origins:
 Client helpers work the same way in proxy mode. They hit the local proxy routes which forward to upstream:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { signIn, getSession } from '@robojs/auth/client'
+<Tab value="TypeScript">
+```ts
+import { signIn, getSession } from '@robojs/auth/client'
 
-    // These go through the local proxy to upstream
-    await signIn('discord')
-    const session = await getSession()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { signIn, getSession } from '@robojs/auth/client'
+// These go through the local proxy to upstream
+await signIn('discord')
+const session = await getSession()
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+import { signIn, getSession } from '@robojs/auth/client'
 
-    // These go through the local proxy to upstream
-    await signIn('discord')
-    const session = await getSession()
-    ```
-  </Tab>
+// These go through the local proxy to upstream
+await signIn('discord')
+const session = await getSession()
+```
+</Tab>
 </Tabs>
 
 For direct cross-origin calls (bypassing the proxy), use the `baseUrl` option:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.myapp.com' }, true)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.myapp.com' }, true)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+```ts
+await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.myapp.com' }, true)
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+await signIn('discord', { callbackUrl: '/dashboard' }, { baseUrl: 'https://auth.myapp.com' }, true)
+```
+</Tab>
 </Tabs>
 
 ## Next steps
