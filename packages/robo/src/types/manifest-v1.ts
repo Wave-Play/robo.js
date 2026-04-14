@@ -232,6 +232,41 @@ export interface NamespaceRouteDefinitions {
 export type RouteDefinitions = Record<string, NamespaceRouteDefinitions>
 
 // ============================================================================
+// Handler Summaries (summaries/{namespace}.{route}.json)
+// ============================================================================
+
+/**
+ * Lightweight route summary entry used for startup topology and sync list APIs.
+ * Deliberately excludes runtime-only fields like id/source to keep summary files small.
+ */
+export interface HandlerSummary {
+	/** Handler key (e.g. "ping", "messageCreate", "users/[id]") */
+	key: string
+	/** Built handler path relative to the build output */
+	path: string
+	/** Export availability without importing the handler module */
+	exports: {
+		default?: boolean
+		config?: boolean
+		named: string[]
+	}
+	/** Metadata extracted from the handler's config export during build */
+	metadata?: Record<string, unknown>
+	/** Plugin package name if the handler came from a plugin, null otherwise */
+	plugin: string | null
+	/** Plugin version if known */
+	pluginVersion?: string
+	/** Cross-cutting module name if assigned */
+	module?: string
+	/** Whether the handler was auto-generated */
+	auto?: boolean
+	/** Extra route-specific metadata generated during build */
+	extra?: Record<string, unknown>
+	/** Index for multiple handlers sharing the same key */
+	index?: number
+}
+
+// ============================================================================
 // Handler Entries (routes/{namespace}.{route}.json)
 // ============================================================================
 
@@ -414,6 +449,17 @@ export interface ManifestAPI {
 	routesSync(namespace: string, route: string, options?: ManifestOptions): HandlerEntry[]
 
 	/**
+	 * Get lightweight route summaries.
+	 */
+	routeSummaries(namespace: string, route: string): Promise<HandlerSummary[]>
+
+	/**
+	 * Get lightweight route summaries synchronously.
+	 * Falls back to disk if not cached.
+	 */
+	routeSummariesSync(namespace: string, route: string): HandlerSummary[]
+
+	/**
 	 * Get all route definitions from @.json.
 	 */
 	routeDefinitions(options?: ManifestOptions): RouteDefinitions
@@ -503,6 +549,11 @@ export interface ManifestAPI {
 	 * Reload a route manifest (for HMR).
 	 */
 	reload(namespace: string, route: string): Promise<HandlerEntry[]>
+
+	/**
+	 * Reload a route summary manifest (for HMR).
+	 */
+	reloadRouteSummaries(namespace: string, route: string): Promise<HandlerSummary[]>
 
 	/**
 	 * Unload a route manifest (free memory).

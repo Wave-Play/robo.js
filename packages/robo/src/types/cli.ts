@@ -40,7 +40,7 @@ export interface CliCommandConfig {
 	/** Command description shown in help text */
 	description: string
 	/** Options this command accepts */
-	options?: CliOptionConfig[]
+	options?: readonly CliOptionConfig[]
 	/** Whether this command accepts positional arguments */
 	positionalArgs?: boolean
 	/** Priority for conflict resolution (higher wins). Default: 0 */
@@ -150,7 +150,7 @@ export interface TerminalCommandConfig {
 	/** Command description shown in help text */
 	description: string
 	/** Options this command accepts */
-	options?: CliOptionConfig[]
+	options?: readonly CliOptionConfig[]
 	/** Whether this command accepts positional arguments */
 	positionalArgs?: boolean
 	/** Priority for conflict resolution (higher wins). Default: 0 */
@@ -174,6 +174,18 @@ export interface TerminalContext<C extends TerminalCommandConfig | undefined = u
 	runtime?: import('../cli/utils/cli-runtime-provider.js').RuntimeProvider
 	/** Write text to stdout */
 	write: (text: string) => void
+	/**
+	 * Drawer API for displaying persistent content below the input prompt.
+	 * Only available when the interactive CLI is active (TTY in dev mode).
+	 */
+	drawer?: {
+		/** Show drawer with the given content lines below the input prompt */
+		show: (lines: string[]) => void
+		/** Hide the drawer and restore normal layout */
+		hide: () => void
+		/** Whether the drawer is currently visible */
+		isOpen: () => boolean
+	}
 }
 
 /**

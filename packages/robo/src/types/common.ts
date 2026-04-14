@@ -101,6 +101,8 @@ export interface SpiritMessage {
 	event?: 'build' | 'get-state' | 'command' | 'ready' | 'restart' | 'set-state' | 'start' | 'stop'
 		| 'hmr-compile' | 'hmr-reload-handler' | 'hmr-reload-route' | 'hmr-status' | 'hmr-notify'
 		| 'cli-state-set' | 'cli-state-delete' | 'cli-state-forks'
+		| 'status-set' | 'status-remove' | 'status-flash' | 'status-progress'
+		| 'terminal-exec' | 'terminal-write' | 'terminal-drawer'
 	logLevel?: LogLevel
 	payload?: unknown
 	state?: Record<string, unknown>
@@ -124,6 +126,25 @@ export interface HmrReloadHandlerPayload {
 export interface HmrReloadRoutePayload {
 	namespace: string
 	route: string
+}
+
+/**
+ * Payload sent from CLI to spirit for terminal command execution.
+ */
+export interface TerminalExecPayload {
+	handlerPath: string
+	args: string[]
+	options: Record<string, unknown>
+	drawerAvailable: boolean
+}
+
+/**
+ * Result returned from spirit after terminal command execution.
+ */
+export interface TerminalExecResult {
+	success: boolean
+	returnValue?: string
+	error?: string
 }
 
 export type Plugin = string | [string, unknown, PluginMetaOptions?]

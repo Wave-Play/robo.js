@@ -412,6 +412,9 @@ export interface HmrHandlerInfo {
 	/** Path to the compiled handler file */
 	path: string
 
+	/** Per-handler change type within the HMR batch */
+	changeType: 'add' | 'remove' | 'change'
+
 	/** Plugin that provides this handler, if any */
 	plugin?: {
 		name: string

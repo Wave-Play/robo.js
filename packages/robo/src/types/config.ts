@@ -34,6 +34,13 @@ export interface FileOutputConfig {
 	 * Default: false
 	 */
 	colorMap?: boolean
+	/**
+	 * Enable session-based log rotation. When true, the previous session's log
+	 * is archived on startup and a new file is started. Default: true
+	 */
+	sessionRotation?: boolean
+	/** Maximum number of archived session files to keep. Default: 10 */
+	maxSessionFiles?: number
 }
 
 /**
@@ -62,6 +69,13 @@ export interface FileDrainOptions {
 	 * Default: false
 	 */
 	colorMap?: boolean
+	/**
+	 * Enable session-based log rotation. When true, the previous session's log
+	 * is archived on startup and a new file is started. Default: true
+	 */
+	sessionRotation?: boolean
+	/** Maximum number of archived session files to keep. Default: 10 */
+	maxSessionFiles?: number
 }
 
 /**
