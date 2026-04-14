@@ -49,14 +49,14 @@ This section documents standards that apply to all plugins in the Robo.js ecosys
 
 ### Logging Standards
 
-**Each plugin must use exactly ONE forked logger named after the plugin.**
+**Each plugin should use one forked logger named after the plugin by default.** Plugins with several massive, distinct features may use additional forks to represent top-level feature areas (e.g., `logger.fork('ai:voice')`, `logger.fork('ai:search')`).
 
-All files within a plugin must import and use this shared logger instance - do not create additional scoped loggers.
+All files within a plugin must import and use the shared logger instance(s) from a central location — do not create per-file forks or unnamed forks.
 
 **Example:**
 - `@robojs/roadmap` uses `logger.fork('roadmap')`
 - `@robojs/analytics` uses `logger.fork('analytics')`
-- Do NOT create multiple forks like `logger.fork('roadmap:sync-engine')` or `logger.fork('date-helpers')`
+- `@robojs/ai` uses `logger.fork('ai')` plus `logger.fork('ai:voice')` and `logger.fork('ai:search')` for its distinct subsystems
 
 **Rationale:**
 - Easier log filtering by plugin name
@@ -84,13 +84,16 @@ roadmapLogger.debug('Fetching Jira issues');
 **What NOT to do:**
 
 ```typescript
-// ❌ DON'T: Creating multiple logger forks within a plugin
+// ❌ DON'T: Per-file forks or unnamed forks
 
 // src/core/sync-engine.ts
-const syncLogger = logger.fork('roadmap:sync'); // ❌ Wrong
+const syncLogger = logger.fork('roadmap:sync-engine'); // ❌ Wrong — too granular, per-file fork
 
 // src/providers/jira.ts
-const jiraLogger = logger.fork('roadmap:jira'); // ❌ Wrong
+const jiraLogger = logger.fork('roadmap:jira'); // ❌ Wrong — per-file fork
+
+// src/utils/helpers.ts
+const log = logger.fork(''); // ❌ Wrong — unnamed fork
 ```
 
 **Note:** Plugin-specific AGENTS.md files should document their logger instance name and location.
