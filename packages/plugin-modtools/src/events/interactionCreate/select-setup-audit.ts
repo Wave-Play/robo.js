@@ -4,7 +4,7 @@ import { updateSettings } from '../../core/settings.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { logger } from 'robo.js'
 import { ChannelType, Colors } from 'discord.js'
-import type { EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import type { Channel, ChannelSelectMenuInteraction } from 'discord.js'
 
 export const config: EventConfig = {

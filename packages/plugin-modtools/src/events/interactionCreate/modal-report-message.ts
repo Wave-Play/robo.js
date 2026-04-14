@@ -3,7 +3,7 @@ import { logAction } from '../../core/utils.js'
 import { getSettings } from '../../core/settings.js'
 import { getState, logger, setState } from 'robo.js'
 import { ChannelType, Colors } from 'discord.js'
-import type { EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import type { Message, ModalSubmitInteraction } from 'discord.js'
 
 export const config: EventConfig = {

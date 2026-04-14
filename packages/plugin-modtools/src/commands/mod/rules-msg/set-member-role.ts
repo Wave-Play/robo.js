@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, GuildMember } from 'discord.js'
-import { createCommandConfig, Flashcore } from 'robo.js'
-import type { CommandOptions } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import { Flashcore } from 'robo.js'
+import type { CommandOptions } from '@robojs/discordjs'
 
 export const config = createCommandConfig({
 	description: `set the role members will be given afte accepting the rules`,

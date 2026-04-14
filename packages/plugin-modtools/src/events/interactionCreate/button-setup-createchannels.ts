@@ -2,9 +2,10 @@ import { createSetupMessage } from '../../commands/mod/setup.js'
 import { Buttons, Selects } from '../../core/constants.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { getSettings, updateSettings } from '../../core/settings.js'
-import { client, logger, setState } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
+import { logger, setState } from 'robo.js'
 import { ChannelType, PermissionFlagsBits, Colors, ComponentType } from 'discord.js'
-import type { EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import type { BaseInteraction, ButtonInteraction, Guild, OverwriteResolvable } from 'discord.js'
 
 export const config: EventConfig = {
@@ -103,7 +104,7 @@ async function createChannel(interaction: BaseInteraction, channelName: string, 
 			allow: [PermissionFlagsBits.ViewChannel]
 		},
 		{
-			id: client.user?.id as string,
+			id: getClient().user?.id as string,
 			allow: [PermissionFlagsBits.ViewChannel]
 		}
 	]

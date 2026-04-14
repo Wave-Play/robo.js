@@ -2,8 +2,8 @@ import { getSettings } from '../../core/settings.js'
 import { logAction } from '../../core/utils.js'
 import { logger } from 'robo.js'
 import { Colors, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
-import type { CommandInteraction, GuildMember } from 'discord.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
+import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
 
 export const config: CommandConfig = {
 	defaultMemberPermissions: PermissionFlagsBits.ModerateMembers,
@@ -55,7 +55,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction): Promise<CommandResult> => {
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
 	const duration = interaction.options.get('duration')?.value as number
 	const reason = interaction.options.get('reason')?.value as string
 	const user = interaction.options.get('user')?.member as GuildMember

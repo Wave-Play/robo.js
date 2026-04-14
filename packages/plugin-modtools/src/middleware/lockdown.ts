@@ -1,7 +1,7 @@
 import { hasPermission } from '../core/utils.js'
 import { getSettings } from '../core/settings.js'
 import { logger } from 'robo.js'
-import type { MiddlewareData, MiddlewareResult } from 'robo.js'
+import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
 import type { ChatInputCommandInteraction } from 'discord.js'
 
 interface LockdownData {
@@ -9,8 +9,9 @@ interface LockdownData {
 }
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
-	const { key, plugin, type } = data.record
-	const isSelfPlugin = plugin?.name === '@robojs/moderation'
+	const { key, type } = data.record
+	const plugin = data.record as Record<string, unknown>
+	const isSelfPlugin = (plugin.plugin as { name?: string })?.name === '@robojs/moderation'
 
 	// Only lock down commands
 	if (type !== 'command') {

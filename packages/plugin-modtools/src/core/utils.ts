@@ -1,6 +1,7 @@
 import { Modals, TextInputs } from './constants.js'
 import { getSettings } from './settings.js'
-import { client, logger, setState } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
+import { logger, setState } from 'robo.js'
 import { ChannelType, ComponentType, TextInputStyle } from 'discord.js'
 import type {
 	MessageCreateOptions,
@@ -93,7 +94,7 @@ export async function logAction(guildId: string | null, message: MessageCreateOp
 		return
 	}
 
-	const guild = client.guilds.cache.get(guildId)
+	const guild = getClient().guilds.cache.get(guildId)
 	const logsChannel = guild?.channels.cache.get(logsChannelId)
 	if (!logsChannel || logsChannel.type !== ChannelType.GuildText) {
 		logger.debug(`Invalid logs channel for guild ${guildId}`)

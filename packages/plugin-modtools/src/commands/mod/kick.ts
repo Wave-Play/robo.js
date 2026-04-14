@@ -3,8 +3,8 @@ import { deleteRecentUserMessages, logAction } from '../../core/utils.js'
 import { getSettings } from '../../core/settings.js'
 import { logger } from 'robo.js'
 import { Colors, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
-import type { CommandInteraction, MessageCreateOptions } from 'discord.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
+import type { ChatInputCommandInteraction, MessageCreateOptions } from 'discord.js'
 
 export const config: CommandConfig = {
 	defaultMemberPermissions: PermissionFlagsBits.KickMembers,
@@ -35,7 +35,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction): Promise<CommandResult> => {
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
 	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const deleteMessages = interaction.options.get('delete_messages')?.value as string
 	const user = interaction.options.getUser('member')
@@ -164,7 +164,10 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 
 	// Send the message
 	if (anonymous) {
-		await interaction.channel?.send(messagePayload as MessageCreateOptions)
+		const channel = interaction.channel
+		if (channel && 'send' in channel) {
+			await channel.send(messagePayload as MessageCreateOptions)
+		}
 
 		return {
 			content: 'Kick has been executed.',

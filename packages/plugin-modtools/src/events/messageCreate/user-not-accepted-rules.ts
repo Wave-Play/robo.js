@@ -1,5 +1,6 @@
 import { ChannelType, GuildMember, Message, TextBasedChannel } from 'discord.js'
-import { client, Flashcore, logger } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
+import { Flashcore, logger } from 'robo.js'
 
 export default async (interaction: Message) => {
 	if (interaction.author.bot || interaction.channel.type === ChannelType.DM) {
@@ -23,7 +24,7 @@ export default async (interaction: Message) => {
 			return
 		}
 		try {
-			await client.users.send(
+			await getClient().users.send(
 				interaction.author.id,
 				`You cant send messages untill you accept the rules! go here to accept ${channel1}`
 			)

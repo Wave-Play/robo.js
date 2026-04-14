@@ -2,8 +2,8 @@ import { BanData, Buttons, ID_NAMESPACE } from '../../core/constants.js'
 import { isBanned } from '../../core/utils.js'
 import { Flashcore } from 'robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
-import type { APIEmbed, CommandInteraction, Guild, GuildMember, User } from 'discord.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
+import type { APIEmbed, ChatInputCommandInteraction, Guild, GuildMember, User } from 'discord.js'
 
 export const config: CommandConfig = {
 	defaultMemberPermissions: PermissionFlagsBits.ModerateMembers,
@@ -19,7 +19,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction): Promise<CommandResult> => {
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
 	const user = interaction.options.get('user')?.user as User
 	const member = interaction.guild?.members.cache.get(user?.id) as GuildMember
 

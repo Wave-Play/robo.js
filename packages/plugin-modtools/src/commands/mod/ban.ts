@@ -3,7 +3,7 @@ import { getSettings } from '../../core/settings.js'
 import { logAction, showConfirmation } from '../../core/utils.js'
 import { Flashcore, logger } from 'robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
 import type { ChatInputCommandInteraction, MessageCreateOptions, ModalSubmitInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
@@ -223,7 +223,10 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 	execute(interaction)
 
 	if (anonymous) {
-		interaction.channel?.send(messagePayload as MessageCreateOptions)
+		const channel = interaction.channel
+		if (channel && 'send' in channel) {
+			await channel.send(messagePayload as MessageCreateOptions)
+		}
 
 		return {
 			content: 'Ban has been executed.',

@@ -2,7 +2,7 @@ import { Selects } from '../../core/constants.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { getState, logger } from 'robo.js'
 import { Colors } from 'discord.js'
-import type { EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import type { RoleSelectMenuInteraction, TextChannel } from 'discord.js'
 
 export const config: EventConfig = {

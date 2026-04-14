@@ -3,7 +3,7 @@ import { getSettings } from '../../core/settings.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { Flashcore, logger } from 'robo.js'
 import { ButtonStyle, Colors, ComponentType } from 'discord.js'
-import type { EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import type { ButtonInteraction } from 'discord.js'
 
 export const config: EventConfig = {

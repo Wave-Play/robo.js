@@ -2,8 +2,8 @@ import { getSettings } from '../../core/settings.js'
 import { logAction } from '../../core/utils.js'
 import { logger } from 'robo.js'
 import { ChannelType, Colors } from 'discord.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
-import type { CommandInteraction, GuildMember } from 'discord.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
+import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
 
 export const config: CommandConfig = {
 	description: `Report a member for something`,
@@ -34,7 +34,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction): Promise<CommandResult> => {
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
 	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const evidence = interaction.options.get('evidence')?.attachment
 	const member = interaction.options.get('member')?.member as GuildMember

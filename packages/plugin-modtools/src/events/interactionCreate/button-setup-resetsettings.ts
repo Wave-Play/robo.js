@@ -4,7 +4,7 @@ import { createSetupMessage } from '../../commands/mod/setup.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { logger } from 'robo.js'
 import { Colors } from 'discord.js'
-import type { EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import type { ButtonInteraction } from 'discord.js'
 
 export const config: EventConfig = {

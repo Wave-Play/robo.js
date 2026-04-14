@@ -6,7 +6,8 @@ import {
 	TextInputBuilder,
 	TextInputStyle
 } from 'discord.js'
-import { createCommandConfig, Flashcore } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import { Flashcore } from 'robo.js'
 
 export const config = createCommandConfig({
 	description: `Set the forum channel in which modmail will send the mails.`

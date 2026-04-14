@@ -2,8 +2,8 @@ import { hasPermission, logAction } from '../../core/utils.js'
 import { getSettings } from '../../core/settings.js'
 import { Flashcore, color, logger } from 'robo.js'
 import { Colors, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
-import type { CommandInteraction, GuildMember, MessageCreateOptions } from 'discord.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
+import type { ChatInputCommandInteraction, GuildMember, MessageCreateOptions } from 'discord.js'
 
 export const config: CommandConfig = {
 	defaultMemberPermissions: PermissionFlagsBits.ModerateMembers,
@@ -28,7 +28,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction): Promise<CommandResult> => {
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
 	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const member = interaction.options.get('member')?.member as GuildMember
 	const reason = interaction.options.get('reason')?.value as string
@@ -106,7 +106,10 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	})
 
 	if (anonymous) {
-		await interaction.channel?.send(messagePayload as MessageCreateOptions)
+		const channel = interaction.channel
+		if (channel && 'send' in channel) {
+			await channel.send(messagePayload as MessageCreateOptions)
+		}
 
 		return {
 			content: 'Strikes have been cleared for ' + member.user.username,

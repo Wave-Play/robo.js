@@ -6,8 +6,9 @@ import {
 	EmbedBuilder,
 	GuildMember
 } from 'discord.js'
-import { createCommandConfig, Flashcore } from 'robo.js'
-import type { CommandOptions } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import { Flashcore } from 'robo.js'
+import type { CommandOptions } from '@robojs/discordjs'
 
 export const config = createCommandConfig({
 	description: `Sends the Rules message with IAccept button to the channel where used`,

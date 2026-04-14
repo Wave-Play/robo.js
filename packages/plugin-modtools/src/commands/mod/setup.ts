@@ -3,7 +3,7 @@ import { GuildSettings, getSettings } from '../../core/settings.js'
 import { hasPermission } from '../../core/utils.js'
 import { ButtonStyle, ChannelType, ComponentType, PermissionFlagsBits } from 'discord.js'
 import { color, logger } from 'robo.js'
-import type { CommandConfig, CommandResult } from 'robo.js'
+import type { CommandConfig, CommandResult } from '@robojs/discordjs'
 import type {
 	BaseInteraction,
 	ChatInputCommandInteraction,
