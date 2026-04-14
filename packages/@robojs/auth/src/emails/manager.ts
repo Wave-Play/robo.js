@@ -157,26 +157,27 @@ export class EmailManager {
 			t = defaultT
 		}
 		if (!t) return []
+		const template = t
 		return [
 			async (ctx) => {
 				const to = ctx.user.email
 				if (!to) return null
 
-				if ('templateId' in t) {
+				if ('templateId' in template) {
 					// Hand off template IDs directly; React/email builders are bypassed entirely.
-					const varFn = (t as { variables?: (c: EmailContext) => Record<string, unknown> }).variables
+					const varFn = (template as { variables?: (c: EmailContext) => Record<string, unknown> }).variables
 					const vars = typeof varFn === 'function' ? varFn(ctx) : undefined
-					return { to, subject: ' ', templateId: (t as { templateId: string }).templateId, variables: vars }
+					return { to, subject: ' ', templateId: (template as { templateId: string }).templateId, variables: vars }
 				}
-				const subject = await resolveValue(t.subject, ctx)
+				const subject = await resolveValue(template.subject, ctx)
 				if (subject == null) {
 					throw new Error(`Email template for "${event}" must return a subject string.`)
 				}
 				const [reactHtml, html] = await Promise.all([
-					'react' in t ? renderReactTemplate(t.react, ctx) : Promise.resolve(undefined),
-					resolveValue(t.html, ctx)
+					'react' in template ? renderReactTemplate(template.react, ctx) : Promise.resolve(undefined),
+					resolveValue(template.html, ctx)
 				])
-				const text = await resolveValue(t.text, ctx)
+				const text = await resolveValue(template.text, ctx)
 
 				return { to, subject, html: reactHtml ?? html, text }
 			}

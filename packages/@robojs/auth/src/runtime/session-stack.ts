@@ -188,7 +188,7 @@ function appendCookieToResponse(response: Response, cookieHeader: string): Respo
  * Returns the token value if a sign-in is detected, or null otherwise.
  */
 function detectNewSessionToken(response: Response, sessionCookieName: string): string | null {
-	const setCookies = response.headers.getSetCookie?.() ?? []
+	const setCookies = (response.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.() ?? []
 	const prefix = `${sessionCookieName}=`
 
 	for (const header of setCookies) {

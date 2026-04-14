@@ -9,7 +9,7 @@ References:
 - `packages/@robojs/auth/README.md`
 - `packages/@robojs/auth/package.json`
 - `packages/@robojs/auth/src/index.ts`
-- `packages/@robojs/auth/src/events/_start.ts`
+- `packages/@robojs/auth/src/robo/start.ts`
 - `packages/@robojs/auth/src/config/defaults.ts`
 - `packages/@robojs/auth/src/config/schema.ts`
 - `packages/@robojs/auth/src/adapters/flashcore.ts`
@@ -48,7 +48,7 @@ References:
 
 ## 2. Auth.js Integration Architecture
 
-- Lifecycle initialization in `src/events/_start.ts`.
+- Lifecycle initialization in `src/robo/start.ts`.
 - Configuration normalization via `normalizeAuthOptions` in `src/config/defaults.ts`.
 - Route registration through `@robojs/server` using `AUTH_ROUTES` from `src/runtime/route-map.ts`.
 - Request handler creation via `createAuthRequestHandler` in `src/runtime/handler.ts`.
@@ -227,7 +227,7 @@ References:
 - `serializeCookie(name, value, options)` — Generate Set-Cookie header.
 
 ### Cookie Security Adjustment
-- `adjustCookieSecurity` in `src/events/_start.ts` sets `secure=false` for `http://` URLs.
+- `adjustCookieSecurity` in `src/robo/start.ts` sets `secure=false` for `http://` URLs.
 
 
 ## 11. Password Hashing
@@ -436,7 +436,7 @@ References:
 - `src/client.ts` — Client helper exports.
 - `src/server.ts` — Server helper exports.
 - `src/types.ts` — Type re-exports.
-- `src/events/_start.ts` — Plugin lifecycle.
+- `src/robo/start.ts` — Plugin lifecycle.
 
 ### Configuration
 - `src/config/defaults.ts` — Normalization and defaults.

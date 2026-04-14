@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { StartContext } from 'robo.js'
+import { Robo, StartContext } from 'robo.js'
 import { Server } from '@robojs/server'
 import { createFlashcoreAdapter } from '../adapters/flashcore.js'
 import { normalizeAuthOptions, type NormalizedAuthPluginOptions } from '../config/defaults.js'
@@ -255,7 +255,7 @@ export default async (context: StartContext) => {
 			fetch: fetcher
 		})
 
-		authLogger.ready(`@robojs/auth proxying ${basePath} -> ${options.upstream.baseUrl}${upstreamBasePath}`)
+		Robo.status.set('auth', `Proxying ${basePath} -> ${options.upstream.baseUrl}${upstreamBasePath}`)
 		return
 	}
 
@@ -500,5 +500,5 @@ export default async (context: StartContext) => {
 		sessionStrategy
 	})
 
-	authLogger.ready(`@robojs/auth mounted on ${basePath}`)
+	Robo.status.set('auth', `Mounted on ${basePath}`)
 }

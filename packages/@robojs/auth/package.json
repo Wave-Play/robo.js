@@ -56,7 +56,6 @@
 	],
 	"files": [
 		".robo/",
-		"src/",
 		"LICENSE",
 		"README.md"
 	],
