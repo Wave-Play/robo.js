@@ -14,6 +14,7 @@
 			"packages/@robojs/flashcore-extras",
 			"packages/@robojs/giveaways",
 			"packages/@robojs/i18n",
+			"packages/@robojs/mock",
 			"packages/@robojs/patch",
 			"packages/@robojs/roadmap",
 			"packages/@robojs/trpc",
