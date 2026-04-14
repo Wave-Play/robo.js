@@ -5,6 +5,7 @@
  */
 import { portal, color, Mode } from 'robo.js'
 import { discordLogger } from '../logger.js'
+import { getPluginState } from '../client.js'
 import { executeMiddleware, getHandlerPath } from '../middleware.js'
 import {
 	BUFFER,
@@ -16,17 +17,29 @@ import {
 	withEphemeralDefer,
 	withEphemeralReply
 } from '../utils.js'
-import type { ChatInputCommandInteraction } from 'discord.js'
+import type { ChatInputCommandInteraction, Message } from 'discord.js'
+import type { HandlerModule } from '../handler-types.js'
 import type { CommandConfig } from '../../types/index.js'
 
 /**
- * Handler module with callable default
+ * Command handler module with optional autocomplete export
  */
-type HandlerWithDefault<T> = {
-	default?: T
-	config?: CommandConfig
+type CommandHandlerModule = HandlerModule<
+	(interaction: ChatInputCommandInteraction, options: Record<string, unknown>) => unknown,
+	CommandConfig
+> & {
 	autocomplete?: unknown
-	[key: string]: unknown
+}
+
+/**
+ * Check if a response looks like a Discord Message object (already sent).
+ * Uses Message-specific properties instead of just `id` to avoid false positives
+ * with user objects that happen to have an `id` field.
+ */
+function isMessageObject(reply: unknown): boolean {
+	if (!reply || typeof reply !== 'object') return false
+	const obj = reply as Record<string, unknown>
+	return 'author' in obj && 'channelId' in obj
 }
 
 /**
@@ -39,6 +52,8 @@ export async function executeCommandHandler(
 	interaction: ChatInputCommandInteraction,
 	commandKey: string
 ): Promise<void> {
+	await portal.ensureRoute('discordjs', 'commands')
+
 	// Find command handler
 	const command = portal.getRecord('discordjs', 'commands', commandKey)
 	if (!command) {
@@ -52,9 +67,22 @@ export async function executeCommandHandler(
 		return
 	}
 
-	if (!command.enabled) {
+	if (!command.enabled || command.metadata?.disabled === true) {
 		discordLogger.debug(`Tried to execute disabled command: ${color.bold(commandKey)}`)
 		return
+	}
+
+	// Check server restrictions
+	const serverOnly =
+		(command.metadata?.serverOnly as string[] | string | undefined) ??
+		getPluginState()?.serverRestrictions.get(`command:${commandKey}`)
+	if (serverOnly) {
+		const allowedServers = Array.isArray(serverOnly) ? serverOnly : [serverOnly]
+		const guildId = interaction.guildId
+		if (!guildId || !allowedServers.includes(guildId)) {
+			discordLogger.debug(`Command "${commandKey}" is restricted to specific servers`)
+			return
+		}
 	}
 
 	// Execute middleware
@@ -70,9 +98,7 @@ export async function executeCommandHandler(
 	}
 
 	// Prepare options and config
-	const cmdHandler = command.handler as HandlerWithDefault<
-		(interaction: ChatInputCommandInteraction, options: Record<string, unknown>) => unknown
-	> | null
+	const cmdHandler = command.handler as CommandHandlerModule | null
 	const commandConfig: CommandConfig = cmdHandler?.config as CommandConfig
 	const sage = getSage(commandConfig)
 	discordLogger.debug(`Sage options:`, sage)
@@ -80,7 +106,7 @@ export async function executeCommandHandler(
 	try {
 		discordLogger.debug(`Executing command handler: ${color.bold(getHandlerPath(command))}`)
 		if (!cmdHandler?.default) {
-			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
+			throw new Error(`Missing default export function for command: ${color.bold('/' + commandKey)}`)
 		}
 
 		// Patch deferReply to prevent failures due to multiple deferrals
@@ -146,10 +172,10 @@ export async function executeCommandHandler(
 
 		discordLogger.debug(`Sage is handling reply:`, response)
 		const reply = typeof response === 'string' ? { content: response } : response
-		const isValidReply = !(reply as { id?: string }).id
-		if (isValidReply && interaction.deferred) {
+		const isValid = !isMessageObject(reply)
+		if (isValid && interaction.deferred) {
 			await interaction.editReply(reply)
-		} else if (isValidReply) {
+		} else if (isValid) {
 			await interaction.reply(withEphemeralReply(reply, sage.ephemeral))
 		} else {
 			const command = color.bold('/' + commandKey)

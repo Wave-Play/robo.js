@@ -484,4 +484,207 @@ describe('Command Handler', () => {
 			expect(replyArg.flags === 64 || replyArg.ephemeral === true).toBe(true)
 		})
 	})
+
+	describe('isValidReply fix', () => {
+		it('should warn when handler returns a Message-like object', async () => {
+			const messageObj = { id: '123', content: 'Hello', author: { id: '456' }, channelId: '789' }
+			const mockHandler = fn().mockReturnValue(messageObj)
+			const record = {
+				key: 'test',
+				path: 'commands/test.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('test', record)
+
+			const interaction = createMockInteraction()
+			await executeCommandHandler(interaction as any, 'test')
+
+			expect(discordLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid return value')
+			)
+			expect(interaction.reply).not.toHaveBeenCalled()
+			expect(interaction.editReply).not.toHaveBeenCalled()
+		})
+
+		it('should send reply for plain object with id field that is not a Message', async () => {
+			const plainObj = { id: '123', content: 'Hello' }
+			const mockHandler = fn().mockReturnValue(plainObj)
+			const record = {
+				key: 'test',
+				path: 'commands/test.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('test', record)
+
+			const interaction = createMockInteraction()
+			await executeCommandHandler(interaction as any, 'test')
+
+			// Should still send as reply because it's not a Message object (no author/channelId)
+			expect(interaction.reply).toHaveBeenCalled()
+		})
+
+		it('should send reply for object with author but no channelId', async () => {
+			// This is the boundary case: old code checked only `id`, which would
+			// incorrectly treat this as a Message. New code requires both author AND channelId.
+			const obj = { id: '123', author: { id: '456' } }
+			const mockHandler = fn().mockReturnValue(obj)
+			const record = {
+				key: 'test',
+				path: 'commands/test.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('test', record)
+
+			const interaction = createMockInteraction()
+			await executeCommandHandler(interaction as any, 'test')
+
+			// Should send as reply — has author but no channelId, so not a Message
+			expect(interaction.reply).toHaveBeenCalled()
+			expect(discordLogger.warn).not.toHaveBeenCalled()
+		})
+
+		it('should send reply for object with channelId but no author', async () => {
+			const obj = { id: '123', channelId: '789' }
+			const mockHandler = fn().mockReturnValue(obj)
+			const record = {
+				key: 'test',
+				path: 'commands/test.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('test', record)
+
+			const interaction = createMockInteraction()
+			await executeCommandHandler(interaction as any, 'test')
+
+			// Should send as reply — has channelId but no author, so not a Message
+			expect(interaction.reply).toHaveBeenCalled()
+			expect(discordLogger.warn).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('server restrictions', () => {
+		it('should skip command when server is not in serverOnly list', async () => {
+			const mockHandler = fn()
+			const record = {
+				key: 'restricted',
+				path: 'commands/restricted.js',
+				enabled: true,
+				metadata: { serverOnly: ['allowed-guild-id'] },
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('restricted', record)
+
+			const interaction = createMockInteraction({ guildId: 'other-guild' })
+			await executeCommandHandler(interaction as any, 'restricted')
+
+			expect(mockHandler).not.toHaveBeenCalled()
+			expect(discordLogger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('restricted to specific servers')
+			)
+		})
+
+		it('should execute command when server is in serverOnly list', async () => {
+			const mockHandler = fn().mockReturnValue('Allowed!')
+			const record = {
+				key: 'restricted',
+				path: 'commands/restricted.js',
+				enabled: true,
+				metadata: { serverOnly: ['allowed-guild-id'] },
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('restricted', record)
+
+			const interaction = createMockInteraction({ guildId: 'allowed-guild-id' })
+			await executeCommandHandler(interaction as any, 'restricted')
+
+			expect(mockHandler).toHaveBeenCalled()
+		})
+
+		it('should skip command when guildId is null (DM) and serverOnly is set', async () => {
+			const mockHandler = fn()
+			const record = {
+				key: 'restricted',
+				path: 'commands/restricted.js',
+				enabled: true,
+				metadata: { serverOnly: ['some-guild'] },
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('restricted', record)
+
+			const interaction = createMockInteraction({ guildId: null })
+			await executeCommandHandler(interaction as any, 'restricted')
+
+			expect(mockHandler).not.toHaveBeenCalled()
+		})
+
+		it('should handle serverOnly as a single string', async () => {
+			const mockHandler = fn().mockReturnValue('OK')
+			const record = {
+				key: 'restricted',
+				path: 'commands/restricted.js',
+				enabled: true,
+				metadata: { serverOnly: 'the-guild' },
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('restricted', record)
+
+			const interaction = createMockInteraction({ guildId: 'the-guild' })
+			await executeCommandHandler(interaction as any, 'restricted')
+
+			expect(mockHandler).toHaveBeenCalled()
+		})
+
+		it('should reject serverOnly single string with non-matching guild', async () => {
+			const mockHandler = fn()
+			const record = {
+				key: 'restricted',
+				path: 'commands/restricted.js',
+				enabled: true,
+				metadata: { serverOnly: 'the-guild' },
+				handler: { default: mockHandler }
+			}
+
+			setupCommandMock('restricted', record)
+
+			const interaction = createMockInteraction({ guildId: 'wrong-guild' })
+			await executeCommandHandler(interaction as any, 'restricted')
+
+			expect(mockHandler).not.toHaveBeenCalled()
+			expect(discordLogger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('restricted to specific servers')
+			)
+		})
+	})
+
+	describe('Error objects', () => {
+		it('should throw Error objects instead of strings for missing exports', async () => {
+			const record = {
+				key: 'broken',
+				path: 'commands/broken.js',
+				enabled: true,
+				handler: {} // No default export
+			}
+
+			setupCommandMock('broken', record)
+
+			const interaction = createMockInteraction()
+			await executeCommandHandler(interaction as any, 'broken')
+
+			// Should log an Error object (not a string)
+			const errorArg = (discordLogger.error as jest.Mock).mock.calls[0]?.[0]
+			expect(errorArg).toBeInstanceOf(Error)
+		})
+	})
 })
