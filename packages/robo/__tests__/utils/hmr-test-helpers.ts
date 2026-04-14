@@ -4,6 +4,7 @@
  * Utilities for testing HMR lifecycle hooks, subscription API, and related functionality.
  */
 
+import { jest } from '@jest/globals'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -82,7 +83,12 @@ export interface HmrContextInput {
 	files?: string[]
 	namespace?: string
 	route?: string
-	handlers?: Array<{ key: string; path: string; plugin?: { name: string; version: string } }>
+	handlers?: Array<{
+		key: string
+		path: string
+		changeType?: 'add' | 'remove' | 'change'
+		plugin?: { name: string; version: string }
+	}>
 	routes?: HmrEventRouteInfo[]
 	mode?: string
 }
@@ -93,13 +99,18 @@ export interface HmrContextInput {
 export function createContext(overrides: HmrContextInput = {}): HmrEventContext {
 	const defaultHandler = {
 		key: 'test-handler',
-		path: 'test/handler.js'
+		path: 'test/handler.js',
+		changeType: 'change' as const
 	}
+	const handlers = overrides.handlers?.map((handler) => ({
+		...handler,
+		changeType: handler.changeType ?? 'change'
+	}))
 
 	const defaultRoute: HmrEventRouteInfo = {
 		namespace: overrides.namespace ?? 'server',
 		route: overrides.route ?? 'api',
-		handlers: overrides.handlers ?? [defaultHandler]
+		handlers: handlers ?? [defaultHandler]
 	}
 
 	return {
@@ -118,12 +129,12 @@ export function createFullContext(routes?: HmrEventRouteInfo[]): HmrEventContext
 		{
 			namespace: 'server',
 			route: 'api',
-			handlers: [{ key: 'users', path: 'api/users.js' }]
+			handlers: [{ key: 'users', path: 'api/users.js', changeType: 'change' }]
 		},
 		{
 			namespace: 'discordjs',
 			route: 'commands',
-			handlers: [{ key: 'ping', path: 'commands/ping.js' }]
+			handlers: [{ key: 'ping', path: 'commands/ping.js', changeType: 'change' }]
 		}
 	]
 
@@ -142,7 +153,11 @@ export function createHmrRouteInfo(overrides: Partial<HmrRouteInfo> = {}): HmrRo
 	return {
 		namespace: overrides.namespace ?? 'server',
 		route: overrides.route ?? 'api',
-		handlers: overrides.handlers ?? [{ key: 'test', path: 'test.js' }]
+		handlers:
+			overrides.handlers?.map((handler) => ({
+				...handler,
+				changeType: handler.changeType ?? 'change'
+			})) ?? [{ key: 'test', path: 'test.js', changeType: 'change' }]
 	}
 }
 
@@ -395,8 +410,8 @@ export function getGlobalHmrState(): {
  * Helper to import hmr module fresh (bypassing cache).
  */
 export async function importHmrFresh() {
-	const cacheBuster = Date.now() + Math.random()
-	const hmrModule = await import(`../../src/core/hmr.js?v=${cacheBuster}`)
+	jest.resetModules()
+	const hmrModule = await import('../../src/core/hmr.js')
 	return hmrModule
 }
 

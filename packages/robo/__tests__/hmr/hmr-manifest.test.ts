@@ -5,8 +5,14 @@
  */
 
 import { describe, it, expect } from '@jest/globals'
-import { toBuildPath, reindexEntries, type ManifestEntry } from '../../src/cli/utils/hmr-manifest.js'
+import {
+	applyManifestUpdates,
+	toBuildPath,
+	reindexEntries,
+	type ManifestEntry
+} from '../../src/cli/utils/hmr-manifest.js'
 import type { HmrMapping } from '../../src/cli/utils/hmr-mapper.js'
+import type { RouteDefinitions } from '../../src/types/manifest-v1.js'
 
 describe('HMR Manifest Utilities', () => {
 	describe('toBuildPath', () => {
@@ -204,6 +210,46 @@ describe('HMR Manifest Utilities', () => {
 			expect(entries[0].source).toBe('project')
 			expect(entries[0].plugin).toBeNull()
 		})
+
+		it('preserves parent and extended manifest fields during structural updates', () => {
+			const entries: ManifestEntry[] = [
+				{
+					id: 'admin',
+					key: 'admin',
+					path: 'commands/admin.js',
+					source: 'project',
+					plugin: null,
+					pluginVersion: '1.2.3',
+					exports: { default: true, config: true, named: ['run'] },
+					metadata: { description: 'Admin command' },
+					module: 'admin',
+					auto: true,
+					extra: { scope: 'guild' },
+					parent: 'root'
+				}
+			]
+
+			const result = applyManifestUpdates(entries, {
+				updated: [
+					{
+						namespace: 'discordjs',
+						route: 'commands',
+						key: 'admin',
+						type: 'handler',
+						filePath: 'src/commands/admin.ts',
+						sourceDir: 'src/commands'
+					}
+				]
+			})
+
+			expect(result.entries[0]).toMatchObject({
+				pluginVersion: '1.2.3',
+				module: 'admin',
+				auto: true,
+				extra: { scope: 'guild' },
+				parent: 'root'
+			})
+		})
 	})
 
 	describe('multiple: true route scenarios', () => {
@@ -275,6 +321,82 @@ describe('HMR Manifest Utilities', () => {
 			expect(filteredEntries[0].index).toBe(0)
 			expect(filteredEntries[1].id).toBe('_start:1') // Index updated
 			expect(filteredEntries[1].index).toBe(1)
+		})
+	})
+
+	describe('applyManifestUpdates', () => {
+		const routeDefinitions: RouteDefinitions = {
+			discordjs: {
+				namespace: 'discordjs',
+				plugin: '@robojs/discordjs',
+				routes: {
+					events: {
+						directory: 'events',
+						key: { style: 'parentOrFilename' },
+						exports: { default: 'required', config: 'optional' }
+					}
+				}
+			}
+		} as const
+
+		it('adds structural entries without scanning route files', () => {
+			const added: HmrMapping[] = [
+				{
+					namespace: 'discordjs',
+					route: 'events',
+					key: 'ready',
+					type: 'handler',
+					filePath: 'src/events/ready.ts',
+					sourceDir: 'src/events'
+				}
+			]
+
+			const result = applyManifestUpdates([], { added, routeDefinitions })
+
+			expect(result.entries).toEqual([
+				expect.objectContaining({
+					id: 'ready',
+					key: 'ready',
+					path: 'events/ready.js',
+					source: 'project',
+					plugin: null,
+					exports: { default: true, config: undefined, named: [] }
+				})
+			])
+			expect(result.summaries).toEqual([
+				expect.objectContaining({
+					key: 'ready',
+					path: 'events/ready.js'
+				})
+			])
+		})
+
+		it('removes deleted entries and reindexes duplicates', () => {
+			const entries: ManifestEntry[] = [
+				{ id: 'messageCreate:0', key: 'messageCreate', path: 'events/messageCreate/chat.js', source: 'project', plugin: null, index: 0 },
+				{ id: 'messageCreate:1', key: 'messageCreate', path: 'events/messageCreate/button.js', source: 'project', plugin: null, index: 1 }
+			]
+			const removed: HmrMapping[] = [
+				{
+					namespace: 'discordjs',
+					route: 'events',
+					key: 'messageCreate',
+					type: 'handler',
+					filePath: 'src/events/messageCreate/chat.ts',
+					sourceDir: 'src/events'
+				}
+			]
+
+			const result = applyManifestUpdates(entries, { removed })
+
+			expect(result.entries).toEqual([
+				expect.objectContaining({
+					id: 'messageCreate',
+					key: 'messageCreate',
+					path: 'events/messageCreate/button.js'
+				})
+			])
+			expect(result.summaries[0]?.index).toBeUndefined()
 		})
 	})
 })

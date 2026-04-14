@@ -20,7 +20,7 @@
 /**
  * Callback function registered for cleanup when a module is reloaded.
  */
-export type DisposeCallback = () => void | Promise<void>
+export type DisposeCallback = () => unknown
 
 /**
  * Interface returned by `hmr.module()` for registering cleanup callbacks
@@ -44,7 +44,7 @@ export interface HotModule {
 /**
  * Callback function for HMR event subscriptions.
  */
-export type HmrCallback = (context: HmrEventContext) => void | Promise<void>
+export type HmrCallback = (context: HmrEventContext) => unknown
 
 /**
  * Options for filtering HMR events when subscribing.
@@ -89,6 +89,7 @@ export interface HmrEventRouteInfo {
 	handlers: Array<{
 		key: string
 		path: string
+		changeType: 'add' | 'remove' | 'change'
 		plugin?: { name: string; version: string }
 	}>
 }

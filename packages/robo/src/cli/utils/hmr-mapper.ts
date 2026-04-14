@@ -41,6 +41,7 @@ export interface RouteChanges {
 const REQUIRES_FULL_RESTART: RegExp[] = [
 	/^src\/robo\/hooks\//,           // Lifecycle hooks
 	/^src\/robo\/routes\//,          // Route definitions
+	/^src\/robo\/terminal\//,        // Terminal commands
 	/^config\//,                      // Config files
 	/robo\.config\./,                 // Robo config
 	/tsconfig\.json$/,                // TypeScript config

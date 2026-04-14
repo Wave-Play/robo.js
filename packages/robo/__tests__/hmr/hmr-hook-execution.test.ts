@@ -64,7 +64,7 @@ describe('HMR Hook Execution', () => {
 			const route = createHmrRouteInfo({
 				namespace: 'server',
 				route: 'api',
-				handlers: [{ key: 'users', path: 'api/users.js' }]
+				handlers: [{ key: 'users', path: 'api/users.js', changeType: 'change' }]
 			})
 
 			expect(route.namespace).toBe('server')
@@ -261,6 +261,7 @@ describe('HMR Hook Execution', () => {
 				handlers: [{
 					key: 'users',
 					path: 'api/users.js',
+					changeType: 'change',
 					plugin: { name: '@robojs/server', version: '1.0.0' }
 				}]
 			}]
@@ -368,7 +369,7 @@ describe('HMR Hook Execution', () => {
 	describe('Route handler info', () => {
 		it('handler key is the route key', () => {
 			const route = createHmrRouteInfo({
-				handlers: [{ key: 'users', path: 'api/users.js' }]
+				handlers: [{ key: 'users', path: 'api/users.js', changeType: 'change' }]
 			})
 
 			expect(route.handlers[0].key).toBe('users')
@@ -376,7 +377,7 @@ describe('HMR Hook Execution', () => {
 
 		it('handler path is the file path', () => {
 			const route = createHmrRouteInfo({
-				handlers: [{ key: 'users', path: 'api/users.js' }]
+				handlers: [{ key: 'users', path: 'api/users.js', changeType: 'change' }]
 			})
 
 			expect(route.handlers[0].path).toBe('api/users.js')
@@ -389,6 +390,7 @@ describe('HMR Hook Execution', () => {
 				handlers: [{
 					key: 'users',
 					path: 'api/users.js',
+					changeType: 'change',
 					plugin: { name: '@robojs/server', version: '1.0.0' }
 				}]
 			}
@@ -400,9 +402,9 @@ describe('HMR Hook Execution', () => {
 		it('multiple handlers per route', () => {
 			const route = createHmrRouteInfo({
 				handlers: [
-					{ key: 'users', path: 'api/users.js' },
-					{ key: 'posts', path: 'api/posts.js' },
-					{ key: 'comments', path: 'api/comments.js' }
+					{ key: 'users', path: 'api/users.js', changeType: 'change' },
+					{ key: 'posts', path: 'api/posts.js', changeType: 'change' },
+					{ key: 'comments', path: 'api/comments.js', changeType: 'change' }
 				]
 			})
 

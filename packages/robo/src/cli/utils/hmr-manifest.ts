@@ -6,6 +6,7 @@
  */
 
 import path from 'node:path'
+import type { HandlerSummary, RouteDefinitions } from '../../types/manifest-v1.js'
 import type { HmrMapping } from './hmr-mapper.js'
 
 /**
@@ -18,9 +19,20 @@ export interface ManifestEntry {
 	path: string
 	source: string
 	plugin: string | null
+	pluginVersion?: string
 	exports?: { default?: boolean; config?: boolean; named?: string[] }
 	metadata?: Record<string, unknown>
+	module?: string
+	auto?: boolean
+	extra?: Record<string, unknown>
+	parent?: string
 	index?: number
+}
+
+interface InferredExports {
+	default?: boolean
+	config?: boolean
+	named?: string[]
 }
 
 /**
@@ -70,5 +82,95 @@ export function reindexEntries(entries: ManifestEntry[]): void {
 			entry.id = entry.key
 			delete entry.index
 		}
+	}
+}
+
+/**
+ * Build lightweight exports metadata for newly-added manifest entries without importing user code.
+ */
+function inferEntryExports(mapping: HmrMapping, routeDefinitions?: RouteDefinitions): InferredExports {
+	const routeDefinition = routeDefinitions?.[mapping.namespace]?.routes?.[mapping.route]
+	const exportsConfig = routeDefinition?.exports
+
+	return {
+		default: exportsConfig?.default === 'required' ? true : undefined,
+		config: exportsConfig?.config === 'required' ? true : undefined,
+		named: exportsConfig?.named ?? []
+	}
+}
+
+/**
+ * Convert manifest entries into lightweight route summaries.
+ */
+export function toHandlerSummaries(entries: ManifestEntry[]): HandlerSummary[] {
+	return entries.map((entry) => ({
+		key: entry.key,
+		path: entry.path,
+		exports: {
+			default: entry.exports?.default,
+			config: entry.exports?.config,
+			named: entry.exports?.named ?? []
+		},
+		metadata: entry.metadata ?? {},
+		plugin: entry.plugin,
+		pluginVersion: entry.pluginVersion,
+		module: entry.module,
+		auto: entry.auto,
+		extra: entry.extra,
+		index: entry.index
+	}))
+}
+
+/**
+ * Apply structural HMR changes to a route manifest without scanning or importing handler modules.
+ */
+export function applyManifestUpdates(
+	entries: ManifestEntry[],
+	options: {
+		added?: HmrMapping[]
+		removed?: HmrMapping[]
+		updated?: HmrMapping[]
+		routeDefinitions?: RouteDefinitions
+	}
+): { entries: ManifestEntry[]; summaries: HandlerSummary[] } {
+	const added = options.added ?? []
+	const removed = options.removed ?? []
+	const updated = options.updated ?? []
+	const nextEntries: ManifestEntry[] = entries.map((entry) => ({
+		...entry,
+		exports: entry.exports ? { ...entry.exports, ...(entry.exports.named ? { named: [...entry.exports.named] } : {}) } : undefined,
+		metadata: entry.metadata ? { ...entry.metadata } : undefined,
+		extra: entry.extra ? { ...entry.extra } : undefined
+	}))
+
+	const removedPaths = new Set(removed.map((mapping) => toBuildPath(mapping)))
+	const filteredEntries = nextEntries.filter((entry) => !removedPaths.has(entry.path))
+
+	for (const mapping of [...updated, ...added]) {
+		const buildPath = toBuildPath(mapping)
+		const existing = filteredEntries.find((entry) => entry.path === buildPath)
+
+		if (existing) {
+			existing.key = mapping.key
+			existing.path = buildPath
+			continue
+		}
+
+		filteredEntries.push({
+			id: '',
+			key: mapping.key,
+			path: buildPath,
+			source: 'project',
+			plugin: null,
+			exports: inferEntryExports(mapping, options.routeDefinitions),
+			metadata: {}
+		})
+	}
+
+	reindexEntries(filteredEntries)
+
+	return {
+		entries: filteredEntries,
+		summaries: toHandlerSummaries(filteredEntries)
 	}
 }

@@ -1,10 +1,11 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads'
+import { pathToFileURL } from 'node:url'
 import { color, composeColors } from '../core/color.js'
 import { setGlobalOverwrites } from '../core/env.js'
 import { logger } from '../core/logger.js'
 import { setMode } from '../core/mode.js'
 import { removeInstances } from '../core/state.js'
-import type { HmrReloadHandlerPayload, HmrReloadRoutePayload, SpiritMessage } from '../types/index.js'
+import type { HmrReloadHandlerPayload, HmrReloadRoutePayload, SpiritMessage, TerminalExecPayload } from '../types/index.js'
 import type { HmrNotifyPayload } from '../core/hooks.js'
 
 // This should only be run in a worker thread
@@ -37,6 +38,7 @@ if (workerData.mode) {
 
 // This is used to wait for the state to be loaded before continuing
 let isRobo = false
+let drawerOpen = false
 let stateLoadResolve: () => void
 const stateLoad = new Promise<void>((resolve) => {
 	stateLoadResolve = resolve
@@ -68,7 +70,7 @@ async function run(message: SpiritMessage): Promise<unknown> {
 				verbose: message.verbose,
 				silent: !message.verbose
 			},
-			logger: logger,
+			logger: logger(),
 			cwd: process.cwd(),
 			argv: []
 		})
@@ -129,7 +131,6 @@ async function run(message: SpiritMessage): Promise<unknown> {
 
 		try {
 			const { buildCode } = await import('./compiler/build.js')
-			const { RoboPaths } = await import('../core/paths.js')
 
 			// Compile just the specified files
 			await buildCode({
@@ -190,7 +191,10 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		}
 	} else if (message.event === 'hmr-status') {
 		// Return HMR readiness status
-		return { ready: isRobo }
+		return {
+			ready: isRobo,
+			capabilities: (globalThis as { roboServer?: { hmrCapabilities?: unknown } }).roboServer?.hmrCapabilities ?? {}
+		}
 	} else if (message.event === 'hmr-notify') {
 		// Execute HMR hooks after handlers are reloaded
 		if (!isRobo) {
@@ -217,13 +221,82 @@ async function run(message: SpiritMessage): Promise<unknown> {
 
 			const plugins = getPlugins()
 			const mode = getMode()
+			const topologyChange = payload.routes.some(
+				(route) =>
+					route.namespace === 'server' &&
+					route.route === 'api' &&
+					route.handlers.some((handler) => handler.changeType === 'add' || handler.changeType === 'remove')
+			)
+
+			if (topologyChange && (globalThis as { roboServer?: { hmrTopologyState?: unknown } }).roboServer) {
+				;(globalThis as { roboServer?: { hmrTopologyState?: unknown } }).roboServer!.hmrTopologyState = undefined
+			}
 
 			await executeHmrHooks(plugins, mode, payload)
+
+			if (topologyChange) {
+				const topologyState = (globalThis as {
+					roboServer?: {
+						hmrTopologyState?: { success?: boolean; error?: string }
+					}
+				}).roboServer?.hmrTopologyState
+
+				if (topologyState?.success === false) {
+					return { success: false, error: topologyState.error ?? 'API topology HMR failed' }
+				}
+			}
+
 			logger.debug(`[HMR] Notified hooks: ${payload.files.length} file(s), ${payload.routes.length} route(s)`)
 			return { success: true }
 		} catch (error) {
 			logger.warn(`[HMR] Hook execution failed:`, error)
 			return { success: false, error: String(error) }
+		}
+	} else if (message.event === 'terminal-exec') {
+		if (!isRobo) {
+			return { success: false, error: 'Robo is not running' }
+		}
+
+		const payload = message.payload as TerminalExecPayload
+
+		try {
+			const { getConfig } = await import('../core/config.js')
+			const config = getConfig()
+
+			// Build a TerminalContext that sends output back to the CLI parent via IPC
+			const terminalCtx = {
+				args: payload.args,
+				options: payload.options,
+				config,
+				write: (text: string) => {
+					parentPort.postMessage({ event: 'terminal-write', payload: { text } })
+				},
+				drawer: payload.drawerAvailable
+					? {
+							show: (lines: string[]) => {
+								parentPort.postMessage({ event: 'terminal-drawer', payload: { action: 'show', lines } })
+								drawerOpen = true
+							},
+							hide: () => {
+								parentPort.postMessage({ event: 'terminal-drawer', payload: { action: 'hide' } })
+								drawerOpen = false
+							},
+							isOpen: () => drawerOpen
+						}
+					: undefined
+			}
+
+			const module = await import(pathToFileURL(payload.handlerPath).href)
+
+			if (typeof module.default !== 'function') {
+				return { success: false, error: `Terminal command at ${payload.handlerPath} is missing default handler` }
+			}
+
+			const result = await module.default(terminalCtx)
+			return { success: true, returnValue: typeof result === 'string' ? result : undefined }
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			return { success: false, error: errorMessage }
 		}
 	} else {
 		throw `Unknown Spirit message event: ${message.event}`

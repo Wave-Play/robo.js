@@ -24,10 +24,183 @@ interface Spirit {
 	worker: Worker
 }
 
+type SpiritOutputCallback = (data: string, stream: 'stdout' | 'stderr') => void
+
+interface CreatedSpiritWorker {
+	id: string
+	worker: Worker
+	cleanup: () => void
+}
+
+export interface DisposableSpiritTask<T = unknown> {
+	workerId: string
+	promise: Promise<T>
+	terminate: () => Promise<void>
+}
+
+let spiritWorkerIndex = 0
+
+function nextSpiritId(index: number) {
+	const suffix = String.fromCharCode(97 + (index % 26))
+	return `${spiritWorkerIndex++}-${nameGenerator()}-${suffix}`
+}
+
+function createSpiritWorker(
+	index: number,
+	outputCallback?: SpiritOutputCallback
+): CreatedSpiritWorker {
+	const spiritId = nextSpiritId(index)
+	const mode = Mode.get()
+
+	const envData = Env.data() ?? {}
+	const env = { ...envData }
+
+	for (const [key, value] of Object.entries(process.env)) {
+		if (value !== undefined && (key.startsWith('ROBO_') || key.startsWith('DISCORD_') || key.startsWith('__ROBO_'))) {
+			env[key] = value
+		}
+	}
+
+	const workerOptions: WorkerOptions = {
+		workerData: { env, mode, spiritId }
+	}
+
+	if (outputCallback) {
+		workerOptions.stdout = true
+		workerOptions.stderr = true
+	}
+
+	const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), workerOptions)
+
+	if (outputCallback) {
+		worker.stdout.on('data', (chunk: Buffer) => {
+			try {
+				outputCallback(chunk.toString(), 'stdout')
+			} catch {
+				// Best-effort only
+			}
+		})
+		worker.stderr.on('data', (chunk: Buffer) => {
+			try {
+				outputCallback(chunk.toString(), 'stderr')
+			} catch {
+				// Best-effort only
+			}
+		})
+	}
+
+	return {
+		id: spiritId,
+		worker,
+		cleanup: () => {
+			if (outputCallback) {
+				worker.stdout.removeAllListeners('data')
+				worker.stderr.removeAllListeners('data')
+			}
+		}
+	}
+}
+
+function createWorkerTask<T = unknown>(task: Task<T>): Task<T> {
+	const workerTask: Task<T> = { ...task }
+	delete workerTask.onExit
+	delete workerTask.onRetry
+	delete workerTask.resolve
+	delete workerTask.reject
+	return workerTask
+}
+
+export function createDisposableSpiritTask<T = unknown>(
+	task: Task<T>,
+	outputCallback?: SpiritOutputCallback
+): DisposableSpiritTask<T> {
+	const { id, worker, cleanup } = createSpiritWorker(0, outputCallback)
+	let terminated = false
+
+	const promise = new Promise<T>((resolve, reject) => {
+		let settled = false
+		let response: SpiritMessage | undefined
+
+		const finalize = async (handler: () => void) => {
+			if (settled || terminated) {
+				return
+			}
+			settled = true
+			cleanup()
+			try {
+				await worker.terminate()
+			} catch {
+				// Worker may have already exited
+			}
+			handler()
+		}
+
+		worker.once('message', async (message: SpiritMessage) => {
+			logger.debug(`Disposable spirit (${composeColors(color.bold, color.cyan)(id)}) sent message:`, message)
+			response = message
+			if (message.error) {
+				await finalize(() => reject(message.error))
+				return
+			}
+			await finalize(() => resolve(message.payload as T))
+		})
+
+		worker.once('error', async (error) => {
+			logger.error(error)
+			await finalize(() => reject(error))
+		})
+
+		worker.once('exit', async (exitCode: number) => {
+			logger.debug(`Disposable spirit (${composeColors(color.bold, color.cyan)(id)}) exited with code ${exitCode}`)
+
+			if (settled) {
+				return
+			}
+
+			await finalize(() => {
+				if (response?.error) {
+					reject(response.error)
+				} else if (exitCode === 0 && response) {
+					resolve(response.payload as T)
+				} else {
+					reject(new Error(`Spirit exited with error code ${exitCode}`))
+				}
+			})
+		})
+
+		const workerTask = createWorkerTask(task)
+		logger.debug(`Sending task to disposable spirit ${composeColors(color.bold, color.cyan)(id)}:`, workerTask)
+		worker.postMessage(workerTask)
+	})
+
+	return {
+		workerId: id,
+		promise,
+		terminate: async () => {
+			if (terminated) {
+				return
+			}
+			terminated = true
+			cleanup()
+			try {
+				await worker.terminate()
+			} catch {
+				// Worker may have already exited
+			}
+		}
+	}
+}
+
+export async function runDisposableSpiritTask<T = unknown>(
+	task: Task<T>,
+	outputCallback?: SpiritOutputCallback
+): Promise<T> {
+	return createDisposableSpiritTask(task, outputCallback).promise
+}
+
 export class Spirits {
 	private spirits: Record<string, Spirit> = {}
 	private taskQueue: Task[] = []
-	private spiritIndex = 0
 	private isShuttingDown = false
 
 	// There are always a limited number of spirits running at once
@@ -45,75 +218,45 @@ export class Spirits {
 
 	public newSpirit(oldSpirit?: Spirit) {
 		const index = oldSpirit ? this.activeSpirits.indexOf(oldSpirit) : this.activeSpirits.length
-		const suffix = String.fromCharCode(97 + (index % 26))
-		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${suffix}`
-		const mode = Mode.get()
-
-		// Start with env vars loaded from .env file
-		const envData = Env.data() ?? {}
-		const env = { ...envData }
-
-		// Merge with process.env for ROBO_, DISCORD_, and __ROBO_ prefixed variables
-		// This ensures CLI extension overrides (like mock mode tokens) are passed to workers
-		for (const [key, value] of Object.entries(process.env)) {
-			if (value !== undefined && (key.startsWith('ROBO_') || key.startsWith('DISCORD_') || key.startsWith('__ROBO_'))) {
-				env[key] = value
-			}
-		}
-
-		const workerOptions: WorkerOptions = {
-			workerData: { env, mode, spiritId }
-		}
-
-		// When interactive mode provides an output callback, pipe worker stdout/stderr
-		// through it instead of sharing the parent FD
-		if (this.outputCallback) {
-			workerOptions.stdout = true
-			workerOptions.stderr = true
-		}
-
-		const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), workerOptions)
-
-		// Route worker output through the callback when interactive mode is active
-		if (this.outputCallback) {
-			const cb = this.outputCallback
-			worker.stdout.on('data', (chunk: Buffer) => {
-				try { cb(chunk.toString(), 'stdout') } catch { /* swallow */ }
-			})
-			worker.stderr.on('data', (chunk: Buffer) => {
-				try { cb(chunk.toString(), 'stderr') } catch { /* swallow */ }
-			})
-		}
-
+		const { id: spiritId, worker, cleanup } = createSpiritWorker(index, this.outputCallback)
 		const newSpirit: Spirit = { id: spiritId, task: null, worker }
 		this.spirits[newSpirit.id] = newSpirit
 
+		if (oldSpirit) {
+			delete this.spirits[oldSpirit.id]
+		}
+
 		worker.on('message', (message: SpiritMessage) => {
 			const spirit = this.spirits[newSpirit.id]
+			if (!spirit) return
 			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spirit.id)}) sent message:`, message)
 
+			if (message.error) {
+				spirit.task?.reject(message.error)
+			}
+
 			if (message.payload === 'exit') {
-				spirit.task?.resolve(spirit.id)
+				if (!message.error) {
+					spirit.task?.resolve(spirit.id)
+				}
 				spirit.isTerminated = true
 				this.newSpirit(spirit)
 				this.tryNextTask()
 			} else if (message.payload === 'ok') {
-				spirit.task?.resolve(spirit.id)
+				if (!message.error) {
+					spirit.task?.resolve(spirit.id)
+				}
 			}
 		})
 
 		worker.on('exit', async (exitCode: number) => {
 			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spiritId)}) exited with code ${exitCode}`)
 
-			// Clean up stdout/stderr listeners when worker exits
-			if (this.outputCallback) {
-				worker.stdout.removeAllListeners('data')
-				worker.stderr.removeAllListeners('data')
-			}
+			cleanup()
 
 			// No need to handle this if the spirit is already terminated elsewhere
 			const spirit = this.spirits[newSpirit.id]
-			if (spirit.isTerminated) {
+			if (!spirit || spirit.isTerminated) {
 				return
 			}
 
@@ -151,13 +294,10 @@ export class Spirits {
 		worker.on('error', async (err) => {
 			logger.error(err)
 
-			// Clean up stdout/stderr listeners
-			if (this.outputCallback) {
-				worker.stdout.removeAllListeners('data')
-				worker.stderr.removeAllListeners('data')
-			}
+			cleanup()
 
 			const spirit = this.spirits[newSpirit.id]
+			if (!spirit) return
 			spirit.task?.reject(err)
 			spirit.isTerminated = true
 
@@ -263,12 +403,7 @@ export class Spirits {
 			const task = this.taskQueue.shift()
 			spirit.task = task
 
-			// Strip functions before sending task to worker
-			const workerTask: Task = { ...task }
-			delete workerTask.onExit
-			delete workerTask.onRetry
-			delete workerTask.resolve
-			delete workerTask.reject
+			const workerTask = createWorkerTask(task)
 			logger.debug(`Sending task to spirit ${composeColors(color.bold, color.cyan)(spirit.id)}:`, workerTask)
 			spirit.worker.postMessage(workerTask)
 		}
@@ -279,8 +414,8 @@ export class Spirits {
 
 	public async stop(spiritId: string, force = false) {
 		const spirit = this.get(spiritId)
-		if (spirit.isTerminated) {
-			return Promise.resolve()
+		if (!spirit || spirit.isTerminated) {
+			return
 		}
 		logger.debug(`Stopping spirit ${composeColors(color.bold, color.cyan)(spiritId)} (force: ${force})`)
 
@@ -296,8 +431,8 @@ export class Spirits {
 			// This ensures all logs are written before we continue
 			spirit.worker.once('exit', () => {
 				resolve()
-				// Only create replacement spirits if not shutting down
-				if (!this.isShuttingDown) {
+				// Only create replacement spirits if not shutting down and not already replaced
+				if (!this.isShuttingDown && !spirit.isTerminated) {
 					this.newSpirit(spirit)
 					this.tryNextTask()
 				}

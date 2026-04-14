@@ -193,9 +193,21 @@ export function removeModule(modulePath: string, graph: DependencyGraph): void {
 	graph.mtimes.delete(modulePath)
 	graph.hasUnresolvedDynamic.delete(modulePath)
 
-	// Important: do NOT delete graph.revDeps[modulePath] here.
-	// We need to retain reverse edges so we can still determine which handlers
-	// were impacted when a dependency is deleted.
+	// Prune stale entries from revDeps[modulePath].
+	// Keep reverse edges so we can still determine which handlers were impacted
+	// when a dependency is deleted, but remove importers that no longer exist
+	// in the graph (their forward deps have been removed).
+	const importers = graph.revDeps.get(modulePath)
+	if (importers) {
+		for (const importer of importers) {
+			if (!graph.deps.has(importer)) {
+				importers.delete(importer)
+			}
+		}
+		if (importers.size === 0) {
+			graph.revDeps.delete(modulePath)
+		}
+	}
 }
 
 /**

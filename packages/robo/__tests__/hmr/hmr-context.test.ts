@@ -59,8 +59,8 @@ describe('HmrContext', () => {
 
 		it('allows providing custom handlers', () => {
 			const handlers = [
-				{ key: 'users', path: 'api/users.js' },
-				{ key: 'posts', path: 'api/posts.js' }
+				{ key: 'users', path: 'api/users.js', changeType: 'change' as const },
+				{ key: 'posts', path: 'api/posts.js', changeType: 'change' as const }
 			]
 			const context = createContext({ handlers })
 			expect(context.routes[0].handlers).toEqual(handlers)
@@ -116,7 +116,7 @@ describe('HmrContext', () => {
 		})
 
 		it('allows providing handlers', () => {
-			const handlers = [{ key: 'ping', path: 'commands/ping.js' }]
+			const handlers = [{ key: 'ping', path: 'commands/ping.js', changeType: 'change' as const }]
 			const routeInfo = createHmrRouteInfo({ handlers })
 			expect(routeInfo.handlers).toEqual(handlers)
 		})
@@ -149,8 +149,13 @@ describe('HmrContext', () => {
 				namespace: 'server',
 				route: 'api',
 				handlers: [
-					{ key: 'users', path: 'api/users.js' },
-					{ key: 'posts', path: 'api/posts.js', plugin: { name: '@robojs/server', version: '1.0.0' } }
+					{ key: 'users', path: 'api/users.js', changeType: 'change' as const },
+					{
+						key: 'posts',
+						path: 'api/posts.js',
+						changeType: 'change' as const,
+						plugin: { name: '@robojs/server', version: '1.0.0' }
+					}
 				]
 			})
 
@@ -344,9 +349,9 @@ describe('HmrContext', () => {
 					namespace: 'server',
 					route: 'api',
 					handlers: [
-						{ key: 'users', path: 'api/users.js' },
-						{ key: 'posts', path: 'api/posts.js' },
-						{ key: 'comments', path: 'api/comments.js' }
+						{ key: 'users', path: 'api/users.js', changeType: 'change' as const },
+						{ key: 'posts', path: 'api/posts.js', changeType: 'change' as const },
+						{ key: 'comments', path: 'api/comments.js', changeType: 'change' as const }
 					]
 				}
 			])

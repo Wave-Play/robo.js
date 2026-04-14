@@ -44,9 +44,8 @@ describe('HMR Runtime Cleanup API', () => {
 
 	// Helper to import the hmr module fresh (bypassing cache)
 	async function importHmrFresh() {
-		// Clear module from cache by importing with unique query
-		const cacheBuster = Date.now() + Math.random()
-		const hmrModule = await import(`../../src/core/hmr.js?v=${cacheBuster}`)
+		jest.resetModules()
+		const hmrModule = await import('../../src/core/hmr.js')
 		return hmrModule
 	}
 

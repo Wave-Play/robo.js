@@ -108,6 +108,11 @@ describe('HMR Mapper', () => {
 			expect(requiresFullRestart('src/robo/routes/commands.ts')).toBe(true)
 		})
 
+		it('returns true for terminal command files', () => {
+			expect(requiresFullRestart('src/robo/terminal/commands/skills.ts')).toBe(true)
+			expect(requiresFullRestart('src/robo/terminal/commands/discord/status.ts')).toBe(true)
+		})
+
 		it('returns false for handler files', () => {
 			expect(requiresFullRestart('src/commands/ping.ts')).toBe(false)
 			expect(requiresFullRestart('src/events/ready.ts')).toBe(false)
