@@ -13,7 +13,7 @@ import {
 	JUNCTION_PREFIX,
 	getJunctionTableDef,
 	UniqueConstraintError
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Phase 9: Many-to-Many Junction Tables', () => {
 	beforeEach(async () => {

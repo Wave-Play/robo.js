@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { FlashcoreSystem } from '../../../src/flashcore/index.js'
+import { FlashcoreSystem } from '../helpers/flashcore-compat.js'
 import { ChunkManager } from '../../../src/flashcore/model/chunk.js'
 import { StorageExhaustedError } from '../../../src/flashcore/core/errors.js'
 

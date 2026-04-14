@@ -10,7 +10,7 @@ import {
 	MemoryAdapter,
 	UniqueConstraintError,
 	f
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Unique Constraints', () => {
 	beforeEach(async () => {

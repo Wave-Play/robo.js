@@ -8,7 +8,7 @@
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals'
 import { FlashcoreSystem } from '../../../src/flashcore/core/system.js'
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 import { definePlugin } from '../../../src/flashcore/plugin/define.js'
 
 describe('Phase 10: Plugin Client Extensions', () => {

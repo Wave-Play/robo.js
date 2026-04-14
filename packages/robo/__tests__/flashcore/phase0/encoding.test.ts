@@ -12,7 +12,7 @@ import {
 	encodeUniqueValue,
 	decodeUniqueValue,
 	needsEncoding
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('SafeKeyEncoder', () => {
 	describe('needsEncoding', () => {

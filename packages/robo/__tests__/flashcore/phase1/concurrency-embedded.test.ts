@@ -9,7 +9,7 @@ import {
 	FlashcoreSystem,
 	MemoryAdapter,
 	f
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Concurrency (Embedded Mode)', () => {
 	beforeEach(async () => {

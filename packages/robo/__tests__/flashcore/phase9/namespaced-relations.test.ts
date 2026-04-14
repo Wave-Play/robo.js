@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { f, FlashcoreSystem, MemoryAdapter } from '../../../src/flashcore/index.js'
+import { f, FlashcoreSystem, MemoryAdapter } from '../helpers/flashcore-compat.js'
 
 describe('Phase 9: Namespaced Relations', () => {
 	beforeEach(async () => {

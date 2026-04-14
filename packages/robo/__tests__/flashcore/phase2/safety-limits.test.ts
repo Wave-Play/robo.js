@@ -10,7 +10,7 @@ import {
 	MemoryAdapter,
 	f,
 	DEFAULT_SAFETY_LIMITS
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Safety Limits', () => {
 	beforeEach(async () => {

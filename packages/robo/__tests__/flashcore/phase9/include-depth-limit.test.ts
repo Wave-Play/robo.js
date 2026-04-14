@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { f, FlashcoreSystem, MemoryAdapter, MAX_INCLUDE_DEPTH } from '../../../src/flashcore/index.js'
+import { f, FlashcoreSystem, MemoryAdapter, MAX_INCLUDE_DEPTH } from '../helpers/flashcore-compat.js'
 
 describe('Phase 9: Include Depth Limit', () => {
 	beforeEach(async () => {

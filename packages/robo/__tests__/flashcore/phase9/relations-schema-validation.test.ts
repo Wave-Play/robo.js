@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { f, FlashcoreSystem, MemoryAdapter, validateRelationsSchema, normalizeSchema } from '../../../src/flashcore/index.js'
-import type { NormalizedSchema } from '../../../src/flashcore/index.js'
+import { f, FlashcoreSystem, MemoryAdapter, validateRelationsSchema, normalizeSchema } from '../helpers/flashcore-compat.js'
+import type { NormalizedSchema } from '../helpers/flashcore-compat.js'
 
 describe('Phase 9: Relations Schema Validation', () => {
 	beforeEach(async () => {

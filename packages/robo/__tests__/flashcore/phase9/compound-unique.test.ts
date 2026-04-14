@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { f, FlashcoreSystem, MemoryAdapter, UniqueConstraintError } from '../../../src/flashcore/index.js'
+import { f, compoundUnique, FlashcoreSystem, MemoryAdapter, UniqueConstraintError } from '../helpers/flashcore-compat.js'
 
 describe('Phase 9: Compound Unique Constraints', () => {
 	beforeEach(async () => {
@@ -120,6 +120,236 @@ describe('Phase 9: Compound Unique Constraints', () => {
 				where: { groupId: 'group1' }
 			})
 			expect(group1Memberships).toHaveLength(2)
+		})
+	})
+
+	describe('Compound Unique Enforcement via compoundUnique()', () => {
+		it('should reject create with duplicate compound values', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+				status: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				status: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			await TaskModel.create({ title: 'Task A', projectId: 'p1', status: 'open' })
+
+			// Same title+projectId should fail
+			await expect(
+				TaskModel.create({ title: 'Task A', projectId: 'p1', status: 'done' })
+			).rejects.toThrow(UniqueConstraintError)
+		})
+
+		it('should allow different combinations of compound values', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			// Same title, different project
+			await TaskModel.create({ title: 'Task A', projectId: 'p1' })
+			const t2 = await TaskModel.create({ title: 'Task A', projectId: 'p2' })
+			expect(t2).toBeDefined()
+
+			// Different title, same project
+			const t3 = await TaskModel.create({ title: 'Task B', projectId: 'p1' })
+			expect(t3).toBeDefined()
+		})
+
+		it('should reject createMany with duplicate compound values', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			// Within-batch duplicate
+			await expect(
+				TaskModel.createMany({
+					data: [
+						{ title: 'Task A', projectId: 'p1' },
+						{ title: 'Task A', projectId: 'p1' }
+					]
+				})
+			).rejects.toThrow(UniqueConstraintError)
+		})
+
+		it('should reject createMany against existing compound values', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			await TaskModel.create({ title: 'Task A', projectId: 'p1' })
+
+			await expect(
+				TaskModel.createMany({
+					data: [
+						{ title: 'Task B', projectId: 'p1' },
+						{ title: 'Task A', projectId: 'p1' }  // conflicts with existing
+					]
+				})
+			).rejects.toThrow(UniqueConstraintError)
+		})
+
+		it('should skip compound duplicates with skipDuplicates in createMany', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			await TaskModel.create({ title: 'Task A', projectId: 'p1' })
+
+			const result = await TaskModel.createMany({
+				data: [
+					{ title: 'Task B', projectId: 'p1' },
+					{ title: 'Task A', projectId: 'p1' },  // conflicts - should skip
+					{ title: 'Task C', projectId: 'p1' }
+				],
+				skipDuplicates: true
+			})
+
+			expect(result.count).toBe(2)
+		})
+
+		it('should skip within-batch compound duplicates with skipDuplicates', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			const result = await TaskModel.createMany({
+				data: [
+					{ title: 'Task A', projectId: 'p1' },
+					{ title: 'Task A', projectId: 'p1' },  // within-batch duplicate - should skip
+					{ title: 'Task B', projectId: 'p1' }
+				],
+				skipDuplicates: true
+			})
+
+			expect(result.count).toBe(2)
+		})
+
+		it('should reject update to conflicting compound values', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			await TaskModel.create({ title: 'Task A', projectId: 'p1' })
+			const t2 = await TaskModel.create({ title: 'Task B', projectId: 'p1' })
+
+			// Updating t2's title to match t1's compound key should fail
+			await expect(
+				TaskModel.update({
+					where: { id: t2.id },
+					data: { title: 'Task A' }
+				})
+			).rejects.toThrow(UniqueConstraintError)
+		})
+
+		it('should release compound constraint on delete (re-create succeeds)', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			const task = await TaskModel.create({ title: 'Task A', projectId: 'p1' })
+
+			await TaskModel.delete({ where: { id: task.id } })
+
+			// Should succeed after delete
+			const recreated = await TaskModel.create({ title: 'Task A', projectId: 'p1' })
+			expect(recreated).toBeDefined()
+		})
+
+		it('should allow update when compound values remain unchanged', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId: string
+				status: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string(),
+				status: f.string(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			const task = await TaskModel.create({ title: 'Task A', projectId: 'p1', status: 'open' })
+
+			// Updating a non-compound field should work fine
+			const updated = await TaskModel.update({
+				where: { id: task.id },
+				data: { status: 'done' }
+			})
+			expect(updated?.status).toBe('done')
+		})
+
+		it('should skip compound constraint when any value is null', async () => {
+			const TaskModel = FlashcoreSystem.registerModel<{
+				id: string
+				title: string
+				projectId?: string
+			}>('Task', {
+				id: f.id(),
+				title: f.string(),
+				projectId: f.string().optional(),
+				_titleProject: compoundUnique(['title', 'projectId'])
+			})
+
+			// Both with null projectId should be allowed (no compound constraint enforced)
+			await TaskModel.create({ title: 'Task A' })
+			const t2 = await TaskModel.create({ title: 'Task A' })
+			expect(t2).toBeDefined()
 		})
 	})
 

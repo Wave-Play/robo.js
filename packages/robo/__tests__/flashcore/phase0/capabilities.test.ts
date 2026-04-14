@@ -11,7 +11,7 @@ import {
 	MemoryAdapter,
 	type FlashcoreAdapter,
 	type AdapterCapabilities
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Capability Detection', () => {
 	describe('normalizeCapabilities', () => {

@@ -5,9 +5,9 @@
  */
 
 import { FlashcoreSystem } from '../../../src/flashcore/core/system.js'
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
 import { f } from '../../../src/flashcore/schema/field.js'
 import { ValidationError } from '../../../src/flashcore/core/errors.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 
 interface User {
 	id: string
@@ -93,6 +93,24 @@ describe('Upsert Operation', () => {
 
 			expect(result.id).toBeDefined()
 			expect(result.id.length).toBeGreaterThan(0)
+		})
+
+		it('should copy missing where fields into create data', async () => {
+			const User = FlashcoreSystem.registerModel<User>('User', {
+				id: f.id(),
+				name: f.string(),
+				email: f.string().unique(),
+				age: f.number(),
+				role: f.string()
+			})
+
+			const result = await User.upsert({
+				where: { email: 'copied@test.com' },
+				create: { name: 'Copied', age: 22, role: 'user' } as any,
+				update: { role: 'admin' }
+			})
+
+			expect(result.email).toBe('copied@test.com')
 		})
 
 		it('should apply defaults on create', async () => {

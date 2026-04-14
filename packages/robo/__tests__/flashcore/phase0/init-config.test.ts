@@ -7,9 +7,10 @@
 import {
 	Flashcore,
 	FlashcoreSystem,
-	MemoryAdapter,
 	FlashcoreError
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
+import { FileAdapter } from '../helpers/flashcore-compat.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 
 describe('Flashcore Initialization', () => {
 	afterEach(async () => {
@@ -18,11 +19,11 @@ describe('Flashcore Initialization', () => {
 	})
 
 	describe('Flashcore.$.init()', () => {
-		it('should initialize with default MemoryAdapter', async () => {
+		it('should initialize with default FileAdapter', async () => {
 			await Flashcore.$.init()
 
 			expect(Flashcore.$.isInitialized).toBe(true)
-			expect(Flashcore.$.config.adapter).toBeInstanceOf(MemoryAdapter)
+			expect(Flashcore.$.config.adapter).toBeInstanceOf(FileAdapter)
 		})
 
 		it('should initialize with custom adapter', async () => {
@@ -62,8 +63,8 @@ describe('Flashcore Initialization', () => {
 			await Flashcore.$.init()
 
 			expect(Flashcore.$.config.namespaceSeparator).toBe('/')
-			expect(Flashcore.$.config.kvReadPreference).toBe('legacy')
-			expect(Flashcore.$.config.kvWriteMode).toBe('legacy')
+			expect(Flashcore.$.config.kvReadPreference).toBe('v1')
+			expect(Flashcore.$.config.kvWriteMode).toBe('v1')
 			expect(Flashcore.$.config.lazyLoading).toBe(true)
 		})
 
@@ -121,10 +122,10 @@ describe('Flashcore Initialization', () => {
 
 			const caps = Flashcore.$.capabilities()
 
-			expect(caps.acid).toBe(true)
+			expect(caps.acid).toBe(false)
 			expect(caps.walEnabled).toBe(true)
 			expect(caps.scan).toBe(true)
-			expect(caps.adapter).toBe('MemoryAdapter')
+			expect(caps.adapter).toBe('FileAdapter')
 		})
 	})
 
@@ -144,14 +145,14 @@ describe('Flashcore Initialization', () => {
 	})
 
 	describe('Flashcore.$.introspect()', () => {
-		it('should throw if not initialized', () => {
-			expect(() => Flashcore.$.introspect()).toThrow(FlashcoreError)
+		it('should throw if not initialized', async () => {
+			await expect(Flashcore.$.introspect()).rejects.toThrow(FlashcoreError)
 		})
 
 		it('should return introspection data after init', async () => {
 			await Flashcore.$.init()
 
-			const intro = Flashcore.$.introspect()
+			const intro = await Flashcore.$.introspect()
 
 			expect(intro.models).toEqual([])
 			expect(intro.kvNamespaces).toEqual([])

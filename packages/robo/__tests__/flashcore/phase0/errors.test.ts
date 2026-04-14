@@ -14,7 +14,7 @@ import {
 	DataCorruptionError,
 	TransactionConflictError,
 	SafetyError
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Flashcore Error Types', () => {
 	describe('FlashcoreError (base)', () => {

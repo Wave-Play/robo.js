@@ -10,7 +10,7 @@ import {
 	hasScanCapability,
 	MemoryAdapter,
 	type FlashcoreAdapter
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('Scan Normalization', () => {
 	describe('scanKeys()', () => {

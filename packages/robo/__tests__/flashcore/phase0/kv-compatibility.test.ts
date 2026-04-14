@@ -11,7 +11,7 @@ import {
 	composeLegacyKey,
 	composeV1Key,
 	parseLegacyKey
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 
 describe('KV Backward Compatibility', () => {
 	afterEach(async () => {

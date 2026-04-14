@@ -4,13 +4,14 @@
  * Shared tests for verifying adapters implement the correct semantics.
  */
 
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 import { FileAdapter } from '../../../src/flashcore/adapter/builtins/file.js'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { rm } from 'node:fs/promises'
+import type { FlashcoreAdapter } from '../../../src/flashcore/adapter/types.js'
 
-type TestedAdapter = MemoryAdapter | FileAdapter
+type TestedAdapter = FlashcoreAdapter<string, unknown>
 
 interface AdapterTestConfig {
 	name: string
@@ -153,11 +154,11 @@ describe.each(adapters)('Adapter Compliance: $name', ({ name, create, cleanup }:
 			await adapter.set('post:2', { id: 2 })
 
 			if (adapter.scan) {
-				const userKeys = await adapter.scan('user:')
+				const userKeys = await adapter.scan('user:') as string[]
 				expect(userKeys).toHaveLength(2)
 				expect(userKeys.sort()).toEqual(['user:1', 'user:2'].sort())
 
-				const postKeys = await adapter.scan('post:')
+				const postKeys = await adapter.scan('post:') as string[]
 				expect(postKeys).toHaveLength(2)
 				expect(postKeys.sort()).toEqual(['post:1', 'post:2'].sort())
 

@@ -9,7 +9,7 @@ import {
 	FlashcoreSystem,
 	MemoryAdapter,
 	f
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 import { AsyncMutex, ChunkLockManager } from '../../../src/flashcore/model/locks.js'
 
 describe('Chunk Lock', () => {

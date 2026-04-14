@@ -6,7 +6,7 @@
 
 // Uses Jest globals
 import { FlashcoreSystem } from '../../../src/flashcore/core/system.js'
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 import { f } from '../../../src/flashcore/schema/field.js'
 
 describe('Flashcore Introspection', () => {
@@ -15,8 +15,8 @@ describe('Flashcore Introspection', () => {
 	})
 
 	describe('Not Initialized', () => {
-		it('should throw when not initialized', () => {
-			expect(() => FlashcoreSystem.introspect()).toThrow('not initialized')
+		it('should throw when not initialized', async () => {
+			await expect(FlashcoreSystem.introspect()).rejects.toThrow('not initialized')
 		})
 	})
 
@@ -25,8 +25,8 @@ describe('Flashcore Introspection', () => {
 			await FlashcoreSystem.init({ adapter: new MemoryAdapter() })
 		})
 
-		it('should return introspection data structure', () => {
-			const info = FlashcoreSystem.introspect()
+		it('should return introspection data structure', async () => {
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info).toHaveProperty('models')
 			expect(info).toHaveProperty('kvNamespaces')
@@ -35,27 +35,27 @@ describe('Flashcore Introspection', () => {
 			expect(info).toHaveProperty('walStatus')
 		})
 
-		it('should have empty models list initially', () => {
-			const info = FlashcoreSystem.introspect()
+		it('should have empty models list initially', async () => {
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models).toEqual([])
 		})
 
-		it('should have empty plugins list initially', () => {
-			const info = FlashcoreSystem.introspect()
+		it('should have empty plugins list initially', async () => {
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.plugins).toEqual([])
 		})
 
-		it('should have zero pending WAL entries', () => {
-			const info = FlashcoreSystem.introspect()
+		it('should have zero pending WAL entries', async () => {
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.walStatus.pendingEntries).toBe(0)
 			expect(info.walStatus.lastRecovery).toBeUndefined()
 		})
 
-		it('should report storage info', () => {
-			const info = FlashcoreSystem.introspect()
+		it('should report storage info', async () => {
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.storage).toHaveProperty('totalKeys')
 			expect(info.storage.totalKeys).toBe(0)
@@ -67,19 +67,19 @@ describe('Flashcore Introspection', () => {
 			await FlashcoreSystem.init({ adapter: new MemoryAdapter() })
 		})
 
-		it('should include registered model in introspection', () => {
+		it('should include registered model in introspection', async () => {
 			FlashcoreSystem.registerModel<{ id: string; name: string }>('User', {
 				id: f.id(),
 				name: f.string()
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models).toHaveLength(1)
 			expect(info.models[0].name).toBe('User')
 		})
 
-		it('should include model fields', () => {
+		it('should include model fields', async () => {
 			FlashcoreSystem.registerModel<{ id: string; name: string; email: string; age: number }>(
 				'User',
 				{
@@ -90,38 +90,38 @@ describe('Flashcore Introspection', () => {
 				}
 			)
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models[0].fields).toContain('name')
 			expect(info.models[0].fields).toContain('email')
 			expect(info.models[0].fields).toContain('age')
 		})
 
-		it('should include model namespace', () => {
+		it('should include model namespace', async () => {
 			FlashcoreSystem.registerModel<{ id: string; name: string }>(
 				'Item',
 				{ id: f.id(), name: f.string() },
 				{ namespace: 'inventory' }
 			)
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models[0].namespace).toBe('inventory')
 		})
 
-		it('should include schema checksum', () => {
+		it('should include schema checksum', async () => {
 			FlashcoreSystem.registerModel<{ id: string; title: string }>('Post', {
 				id: f.id(),
 				title: f.string()
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models[0].schemaChecksum).toBeDefined()
 			expect(typeof info.models[0].schemaChecksum).toBe('string')
 		})
 
-		it('should include indexed fields', () => {
+		it('should include indexed fields', async () => {
 			FlashcoreSystem.registerModel<{ id: string; email: string; username: string }>(
 				'Account',
 				{
@@ -131,25 +131,25 @@ describe('Flashcore Introspection', () => {
 				}
 			)
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			// Explicitly indexed fields appear in indexes list
 			expect(info.models[0].indexes).toContain('email')
 			expect(info.models[0].indexes).toContain('username')
 		})
 
-		it('should include relations', () => {
+		it('should include relations', async () => {
 			FlashcoreSystem.registerModel<{ id: string; authorId: string }>('Post', {
 				id: f.id(),
 				authorId: f.relation('User', 'authorId')
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models[0].relations).toContain('User')
 		})
 
-		it('should list multiple models', () => {
+		it('should list multiple models', async () => {
 			FlashcoreSystem.registerModel<{ id: string; name: string }>('User', {
 				id: f.id(),
 				name: f.string()
@@ -163,13 +163,29 @@ describe('Flashcore Introspection', () => {
 				body: f.string()
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models).toHaveLength(3)
 			const names = info.models.map(m => m.name)
 			expect(names).toContain('User')
 			expect(names).toContain('Post')
 			expect(names).toContain('Comment')
+		})
+
+		it('should reflect actual record counts', async () => {
+			const User = FlashcoreSystem.registerModel<{ id: string; name: string }>('User', {
+				id: f.id(),
+				name: f.string()
+			})
+
+			await User.create({ name: 'Alice' })
+			await User.create({ name: 'Bob' })
+			await User.create({ name: 'Charlie' })
+
+			const info = await FlashcoreSystem.introspect()
+
+			expect(info.models[0].recordCount).toBe(3)
+			expect(info.storage.totalKeys).toBeGreaterThanOrEqual(3)
 		})
 	})
 
@@ -186,7 +202,7 @@ describe('Flashcore Introspection', () => {
 				plugins: [testPlugin]
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.plugins).toContain('test-plugin')
 		})
@@ -200,7 +216,7 @@ describe('Flashcore Introspection', () => {
 				plugins: [plugin1, plugin2]
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.plugins).toContain('plugin-one')
 			expect(info.plugins).toContain('plugin-two')
@@ -212,27 +228,27 @@ describe('Flashcore Introspection', () => {
 			await FlashcoreSystem.init({ adapter: new MemoryAdapter() })
 		})
 
-		it('should track pending entries', () => {
+		it('should track pending entries', async () => {
 			FlashcoreSystem._setWalPendingEntries(10)
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.walStatus.pendingEntries).toBe(10)
 		})
 
-		it('should update pending entries', () => {
+		it('should update pending entries', async () => {
 			FlashcoreSystem._setWalPendingEntries(5)
 			FlashcoreSystem._setWalPendingEntries(3)
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.walStatus.pendingEntries).toBe(3)
 		})
 
-		it('should track last recovery', () => {
+		it('should track last recovery', async () => {
 			FlashcoreSystem._recordWalRecovery()
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.walStatus.lastRecovery).toBeInstanceOf(Date)
 
@@ -254,21 +270,21 @@ describe('Flashcore Introspection', () => {
 			expect(inventorySchema.namespace).toBe('inventory')
 		})
 
-		it('should register models through schema helper', () => {
+		it('should register models through schema helper', async () => {
 			const schema = FlashcoreSystem.schema('shop')
 			schema.model<{ id: string; name: string }>('Product', {
 				id: f.id(),
 				name: f.string()
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models).toHaveLength(1)
 			expect(info.models[0].name).toBe('Product')
 			expect(info.models[0].namespace).toBe('shop')
 		})
 
-		it('should support multiple namespaces', () => {
+		it('should support multiple namespaces', async () => {
 			const userSchema = FlashcoreSystem.schema('users')
 			const orderSchema = FlashcoreSystem.schema('orders')
 
@@ -281,7 +297,7 @@ describe('Flashcore Introspection', () => {
 				total: f.number()
 			})
 
-			const info = FlashcoreSystem.introspect()
+			const info = await FlashcoreSystem.introspect()
 
 			expect(info.models).toHaveLength(2)
 

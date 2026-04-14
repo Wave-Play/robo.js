@@ -5,7 +5,7 @@
  */
 
 import { FlashcoreSystem } from '../../../src/flashcore/core/system.js'
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 import { f } from '../../../src/flashcore/schema/field.js'
 import { VERSION_FIELD_NAME, MAX_VERSION_VALUE, VERSION_OVERFLOW_WARN_THRESHOLD } from '../../../src/flashcore/core/constants.js'
 

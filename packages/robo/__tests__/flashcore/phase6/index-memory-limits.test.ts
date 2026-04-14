@@ -7,7 +7,7 @@
 import { IndexPersistenceManager } from '../../../src/flashcore/index/persistence.js'
 import { CuckooFilter } from '../../../src/flashcore/index/filter.js'
 import { SortedIndex } from '../../../src/flashcore/index/sorted.js'
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 
 describe('IndexPersistenceManager Memory Limits', () => {
 	let adapter: MemoryAdapter

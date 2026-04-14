@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals
 import { IndexPersistenceManager } from '../../../src/flashcore/index/persistence.js'
 import { CuckooFilter } from '../../../src/flashcore/index/filter.js'
 import { SortedIndex } from '../../../src/flashcore/index/sorted.js'
-import { MemoryAdapter } from '../../../src/flashcore/adapter/builtins/memory.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 
 describe('IndexPersistenceManager', () => {
 	let adapter: MemoryAdapter
@@ -412,7 +412,15 @@ describe('IndexPersistenceManager', () => {
 			await batchManager.flushAll()
 
 			// Should have used batch operation
-			expect(ops.length).toBe(2)
+			expect(ops.length).toBe(6)
+			expect(ops).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ type: 'set', key: '_model:User:filter' }),
+					expect.objectContaining({ type: 'set', key: '_model:Post:filter' }),
+					expect.objectContaining({ type: 'set', key: '_model:User:epoch' }),
+					expect.objectContaining({ type: 'set', key: '_model:Post:epoch' })
+				])
+			)
 
 			await batchManager.shutdown()
 		})

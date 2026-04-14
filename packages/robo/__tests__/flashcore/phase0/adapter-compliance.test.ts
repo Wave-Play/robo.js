@@ -11,7 +11,7 @@ import {
 	createKeyvAdapter,
 	LegacyFileAdapter,
 	normalizeCapabilities
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
 import fs from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

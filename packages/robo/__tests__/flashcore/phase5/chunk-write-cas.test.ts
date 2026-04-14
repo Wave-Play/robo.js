@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { FlashcoreSystem, MemoryAdapter } from '../../../src/flashcore/index.js'
+import { FlashcoreSystem, MemoryAdapter } from '../helpers/flashcore-compat.js'
 import { ChunkManager } from '../../../src/flashcore/model/chunk.js'
 import { TransactionConflictError } from '../../../src/flashcore/core/errors.js'
 

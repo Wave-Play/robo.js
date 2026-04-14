@@ -9,10 +9,10 @@ import { jest } from '@jest/globals'
 import {
 	Flashcore,
 	FlashcoreSystem,
-	MemoryAdapter,
 	SafetyError,
 	type WatcherCallback
-} from '../../../src/flashcore/index.js'
+} from '../helpers/flashcore-compat.js'
+import { MemoryAdapter } from '../helpers/memory-adapter.js'
 
 type MockWatcher = WatcherCallback & { mock: { calls: unknown[][] } }
 
