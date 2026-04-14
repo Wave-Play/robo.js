@@ -18,6 +18,7 @@ import {
 	DEFAULT_FILTER_MAX_KICKS,
 	DEFAULT_FILTER_INITIAL_CAPACITY
 } from '../core/constants.js'
+import { fnv1a32 } from '../core/hash.js'
 
 /**
  * Serialized filter data for persistence.
@@ -338,8 +339,10 @@ export class CuckooFilter {
 		const bucketsMemory = this.numBuckets * this.bucketSize * 2
 		const countsMemory = this.numBuckets
 		const overhead = 100 // Object overhead estimate
+		// ~130 bytes per tracked ID (Set entry overhead + string storage)
+		const trackedIdsMemory = this.trackedIds.size * 130
 
-		return bucketsMemory + countsMemory + overhead
+		return bucketsMemory + countsMemory + overhead + trackedIdsMemory
 	}
 
 	// ========================================================================
@@ -352,7 +355,7 @@ export class CuckooFilter {
 	private fingerprint(id: string): number {
 		// Use a simple hash and take 16 bits
 		// Must never return 0 (reserved for empty)
-		let hash = this.fnv1a(id)
+		let hash = fnv1a32(id)
 		let fp = hash & 0xffff
 		if (fp === 0) fp = 1
 		return fp
@@ -362,7 +365,7 @@ export class CuckooFilter {
 	 * Compute the primary bucket index from an ID.
 	 */
 	private hash(id: string): number {
-		const hash = this.fnv1a(id)
+		const hash = fnv1a32(id)
 		return (hash >>> 16) & (this.numBuckets - 1)
 	}
 
@@ -374,18 +377,6 @@ export class CuckooFilter {
 		// XOR with hash of fingerprint
 		const fpHash = this.fnv1aNumber(fp)
 		return (index ^ (fpHash >>> 16)) & (this.numBuckets - 1)
-	}
-
-	/**
-	 * FNV-1a hash function for strings.
-	 */
-	private fnv1a(str: string): number {
-		let hash = 0x811c9dc5
-		for (let i = 0; i < str.length; i++) {
-			hash ^= str.charCodeAt(i)
-			hash = Math.imul(hash, 0x01000193)
-		}
-		return hash >>> 0
 	}
 
 	/**

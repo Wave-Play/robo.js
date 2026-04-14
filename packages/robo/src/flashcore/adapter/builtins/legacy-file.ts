@@ -14,6 +14,7 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 import zlib from 'node:zlib'
 import type { FlashcoreAdapter } from '../types.js'
+import { DataCorruptionError } from '../../core/errors.js'
 
 const gzipAsync = promisify(zlib.gzip)
 const gunzipAsync = promisify(zlib.gunzip)
@@ -54,8 +55,19 @@ export class LegacyFileAdapter<K = string, V = unknown> implements FlashcoreAdap
 		try {
 			const fileName = this.getFilePath(key)
 			const compressed = await fs.readFile(fileName)
-			const decompressed = await gunzipAsync(compressed)
-			return JSON.parse(decompressed.toString('utf-8')) as V
+			try {
+				const decompressed = await gunzipAsync(Uint8Array.from(compressed))
+				return JSON.parse(decompressed.toString('utf-8')) as V
+			} catch (error) {
+				throw new DataCorruptionError(
+					`Legacy Flashcore data for key "${String(key)}" is corrupted.`,
+					{
+						structure: 'chunk',
+						repairGuidance: 'Restore the legacy .robo/data backup before retrying migration.',
+						cause: error instanceof Error ? error : new Error(String(error))
+					}
+				)
+			}
 		} catch (e) {
 			// Missing key
 			if (this.isNodeError(e) && e.code === 'ENOENT') {
@@ -77,8 +89,16 @@ export class LegacyFileAdapter<K = string, V = unknown> implements FlashcoreAdap
 			await fs.mkdir(this.dataDir, { recursive: true })
 
 			// Atomic write: temp file + rename.
-			await fs.writeFile(tempPath, compressed)
+			const handle = await fs.open(tempPath, 'w')
+			try {
+				await handle.writeFile(Uint8Array.from(compressed))
+				await handle.sync()
+			} finally {
+				await handle.close()
+			}
+
 			await fs.rename(tempPath, fileName)
+			await this.fsyncDirectory(this.dataDir)
 			return true
 		} catch (e) {
 			// Clean up temp file on failure
@@ -177,6 +197,19 @@ export class LegacyFileAdapter<K = string, V = unknown> implements FlashcoreAdap
 			'code' in error &&
 			typeof (error as { code?: unknown }).code === 'string'
 		)
+	}
+
+	private async fsyncDirectory(dir: string): Promise<void> {
+		try {
+			const handle = await fs.open(dir, 'r')
+			try {
+				await handle.sync()
+			} finally {
+				await handle.close()
+			}
+		} catch {
+			// Best-effort only.
+		}
 	}
 }
 

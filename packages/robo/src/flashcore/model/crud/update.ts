@@ -7,49 +7,30 @@
 import type { NormalizedSchema, UpdateArgs, ModelHooks } from '../../schema/types.js'
 import type { Catalog } from '../catalog.js'
 import type { ChunkManager } from '../chunk.js'
-import type { ChunkLockManager } from '../locks.js'
-import type { UniqueIndexManager, UniqueConstraintOptions } from '../../index/unique.js'
-import type { WriteAheadLog } from '../../wal/manager.js'
-import type { UniqueUpdate } from '../../wal/deltas.js'
+import type { CatalogLockManager, ChunkLockManager } from '../locks.js'
+import type { UniqueIndexManager, UniqueConstraintOptions, CompoundUniqueConstraintOptions } from '../../index/unique.js'
+import type { WalContext, UniqueUpdate, DeltaBuildResult } from '../../wal/types.js'
 import { RecordValidator, throwIfInvalid } from '../../schema/validate.js'
 import { TypeSerializer } from '../../schema/serialize.js'
 import { normalizeRecordShape } from '../../schema/normalize.js'
 import { executeBeforeUpdate, executeAfterUpdate } from '../hooks.js'
 import { ValidationError, TransactionConflictError } from '../../core/errors.js'
-import { MAX_VERSION_VALUE, VERSION_OVERFLOW_WARN_THRESHOLD } from '../../core/constants.js'
-import { logger } from '../../core/logger.js'
-import {
-	buildUpdateDeltas,
-	buildUpdateSegmentedDeltas,
-	buildUpdateChunkToSegmentsDeltas,
-	buildUpdateSegmentsToChunkDeltas
-} from '../../wal/deltas.js'
-import { buildModelKey, buildUniqueKey } from '../../core/keys.js'
+import { buildUniqueKey } from '../../core/keys.js'
 import { encodeUniqueValue } from '../../core/encoding.js'
 import { splitRecordToSegments } from '../segments.js'
-
-/**
- * Index update callbacks for derived writes (Phase 6).
- */
-export interface IndexUpdateCallbacks {
-	/** Remove entry from sorted index */
-	removeFromSortedIndex?: (field: string, value: unknown, id: string) => void
-	/** Add entry to sorted index */
-	addToSortedIndex?: (field: string, value: unknown, id: string) => void
-	/** Mark indexes as dirty for persistence */
-	markDirty?: () => void
-}
-
-/**
- * Relation callbacks for Phase 9.
- */
-export interface RelationCallbacks {
-	/**
-	 * Validate foreign keys in the input data.
-	 * Throws ValidationError if a FK references a non-existent record.
-	 */
-	validateForeignKeys?: (data: Record<string, unknown>) => Promise<void>
-}
+import {
+	extractIdFromWhere,
+	findVersionField,
+	valuesEqual,
+	loadRecordByEntry,
+	getChunkIdFromEntry,
+	incrementVersion,
+	resolveChunkKey,
+	validateWhereClause,
+	releaseConstraintsOnError,
+	type IndexCallbacks,
+	type RelationCallbacks
+} from './shared.js'
 
 /**
  * Context for update operation.
@@ -60,6 +41,7 @@ export interface UpdateContext<T> {
 	schema: NormalizedSchema
 	catalog: Catalog
 	chunkManager: ChunkManager
+	catalogLock?: CatalogLockManager
 	chunkLock: ChunkLockManager
 	validator: RecordValidator
 	serializer: TypeSerializer
@@ -70,14 +52,14 @@ export interface UpdateContext<T> {
 	// Callback to persist catalog after modification
 	persistCatalog?: () => Promise<void>
 
-	// Optional WAL manager for crash safety
-	wal?: WriteAheadLog
+	// Optional WAL context for crash safety
+	wal?: WalContext
 
 	// Optional override for building full chunk keys (for WAL deltas)
 	getChunkKey?: (chunkId: number) => string
 
 	// Optional index update callbacks (Phase 6)
-	indexCallbacks?: IndexUpdateCallbacks
+	indexCallbacks?: IndexCallbacks
 
 	// Optional relation callbacks (Phase 9)
 	relationCallbacks?: RelationCallbacks
@@ -108,9 +90,7 @@ export async function executeUpdate<T extends { id: string }>(
 	args: UpdateArgs<T>
 ): Promise<T | null> {
 	// Validate where clause
-	if (!args.where || typeof args.where !== 'object') {
-		throw new ValidationError('update requires a where clause')
-	}
+	validateWhereClause(args.where, 'update')
 
 	// Extract ID from where clause (supports unique field lookup)
 	const { id, hadUniqueField } = await extractIdFromWhere(args.where, ctx)
@@ -135,7 +115,7 @@ export async function executeUpdate<T extends { id: string }>(
 
 	// Track if record is currently segmented
 	const isSegmented = entry.kind === 'segments'
-	const chunkId = entry.kind === 'chunk' ? entry.chunkId ?? 0 : 0
+	const chunkId = getChunkIdFromEntry(entry)
 
 	// Validate update data
 	const updateData = args.data as Record<string, unknown>
@@ -159,21 +139,13 @@ export async function executeUpdate<T extends { id: string }>(
 
 	// Track WAL entry ID for cleanup
 	let walId: string | null = null
-	const walEnabled = ctx.wal?.isEnabled() ?? false
+	const walEnabled = ctx.wal?.manager.isEnabled() ?? false
 
 	// Helper to perform update operation
 	const performUpdate = async () => {
 		// Load existing record based on storage type
-		let existingRaw: unknown
-
-		if (isSegmented && entry.segmentIds) {
-			existingRaw = await ctx.chunkManager.loadSegmentedRecord(id, entry.segmentIds)
-		} else {
-			existingRaw = await ctx.chunkManager.getRecord(chunkId, id)
-		}
-
+		const existingRaw = await loadRecordByEntry(ctx.chunkManager, id, entry)
 		if (!existingRaw) {
-			// Record was deleted between check and lock
 			return null
 		}
 
@@ -246,31 +218,45 @@ export async function executeUpdate<T extends { id: string }>(
 			}
 		}
 
-		// Increment version field if present (with overflow protection)
-		const versionField = findVersionField(ctx.schema)
-		if (versionField && versionField in merged) {
-			// Skip auto-increment if explicit _version provided in update data
-			if (!(versionField in hookedData)) {
-				const currentVersion = (merged[versionField] as number) || 0
-				let newVersion = currentVersion + 1
+		// Handle compound unique constraint updates
+		const compoundConstraintUpdates: Array<{
+			options: CompoundUniqueConstraintOptions
+			oldValues: unknown[]
+			newValues: unknown[]
+		}> = []
+		const acquiredCompoundConstraints: Array<{ options: CompoundUniqueConstraintOptions; values: unknown[] }> = []
 
-				// Version overflow protection
-				if (newVersion >= MAX_VERSION_VALUE) {
-					logger.warn(
-						`Version overflow detected for ${ctx.modelName}:${id}. ` +
-						`Resetting from ${currentVersion} to 1. This breaks optimistic locking for in-flight transactions.`
-					)
-					newVersion = 1
-				} else if (newVersion >= VERSION_OVERFLOW_WARN_THRESHOLD) {
-					logger.warn(
-						`Version approaching overflow for ${ctx.modelName}:${id}. ` +
-						`Current: ${newVersion}, Max: ${MAX_VERSION_VALUE}`
-					)
+		if (ctx.uniqueIndexManager && ctx.schema.compoundUniques.length > 0) {
+			for (const constraint of ctx.schema.compoundUniques) {
+				// Check if any field in the constraint is being updated
+				const hasUpdatedField = constraint.fields.some(f => f in hookedData)
+				if (!hasUpdatedField) {
+					continue
 				}
 
-				merged[versionField] = newVersion
+				const oldValues = constraint.fields.map(f => (existing as Record<string, unknown>)[f])
+				const newValues = constraint.fields.map(f =>
+					f in hookedData ? hookedData[f] : (existing as Record<string, unknown>)[f]
+				)
+
+				// Skip if values are unchanged
+				if (oldValues.length === newValues.length && oldValues.every((v, i) => valuesEqual(v, newValues[i]))) {
+					continue
+				}
+
+				const options: CompoundUniqueConstraintOptions = {
+					modelName: ctx.modelName,
+					namespace: ctx.namespace,
+					fields: constraint.fields
+				}
+
+				compoundConstraintUpdates.push({ options, oldValues, newValues })
 			}
 		}
+
+		// Increment version field if present (with overflow protection)
+		// Skip auto-increment if explicit version provided in update data
+		incrementVersion(merged, ctx.schema, ctx.modelName, id, hookedData)
 
 		// Normalize record shape
 		const normalized = normalizeRecordShape(merged, ctx.schema)
@@ -308,23 +294,19 @@ export async function executeUpdate<T extends { id: string }>(
 
 		// Build WAL deltas (if enabled)
 		if (walEnabled && ctx.wal) {
-			let deltas: ReturnType<typeof buildUpdateDeltas>
+			let deltas: DeltaBuildResult
 
 			if (!isSegmented && !needsSegmentation) {
 				// Regular chunk update
-				const fullChunkKey = ctx.getChunkKey
-					? ctx.getChunkKey(chunkId)
-					: buildModelKey(ctx.modelName, `chunk:${chunkId}`, ctx.namespace)
+				const fullChunkKey = resolveChunkKey(ctx.modelName, chunkId, ctx.namespace, ctx.getChunkKey)
 
-				deltas = buildUpdateDeltas(fullChunkKey, id, patch, inversePatch, uniqueUpdates)
+				deltas = ctx.wal.deltas.buildUpdateDeltas(fullChunkKey, id, patch, inversePatch, uniqueUpdates)
 			} else if (!isSegmented && needsSegmentation) {
 				// Chunk -> Segments transition
-				const fullChunkKey = ctx.getChunkKey
-					? ctx.getChunkKey(chunkId)
-					: buildModelKey(ctx.modelName, `chunk:${chunkId}`, ctx.namespace)
+				const fullChunkKey = resolveChunkKey(ctx.modelName, chunkId, ctx.namespace, ctx.getChunkKey)
 
 				const { segmentIds, segments } = splitRecordToSegments(ctx.chunkManager, id, serialized)
-				deltas = buildUpdateChunkToSegmentsDeltas(
+				deltas = ctx.wal.deltas.buildUpdateChunkToSegmentsDeltas(
 					fullChunkKey,
 					chunkId,
 					id,
@@ -336,9 +318,7 @@ export async function executeUpdate<T extends { id: string }>(
 			} else if (isSegmented && !needsSegmentation) {
 				// Segments -> Chunk transition
 				const targetChunkId = ctx.chunkManager.selectChunkForInsert(ctx.catalog, sizeCheck.estimatedSize)
-				const targetChunkKey = ctx.getChunkKey
-					? ctx.getChunkKey(targetChunkId)
-					: buildModelKey(ctx.modelName, `chunk:${targetChunkId}`, ctx.namespace)
+				const targetChunkKey = resolveChunkKey(ctx.modelName, targetChunkId, ctx.namespace, ctx.getChunkKey)
 
 				const oldCount = entry.segmentIds?.length
 				const { segmentIds: oldSegmentIds, segments: oldSegments } = splitRecordToSegments(
@@ -348,7 +328,7 @@ export async function executeUpdate<T extends { id: string }>(
 					typeof oldCount === 'number' ? oldCount : undefined
 				)
 
-				deltas = buildUpdateSegmentsToChunkDeltas(
+				deltas = ctx.wal.deltas.buildUpdateSegmentsToChunkDeltas(
 					id,
 					oldSegmentIds,
 					oldSegments,
@@ -372,7 +352,7 @@ export async function executeUpdate<T extends { id: string }>(
 					serialized
 				)
 
-				deltas = buildUpdateSegmentedDeltas(
+				deltas = ctx.wal.deltas.buildUpdateSegmentedDeltas(
 					id,
 					oldSegmentIds,
 					oldSegments,
@@ -382,7 +362,7 @@ export async function executeUpdate<T extends { id: string }>(
 				)
 			}
 
-			walId = await ctx.wal.begin({
+			walId = await ctx.wal.manager.begin({
 				model: ctx.modelName,
 				namespace: ctx.namespace,
 				op: 'update',
@@ -402,25 +382,22 @@ export async function executeUpdate<T extends { id: string }>(
 					}
 				}
 			} catch (error) {
-				// Release already-acquired constraints on failure
-				for (const { options, value } of acquiredConstraints) {
-					try {
-						await ctx.uniqueIndexManager.release(options, value)
-					} catch {
-						// Ignore release errors during rollback
+				walId = await releaseConstraintsOnError(ctx.uniqueIndexManager, acquiredConstraints, walId, ctx.wal)
+				throw error
+			}
+		}
+
+		// Acquire new compound constraints (may throw on duplicate)
+		if (ctx.uniqueIndexManager && compoundConstraintUpdates.length > 0) {
+			try {
+				for (const { options, newValues } of compoundConstraintUpdates) {
+					if (!newValues.some(v => v === null || v === undefined)) {
+						await ctx.uniqueIndexManager.acquireCompound(options, newValues, id)
+						acquiredCompoundConstraints.push({ options, values: newValues })
 					}
 				}
-
-				// Operation failed without performing chunk writes; remove WAL entry to prevent replay.
-				if (walId && ctx.wal) {
-					try {
-						await ctx.wal.deleteEntry(walId)
-					} catch {
-						// Ignore WAL cleanup errors; recovery will handle it if needed.
-					}
-					walId = null
-				}
-
+			} catch (error) {
+				walId = await releaseConstraintsOnError(ctx.uniqueIndexManager, acquiredConstraints, walId, ctx.wal, acquiredCompoundConstraints)
 				throw error
 			}
 		}
@@ -462,7 +439,14 @@ export async function executeUpdate<T extends { id: string }>(
 				await ctx.chunkManager.setRecord(chunkId, id, serialized)
 			}
 
-			// Release old unique constraints after successful update
+			// Mark WAL as authoritative (all writes complete) BEFORE releasing old constraints.
+			// This ordering ensures WAL recovery can safely undo the update without
+			// leaving the unique index in an inconsistent state.
+			if (walId && ctx.wal) {
+				await ctx.wal.manager.markPhase(walId, 'authoritative')
+			}
+
+			// Release old unique constraints after WAL is authoritative
 			if (ctx.uniqueIndexManager) {
 				for (const { options, oldValue } of constraintUpdates) {
 					if (oldValue !== null && oldValue !== undefined) {
@@ -473,11 +457,17 @@ export async function executeUpdate<T extends { id: string }>(
 						}
 					}
 				}
-			}
 
-			// Mark WAL as authoritative (all writes complete)
-			if (walId && ctx.wal) {
-				await ctx.wal.markPhase(walId, 'authoritative')
+				// Release old compound unique constraints
+				for (const { options, oldValues } of compoundConstraintUpdates) {
+					if (!oldValues.some(v => v === null || v === undefined)) {
+						try {
+							await ctx.uniqueIndexManager.releaseCompound(options, oldValues)
+						} catch {
+							// Ignore release errors
+						}
+					}
+				}
 			}
 
 			// Derived writes: update sorted indexes for changed indexed fields (Phase 6)
@@ -519,19 +509,11 @@ export async function executeUpdate<T extends { id: string }>(
 
 			// Mark derived writes complete
 			if (walId && ctx.wal) {
-				await ctx.wal.markPhase(walId, 'derived')
+				await ctx.wal.manager.markPhase(walId, 'derived')
 			}
 		} catch (error) {
 			// Release acquired constraints on chunk write failure
-			if (ctx.uniqueIndexManager) {
-				for (const { options, value } of acquiredConstraints) {
-					try {
-						await ctx.uniqueIndexManager.release(options, value)
-					} catch {
-						// Ignore release errors during rollback
-					}
-				}
-			}
+			await releaseConstraintsOnError(ctx.uniqueIndexManager, acquiredConstraints, walId, ctx.wal, acquiredCompoundConstraints)
 			// WAL will be recovered on next startup (if crash occurs here)
 			throw error
 		}
@@ -540,15 +522,25 @@ export async function executeUpdate<T extends { id: string }>(
 		return ctx.serializer.deserializeRecord(serialized) as T
 	}
 
-	// Execute the update with appropriate locking
+	// Execute the update with appropriate locking.
+	// Wrap in catalog lock when available to serialize storage transitions
+	// (chunk-to-segments and segments-to-chunk) that mutate the catalog.
+	const executeWithLocking = async (): Promise<T | null> => {
+		if (isSegmented) {
+			// Segmented records don't use chunk lock (no shared chunk)
+			return performUpdate()
+		} else {
+			// Use chunk lock for regular records
+			return ctx.chunkLock.withChunkLock(ctx.modelKey, chunkId, performUpdate)
+		}
+	}
+
 	let result: T | null
 
-	if (isSegmented) {
-		// Segmented records don't use chunk lock (no shared chunk)
-		result = await performUpdate()
+	if (ctx.catalogLock) {
+		result = await ctx.catalogLock.withCatalogLock(ctx.modelKey, executeWithLocking)
 	} else {
-		// Use chunk lock for regular records
-		result = await ctx.chunkLock.withChunkLock(ctx.modelKey, chunkId, performUpdate)
+		result = await executeWithLocking()
 	}
 
 	if (!result) {
@@ -557,100 +549,13 @@ export async function executeUpdate<T extends { id: string }>(
 
 	// Complete WAL entry (operation successful)
 	if (walId && ctx.wal) {
-		await ctx.wal.complete(walId)
+		await ctx.wal.manager.complete(walId)
 	}
 
 	// Execute afterUpdate hook
 	await executeAfterUpdate(ctx.hooks, result)
 
 	return result
-}
-
-/**
- * Extract ID from where clause.
- */
-interface ExtractIdResult {
-	id: string | null
-	hadUniqueField: boolean
-}
-
-/**
- * Extract ID from a where clause.
- *
- * Supports:
- * - Direct ID lookup
- * - Primary key lookup (if not 'id')
- * - Unique field lookups via UniqueIndexManager
- */
-async function extractIdFromWhere<T>(
-	where: Record<string, unknown>,
-	ctx: UpdateContext<T>
-): Promise<ExtractIdResult> {
-	const schema = ctx.schema
-
-	// Direct ID lookup
-	if ('id' in where && typeof where.id === 'string') {
-		return { id: where.id, hadUniqueField: true }
-	}
-
-	// Primary key lookup (if not 'id')
-	if (schema.primaryKey !== 'id' && schema.primaryKey in where) {
-		const pkValue = where[schema.primaryKey]
-		if (typeof pkValue === 'string') {
-			return { id: pkValue, hadUniqueField: true }
-		}
-	}
-
-	// Unique field lookups via UniqueIndexManager
-	if (ctx.uniqueIndexManager && schema.uniqueFields.length > 0) {
-		for (const field of schema.uniqueFields) {
-			if (field in where) {
-				const value = where[field]
-
-				// Skip null/undefined values
-				if (value === null || value === undefined) {
-					continue
-				}
-
-				const id = await ctx.uniqueIndexManager.lookup(
-					{ modelName: ctx.modelName, namespace: ctx.namespace, field },
-					value
-				)
-
-				return { id, hadUniqueField: true }
-			}
-		}
-	}
-
-	return { id: null, hadUniqueField: false }
-}
-
-/**
- * Find the version field in the schema.
- */
-function findVersionField(schema: NormalizedSchema): string | null {
-	for (const [name, field] of schema.fields) {
-		if (field.version) {
-			return name
-		}
-	}
-	return null
-}
-
-/**
- * Check if two values are equal for constraint purposes.
- */
-function valuesEqual(a: unknown, b: unknown): boolean {
-	if (a === b) return true
-	if (a === null || a === undefined) return b === null || b === undefined
-	if (b === null || b === undefined) return false
-
-	// Handle Date comparison
-	if (a instanceof Date && b instanceof Date) {
-		return a.getTime() === b.getTime()
-	}
-
-	return false
 }
 
 /**

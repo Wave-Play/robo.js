@@ -8,42 +8,24 @@ import type { NormalizedSchema, ModelHooks } from '../../schema/types.js'
 import type { Catalog } from '../catalog.js'
 import type { ChunkManager } from '../chunk.js'
 import type { CatalogLockManager, ChunkLockManager } from '../locks.js'
-import type { UniqueIndexManager, UniqueConstraintOptions } from '../../index/unique.js'
-import type { WriteAheadLog } from '../../wal/manager.js'
-import type { UniqueChange } from '../../wal/deltas.js'
+import type { UniqueIndexManager, UniqueConstraintOptions, CompoundUniqueConstraintOptions } from '../../index/unique.js'
+import type { WalContext, UniqueChange } from '../../wal/types.js'
 import { RecordValidator, throwIfInvalid } from '../../schema/validate.js'
 import { TypeSerializer } from '../../schema/serialize.js'
 import { applyDefaults, normalizeRecordShape } from '../../schema/normalize.js'
 import { generateId, isValidId } from '../id.js'
 import { executeBeforeCreate, executeAfterCreate } from '../hooks.js'
 import { UniqueConstraintError } from '../../core/errors.js'
-import { buildCreateDeltas, buildCreateSegmentedDeltas } from '../../wal/deltas.js'
-import { buildModelKey, buildUniqueKey } from '../../core/keys.js'
+import { buildUniqueKey } from '../../core/keys.js'
 import { encodeUniqueValue } from '../../core/encoding.js'
 import { splitRecordToSegments } from '../segments.js'
-
-/**
- * Index update callbacks for derived writes (Phase 6).
- */
-export interface IndexUpdateCallbacks {
-	/** Add record ID to filter */
-	addToFilter?: (id: string) => void
-	/** Add entry to sorted index */
-	addToSortedIndex?: (field: string, value: unknown, id: string) => void
-	/** Mark indexes as dirty for persistence */
-	markDirty?: () => void
-}
-
-/**
- * Relation callbacks for Phase 9.
- */
-export interface RelationCallbacks {
-	/**
-	 * Validate foreign keys in the input data.
-	 * Throws ValidationError if a FK references a non-existent record.
-	 */
-	validateForeignKeys?: (data: Record<string, unknown>) => Promise<void>
-}
+import {
+	findVersionField,
+	resolveChunkKey,
+	releaseConstraintsOnError,
+	type IndexCallbacks,
+	type RelationCallbacks
+} from './shared.js'
 
 /**
  * Context for create operation.
@@ -65,14 +47,14 @@ export interface CreateContext<T> {
 	// Callback to persist catalog after modification
 	persistCatalog: () => Promise<void>
 
-	// Optional WAL manager for crash safety
-	wal?: WriteAheadLog
+	// Optional WAL context for crash safety
+	wal?: WalContext
 
 	// Optional override for building full chunk keys (for WAL deltas)
 	getChunkKey?: (chunkId: number) => string
 
 	// Optional index update callbacks (Phase 6)
-	indexCallbacks?: IndexUpdateCallbacks
+	indexCallbacks?: IndexCallbacks
 
 	// Optional relation callbacks (Phase 9)
 	relationCallbacks?: RelationCallbacks
@@ -159,7 +141,7 @@ export async function executeCreate<T extends { id: string }>(
 
 	// Track WAL entry ID for cleanup
 	let walId: string | null = null
-	const walEnabled = ctx.wal?.isEnabled() ?? false
+	const walEnabled = ctx.wal?.manager.isEnabled() ?? false
 
 	// Acquire catalog lock for the entire create operation
 	const result = await ctx.catalogLock.withCatalogLock(ctx.modelKey, async () => {
@@ -192,23 +174,20 @@ export async function executeCreate<T extends { id: string }>(
 		const chunkId = needsSegmentation ? -1 : ctx.chunkManager.selectChunkForInsert(ctx.catalog, sizeCheck.estimatedSize)
 
 		// Get full chunk key for WAL (only if not segmented)
-		const fullChunkKey =
-			chunkId >= 0
-				? ctx.getChunkKey
-					? ctx.getChunkKey(chunkId)
-					: buildModelKey(ctx.modelName, `chunk:${chunkId}`, ctx.namespace)
-				: '' // Segmented records don't use chunk keys
+		const fullChunkKey = chunkId >= 0
+			? resolveChunkKey(ctx.modelName, chunkId, ctx.namespace, ctx.getChunkKey)
+			: ''
 
 		// Begin WAL entry (if enabled)
 		if (walEnabled && ctx.wal) {
 			const deltas = needsSegmentation
 				? (() => {
 					const { segmentIds, segments } = splitRecordToSegments(ctx.chunkManager, id, serialized)
-					return buildCreateSegmentedDeltas(id, segmentIds, segments, uniqueKeys)
+					return ctx.wal.deltas.buildCreateSegmentedDeltas(id, segmentIds, segments, uniqueKeys)
 				})()
-				: buildCreateDeltas(fullChunkKey, chunkId, id, serialized, uniqueKeys)
+				: ctx.wal.deltas.buildCreateDeltas(fullChunkKey, chunkId, id, serialized, uniqueKeys)
 
-			walId = await ctx.wal.begin({
+			walId = await ctx.wal.manager.begin({
 				model: ctx.modelName,
 				namespace: ctx.namespace,
 				op: 'create',
@@ -220,6 +199,7 @@ export async function executeCreate<T extends { id: string }>(
 
 		// Acquire unique constraints for all unique fields (after WAL begin)
 		const acquiredConstraints: Array<{ options: UniqueConstraintOptions; value: unknown }> = []
+		const acquiredCompoundConstraints: Array<{ options: CompoundUniqueConstraintOptions; values: unknown[] }> = []
 
 		if (ctx.uniqueIndexManager && ctx.schema.uniqueFields.length > 0) {
 			try {
@@ -241,25 +221,33 @@ export async function executeCreate<T extends { id: string }>(
 					acquiredConstraints.push({ options, value })
 				}
 			} catch (error) {
-				// Release already-acquired constraints on failure
-				for (const { options, value } of acquiredConstraints) {
-					try {
-						await ctx.uniqueIndexManager.release(options, value)
-					} catch {
-						// Ignore release errors during rollback
-					}
-				}
+				walId = await releaseConstraintsOnError(ctx.uniqueIndexManager, acquiredConstraints, walId, ctx.wal)
+				throw error
+			}
+		}
 
-				// Operation failed without performing chunk/catalog writes; remove WAL entry to prevent replay.
-				if (walId && ctx.wal) {
-					try {
-						await ctx.wal.deleteEntry(walId)
-					} catch {
-						// Ignore WAL cleanup errors; recovery will handle it if needed.
-					}
-					walId = null
-				}
+		// Acquire compound unique constraints
+		if (ctx.uniqueIndexManager && ctx.schema.compoundUniques.length > 0) {
+			try {
+				for (const constraint of ctx.schema.compoundUniques) {
+					const values = constraint.fields.map(f => normalized[f])
 
+					// Skip if any value is null/undefined
+					if (values.some(v => v === null || v === undefined)) {
+						continue
+					}
+
+					const options: CompoundUniqueConstraintOptions = {
+						modelName: ctx.modelName,
+						namespace: ctx.namespace,
+						fields: constraint.fields
+					}
+
+					await ctx.uniqueIndexManager.acquireCompound(options, values, id)
+					acquiredCompoundConstraints.push({ options, values })
+				}
+			} catch (error) {
+				walId = await releaseConstraintsOnError(ctx.uniqueIndexManager, acquiredConstraints, walId, ctx.wal, acquiredCompoundConstraints)
 				throw error
 			}
 		}
@@ -298,7 +286,7 @@ export async function executeCreate<T extends { id: string }>(
 
 		// Mark WAL as authoritative (all writes complete)
 		if (walId && ctx.wal) {
-			await ctx.wal.markPhase(walId, 'authoritative')
+			await ctx.wal.manager.markPhase(walId, 'authoritative')
 		}
 
 		// Derived writes: update filter and sorted indexes (Phase 6)
@@ -326,21 +314,13 @@ export async function executeCreate<T extends { id: string }>(
 
 		// Mark derived writes complete
 		if (walId && ctx.wal) {
-			await ctx.wal.markPhase(walId, 'derived')
+			await ctx.wal.manager.markPhase(walId, 'derived')
 		}
 
 		return created
 	} catch (error) {
 		// Release unique constraints on chunk/catalog failure
-		if (ctx.uniqueIndexManager) {
-			for (const { options, value } of acquiredConstraints) {
-				try {
-					await ctx.uniqueIndexManager.release(options, value)
-				} catch {
-					// Ignore release errors during rollback
-				}
-			}
-		}
+		await releaseConstraintsOnError(ctx.uniqueIndexManager, acquiredConstraints, walId, ctx.wal, acquiredCompoundConstraints)
 		// WAL will be recovered on next startup (if crash occurs here)
 		throw error
 	}
@@ -348,7 +328,7 @@ export async function executeCreate<T extends { id: string }>(
 
 	// Complete WAL entry (operation successful)
 	if (walId && ctx.wal) {
-		await ctx.wal.complete(walId)
+		await ctx.wal.manager.complete(walId)
 	}
 
 	// Execute afterCreate hook
@@ -357,14 +337,3 @@ export async function executeCreate<T extends { id: string }>(
 	return result
 }
 
-/**
- * Find the version field in the schema.
- */
-function findVersionField(schema: NormalizedSchema): string | null {
-	for (const [name, field] of schema.fields) {
-		if (field.version) {
-			return name
-		}
-	}
-	return null
-}

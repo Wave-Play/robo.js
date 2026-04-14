@@ -13,7 +13,7 @@ import type {
 	UpdateInput,
 	BatchResult
 } from '../../schema/types.js'
-import type { Catalog } from '../catalog.js'
+import type { Catalog, CatalogEntry } from '../catalog.js'
 import type { ChunkManager } from '../chunk.js'
 import type { CatalogLockManager, ChunkLockManager } from '../locks.js'
 import type { UniqueIndexManager } from '../../index/unique.js'
@@ -22,22 +22,19 @@ import { TypeSerializer } from '../../schema/serialize.js'
 import { applyDefaults, normalizeRecordShape } from '../../schema/normalize.js'
 import { generateId, isValidId } from '../id.js'
 import { UniqueConstraintError, SafetyError } from '../../core/errors.js'
-import { requiresAcid } from '../../transaction/modes.js'
-import { DEFAULT_SAFETY_LIMITS, MAX_VERSION_VALUE, VERSION_OVERFLOW_WARN_THRESHOLD } from '../../core/constants.js'
+import { requiresAcid } from '../../adapter/capabilities.js'
+import { DEFAULT_SAFETY_LIMITS } from '../../core/constants.js'
 import { evaluateWhere } from '../../query/evaluate.js'
 import { encodeUniqueValue } from '../../core/encoding.js'
-import { logger } from '../../core/logger.js'
-
-/**
- * Index update callbacks for bulk operations.
- */
-export interface BulkIndexCallbacks {
-	addToFilter?: (id: string) => void
-	removeFromFilter?: (id: string) => void
-	addToSortedIndex?: (field: string, value: unknown, id: string) => void
-	removeFromSortedIndex?: (field: string, value: unknown, id: string) => void
-	markDirty?: () => void
-}
+import { buildCompoundUniqueKey } from '../../core/keys.js'
+import {
+	findVersionField,
+	loadRecordByEntry,
+	getChunkIdFromEntry,
+	incrementVersion,
+	valuesEqual,
+	type IndexCallbacks
+} from './shared.js'
 
 /**
  * Context for bulk operations.
@@ -56,7 +53,7 @@ export interface BulkContext<T> {
 	uniqueIndexManager?: UniqueIndexManager
 	namespace?: string
 	persistCatalog: () => Promise<void>
-	indexCallbacks?: BulkIndexCallbacks
+	indexCallbacks?: IndexCallbacks
 	safetyLimits?: typeof DEFAULT_SAFETY_LIMITS
 }
 
@@ -71,8 +68,12 @@ export interface CreateManyResult<T> {
 /**
  * Execute createMany operation.
  *
- * Creates multiple records atomically using transaction or atomicBatch.
+ * Creates multiple records atomically using transaction when available.
  * Requires caps.acid === true.
+ *
+ * Note: True atomicBatch support for bulk creates would require chunk-level
+ * KV operation collection, which is not currently implemented. Only the
+ * transaction path provides atomic guarantees; the fallback path is sequential.
  *
  * @param ctx - Bulk context
  * @param data - Array of records to create
@@ -100,6 +101,7 @@ export async function executeCreateMany<T extends { id: string }>(
 
 	const seenIds = new Set<string>()
 	const seenUniqueValues = new Map<string, Set<string>>() // field -> set of values
+	const seenCompoundValues = new Map<string, Set<string>>() // fields joined -> set of encoded value tuples
 
 	for (const inputData of data) {
 		const record = { ...inputData as Record<string, unknown> }
@@ -156,6 +158,8 @@ export async function executeCreateMany<T extends { id: string }>(
 		throwIfInvalid(validationResult)
 
 		// Check unique constraints within batch
+		let skipRecord = false
+
 		for (const field of ctx.schema.uniqueFields) {
 			const value = withDefaults[field]
 			if (value !== null && value !== undefined) {
@@ -167,7 +171,10 @@ export async function executeCreateMany<T extends { id: string }>(
 				}
 
 				if (fieldSet.has(encodedValue)) {
-					if (skipDuplicates) continue
+					if (skipDuplicates) {
+						skipRecord = true
+						break
+					}
 					throw new UniqueConstraintError(
 						`Duplicate value for unique field "${field}" in createMany batch`,
 						{ model: ctx.modelName, field, value }
@@ -176,6 +183,36 @@ export async function executeCreateMany<T extends { id: string }>(
 				fieldSet.add(encodedValue)
 			}
 		}
+
+		if (skipRecord) continue
+
+		// Check compound unique constraints within batch
+		for (const constraint of ctx.schema.compoundUniques) {
+			const values = constraint.fields.map(f => withDefaults[f])
+			if (!values.some(v => v === null || v === undefined)) {
+				const compoundKey = constraint.fields.join('..')
+				const encodedValues = values.map(v => encodeUniqueValue(v)).join('..')
+				let fieldSet = seenCompoundValues.get(compoundKey)
+				if (!fieldSet) {
+					fieldSet = new Set()
+					seenCompoundValues.set(compoundKey, fieldSet)
+				}
+
+				if (fieldSet.has(encodedValues)) {
+					if (skipDuplicates) {
+						skipRecord = true
+						break
+					}
+					throw new UniqueConstraintError(
+						`Duplicate compound unique value for fields [${constraint.fields.join(', ')}] in createMany batch`,
+						{ model: ctx.modelName, field: constraint.fields.join('+'), value: values }
+					)
+				}
+				fieldSet.add(encodedValues)
+			}
+		}
+
+		if (skipRecord) continue
 
 		// Normalize and serialize
 		const normalized = normalizeRecordShape(withDefaults, ctx.schema)
@@ -199,12 +236,75 @@ export async function executeCreateMany<T extends { id: string }>(
 			value: unknown
 			id: string
 		}> = []
+		const acquiredCompoundConstraints: Array<{
+			fields: string[]
+			values: unknown[]
+			id: string
+		}> = []
 		const skippedIds = new Set<string>()
+
+		const releaseAllConstraints = async () => {
+			if (!ctx.uniqueIndexManager) return
+			for (const { field, value } of acquiredConstraints) {
+				try {
+					await ctx.uniqueIndexManager.release(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, field },
+						value
+					)
+				} catch {
+					// Ignore release errors
+				}
+			}
+			for (const { fields, values } of acquiredCompoundConstraints) {
+				try {
+					await ctx.uniqueIndexManager.releaseCompound(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, fields },
+						values
+					)
+				} catch {
+					// Ignore release errors
+				}
+			}
+		}
+
+		const releaseRecordConstraints = async (recordId: string) => {
+			if (!ctx.uniqueIndexManager) return
+			for (const constraint of acquiredConstraints.filter(c => c.id === recordId)) {
+				try {
+					await ctx.uniqueIndexManager.release(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, field: constraint.field },
+						constraint.value
+					)
+				} catch {
+					// Ignore release errors
+				}
+			}
+			for (const constraint of acquiredCompoundConstraints.filter(c => c.id === recordId)) {
+				try {
+					await ctx.uniqueIndexManager.releaseCompound(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, fields: constraint.fields },
+						constraint.values
+					)
+				} catch {
+					// Ignore release errors
+				}
+			}
+		}
+
+		const removeRecordFromAcquiredLists = (recordId: string) => {
+			for (let i = acquiredConstraints.length - 1; i >= 0; i--) {
+				if (acquiredConstraints[i].id === recordId) acquiredConstraints.splice(i, 1)
+			}
+			for (let i = acquiredCompoundConstraints.length - 1; i >= 0; i--) {
+				if (acquiredCompoundConstraints[i].id === recordId) acquiredCompoundConstraints.splice(i, 1)
+			}
+		}
 
 		if (ctx.uniqueIndexManager) {
 			for (const { id, normalized } of preparedRecords) {
 				let recordSkipped = false
 
+				// Single-field unique constraints
 				for (const field of ctx.schema.uniqueFields) {
 					const value = normalized[field]
 					if (value !== null && value !== undefined) {
@@ -217,44 +317,44 @@ export async function executeCreateMany<T extends { id: string }>(
 							acquiredConstraints.push({ field, value, id })
 						} catch (error) {
 							if (skipDuplicates && error instanceof UniqueConstraintError) {
-								// Skip this record - release any constraints acquired for it
-								for (const constraint of acquiredConstraints.filter(c => c.id === id)) {
-									try {
-										await ctx.uniqueIndexManager.release(
-											{ modelName: ctx.modelName, namespace: ctx.namespace, field: constraint.field },
-											constraint.value
-										)
-									} catch {
-										// Ignore release errors
-									}
-								}
+								await releaseRecordConstraints(id)
+								removeRecordFromAcquiredLists(id)
 								skippedIds.add(id)
 								recordSkipped = true
-								break // Skip remaining fields for this record
+								break
 							}
 
-							// Release all acquired constraints on failure
-							for (const { field: f, value: v } of acquiredConstraints) {
-								try {
-									await ctx.uniqueIndexManager.release(
-										{ modelName: ctx.modelName, namespace: ctx.namespace, field: f },
-										v
-									)
-								} catch {
-									// Ignore release errors
-								}
-							}
+							await releaseAllConstraints()
 							throw error
 						}
 					}
 				}
 
-				if (recordSkipped) {
-					// Remove constraints for this record from acquired list
-					const toRemove = acquiredConstraints.filter(c => c.id === id)
-					for (const constraint of toRemove) {
-						const idx = acquiredConstraints.indexOf(constraint)
-						if (idx >= 0) acquiredConstraints.splice(idx, 1)
+				if (recordSkipped) continue
+
+				// Compound unique constraints
+				for (const constraint of ctx.schema.compoundUniques) {
+					const values = constraint.fields.map(f => normalized[f])
+					if (!values.some(v => v === null || v === undefined)) {
+						try {
+							await ctx.uniqueIndexManager.acquireCompound(
+								{ modelName: ctx.modelName, namespace: ctx.namespace, fields: constraint.fields },
+								values,
+								id
+							)
+							acquiredCompoundConstraints.push({ fields: constraint.fields, values, id })
+						} catch (error) {
+							if (skipDuplicates && error instanceof UniqueConstraintError) {
+								await releaseRecordConstraints(id)
+								removeRecordFromAcquiredLists(id)
+								skippedIds.add(id)
+								recordSkipped = true
+								break
+							}
+
+							await releaseAllConstraints()
+							throw error
+						}
 					}
 				}
 			}
@@ -268,39 +368,28 @@ export async function executeCreateMany<T extends { id: string }>(
 		}
 
 		try {
-			// Use atomicBatch or transaction
-			if (ctx.adapter.atomicBatch) {
+			// Use transaction for atomic writes, fall back to sequential
+			const writeRecords = async () => {
 				for (const { id, serialized } of preparedRecords) {
-					// Select chunk for this record
 					const sizeCheck = ctx.chunkManager.checkRecordSize(serialized)
-					const chunkId = ctx.chunkManager.selectChunkForInsert(ctx.catalog, sizeCheck.estimatedSize)
-
-					// Update catalog
-					ctx.catalog.addEntry(id, chunkId, sizeCheck.estimatedSize)
-				}
-
-				// Add records to chunks
-				for (const { id, serialized } of preparedRecords) {
-					const entry = ctx.catalog.getEntry(id)
-					if (entry?.kind === 'chunk' && entry.chunkId !== undefined) {
-						await ctx.chunkManager.setRecord(entry.chunkId, id, serialized)
-					}
-				}
-
-				// Persist catalog
-				await ctx.persistCatalog()
-			} else if (ctx.adapter.transaction) {
-				await ctx.adapter.transaction(async () => {
-					for (const { id, serialized } of preparedRecords) {
-						const sizeCheck = ctx.chunkManager.checkRecordSize(serialized)
+					if (sizeCheck.needsSegmentation) {
+						const segmentIds = await ctx.chunkManager.saveSegmentedRecord(id, serialized)
+						ctx.catalog.addSegmentedEntry(id, segmentIds)
+					} else {
 						const chunkId = ctx.chunkManager.selectChunkForInsert(ctx.catalog, sizeCheck.estimatedSize)
-
 						await ctx.chunkManager.setRecord(chunkId, id, serialized)
 						ctx.catalog.addEntry(id, chunkId, sizeCheck.estimatedSize)
 					}
+				}
 
-					await ctx.persistCatalog()
-				})
+				await ctx.persistCatalog()
+			}
+
+			if (ctx.adapter.transaction) {
+				await ctx.adapter.transaction(writeRecords)
+			} else {
+				// Sequential fallback (atomicBatch-only adapters)
+				await writeRecords()
 			}
 
 			// Deserialize records for return
@@ -330,19 +419,7 @@ export async function executeCreateMany<T extends { id: string }>(
 				}
 			}
 		} catch (error) {
-			// Release constraints on failure
-			if (ctx.uniqueIndexManager) {
-				for (const { field, value } of acquiredConstraints) {
-					try {
-						await ctx.uniqueIndexManager.release(
-							{ modelName: ctx.modelName, namespace: ctx.namespace, field },
-							value
-						)
-					} catch {
-						// Ignore release errors
-					}
-				}
-			}
+			await releaseAllConstraints()
 			throw error
 		}
 	})
@@ -390,28 +467,20 @@ export async function executeUpdateMany<T extends { id: string }>(
 
 	// Find matching records
 	const allIds = ctx.catalog.getAllIds()
-	const matchingRecords: Array<{ id: string; record: T; chunkId: number }> = []
+	const matchingRecords: Array<{ id: string; record: T; entry: CatalogEntry }> = []
 
 	for (const id of allIds) {
 		const entry = ctx.catalog.getEntry(id)
 		if (!entry) continue
 
-		const chunkId = entry.kind === 'chunk' ? entry.chunkId ?? 0 : 0
-		let raw: unknown
-
-		if (entry.kind === 'segments' && entry.segmentIds) {
-			raw = await ctx.chunkManager.loadSegmentedRecord(id, entry.segmentIds)
-		} else {
-			raw = await ctx.chunkManager.getRecord(chunkId, id)
-		}
-
+		const raw = await loadRecordByEntry(ctx.chunkManager, id, entry)
 		if (!raw) continue
 
 		const record = ctx.serializer.deserializeRecord(raw as Record<string, unknown>) as T
 
 		// Evaluate where clause
 		if (evaluateWhere(record, where)) {
-			matchingRecords.push({ id, record, chunkId })
+			matchingRecords.push({ id, record, entry })
 		}
 	}
 
@@ -451,45 +520,170 @@ export async function executeUpdateMany<T extends { id: string }>(
 				}
 			}
 		}
+
+		// Validate compound unique constraints
+		for (const constraint of ctx.schema.compoundUniques) {
+			const hasUpdatedField = constraint.fields.some(fld => fld in updateData)
+			if (!hasUpdatedField) continue
+
+			// For each matching record, compute what the new compound values would be
+			for (const { id, record } of matchingRecords) {
+				const newValues = constraint.fields.map(fld =>
+					fld in updateData ? updateData[fld] : (record as Record<string, unknown>)[fld]
+				)
+
+				// Skip if any value is null/undefined
+				if (newValues.some(v => v === null || v === undefined)) continue
+
+				// Check if any OTHER record (not being updated) already has this compound value
+				// by attempting a temporary acquire/release check
+				const encodedValues = newValues.map(v => encodeUniqueValue(v))
+				const key = buildCompoundUniqueKey(ctx.modelName, constraint.fields, encodedValues, ctx.namespace)
+				const existing = await ctx.adapter.get(key) as { id: string } | undefined
+
+				if (existing && existing.id !== id && !matchingIds.has(existing.id)) {
+					throw new UniqueConstraintError(
+						`Cannot update fields [${constraint.fields.join(', ')}]: compound value combination already exists on another record`,
+						{ model: ctx.modelName, field: constraint.fields.join('+'), value: newValues }
+					)
+				}
+			}
+
+			// If updating multiple records, check that they don't all converge to the same compound value
+			if (matchingRecords.length > 1) {
+				const seenValues = new Set<string>()
+				for (const { record } of matchingRecords) {
+					const newValues = constraint.fields.map(fld =>
+						fld in updateData ? updateData[fld] : (record as Record<string, unknown>)[fld]
+					)
+					if (newValues.some(v => v === null || v === undefined)) continue
+
+					const encoded = newValues.map(v => encodeUniqueValue(v)).join('..')
+					if (seenValues.has(encoded)) {
+						throw new UniqueConstraintError(
+							`Cannot update multiple records to same compound value for fields [${constraint.fields.join(', ')}]`,
+							{ model: ctx.modelName, field: constraint.fields.join('+'), value: newValues }
+						)
+					}
+					seenValues.add(encoded)
+				}
+			}
+		}
 	}
 
 	let updatedCount = 0
 
 	// Update matching records
-	for (const { id, record, chunkId } of matchingRecords) {
+	for (const { id, record, entry } of matchingRecords) {
 		// Merge existing record with update data
 		const merged = { ...(record as Record<string, unknown>), ...updateData }
 		merged.id = id
 
 		// Increment version field if present (with overflow protection)
-		const versionField = findVersionField(ctx.schema)
-		if (versionField && versionField in merged) {
-			const currentVersion = (merged[versionField] as number) || 0
-			let newVersion = currentVersion + 1
-
-			// Version overflow protection
-			if (newVersion >= MAX_VERSION_VALUE) {
-				logger.warn(
-					`Version overflow detected for ${ctx.modelName}:${id}. ` +
-					`Resetting from ${currentVersion} to 1.`
-				)
-				newVersion = 1
-			} else if (newVersion >= VERSION_OVERFLOW_WARN_THRESHOLD) {
-				logger.warn(
-					`Version approaching overflow for ${ctx.modelName}:${id}. ` +
-					`Current: ${newVersion}, Max: ${MAX_VERSION_VALUE}`
-				)
-			}
-
-			merged[versionField] = newVersion
-		}
+		incrementVersion(merged, ctx.schema, ctx.modelName, id)
 
 		// Normalize and serialize
 		const normalized = normalizeRecordShape(merged, ctx.schema)
 		const serialized = ctx.serializer.serializeRecord(normalized)
 
-		// Update in chunk
-		await ctx.chunkManager.setRecord(chunkId, id, serialized)
+		// Update storage based on record size and current storage type
+		const sizeCheck = ctx.chunkManager.checkRecordSize(serialized)
+		const needsSegmentation = sizeCheck.needsSegmentation
+		const isSegmented = entry.kind === 'segments'
+
+		if (needsSegmentation) {
+			if (isSegmented && entry.segmentIds) {
+				// segments -> segments: update in place
+				const newSegmentIds = await ctx.chunkManager.updateSegmentedRecord(id, entry.segmentIds, serialized)
+				ctx.catalog.addSegmentedEntry(id, newSegmentIds)
+			} else {
+				// chunk -> segments: save as segments, remove from old chunk
+				const segmentIds = await ctx.chunkManager.saveSegmentedRecord(id, serialized)
+				ctx.catalog.addSegmentedEntry(id, segmentIds)
+				if (entry.kind === 'chunk' && entry.chunkId !== undefined) {
+					await ctx.chunkManager.deleteRecord(entry.chunkId, id)
+				}
+			}
+		} else if (isSegmented && entry.segmentIds) {
+			// segments -> chunk: write to chunk, delete old segments
+			const targetChunkId = ctx.chunkManager.selectChunkForInsert(ctx.catalog, sizeCheck.estimatedSize)
+			await ctx.chunkManager.setRecord(targetChunkId, id, serialized)
+			ctx.catalog.addEntry(id, targetChunkId, sizeCheck.estimatedSize)
+			await ctx.chunkManager.deleteSegmentedRecord(id, entry.segmentIds)
+		} else {
+			// chunk -> chunk: regular update
+			const chunkId = getChunkIdFromEntry(entry)
+			await ctx.chunkManager.setRecord(chunkId, id, serialized)
+		}
+
+		// Update unique index entries (acquire new, release old)
+		if (ctx.uniqueIndexManager) {
+			for (const field of ctx.schema.uniqueFields) {
+				if (!(field in updateData)) continue
+
+				const oldValue = (record as Record<string, unknown>)[field]
+				const newValue = updateData[field]
+
+				if (valuesEqual(oldValue, newValue)) continue
+
+				// Acquire new constraint
+				if (newValue !== null && newValue !== undefined) {
+					await ctx.uniqueIndexManager.acquire(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, field },
+						newValue,
+						id
+					)
+				}
+
+				// Release old constraint
+				if (oldValue !== null && oldValue !== undefined) {
+					try {
+						await ctx.uniqueIndexManager.release(
+							{ modelName: ctx.modelName, namespace: ctx.namespace, field },
+							oldValue
+						)
+					} catch {
+						// Ignore release errors
+					}
+				}
+			}
+
+			// Update compound unique index entries
+			for (const constraint of ctx.schema.compoundUniques) {
+				const hasUpdatedField = constraint.fields.some(fld => fld in updateData)
+				if (!hasUpdatedField) continue
+
+				const oldValues = constraint.fields.map(fld => (record as Record<string, unknown>)[fld])
+				const newValues = constraint.fields.map(fld =>
+					fld in updateData ? updateData[fld] : (record as Record<string, unknown>)[fld]
+				)
+
+				if (oldValues.length === newValues.length && oldValues.every((v, i) => valuesEqual(v, newValues[i]))) {
+					continue
+				}
+
+				// Acquire new compound constraint
+				if (!newValues.some(v => v === null || v === undefined)) {
+					await ctx.uniqueIndexManager.acquireCompound(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, fields: constraint.fields },
+						newValues,
+						id
+					)
+				}
+
+				// Release old compound constraint
+				if (!oldValues.some(v => v === null || v === undefined)) {
+					try {
+						await ctx.uniqueIndexManager.releaseCompound(
+							{ modelName: ctx.modelName, namespace: ctx.namespace, fields: constraint.fields },
+							oldValues
+						)
+					} catch {
+						// Ignore release errors
+					}
+				}
+			}
+		}
 
 		// Update sorted indexes
 		if (ctx.indexCallbacks) {
@@ -499,7 +693,7 @@ export async function executeUpdateMany<T extends { id: string }>(
 				const oldValue = (record as Record<string, unknown>)[field]
 				const newValue = normalized[field]
 
-				if (oldValue !== newValue) {
+				if (!valuesEqual(oldValue, newValue)) {
 					if (ctx.indexCallbacks.removeFromSortedIndex && oldValue !== null && oldValue !== undefined) {
 						ctx.indexCallbacks.removeFromSortedIndex(field, oldValue, id)
 					}
@@ -515,6 +709,10 @@ export async function executeUpdateMany<T extends { id: string }>(
 		}
 
 		updatedCount++
+	}
+
+	if (updatedCount > 0) {
+		await ctx.persistCatalog()
 	}
 
 	return { count: updatedCount }
@@ -547,28 +745,20 @@ export async function executeDeleteMany<T extends { id: string }>(
 
 	// Find matching records
 	const allIds = ctx.catalog.getAllIds()
-	const matchingRecords: Array<{ id: string; record: T; chunkId: number }> = []
+	const matchingRecords: Array<{ id: string; record: T; entry: CatalogEntry }> = []
 
 	for (const id of allIds) {
 		const entry = ctx.catalog.getEntry(id)
 		if (!entry) continue
 
-		const chunkId = entry.kind === 'chunk' ? entry.chunkId ?? 0 : 0
-		let raw: unknown
-
-		if (entry.kind === 'segments' && entry.segmentIds) {
-			raw = await ctx.chunkManager.loadSegmentedRecord(id, entry.segmentIds)
-		} else {
-			raw = await ctx.chunkManager.getRecord(chunkId, id)
-		}
-
+		const raw = await loadRecordByEntry(ctx.chunkManager, id, entry)
 		if (!raw) continue
 
 		const record = ctx.serializer.deserializeRecord(raw as Record<string, unknown>) as T
 
 		// Evaluate where clause
 		if (evaluateWhere(record, where)) {
-			matchingRecords.push({ id, record, chunkId })
+			matchingRecords.push({ id, record, entry })
 		}
 	}
 
@@ -580,7 +770,7 @@ export async function executeDeleteMany<T extends { id: string }>(
 
 	await ctx.catalogLock.withCatalogLock(ctx.modelKey, async () => {
 		// Delete matching records
-		for (const { id, record, chunkId } of matchingRecords) {
+		for (const { id, record, entry } of matchingRecords) {
 			// Release unique constraints
 			if (ctx.uniqueIndexManager) {
 				for (const field of ctx.schema.uniqueFields) {
@@ -596,10 +786,29 @@ export async function executeDeleteMany<T extends { id: string }>(
 						}
 					}
 				}
+
+				// Release compound unique constraints
+				for (const constraint of ctx.schema.compoundUniques) {
+					const values = constraint.fields.map(f => (record as Record<string, unknown>)[f])
+					if (!values.some(v => v === null || v === undefined)) {
+						try {
+							await ctx.uniqueIndexManager.releaseCompound(
+								{ modelName: ctx.modelName, namespace: ctx.namespace, fields: constraint.fields },
+								values
+							)
+						} catch {
+							// Ignore release errors
+						}
+					}
+				}
 			}
 
-			// Delete from chunk
-			await ctx.chunkManager.deleteRecord(chunkId, id)
+			// Delete from storage based on entry type
+			if (entry.kind === 'segments' && entry.segmentIds) {
+				await ctx.chunkManager.deleteSegmentedRecord(id, entry.segmentIds)
+			} else if (entry.kind === 'chunk' && entry.chunkId !== undefined) {
+				await ctx.chunkManager.deleteRecord(entry.chunkId, id)
+			}
 
 			// Update catalog
 			ctx.catalog.removeEntry(id)
@@ -633,16 +842,4 @@ export async function executeDeleteMany<T extends { id: string }>(
 	})
 
 	return { count: deletedCount }
-}
-
-/**
- * Find the version field in the schema.
- */
-function findVersionField(schema: NormalizedSchema): string | null {
-	for (const [name, field] of schema.fields) {
-		if (field.version) {
-			return name
-		}
-	}
-	return null
 }

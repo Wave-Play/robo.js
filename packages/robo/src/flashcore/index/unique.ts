@@ -6,7 +6,7 @@
  */
 
 import type { FlashcoreAdapter } from '../adapter/types.js'
-import { buildUniqueKey } from '../core/keys.js'
+import { buildUniqueKey, buildCompoundUniqueKey } from '../core/keys.js'
 import { encodeUniqueValue } from '../core/encoding.js'
 import { UniqueConstraintError } from '../core/errors.js'
 
@@ -24,6 +24,15 @@ export interface UniqueConstraintOptions {
 	modelName: string
 	namespace?: string
 	field: string
+}
+
+/**
+ * Options for compound unique constraint operations.
+ */
+export interface CompoundUniqueConstraintOptions {
+	modelName: string
+	namespace?: string
+	fields: string[]
 }
 
 /**
@@ -194,11 +203,119 @@ export class UniqueIndexManager {
 	}
 
 	/**
+	 * Acquire a compound unique constraint for a record.
+	 *
+	 * @param options - Model/fields options
+	 * @param values - Array of field values (same order as options.fields)
+	 * @param recordId - The record ID claiming this compound value
+	 * @throws UniqueConstraintError if compound value combination is already taken
+	 */
+	async acquireCompound(
+		options: CompoundUniqueConstraintOptions,
+		values: unknown[],
+		recordId: string
+	): Promise<void> {
+		// Skip if any value is null/undefined
+		if (values.some(v => v === null || v === undefined)) {
+			return
+		}
+
+		const key = this.buildCompoundKey(options, values)
+		const entry: UniqueIndexEntry = { id: recordId }
+
+		if (this.hasSetIfNotExists) {
+			const success = await this.adapter.setIfNotExists!(key, entry)
+			if (!success) {
+				const existing = await this.adapter.get(key) as UniqueIndexEntry | undefined
+				if (existing && existing.id !== recordId) {
+					throw new UniqueConstraintError(
+						`Compound unique constraint violation on fields [${options.fields.join(', ')}]: value combination already exists`,
+						{ model: options.modelName, field: options.fields.join('+'), value: values }
+					)
+				}
+			}
+		} else {
+			const existing = await this.adapter.get(key) as UniqueIndexEntry | undefined
+			if (existing) {
+				if (existing.id !== recordId) {
+					throw new UniqueConstraintError(
+						`Compound unique constraint violation on fields [${options.fields.join(', ')}]: value combination already exists`,
+						{ model: options.modelName, field: options.fields.join('+'), value: values }
+					)
+				}
+				return
+			}
+
+			await this.adapter.set(key, entry)
+
+			const verification = await this.adapter.get(key) as UniqueIndexEntry | undefined
+			if (!verification || verification.id !== recordId) {
+				throw new UniqueConstraintError(
+					`Compound unique constraint violation on fields [${options.fields.join(', ')}]: value combination already exists (race)`,
+					{ model: options.modelName, field: options.fields.join('+'), value: values }
+				)
+			}
+		}
+	}
+
+	/**
+	 * Release a compound unique constraint.
+	 *
+	 * @param options - Model/fields options
+	 * @param values - Array of field values
+	 */
+	async releaseCompound(
+		options: CompoundUniqueConstraintOptions,
+		values: unknown[]
+	): Promise<void> {
+		if (values.some(v => v === null || v === undefined)) {
+			return
+		}
+
+		const key = this.buildCompoundKey(options, values)
+		await this.adapter.delete(key)
+	}
+
+	/**
+	 * Update a compound unique constraint (release old, acquire new).
+	 *
+	 * @param options - Model/fields options
+	 * @param oldValues - The old field values
+	 * @param newValues - The new field values
+	 * @param recordId - The record ID
+	 */
+	async updateCompound(
+		options: CompoundUniqueConstraintOptions,
+		oldValues: unknown[],
+		newValues: unknown[],
+		recordId: string
+	): Promise<void> {
+		// Check if values actually changed
+		if (oldValues.length === newValues.length && oldValues.every((v, i) => this.valuesEqual(v, newValues[i]))) {
+			return
+		}
+
+		// Acquire new first (may throw if duplicate)
+		await this.acquireCompound(options, newValues, recordId)
+
+		// Release old
+		await this.releaseCompound(options, oldValues)
+	}
+
+	/**
 	 * Build the storage key for a unique constraint.
 	 */
 	private buildKey(options: UniqueConstraintOptions, value: unknown): string {
 		const encodedValue = encodeUniqueValue(value)
 		return buildUniqueKey(options.modelName, options.field, encodedValue, options.namespace)
+	}
+
+	/**
+	 * Build the storage key for a compound unique constraint.
+	 */
+	private buildCompoundKey(options: CompoundUniqueConstraintOptions, values: unknown[]): string {
+		const encodedValues = values.map(v => encodeUniqueValue(v))
+		return buildCompoundUniqueKey(options.modelName, options.fields, encodedValues, options.namespace)
 	}
 
 	/**

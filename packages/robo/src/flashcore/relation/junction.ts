@@ -104,6 +104,61 @@ export function getJunctionCompoundUnique(modelA: string, modelB: string) {
 }
 
 /**
+ * Resolve which FK field is the source and which is the target,
+ * given a junction table definition and the source model name.
+ */
+export function resolveJunctionFKs(
+	junctionDef: JunctionTableDef,
+	sourceModel: string
+): { fkSource: string; fkTarget: string } {
+	const isSourceA = junctionDef.modelA === sourceModel
+	return {
+		fkSource: isSourceA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB,
+		fkTarget: isSourceA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+	}
+}
+
+/**
+ * Delete all junction entries matching a foreign key value.
+ * Prefers deleteMany, falls back to findMany + per-record delete.
+ *
+ * @returns Number of entries deleted
+ */
+export async function bulkDeleteByFK(
+	model: {
+		deleteMany?: (args: unknown) => Promise<{ count: number }>
+		findMany?: (args: unknown) => Promise<Array<{ id: string } | Record<string, unknown>>>
+		delete?: (args: unknown) => Promise<unknown>
+	},
+	fkField: string,
+	fkValue: string
+): Promise<number> {
+	try {
+		if (typeof model.deleteMany === 'function') {
+			const result = await model.deleteMany({ where: { [fkField]: fkValue } })
+			return result.count
+		}
+	} catch {
+		// Fall back to per-record deletion below.
+	}
+
+	if (typeof model.findMany === 'function' && typeof model.delete === 'function') {
+		const entries = await model.findMany({ where: { [fkField]: fkValue } })
+		let count = 0
+		for (const entry of entries) {
+			const id = (entry as { id?: unknown }).id
+			if (typeof id === 'string') {
+				await model.delete({ where: { id } })
+				count++
+			}
+		}
+		return count
+	}
+
+	return 0
+}
+
+/**
  * Get junction table definition for a many-to-many relation.
  *
  * @param sourceModel - Source model name
@@ -197,9 +252,7 @@ export class JunctionTableManager {
 		}
 
 		// Determine which FK is which based on model names
-		const isSourceA = junctionDef.modelA === sourceModel
-		const fkSourceField = isSourceA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
-		const fkTargetField = isSourceA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+		const { fkSource: fkSourceField, fkTarget: fkTargetField } = resolveJunctionFKs(junctionDef, sourceModel)
 
 		// Check for existing relationship
 		const existing = await junctionModel.findFirst({
@@ -252,9 +305,7 @@ export class JunctionTableManager {
 			return false
 		}
 
-		const isSourceA = junctionDef.modelA === sourceModel
-		const fkSourceField = isSourceA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
-		const fkTargetField = isSourceA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+		const { fkSource: fkSourceField, fkTarget: fkTargetField } = resolveJunctionFKs(junctionDef, sourceModel)
 
 		// Find the junction entry
 		const existing = await junctionModel.findFirst({
@@ -308,35 +359,9 @@ export class JunctionTableManager {
 			if (modelA !== model && modelB !== model) continue
 
 			const junctionDef = getJunctionTableDef(modelA, modelB)
-			const fkField = modelA === model ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
+			const { fkSource: fkField } = resolveJunctionFKs(junctionDef, model)
 
-			// Prefer deleteMany when available (fast on acid adapters).
-			try {
-				if (typeof junctionModel.deleteMany === 'function') {
-					const result = await junctionModel.deleteMany({
-						where: { [fkField]: recordId }
-					})
-					count += result.count
-					continue
-				}
-			} catch {
-				// Fall back to per-record deletion below.
-			}
-
-			// Fallback path for non-acid adapters: find and delete individually.
-			if (typeof junctionModel.findMany === 'function' && typeof junctionModel.delete === 'function') {
-				const entries = await junctionModel.findMany({
-					where: { [fkField]: recordId }
-				})
-
-				for (const entry of entries) {
-					const id = (entry as { id?: unknown }).id
-					if (typeof id === 'string') {
-						await junctionModel.delete({ where: { id } })
-						count++
-					}
-				}
-			}
+			count += await bulkDeleteByFK(junctionModel, fkField, recordId)
 		}
 
 		return count
@@ -364,9 +389,7 @@ export class JunctionTableManager {
 			return []
 		}
 
-		const isSourceA = junctionDef.modelA === sourceModel
-		const fkSourceField = isSourceA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
-		const fkTargetField = isSourceA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+		const { fkSource: fkSourceField, fkTarget: fkTargetField } = resolveJunctionFKs(junctionDef, sourceModel)
 
 		const entries = await junctionModel.findMany({
 			where: { [fkSourceField]: sourceId }
@@ -406,9 +429,7 @@ export class JunctionTableManager {
 			)
 		}
 
-		const isSourceA = junctionDef.modelA === sourceModel
-		const fkSourceField = isSourceA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
-		const fkTargetField = isSourceA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+		const { fkSource: fkSourceField, fkTarget: fkTargetField } = resolveJunctionFKs(junctionDef, sourceModel)
 
 		// Get current relations
 		const existing = await junctionModel.findMany({
@@ -474,13 +495,4 @@ export class JunctionTableManager {
 
 		return Array.from(models)
 	}
-}
-
-/**
- * Generate a unique ID for junction table entries.
- */
-export function generateJunctionId(): string {
-	const timestamp = Date.now().toString(36)
-	const random = Math.random().toString(36).substring(2, 10)
-	return `j_${timestamp}_${random}`
 }

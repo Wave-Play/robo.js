@@ -103,22 +103,8 @@ export interface NormalizedSchema {
 	checksum: string
 }
 
-/**
- * Normalized field for internal use.
- */
-export interface NormalizedField {
-	name: string
-	type: FieldType
-	optional: boolean
-	unique: boolean
-	indexed: boolean
-	indexTypes: string[]
-	primaryKey: boolean
-	version: boolean
-	hasDefault: boolean
-	default?: unknown | (() => unknown)
-	enumValues?: string[]
-}
+/** Normalized field for internal use. */
+export type NormalizedField = FieldDef & { name: string }
 
 // ============================================================================
 // Type Inference Helpers
@@ -225,6 +211,7 @@ export interface CatalogEntryData {
 	kind: 'chunk' | 'segments'
 	chunkId?: number      // For kind='chunk'
 	segmentIds?: string[] // For kind='segments'
+	estimatedSize?: number // Estimated size in bytes for accurate size tracking
 }
 
 /**
@@ -315,6 +302,7 @@ export interface FindManyArgs<T> {
 	orderBy?: OrderBy<T> | OrderBy<T>[]
 	take?: number
 	skip?: number
+	allowCorruptReads?: boolean
 }
 
 /**

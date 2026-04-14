@@ -48,7 +48,7 @@ import { UniqueIndexManager } from '../index/unique.js'
 import { CuckooFilter, type CuckooFilterData } from '../index/filter.js'
 import { SortedIndex, type SortedIndexData } from '../index/sorted.js'
 import { getIndexPersistenceManager } from '../index/persistence.js'
-import { getWALManager } from '../wal/manager.js'
+import { getWalContext } from '../wal/context.js'
 import { FILTER_KEY_SUFFIX, INDEX_KEY_PREFIX } from '../core/constants.js'
 
 // Phase 8: Bulk and upsert operations
@@ -59,7 +59,6 @@ import {
 	type BulkContext,
 	type CreateManyResult
 } from './crud/bulk.js'
-import { executeUpsert, type UpsertContext } from './crud/upsert.js'
 
 // Phase 9: Relations
 import { validateForeignKeys } from '../relation/validation.js'
@@ -76,7 +75,10 @@ import { getPluginContext } from '../plugin/context.js'
 import { executeWithMiddleware } from '../plugin/middleware.js'
 import type { PluginContext } from '../plugin/types.js'
 import { JunctionTableManager } from '../relation/junction.js'
-import { ValidationError as FlashcoreValidationError } from '../core/errors.js'
+import {
+	ValidationError as FlashcoreValidationError,
+	UniqueConstraintError
+} from '../core/errors.js'
 
 interface ParsedManyToManyMutation {
 	connect: string[]
@@ -391,6 +393,66 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	}
 
 	// ========================================================================
+	// Shared Context Builders
+	// ========================================================================
+
+	/** Common read-only fields shared by all CRUD contexts. */
+	private _readFields() {
+		return {
+			modelName: this.name,
+			schema: this.schema,
+			catalog: this.catalog,
+			chunkManager: this.chunkManager,
+			serializer: this.serializer
+		}
+	}
+
+	/** Write-specific fields shared by create/update/delete/bulk/upsert. */
+	private _writeFields() {
+		return {
+			modelKey: this.modelKey,
+			persistCatalog: () => this.persistCatalog(),
+			uniqueIndexManager: this.uniqueIndexManager,
+			namespace: this.namespace
+		}
+	}
+
+	/** Include context for read operations (Phase 9). */
+	private _includeContext() {
+		return this._getModel ? { depth: 0, getModel: this._getModel } : undefined
+	}
+
+	/** Build relation callbacks for create/update (Phase 9). */
+	private _buildRelationCallbacks() {
+		if (!this._getModel) return undefined
+		return {
+			validateForeignKeys: async (inputData: Record<string, unknown>) => {
+				await validateForeignKeys(this.name, this.schema, inputData, this._getModel!)
+			}
+		}
+	}
+
+	/** Build cascade callbacks for delete (Phase 9). */
+	private _buildCascadeCallbacks() {
+		if (!this._getModel || !this._getSchema || !hasCascadeRelations(this.schema)) return undefined
+		const cascadeCtx: CascadeContext = {
+			getModel: this._getModel!,
+			getSchema: this._getSchema!
+		}
+		return {
+			checkRestrict: async (record: { id: string }) => {
+				await checkRestrictConstraints(this.name, this.schema, record, cascadeCtx)
+			},
+			executeCascades: async (record: { id: string }) => {
+				const ops = await collectCascadeOperations(this.name, this.schema, record, cascadeCtx, 0)
+				if (ops.length > 0) {
+					await executeCascadeOperations(ops, record.id, cascadeCtx)
+				}
+			}
+		}
+	}
+
+	// ========================================================================
 	// CRUD Operations
 	// ========================================================================
 
@@ -403,36 +465,16 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	async create(data: CreateInput<T>): Promise<T> {
 		await this.ensureCatalogLoaded()
 
-		// Build index callbacks for derived writes
-		const indexCallbacks = await this._buildCreateIndexCallbacks()
-
 		const ctx: CreateContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
+			...this._readFields(),
+			...this._writeFields(),
 			catalogLock: catalogLockManager,
 			chunkLock: chunkLockManager,
 			validator: this.validator,
-			serializer: this.serializer,
 			hooks: this.hooks,
-			persistCatalog: () => this.persistCatalog(),
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
-			wal: getWALManager() ?? undefined,
-			indexCallbacks,
-			// Phase 9: Relation callbacks
-			relationCallbacks: this._getModel ? {
-				validateForeignKeys: async (inputData) => {
-					await validateForeignKeys(
-						this.name,
-						this.schema,
-						inputData,
-						this._getModel!
-					)
-				}
-			} : undefined
+			wal: getWalContext(),
+			indexCallbacks: await this._buildIndexCallbacks('create'),
+			relationCallbacks: this._buildRelationCallbacks()
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -459,18 +501,10 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 		await this.ensureCatalogLoaded()
 
 		const ctx: ReadContext<T> = {
-			modelName: this.name,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
-			serializer: this.serializer,
+			...this._readFields(),
 			uniqueIndexManager: this.uniqueIndexManager,
 			namespace: this.namespace,
-			// Phase 9: Include context
-			includeContext: this._getModel ? {
-				depth: 0,
-				getModel: this._getModel
-			} : undefined
+			includeContext: this._includeContext()
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -491,35 +525,16 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	async update(args: UpdateArgs<T>): Promise<T | null> {
 		await this.ensureCatalogLoaded()
 
-		// Build index callbacks for derived writes
-		const indexCallbacks = await this._buildUpdateIndexCallbacks()
-
 		const ctx: UpdateContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
+			...this._readFields(),
+			...this._writeFields(),
+			catalogLock: catalogLockManager,
 			chunkLock: chunkLockManager,
 			validator: this.validator,
-			serializer: this.serializer,
 			hooks: this.hooks,
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
-			persistCatalog: () => this.persistCatalog(),
-			wal: getWALManager() ?? undefined,
-			indexCallbacks,
-			// Phase 9: Relation callbacks for FK validation on update
-			relationCallbacks: this._getModel ? {
-				validateForeignKeys: async (inputData) => {
-					await validateForeignKeys(
-						this.name,
-						this.schema,
-						inputData,
-						this._getModel!
-					)
-				}
-			} : undefined
+			wal: getWalContext(),
+			indexCallbacks: await this._buildIndexCallbacks('update'),
+			relationCallbacks: this._buildRelationCallbacks()
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -546,50 +561,15 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	async delete(args: DeleteArgs<T>): Promise<T | null> {
 		await this.ensureCatalogLoaded()
 
-		// Build index callbacks for derived writes
-		const indexCallbacks = await this._buildDeleteIndexCallbacks()
-
 		const ctx: DeleteContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
+			...this._readFields(),
+			...this._writeFields(),
 			catalogLock: catalogLockManager,
 			chunkLock: chunkLockManager,
-			serializer: this.serializer,
 			hooks: this.hooks,
-			persistCatalog: () => this.persistCatalog(),
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
-			wal: getWALManager() ?? undefined,
-			indexCallbacks,
-			// Phase 9: Cascade callbacks
-			cascadeCallbacks: this._getModel && this._getSchema && hasCascadeRelations(this.schema) ? {
-				checkRestrict: async (record) => {
-					const cascadeCtx: CascadeContext = {
-						getModel: this._getModel!,
-						getSchema: this._getSchema!
-					}
-					await checkRestrictConstraints(this.name, this.schema, record, cascadeCtx)
-				},
-				executeCascades: async (record) => {
-					const cascadeCtx: CascadeContext = {
-						getModel: this._getModel!,
-						getSchema: this._getSchema!
-					}
-					const ops = await collectCascadeOperations(
-						this.name,
-						this.schema,
-						record,
-						cascadeCtx,
-						0
-					)
-					if (ops.length > 0) {
-						await executeCascadeOperations(ops, record.id, cascadeCtx)
-					}
-				}
-			} : undefined
+			wal: getWalContext(),
+			indexCallbacks: await this._buildIndexCallbacks('delete'),
+			cascadeCallbacks: this._buildCascadeCallbacks()
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -612,18 +592,10 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 		await this._ensureIndexesLoaded()
 
 		const ctx: FindManyContext<T> = {
-			modelName: this.name,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
-			serializer: this.serializer,
+			...this._readFields(),
 			filter: this._filter ?? undefined,
 			sortedIndexes: this._sortedIndexes,
-			// Phase 9: Include context
-			includeContext: this._getModel ? {
-				depth: 0,
-				getModel: this._getModel
-			} : undefined
+			includeContext: this._includeContext()
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -646,18 +618,10 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 		await this._ensureIndexesLoaded()
 
 		const ctx: FindManyContext<T> = {
-			modelName: this.name,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
-			serializer: this.serializer,
+			...this._readFields(),
 			filter: this._filter ?? undefined,
 			sortedIndexes: this._sortedIndexes,
-			// Phase 9: Include context
-			includeContext: this._getModel ? {
-				depth: 0,
-				getModel: this._getModel
-			} : undefined
+			includeContext: this._includeContext()
 		}
 
 		// Phase 10: Execute through middleware pipeline (uses findMany middleware)
@@ -680,18 +644,10 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 		await this._ensureIndexesLoaded()
 
 		const ctx: FindManyContext<T> = {
-			modelName: this.name,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
-			serializer: this.serializer,
+			...this._readFields(),
 			filter: this._filter ?? undefined,
 			sortedIndexes: this._sortedIndexes,
-			// Phase 9: Include context
-			includeContext: this._getModel ? {
-				depth: 0,
-				getModel: this._getModel
-			} : undefined
+			includeContext: this._includeContext()
 		}
 
 		yield* executeFindManyStream(ctx, args)
@@ -772,11 +728,7 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 
 			// With filter - delegate to executeCount
 			const ctx: FindManyContext<T> = {
-				modelName: this.name,
-				schema: this.schema,
-				catalog: this.catalog,
-				chunkManager: this.chunkManager,
-				serializer: this.serializer
+				...this._readFields()
 			}
 
 			return executeCount(ctx, args)
@@ -822,24 +774,14 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	async createMany(args: CreateManyArgs<T>): Promise<CreateManyResult<T>> {
 		await this.ensureCatalogLoaded()
 
-		// Build index callbacks for derived writes
-		const indexCallbacks = await this._buildCreateIndexCallbacks()
-
 		const ctx: BulkContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
+			...this._readFields(),
+			...this._writeFields(),
 			catalogLock: catalogLockManager,
 			chunkLock: chunkLockManager,
 			validator: this.validator,
-			serializer: this.serializer,
-			persistCatalog: () => this.persistCatalog(),
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
 			adapter: this.adapter,
-			indexCallbacks
+			indexCallbacks: await this._buildIndexCallbacks('create')
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -862,24 +804,14 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 		await this.ensureCatalogLoaded()
 		await this._ensureIndexesLoaded()
 
-		// Build index callbacks for derived writes
-		const indexCallbacks = await this._buildUpdateIndexCallbacks()
-
 		const ctx: BulkContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
+			...this._readFields(),
+			...this._writeFields(),
 			catalogLock: catalogLockManager,
 			chunkLock: chunkLockManager,
 			validator: this.validator,
-			serializer: this.serializer,
-			persistCatalog: () => this.persistCatalog(),
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
 			adapter: this.adapter,
-			indexCallbacks
+			indexCallbacks: await this._buildIndexCallbacks('update')
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -902,24 +834,14 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 		await this.ensureCatalogLoaded()
 		await this._ensureIndexesLoaded()
 
-		// Build index callbacks for derived writes
-		const indexCallbacks = await this._buildDeleteIndexCallbacks()
-
 		const ctx: BulkContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
+			...this._readFields(),
+			...this._writeFields(),
 			catalogLock: catalogLockManager,
 			chunkLock: chunkLockManager,
 			validator: this.validator,
-			serializer: this.serializer,
-			persistCatalog: () => this.persistCatalog(),
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
 			adapter: this.adapter,
-			indexCallbacks
+			indexCallbacks: await this._buildIndexCallbacks('delete')
 		}
 
 		// Phase 10: Execute through middleware pipeline
@@ -939,26 +861,7 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	 */
 	async upsert(args: UpsertArgs<T>): Promise<T> {
 		await this.ensureCatalogLoaded()
-
-		// Build index callbacks (used for both create and update paths)
-		const indexCallbacks = await this._buildCreateIndexCallbacks()
-
-		const ctx: UpsertContext<T> = {
-			modelName: this.name,
-			modelKey: this.modelKey,
-			schema: this.schema,
-			catalog: this.catalog,
-			chunkManager: this.chunkManager,
-			catalogLock: catalogLockManager,
-			chunkLock: chunkLockManager,
-			validator: this.validator,
-			serializer: this.serializer,
-			persistCatalog: () => this.persistCatalog(),
-			uniqueIndexManager: this.uniqueIndexManager,
-			namespace: this.namespace,
-			adapter: this.adapter,
-			indexCallbacks
-		}
+		await this._ensureIndexesLoaded()
 
 		// Phase 10: Execute through middleware pipeline
 		return executeWithMiddleware(
@@ -966,8 +869,52 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 			this as unknown as FlashcoreModel<{ id: string }>,
 			args,
 			async () => {
-				const result = await executeUpsert(ctx, args)
-				return result.record
+				const createData = { ...(args.create as Record<string, unknown>) }
+
+				if ('id' in args.where && !('id' in createData)) {
+					createData.id = (args.where as { id: string }).id
+				}
+
+				for (const field of this.schema.uniqueFields) {
+					if (field in args.where && !(field in createData)) {
+						createData[field] = (args.where as Record<string, unknown>)[field]
+					}
+				}
+
+				const existing = await this.findUnique({ where: args.where })
+				if (existing) {
+					const updated = await this.update({
+						where: args.where,
+						data: args.update
+					})
+
+					if (!updated) {
+						throw new Error(
+							`Upsert lost its target for model "${this.name}" during update delegation.`
+						)
+					}
+
+					return updated
+				}
+
+				try {
+					return await this.create(createData as CreateInput<T>)
+				} catch (error) {
+					if (!(error instanceof UniqueConstraintError)) {
+						throw error
+					}
+
+					const updated = await this.update({
+						where: args.where,
+						data: args.update
+					})
+
+					if (!updated) {
+						throw error
+					}
+
+					return updated
+				}
 			}
 		) as Promise<T>
 	}
@@ -1022,97 +969,55 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	// ========================================================================
 
 	/**
-	 * Build index callbacks for create operations.
+	 * Build index callbacks for CRUD operations.
 	 * @internal
 	 */
-	private async _buildCreateIndexCallbacks() {
+	private async _buildIndexCallbacks(type: 'create' | 'update' | 'delete') {
 		await this._ensureIndexesLoaded()
 
-		return {
-			addToFilter: (id: string) => {
-				if (!this._filter) {
-					this._filter = CuckooFilter.empty()
-				}
-				this._filter.add(id)
-			},
-			addToSortedIndex: (field: string, value: unknown, id: string) => {
-				let index = this._sortedIndexes.get(field)
-				if (!index) {
-					index = new SortedIndex(field)
-					this._sortedIndexes.set(field, index)
-				}
-				index.insert(value, id)
-			},
-			markDirty: () => {
-				const pm = getIndexPersistenceManager()
-				if (pm) {
-					pm.markFilterDirty(this.name, this.namespace)
-					for (const field of this.schema.indexedFields) {
-						pm.markIndexDirty(this.name, field, this.namespace)
-					}
-				}
+		const addToFilter = type === 'create' ? (id: string) => {
+			if (!this._filter) {
+				this._filter = CuckooFilter.empty()
 			}
-		}
-	}
+			this._filter.add(id)
+		} : undefined
 
-	/**
-	 * Build index callbacks for update operations.
-	 * @internal
-	 */
-	private async _buildUpdateIndexCallbacks() {
-		await this._ensureIndexesLoaded()
+		const removeFromFilter = type === 'delete' ? (id: string) => {
+			if (this._filter) {
+				this._filter.remove(id)
+			}
+		} : undefined
 
-		return {
-			removeFromSortedIndex: (field: string, value: unknown, id: string) => {
-				const index = this._sortedIndexes.get(field)
-				if (index) {
-					index.remove(value, id)
-				}
-			},
-			addToSortedIndex: (field: string, value: unknown, id: string) => {
-				let index = this._sortedIndexes.get(field)
-				if (!index) {
-					index = new SortedIndex(field)
-					this._sortedIndexes.set(field, index)
-				}
-				index.insert(value, id)
-			},
-			markDirty: (field?: string) => {
+		const addToSortedIndex = type !== 'delete' ? (field: string, value: unknown, id: string) => {
+			let index = this._sortedIndexes.get(field)
+			if (!index) {
+				index = new SortedIndex(field)
+				this._sortedIndexes.set(field, index)
+			}
+			index.insert(value, id)
+		} : undefined
+
+		const removeFromSortedIndex = type !== 'create' ? (field: string, value: unknown, id: string) => {
+			const index = this._sortedIndexes.get(field)
+			if (index) {
+				index.remove(value, id)
+			}
+		} : undefined
+
+		const markDirty = type === 'update'
+			? (field?: string) => {
 				const pm = getIndexPersistenceManager()
 				if (pm) {
 					if (field) {
 						pm.markIndexDirty(this.name, field, this.namespace)
 					} else {
-						// Mark all indexed fields
 						for (const f of this.schema.indexedFields) {
 							pm.markIndexDirty(this.name, f, this.namespace)
 						}
 					}
 				}
 			}
-		}
-	}
-
-	/**
-	 * Build index callbacks for delete operations.
-	 * @internal
-	 */
-	private async _buildDeleteIndexCallbacks() {
-		await this._ensureIndexesLoaded()
-
-		return {
-			removeFromFilter: (id: string) => {
-				if (this._filter) {
-					this._filter.remove(id)
-				}
-			},
-			removeFromSortedIndex: (field: string, value: unknown, id: string) => {
-				const index = this._sortedIndexes.get(field)
-				if (index) {
-					index.remove(value, id)
-				}
-			},
-			markDirty: () => {
+			: () => {
 				const pm = getIndexPersistenceManager()
 				if (pm) {
 					pm.markFilterDirty(this.name, this.namespace)
@@ -1121,7 +1026,8 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 					}
 				}
 			}
-		}
+
+		return { addToFilter, removeFromFilter, addToSortedIndex, removeFromSortedIndex, markDirty }
 	}
 
 	/**
@@ -1167,6 +1073,15 @@ export class FlashcoreModel<T extends { id: string } = { id: string }> {
 	 */
 	async _loadIndexes(): Promise<void> {
 		if (this._indexesLoaded) {
+			return
+		}
+
+		const persistenceManager = getIndexPersistenceManager()
+		if (persistenceManager && await persistenceManager.hasStaleMarker(this.name, this.namespace)) {
+			this._filter = null
+			this._sortedIndexes.clear()
+			this._indexesLoaded = true
+			this._needsRebuild = true
 			return
 		}
 

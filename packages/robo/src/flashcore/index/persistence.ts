@@ -49,6 +49,7 @@ export interface IndexPersistenceOptions {
  */
 interface DirtyEntry {
 	modelName: string
+	namespace?: string
 	field: string | null // null for filter, field name for sorted index
 	type: 'filter' | 'sorted'
 	dirtyAt: number
@@ -106,6 +107,7 @@ export class IndexPersistenceManager {
 	// Memory management (Phase 6)
 	private lruEntries: Map<string, LRUEntry> = new Map()
 	private currentMemoryUsage = 0
+	private static readonly STALE_SUFFIX = 'index-stale'
 
 	constructor(adapter: FlashcoreAdapter, options?: IndexPersistenceOptions) {
 		this.adapter = adapter
@@ -173,7 +175,7 @@ export class IndexPersistenceManager {
 			try {
 				await Promise.race([this.flushAll(), timeoutPromise])
 			} catch {
-				// Log but don't throw on shutdown timeout
+				await this.markDirtyEntriesStale(Array.from(this.dirty.values()))
 			} finally {
 				if (timeout) {
 					clearTimeout(timeout)
@@ -213,6 +215,7 @@ export class IndexPersistenceManager {
 		const key = this.buildFilterKey(modelName, namespace)
 		this.dirty.set(key, {
 			modelName,
+			namespace,
 			field: null,
 			type: 'filter',
 			dirtyAt: Date.now()
@@ -229,6 +232,7 @@ export class IndexPersistenceManager {
 		const key = this.buildIndexKey(modelName, field, namespace)
 		this.dirty.set(key, {
 			modelName,
+			namespace,
 			field,
 			type: 'sorted',
 			dirtyAt: Date.now()
@@ -386,6 +390,10 @@ export class IndexPersistenceManager {
 	 * Check if persisted indexes are stale (epoch mismatch).
 	 */
 	async isStale(modelName: string, namespace?: string): Promise<boolean> {
+		if (await this.hasStaleMarker(modelName, namespace)) {
+			return true
+		}
+
 		// Get current epoch BEFORE loading persisted epoch (loadEpoch overwrites)
 		const currentEpoch = this.getEpoch(modelName, namespace)
 
@@ -468,7 +476,9 @@ export class IndexPersistenceManager {
 
 				result.flushed = entries.length
 				return
-			} catch {
+			} catch (error) {
+				await this.markDirtyEntriesStale(entries.map(([, entry]) => entry))
+				void error
 				// Fall back to individual writes
 			}
 		}
@@ -477,14 +487,17 @@ export class IndexPersistenceManager {
 		for (const [key, entry] of entries) {
 			try {
 				if (entry.type === 'filter') {
-					await this.persistFilter(entry.modelName, key)
+					await this.persistFilter(entry.modelName, key, entry.namespace)
 				} else {
-					await this.persistSortedIndex(entry.modelName, entry.field!, key)
+					await this.persistSortedIndex(entry.modelName, entry.field!, key, entry.namespace)
 				}
 
+				await this.persistEpoch(entry.modelName, entry.namespace)
+				await this.clearStaleMarker(entry.modelName, entry.namespace)
 				this.dirty.delete(key)
 				result.flushed++
 			} catch (err) {
+				await this.markDirtyStale(entry)
 				result.errors.push({
 					modelName: entry.modelName,
 					field: entry.field,
@@ -496,21 +509,42 @@ export class IndexPersistenceManager {
 
 	private async flushAtomic(entries: Array<[string, DirtyEntry]>): Promise<void> {
 		const ops: BatchOperation[] = []
+		const epochs = new Set<string>()
 
 		for (const [key, entry] of entries) {
 			if (entry.type === 'filter') {
 				const filter = this.filters.get(key)
 				if (filter) {
-					const storageKey = buildModelKey(entry.modelName, FILTER_KEY_SUFFIX)
+					const storageKey = buildModelKey(entry.modelName, FILTER_KEY_SUFFIX, entry.namespace)
 					ops.push({ type: 'set', key: storageKey, value: filter.serialize() })
 				}
 			} else if (entry.field) {
 				const index = this.sortedIndexes.get(key)
 				if (index) {
-					const storageKey = buildModelKey(entry.modelName, `${INDEX_KEY_PREFIX}${entry.field}`)
+					const storageKey = buildModelKey(entry.modelName, `${INDEX_KEY_PREFIX}${entry.field}`, entry.namespace)
 					ops.push({ type: 'set', key: storageKey, value: index.serialize() })
 				}
 			}
+
+			const epochStorageKey = buildModelKey(entry.modelName, 'epoch', entry.namespace)
+			if (!epochs.has(epochStorageKey)) {
+				epochs.add(epochStorageKey)
+				ops.push({
+					type: 'set',
+					key: epochStorageKey,
+					value: {
+						version: 1,
+						epoch: this.getEpoch(entry.modelName, entry.namespace),
+						persistedAt: Date.now(),
+						modelName: entry.modelName
+					} satisfies EpochData
+				})
+			}
+
+			ops.push({
+				type: 'delete',
+				key: this.buildStaleMarkerKey(entry.modelName, entry.namespace)
+			})
 		}
 
 		if (ops.length > 0) {
@@ -518,25 +552,25 @@ export class IndexPersistenceManager {
 		}
 	}
 
-	private async persistFilter(modelName: string, key: string): Promise<void> {
+	private async persistFilter(modelName: string, key: string, namespace?: string): Promise<void> {
 		const filter = this.filters.get(key)
 		if (!filter) {
 			return
 		}
 
 		const data: CuckooFilterData = filter.serialize()
-		const storageKey = buildModelKey(modelName, FILTER_KEY_SUFFIX)
+		const storageKey = buildModelKey(modelName, FILTER_KEY_SUFFIX, namespace)
 		await this.adapter.set(storageKey, data)
 	}
 
-	private async persistSortedIndex(modelName: string, field: string, key: string): Promise<void> {
+	private async persistSortedIndex(modelName: string, field: string, key: string, namespace?: string): Promise<void> {
 		const index = this.sortedIndexes.get(key)
 		if (!index) {
 			return
 		}
 
 		const data: SortedIndexData = index.serialize()
-		const storageKey = buildModelKey(modelName, `${INDEX_KEY_PREFIX}${field}`)
+		const storageKey = buildModelKey(modelName, `${INDEX_KEY_PREFIX}${field}`, namespace)
 		await this.adapter.set(storageKey, data)
 	}
 
@@ -667,12 +701,11 @@ export class IndexPersistenceManager {
 
 		while (this.currentMemoryUsage > this.options.memoryLimit && this.lruEntries.size > 0) {
 			// Find the least recently used entry
-			const lru = this.findLRUEntry()
+			const lru = this.findLRUEntry(true)
 			if (!lru) {
 				break
 			}
 
-			// Persist before evicting if dirty
 			this.evictEntry(lru)
 		}
 	}
@@ -680,10 +713,14 @@ export class IndexPersistenceManager {
 	/**
 	 * Find the least recently used entry.
 	 */
-	private findLRUEntry(): LRUEntry | null {
+	private findLRUEntry(skipDirty = false): LRUEntry | null {
 		let oldest: LRUEntry | null = null
 
 		for (const entry of this.lruEntries.values()) {
+			if (skipDirty && this.dirty.has(entry.key)) {
+				continue
+			}
+
 			if (!oldest || entry.lastAccess < oldest.lastAccess) {
 				oldest = entry
 			}
@@ -696,11 +733,8 @@ export class IndexPersistenceManager {
 	 * Evict an entry from memory (persist if dirty first).
 	 */
 	private evictEntry(entry: LRUEntry): void {
-		// Check if dirty and persist if needed (sync for simplicity; async would be better)
-		const dirtyEntry = this.dirty.get(entry.key)
-		if (dirtyEntry) {
-			// Mark for immediate flush - don't block eviction
-			// The entry will be persisted on next flush cycle
+		if (this.dirty.has(entry.key)) {
+			return
 		}
 
 		// Remove from tracking
@@ -712,6 +746,41 @@ export class IndexPersistenceManager {
 			this.filters.delete(entry.key)
 		} else {
 			this.sortedIndexes.delete(entry.key)
+		}
+	}
+
+	async hasStaleMarker(modelName: string, namespace?: string): Promise<boolean> {
+		return this.adapter.has(this.buildStaleMarkerKey(modelName, namespace))
+	}
+
+	private buildStaleMarkerKey(modelName: string, namespace?: string): string {
+		return buildModelKey(modelName, IndexPersistenceManager.STALE_SUFFIX, namespace)
+	}
+
+	private async clearStaleMarker(modelName: string, namespace?: string): Promise<void> {
+		await this.adapter.delete(this.buildStaleMarkerKey(modelName, namespace))
+	}
+
+	private async markDirtyEntriesStale(entries: DirtyEntry[]): Promise<void> {
+		const unique = new Map<string, DirtyEntry>()
+		for (const entry of entries) {
+			const key = this.buildStaleMarkerKey(entry.modelName, entry.namespace)
+			unique.set(key, entry)
+		}
+
+		await Promise.all(Array.from(unique.values(), (entry) => this.markDirtyStale(entry)))
+	}
+
+	private async markDirtyStale(entry: DirtyEntry): Promise<void> {
+		try {
+			await this.adapter.set(this.buildStaleMarkerKey(entry.modelName, entry.namespace), {
+				version: 1,
+				modelName: entry.modelName,
+				namespace: entry.namespace,
+				staleAt: Date.now()
+			})
+		} catch {
+			// Best-effort only. The original flush failure remains the authoritative error.
 		}
 	}
 }

@@ -8,7 +8,7 @@ import type { NormalizedSchema, RelationDef } from '../schema/types.js'
 import type { CascadeOp } from './types.js'
 import { MAX_CASCADE_DEPTH, JUNCTION_PREFIX } from '../core/constants.js'
 import { FlashcoreError } from '../core/errors.js'
-import { getJunctionTableDef, parseJunctionModelName } from './junction.js'
+import { getJunctionTableDef, parseJunctionModelName, resolveJunctionFKs, bulkDeleteByFK } from './junction.js'
 
 /**
  * Context for cascade operations.
@@ -61,8 +61,7 @@ export async function collectCascadeOperations(
 	for (const [, relation] of schema.relations) {
 		if (relation.type === 'manyToMany') {
 			const junctionDef = getJunctionTableDef(modelName, relation.model)
-			const isModelA = junctionDef.modelA === modelName
-			const fkField = isModelA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
+			const { fkSource: fkField } = resolveJunctionFKs(junctionDef, modelName)
 
 			ops.push({
 				type: 'junction',
@@ -212,37 +211,13 @@ export async function executeCascadeOperations(
 	const junctionOps = ops.filter(op => op.type === 'junction')
 	for (const op of junctionOps) {
 		const junctionModel = ctx.getModel(op.junctionModel!) as {
-			deleteMany?: (args: unknown) => Promise<unknown>
+			deleteMany?: (args: unknown) => Promise<{ count: number }>
 			findMany?: (args: unknown) => Promise<Array<{ id: string } | Record<string, unknown>>>
 			delete?: (args: unknown) => Promise<unknown>
 		} | undefined
 
 		if (junctionModel) {
-			// Prefer deleteMany when available (fast on acid adapters).
-			try {
-				if (typeof junctionModel.deleteMany === 'function') {
-					await junctionModel.deleteMany({
-						where: { [op.foreignKey]: parentId }
-					})
-					continue
-				}
-			} catch {
-				// Fall back to per-record deletion below.
-			}
-
-			// Fallback path for non-acid adapters: find and delete individually.
-			if (typeof junctionModel.findMany === 'function' && typeof junctionModel.delete === 'function') {
-				const entries = await junctionModel.findMany({
-					where: { [op.foreignKey]: parentId }
-				})
-
-				for (const entry of entries) {
-					const id = (entry as { id?: unknown }).id
-					if (typeof id === 'string') {
-						await junctionModel.delete({ where: { id } })
-					}
-				}
-			}
+			await bulkDeleteByFK(junctionModel, op.foreignKey, parentId)
 		}
 	}
 
@@ -291,13 +266,6 @@ export function hasCascadeRelations(schema: NormalizedSchema): boolean {
 		}
 	}
 	return false
-}
-
-/**
- * Check if a model has any restrict relations.
- */
-export function hasRestrictRelations(schema: NormalizedSchema): boolean {
-	return getRestrictRelations(schema).length > 0
 }
 
 /**

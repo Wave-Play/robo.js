@@ -21,12 +21,6 @@ import type { ChunkData } from '../schema/types.js'
 import type { Catalog } from './catalog.js'
 
 /**
- * Default number of records per chunk.
- * @deprecated Use DEFAULT_MAX_RECORDS_PER_CHUNK from constants.ts
- */
-export const DEFAULT_RECORDS_PER_CHUNK = DEFAULT_MAX_RECORDS_PER_CHUNK
-
-/**
  * LRU cache entry for a chunk.
  */
 interface CacheEntry {

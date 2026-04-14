@@ -6,7 +6,7 @@
  */
 
 import { normalizeCapabilities, warnMissingCapabilities } from '../adapter/capabilities.js'
-import { MemoryAdapter } from '../adapter/builtins/memory.js'
+import { FileAdapter } from '../adapter/builtins/file.js'
 import type {
 	AdapterCapabilities,
 	FlashcoreAdapter,
@@ -26,41 +26,89 @@ import type { SchemaFields, ModelOptions } from '../schema/types.js'
 import { FlashcoreModel } from '../model/model.js'
 import { catalogLockManager, chunkLockManager } from '../model/locks.js'
 import { logger as flashcoreLogger } from './logger.js'
-import { WriteAheadLog, setWALManager, getWalPendingEntriesCount, setWalPendingEntriesCount } from '../wal/manager.js'
-import { recoverWAL } from '../wal/recovery.js'
-import { IntegrityChecker, type IntegrityReport, type IntegrityCheckOptions } from '../integrity/check.js'
-import { RepairEngine, type RepairOptions, type FullRepairResult, type RepairResult } from '../integrity/repair.js'
+import { setWALManager, getWalPendingEntriesCount, setWalPendingEntriesCount } from '../wal/manager.js'
 import { IndexPersistenceManager, setIndexPersistenceManager } from '../index/persistence.js'
-import type { CuckooFilter } from '../index/filter.js'
-import type { SortedIndex } from '../index/sorted.js'
 import { createJunctionSchema, getJunctionTableDef } from '../relation/junction.js'
 
-// Phase 7: Migration imports
-import { SchemaMetadataManager } from '../migration/metadata.js'
-import { SchemaHistoryManager } from '../migration/history.js'
-import { analyzeSchemaChanges, summarizeChanges } from '../migration/diff.js'
-import { FlashcoreSchemaError, TransactionConflictError } from './errors.js'
-import type { SchemaChange, AutoRepairConfig } from '../migration/types.js'
-import { DEFAULT_AUTO_REPAIR_CONFIG } from './constants.js'
+// Extension registry (delegates to @robojs/flashcore-extras when installed)
+import { getExtensions } from './extensions.js'
 
-// Phase 8: Transaction imports
+// Phase 7: Type-only migration imports (zero runtime cost)
+import type { SchemaChange, AutoRepairConfig } from '../migration/types.js'
+
+// Phase 8: Type-only transaction imports (zero runtime cost)
 import type {
 	TransactionOptions,
 	TransactionResult,
 	ITransactionContext,
 	ResolvedTransactionMode
 } from '../transaction/types.js'
+
+// Decomposed system modules
 import {
-	TransactionContext,
-	getSerialQueue,
-	clearSerialQueue
-} from '../transaction/context.js'
+	checkIntegrityImpl,
+	verifyImpl,
+	repairImpl,
+	rebuildIndexesImpl,
+	flushIndexesImpl,
+	preloadImpl,
+	rebuildIndexesDedicatedImpl
+} from './system-integrity.js'
 import {
-	validateMode,
-	buildTransactionOptions,
-	delay,
-	calculateRetryDelay
-} from '../transaction/modes.js'
+	validateSchemasImpl,
+	runAutoRepairImpl,
+	applySafeChangesImpl,
+	createMigrationRunnerImpl
+} from './system-schema.js'
+import {
+	transactionImpl,
+	executeTransactionImpl,
+	executeOptimisticTransactionImpl,
+	clearSerialQueueImpl
+} from './system-transaction.js'
+
+// Phase 5: Integrity types inlined (source moved to @robojs/flashcore-extras)
+export interface IntegrityReport {
+	modelName: string
+	namespace?: string
+	isValid: boolean
+	filter?: { isValid: boolean; orphanedInFilter: string[]; missingInFilter: string[]; recordsChecked: number }
+	sortedIndexes: Array<{ field: string; isValid: boolean; orphanedInIndex: string[]; missingInIndex: string[]; wrongValues: Array<{ id: string; expected: unknown; actual: unknown }>; entriesChecked: number }>
+	uniqueIndex?: { isValid: boolean; orphanedKeys: string[]; duplicates: Array<{ field: string; value: string; ids: string[] }>; keysChecked: number }
+	warnings: string[]
+	durationMs: number
+}
+
+export interface IntegrityCheckOptions {
+	checkFilter?: boolean
+	checkSortedIndexes?: boolean
+	checkUniqueIndexes?: boolean
+	filterSampleSize?: number
+	onProgress?: (progress: { phase: 'filter' | 'sorted' | 'unique' | 'complete'; field?: string; checked: number; total: number }) => void
+}
+
+export interface RepairResult {
+	success: boolean
+	repaired: number
+	unrepaired: string[]
+	warnings: string[]
+	durationMs: number
+}
+
+export interface FullRepairResult {
+	filter?: RepairResult
+	sortedIndexes: Map<string, RepairResult>
+	uniqueIndex?: RepairResult
+	durationMs: number
+}
+
+export interface RepairOptions {
+	repairFilter?: boolean
+	repairSortedIndexes?: boolean
+	repairUniqueIndexes?: boolean
+	dryRun?: boolean
+	onProgress?: (progress: { phase: 'filter' | 'sorted' | 'unique' | 'complete'; field?: string; repaired: number; total: number }) => void
+}
 
 // Phase 10: Plugin imports
 import {
@@ -193,8 +241,8 @@ class FlashcoreSystemState {
 	indexPersistence: IndexPersistenceManager | null = null
 
 	// Schema managers (Phase 7)
-	schemaMetadataManager: SchemaMetadataManager | null = null
-	schemaHistoryManager: SchemaHistoryManager | null = null
+	schemaMetadataManager: any | null = null
+	schemaHistoryManager: any | null = null
 	schemasValidated = false
 
 	// Plugin manager (Phase 10)
@@ -274,8 +322,9 @@ const FlashcoreSystemBase = {
 
 		state.logger.debug('Initializing Flashcore with options:', options)
 
-		// Build the adapter
-		const adapter = options.adapter ?? new MemoryAdapter()
+		// Core defaults to persistent local storage. In-memory adapters live in
+		// @robojs/flashcore-extras and must be opted into explicitly.
+		const adapter = options.adapter ?? new FileAdapter()
 
 		const rawKvReadPreference = (options as Record<string, unknown>).kvReadPreference
 		const rawKvWriteMode = (options as Record<string, unknown>).kvWriteMode
@@ -289,8 +338,8 @@ const FlashcoreSystemBase = {
 		const config: FlashcoreConfig = Object.freeze({
 			adapter,
 			namespaceSeparator: options.namespaceSeparator ?? DEFAULT_NAMESPACE_SEPARATOR,
-			kvReadPreference: kvReadPreference ?? 'legacy',
-			kvWriteMode: kvWriteMode ?? 'legacy',
+			kvReadPreference: kvReadPreference ?? 'v1',
+			kvWriteMode: kvWriteMode ?? 'v1',
 			wal: options.wal,
 			transactions: {
 				...DEFAULT_TRANSACTION_SETTINGS,
@@ -337,6 +386,12 @@ const FlashcoreSystemBase = {
 			await adapter.init()
 		}
 
+		if (adapter.name === 'MemoryAdapter') {
+			state.logger.warn(
+				'Flashcore is using an explicit in-memory adapter. Data will not persist across restarts.'
+			)
+		}
+
 		// Compute capabilities
 		const capabilities = normalizeCapabilities(adapter)
 
@@ -345,9 +400,10 @@ const FlashcoreSystemBase = {
 		capabilities.indexTypes = [] // Populated by plugins later
 
 		// WAL setup + recovery (Phase 4)
-		// WAL is only enabled for scan-capable adapters
-		if (capabilities.walEnabled) {
-			const wal = new WriteAheadLog(adapter, config.wal)
+		// WAL is only enabled for scan-capable adapters AND requires @robojs/flashcore-extras
+		const walExt = getExtensions().wal
+		if (capabilities.walEnabled && walExt) {
+			const wal = walExt.createWALManager(adapter, config.wal)
 			setWALManager(wal)
 
 			// Best-effort pending count before recovery.
@@ -357,7 +413,7 @@ const FlashcoreSystemBase = {
 
 			// Run WAL recovery before model registration
 			state.logger.debug('Running WAL recovery...')
-			const recoveryResult = await recoverWAL(adapter, config.wal)
+			const recoveryResult = await walExt.recoverWAL(adapter, config.wal)
 
 			if (recoveryResult.found > 0) {
 				state.logger.debug(
@@ -381,7 +437,11 @@ const FlashcoreSystemBase = {
 		} else {
 			setWALManager(null)
 			setWalPendingEntriesCount(0)
-			state.logger.debug('WAL disabled (adapter lacks scan capability)')
+			if (capabilities.walEnabled && !walExt) {
+				state.logger.debug('WAL available but @robojs/flashcore-extras not installed')
+			} else {
+				state.logger.debug('WAL disabled (adapter lacks scan capability)')
+			}
 		}
 
 		// Initialize index persistence manager (Phase 6)
@@ -395,11 +455,14 @@ const FlashcoreSystemBase = {
 		setIndexPersistenceManager(state.indexPersistence)
 		state.logger.debug('Index persistence manager initialized')
 
-		// Initialize schema managers (Phase 7)
-		state.schemaMetadataManager = new SchemaMetadataManager(adapter)
-		state.schemaHistoryManager = new SchemaHistoryManager(adapter)
+		// Initialize schema managers (Phase 7) — only if migration extension is installed
+		const migrationExt = getExtensions().migration
+		if (migrationExt) {
+			state.schemaMetadataManager = migrationExt.createMetadataManager(adapter)
+			state.schemaHistoryManager = migrationExt.createHistoryManager(adapter)
+			state.logger.debug('Schema managers initialized (flashcore-extras)')
+		}
 		state.schemasValidated = false
-		state.logger.debug('Schema managers initialized')
 
 		// Initialize plugin manager (Phase 10)
 		state.pluginManager = new PluginManager()
@@ -611,7 +674,7 @@ const FlashcoreSystemBase = {
 	 *
 	 * Returns information about models, storage, plugins, and WAL status.
 	 */
-	introspect(): FlashcoreIntrospection {
+	async introspect(): Promise<FlashcoreIntrospection> {
 		if (!state.initialized) {
 			throw new FlashcoreError(
 				'Flashcore not initialized. Call Flashcore.$.init() first.',
@@ -619,27 +682,34 @@ const FlashcoreSystemBase = {
 			)
 		}
 
-		// Build models array from registry
-		const models: FlashcoreIntrospection['models'] = []
-		for (const model of state.models.values()) {
+		// Build models array from registry with actual record counts
+		const modelEntries = Array.from(state.models.values())
+		const counts = await Promise.all(
+			modelEntries.map(model => model.count().catch(() => 0))
+		)
+
+		const models: FlashcoreIntrospection['models'] = modelEntries.map((model, i) => {
 			const schemaInfo = model.getSchema()
-			models.push({
+			return {
 				name: model.name,
 				namespace: model.namespace,
 				fields: Array.from(schemaInfo.keys()),
 				relations: model.getRelations().map(r => r.model),
-				customMethods: [], // Would need to track this separately
+				customMethods: [] as string[],
 				indexes: model.getIndexedFields(),
-				recordCount: 0, // Would need async call to get actual count
+				recordCount: counts[i],
 				schemaChecksum: model.getSchemaChecksum()
-			})
-		}
+			}
+		})
+
+		// Sum record counts as an approximation of total keys
+		const totalKeys = counts.reduce((sum, c) => sum + c, 0)
 
 		return {
 			models,
 			kvNamespaces: [], // Best-effort; requires scan capability
 			storage: {
-				totalKeys: 0, // Would require scan to compute
+				totalKeys,
 				totalSize: undefined
 			},
 			plugins: state.plugins.map(p => p.name),
@@ -760,6 +830,7 @@ const FlashcoreSystemBase = {
 		state.plugins = []
 		state.models.clear()
 		state.metrics = state.createEmptyMetrics()
+		state.clearQueryTimes()
 		state.walLastRecovery = undefined
 		state.walPendingEntries = 0
 
@@ -768,15 +839,12 @@ const FlashcoreSystemBase = {
 		state.schemaHistoryManager = null
 		state.schemasValidated = false
 
-		// Clear WAL manager
-		setWALManager(null)
-
 		// Clear lock managers
 		catalogLockManager._clear()
 		chunkLockManager._clear()
 
-		// Clear serial transaction queue (Phase 8)
-		clearSerialQueue()
+		// Clear serial transaction queue (Phase 8) — only if transaction extension is installed
+		getExtensions().transaction?.clearSerialQueue()
 	},
 
 	// ========================================================================
@@ -792,48 +860,8 @@ const FlashcoreSystemBase = {
 	 * @param options - Optional integrity check options
 	 * @returns Integrity report for all models
 	 */
-	async checkIntegrity(options?: IntegrityCheckOptions): Promise<{
-		models: IntegrityReport[]
-		isValid: boolean
-		durationMs: number
-	}> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const startTime = Date.now()
-		const checker = new IntegrityChecker(state.adapter)
-		const reports: IntegrityReport[] = []
-		let allValid = true
-
-		for (const model of state.models.values()) {
-			const catalog = model._getCatalog()
-			const filter = await model._getFilter()
-			const sortedIndexes = await model._getSortedIndexes()
-			const uniqueFields = model.getUniqueFields()
-
-			const report = await checker.checkAll(model.name, catalog, {
-				...options,
-				filter: filter ?? undefined,
-				sortedIndexes,
-				uniqueFields,
-				namespace: model.namespace
-			})
-
-			reports.push(report)
-			if (!report.isValid) {
-				allValid = false
-			}
-		}
-
-		return {
-			models: reports,
-			isValid: allValid,
-			durationMs: Date.now() - startTime
-		}
+	async checkIntegrity(options?: IntegrityCheckOptions) {
+		return checkIntegrityImpl(state.initialized, state.adapter, state.models, options)
 	},
 
 	/**
@@ -843,35 +871,8 @@ const FlashcoreSystemBase = {
 	 * @param options - Optional integrity check options
 	 * @returns Integrity report for the model
 	 */
-	async verify(modelName: string, options?: IntegrityCheckOptions): Promise<IntegrityReport> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const model = state.models.get(modelName)
-		if (!model) {
-			throw new FlashcoreError(
-				`Model "${modelName}" not found.`,
-				'MODEL_NOT_FOUND'
-			)
-		}
-
-		const checker = new IntegrityChecker(state.adapter)
-		const catalog = model._getCatalog()
-		const filter = await model._getFilter()
-		const sortedIndexes = await model._getSortedIndexes()
-		const uniqueFields = model.getUniqueFields()
-
-		return checker.checkAll(model.name, catalog, {
-			...options,
-			filter: filter ?? undefined,
-			sortedIndexes,
-			uniqueFields,
-			namespace: model.namespace
-		})
+	async verify(modelName: string, options?: IntegrityCheckOptions) {
+		return verifyImpl(state.initialized, state.adapter, state.models, modelName, options)
 	},
 
 	/**
@@ -881,69 +882,8 @@ const FlashcoreSystemBase = {
 	 * @param options - Optional repair options
 	 * @returns Repair result
 	 */
-	async repair(modelName: string, options?: RepairOptions): Promise<FullRepairResult> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const model = state.models.get(modelName)
-		if (!model) {
-			throw new FlashcoreError(
-				`Model "${modelName}" not found.`,
-				'MODEL_NOT_FOUND'
-			)
-		}
-
-		// First check integrity
-		const checker = new IntegrityChecker(state.adapter)
-		const catalog = model._getCatalog()
-		const filter = await model._getFilter()
-		const sortedIndexes = await model._getSortedIndexes()
-		const chunkManager = model._getChunkManager()
-		const uniqueFields = model.getUniqueFields()
-
-		const report = await checker.checkAll(model.name, catalog, {
-			filter: filter ?? undefined,
-			sortedIndexes,
-			uniqueFields,
-			namespace: model.namespace
-		})
-
-		// Repair based on report
-		const engine = new RepairEngine(state.adapter)
-		const result = await engine.repairFromReport(
-			model.name,
-			catalog,
-			chunkManager,
-			report,
-			options
-		)
-
-		// If filter was repaired, update model
-		if (result.filter && !options?.dryRun) {
-			const repairedFilter = (result.filter as RepairResult & { filter?: CuckooFilter }).filter
-			if (repairedFilter) {
-				model._setFilter(repairedFilter)
-			}
-		}
-
-		// If sorted indexes were repaired, update model
-		if (!options?.dryRun) {
-			for (const [field, repairResult] of result.sortedIndexes) {
-				const repairedIndex = (repairResult as RepairResult & { index?: SortedIndex }).index
-				if (repairedIndex) {
-					model._setSortedIndex(field, repairedIndex)
-				}
-			}
-		}
-
-		// Increment metrics
-		state.metrics.indexRebuilds++
-
-		return result
+	async repair(modelName: string, options?: RepairOptions) {
+		return repairImpl(state.initialized, state.adapter, state.models, state.metrics, modelName, options)
 	},
 
 	/**
@@ -953,51 +893,8 @@ const FlashcoreSystemBase = {
 	 *
 	 * @param modelName - Optional model name. If not provided, rebuilds all models.
 	 */
-	async rebuildIndexes(modelName?: string): Promise<void> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const modelsToRebuild = modelName
-			? [state.models.get(modelName)]
-			: Array.from(state.models.values())
-
-		if (modelName && !modelsToRebuild[0]) {
-			throw new FlashcoreError(
-				`Model "${modelName}" not found.`,
-				'MODEL_NOT_FOUND'
-			)
-		}
-
-		const engine = new RepairEngine(state.adapter)
-
-		for (const model of modelsToRebuild) {
-			if (!model) continue
-
-			const catalog = model._getCatalog()
-			const chunkManager = model._getChunkManager()
-			const indexedFields = model.getIndexedFields()
-
-			const { filter, sortedIndexes } = await engine.rebuildAll(
-				model.name,
-				catalog,
-				chunkManager,
-				indexedFields,
-				model.namespace
-			)
-
-			// Update model with rebuilt indexes
-			model._setFilter(filter)
-			model._setSortedIndexes(sortedIndexes)
-
-			// Increment metrics
-			state.metrics.indexRebuilds++
-		}
-
-		state.logger.debug(`Rebuilt indexes for ${modelsToRebuild.length} model(s)`)
+	async rebuildIndexes(modelName?: string) {
+		return rebuildIndexesImpl(state.initialized, state.adapter, state.models, state.metrics, state.logger, modelName)
 	},
 
 	/**
@@ -1005,26 +902,8 @@ const FlashcoreSystemBase = {
 	 *
 	 * Forces immediate persistence of all dirty indexes.
 	 */
-	async flushIndexes(): Promise<void> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		if (state.indexPersistence) {
-			const result = await state.indexPersistence.flushAll()
-			state.logger.debug(`Flushed ${result.flushed} index(es) in ${result.durationMs}ms`)
-
-			if (result.errors.length > 0) {
-				for (const error of result.errors) {
-					state.logger.warn(`Index flush error for ${error.modelName}${error.field ? ':' + error.field : ''}: ${error.error.message}`)
-				}
-			}
-		} else {
-			state.logger.debug('Index flush requested (no persistence manager)')
-		}
+	async flushIndexes() {
+		return flushIndexesImpl(state.initialized, state.adapter, state.indexPersistence, state.logger)
 	},
 
 	/**
@@ -1035,75 +914,21 @@ const FlashcoreSystemBase = {
 	 *
 	 * @param modelNames - Model names to preload
 	 */
-	async preload(modelNames: string[]): Promise<void> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		for (const name of modelNames) {
-			const model = state.models.get(name)
-			if (!model) {
-				state.logger.warn(`Model "${name}" not found for preload`)
-				continue
-			}
-
-			// Load indexes (this will load catalog as well)
-			await model._loadIndexes()
-		}
-
-		state.logger.debug(`Preloaded ${modelNames.length} model(s)`)
+	async preload(modelNames: string[]) {
+		return preloadImpl(state.initialized, state.adapter, state.models, state.logger, modelNames)
 	},
 
 	/**
-	 * Rebuild indexes for a model in the background.
+	 * Rebuild indexes for a single model using a dedicated pass.
 	 *
-	 * Builds new indexes without blocking queries, then atomically swaps
-	 * the new indexes in place of the old ones.
+	 * Builds new indexes from authoritative data, then swaps them into the model.
+	 * This is an async operation that awaits completion — queries use old indexes
+	 * until the swap occurs.
 	 *
 	 * @param modelName - Model name to rebuild
 	 */
-	async rebuildIndexesBackground(modelName: string): Promise<void> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const model = state.models.get(modelName)
-		if (!model) {
-			throw new FlashcoreError(
-				`Model "${modelName}" not found.`,
-				'MODEL_NOT_FOUND'
-			)
-		}
-
-		const engine = new RepairEngine(state.adapter)
-
-		// Build new indexes in background (old indexes still serve queries)
-		const catalog = model._getCatalog()
-		const chunkManager = model._getChunkManager()
-		const indexedFields = model.getIndexedFields()
-
-		const { filter, sortedIndexes } = await engine.rebuildAll(
-			model.name,
-			catalog,
-			chunkManager,
-			indexedFields,
-			model.namespace
-		)
-
-		// Atomic swap - replace old indexes with new ones
-		model._setFilter(filter)
-		model._setSortedIndexes(sortedIndexes)
-
-		// Increment metrics
-		state.metrics.indexRebuilds++
-
-		state.logger.debug(`Background index rebuild complete for model: ${modelName}`)
+	async rebuildIndexesDedicated(modelName: string) {
+		return rebuildIndexesDedicatedImpl(state.initialized, state.adapter, state.models, state.metrics, state.logger, modelName)
 	},
 
 	// ========================================================================
@@ -1121,123 +946,13 @@ const FlashcoreSystemBase = {
 	 *
 	 * @returns Validation result with changes applied
 	 */
-	async validateSchemas(): Promise<{
-		modelsValidated: number
-		newModels: string[]
-		changedModels: Array<{ name: string; safeChanges: SchemaChange[] }>
-	}> {
-		if (!state.initialized || !state.adapter || !state.schemaMetadataManager) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const result = {
-			modelsValidated: 0,
-			newModels: [] as string[],
-			changedModels: [] as Array<{ name: string; safeChanges: SchemaChange[] }>
-		}
-
-		for (const model of state.models.values()) {
-			const modelKey = model.namespace ? `${model.namespace}::${model.name}` : model.name
-			result.modelsValidated++
-
-			// Get stored metadata
-			const stored = await state.schemaMetadataManager.getModelMetadata(
-				model.name,
-				model.namespace
-			)
-			const currentChecksum = model.getSchemaChecksum()
-
-			if (!stored) {
-				// New model - store initial metadata
-				const metadata = SchemaMetadataManager.createInitialMetadata(model.schema)
-				await state.schemaMetadataManager.setModelMetadata(
-					model.name,
-					metadata,
-					model.namespace
-				)
-				result.newModels.push(modelKey)
-				state.logger.debug(`Registered new model: ${modelKey}`)
-				continue
-			}
-
-			// Check if checksum differs
-			if (stored.checksum === currentChecksum) {
-				// No changes
-				continue
-			}
-
-			// Schema changed - analyze changes
-			const analysis = analyzeSchemaChanges(
-				stored.fields,
-				model.schema,
-				model.name
-			)
-
-			// Breaking changes block startup
-			if (analysis.hasBreakingChanges) {
-				const breakingDescriptions = analysis.breaking
-					.map(c => `  - ${c.description}`)
-					.join('\n')
-
-				throw new FlashcoreSchemaError(
-					`Breaking schema changes detected for model '${modelKey}':\n${breakingDescriptions}`,
-					{
-						model: modelKey,
-						schemaChange: analysis.breaking.map(c => c.description).join('; '),
-						cliInstructions: "Run 'robo db migrate' to apply these changes."
-					}
-				)
-			}
-
-			// Safe changes are auto-applied
-			if (analysis.safe.length > 0) {
-				state.logger.debug(
-					`Auto-applying safe schema changes for '${modelKey}': ${summarizeChanges(analysis)}`
-				)
-
-				// Apply safe changes (e.g., rebuild indexes)
-				await this._applySafeChanges(model, analysis.safe)
-
-				result.changedModels.push({
-					name: modelKey,
-					safeChanges: analysis.safe
-				})
-			}
-
-			// Update stored metadata
-			const updatedMetadata = SchemaMetadataManager.createUpdatedMetadata(
-				model.schema,
-				stored
-			)
-			await state.schemaMetadataManager.setModelMetadata(
-				model.name,
-				updatedMetadata,
-				model.namespace
-			)
-
-			// Record in history
-			if (state.schemaHistoryManager && analysis.safe.length > 0) {
-				const historyEntry = SchemaHistoryManager.createAutoEntry(
-					updatedMetadata.version,
-					updatedMetadata.checksum,
-					analysis.safe
-				)
-				await state.schemaHistoryManager.appendHistory(
-					historyEntry,
-					model.namespace ?? '_default'
-				)
-			}
-		}
-
-		state.schemasValidated = true
-		state.logger.debug(
-			`Schema validation complete: ${result.modelsValidated} models, ` +
-			`${result.newModels.length} new, ${result.changedModels.length} changed`
+	async validateSchemas() {
+		const result = await validateSchemasImpl(
+			state.initialized, state.adapter, state.models,
+			state.schemaMetadataManager, state.schemaHistoryManager,
+			state.logger, state.metrics
 		)
-
+		state.schemasValidated = true
 		return result
 	},
 
@@ -1248,99 +963,8 @@ const FlashcoreSystemBase = {
 	 *
 	 * @param config - Auto-repair configuration (true for defaults, or specific options)
 	 */
-	async runAutoRepair(config: AutoRepairConfig | true = true): Promise<{
-		repaired: number
-		errors: string[]
-	}> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const repairConfig: AutoRepairConfig = config === true
-			? { ...DEFAULT_AUTO_REPAIR_CONFIG }
-			: { ...DEFAULT_AUTO_REPAIR_CONFIG, ...config }
-
-		// Never auto-repair catalog (requires explicit opt-in)
-		if (repairConfig.catalog) {
-			state.logger.warn(
-				'Auto-repair of catalog is disabled for safety. ' +
-				'Use CLI: robo db repair --rebuild=catalog'
-			)
-			repairConfig.catalog = false
-		}
-
-		const result = { repaired: 0, errors: [] as string[] }
-
-		for (const model of state.models.values()) {
-			const modelKey = model.namespace ? `${model.namespace}::${model.name}` : model.name
-
-			try {
-				// Quick integrity check
-				const checker = new IntegrityChecker(state.adapter)
-				const catalog = model._getCatalog()
-				const filter = await model._getFilter()
-				const sortedIndexes = await model._getSortedIndexes()
-
-				const report = await checker.checkAll(model.name, catalog, {
-					filter: filter ?? undefined,
-					sortedIndexes,
-					uniqueFields: model.getUniqueFields(),
-					namespace: model.namespace,
-					checkFilter: repairConfig.filter,
-					checkSortedIndexes: repairConfig.indexes,
-					checkUniqueIndexes: repairConfig.uniqueIndexes
-				})
-
-				if (!report.isValid) {
-					// Repair needed
-					state.logger.debug(`Auto-repairing model: ${modelKey}`)
-
-					const engine = new RepairEngine(state.adapter)
-					const chunkManager = model._getChunkManager()
-
-					const repairResult = await engine.repairFromReport(
-						model.name,
-						catalog,
-						chunkManager,
-						report,
-						{
-							repairFilter: repairConfig.filter,
-							repairSortedIndexes: repairConfig.indexes,
-							repairUniqueIndexes: repairConfig.uniqueIndexes
-						}
-					)
-
-					// Update model with repaired indexes
-					if (repairResult.filter) {
-						const repairedFilter = (repairResult.filter as RepairResult & { filter?: CuckooFilter }).filter
-						if (repairedFilter) {
-							model._setFilter(repairedFilter)
-						}
-					}
-
-					for (const [field, repairData] of repairResult.sortedIndexes) {
-						const repairedIndex = (repairData as RepairResult & { index?: SortedIndex }).index
-						if (repairedIndex) {
-							model._setSortedIndex(field, repairedIndex)
-						}
-					}
-
-					result.repaired++
-					state.metrics.indexRebuilds++
-				}
-			} catch (error) {
-				result.errors.push(`${modelKey}: ${error instanceof Error ? error.message : String(error)}`)
-			}
-		}
-
-		if (result.repaired > 0) {
-			state.logger.debug(`Auto-repair complete: ${result.repaired} model(s) repaired`)
-		}
-
-		return result
+	async runAutoRepair(config: AutoRepairConfig | true = true) {
+		return runAutoRepairImpl(state.initialized, state.adapter, state.models, state.logger, state.metrics, config)
 	},
 
 	/**
@@ -1354,7 +978,7 @@ const FlashcoreSystemBase = {
 	 * Get the schema metadata manager.
 	 * @internal
 	 */
-	get _schemaMetadataManager(): SchemaMetadataManager | null {
+	get _schemaMetadataManager(): any | null {
 		return state.schemaMetadataManager
 	},
 
@@ -1362,7 +986,7 @@ const FlashcoreSystemBase = {
 	 * Get the schema history manager.
 	 * @internal
 	 */
-	get _schemaHistoryManager(): SchemaHistoryManager | null {
+	get _schemaHistoryManager(): any | null {
 		return state.schemaHistoryManager
 	},
 
@@ -1378,13 +1002,8 @@ const FlashcoreSystemBase = {
 	 * Create a migration runner for CLI operations.
 	 * @returns MigrationRunner instance or null if not initialized
 	 */
-	async createMigrationRunner(): Promise<import('../migration/runner.js').MigrationRunner | null> {
-		if (!state.initialized || !state.adapter) {
-			return null
-		}
-		// Dynamic import to avoid circular deps
-		const { MigrationRunner } = await import('../migration/runner.js')
-		return new MigrationRunner(state.adapter)
+	async createMigrationRunner() {
+		return createMigrationRunnerImpl(state.initialized, state.adapter)
 	},
 
 	// ========================================================================
@@ -1411,34 +1030,7 @@ const FlashcoreSystemBase = {
 		fn: (ctx: ITransactionContext) => Promise<T>,
 		options?: TransactionOptions
 	): Promise<TransactionResult<T>> {
-		if (!state.initialized || !state.adapter) {
-			throw new FlashcoreError(
-				'Flashcore not initialized. Call Flashcore.$.init() first.',
-				'NOT_INITIALIZED'
-			)
-		}
-
-		const startTime = Date.now()
-		const effectiveOptions = buildTransactionOptions(options)
-		const resolvedMode = validateMode(effectiveOptions.mode, state.adapter)
-
-		state.logger.debug(`Starting transaction with mode: ${resolvedMode}`)
-
-		// Handle serial mode with queue
-		if (resolvedMode === 'serial') {
-			const serialResult = await getSerialQueue().enqueue(async () => {
-				return this._executeTransaction(fn, resolvedMode, effectiveOptions, startTime)
-			})
-			return serialResult as TransactionResult<T>
-		}
-
-		// Handle optimistic mode with retries
-		if (resolvedMode === 'optimistic') {
-			return this._executeOptimisticTransaction(fn, resolvedMode, effectiveOptions, startTime)
-		}
-
-		// Other modes: native, batch, single
-		return this._executeTransaction(fn, resolvedMode, effectiveOptions, startTime)
+		return transactionImpl(state.initialized, state.adapter, state.logger, state.metrics, fn, options)
 	},
 
 	/**
@@ -1451,25 +1043,7 @@ const FlashcoreSystemBase = {
 		options: Required<TransactionOptions>,
 		startTime: number
 	): Promise<TransactionResult<T>> {
-		const ctx = new TransactionContext(state.adapter!, mode, options)
-
-		try {
-			// Execute user function
-			const result = await fn(ctx)
-
-			// Commit staged operations
-			await ctx.commit()
-
-			return {
-				result,
-				retries: 0,
-				durationMs: Date.now() - startTime
-			}
-		} catch (error) {
-			// Rollback on error
-			ctx.rollback()
-			throw error
-		}
+		return executeTransactionImpl(state.adapter!, state.metrics, fn, mode, options, startTime)
 	},
 
 	/**
@@ -1482,49 +1056,7 @@ const FlashcoreSystemBase = {
 		options: Required<TransactionOptions>,
 		startTime: number
 	): Promise<TransactionResult<T>> {
-		let retries = 0
-		let lastError: Error | null = null
-
-		while (retries <= options.maxRetries) {
-			const ctx = new TransactionContext(state.adapter!, mode, options)
-
-			try {
-				// Execute user function
-				const result = await fn(ctx)
-
-				// Commit staged operations (validates versions)
-				await ctx.commit()
-
-				return {
-					result,
-					retries,
-					durationMs: Date.now() - startTime
-				}
-			} catch (error) {
-				ctx.rollback()
-
-				// Check if it's a conflict error (retriable)
-				if (error instanceof TransactionConflictError) {
-					lastError = error
-					retries++
-					state.metrics.transactionRetries++
-
-					if (retries <= options.maxRetries) {
-						// Wait before retry with exponential backoff
-						const delayMs = calculateRetryDelay(options.retryDelay, retries - 1)
-						state.logger.debug(`Transaction conflict, retrying in ${delayMs}ms (attempt ${retries}/${options.maxRetries})`)
-						await delay(delayMs)
-						continue
-					}
-				}
-
-				// Non-conflict error or retries exhausted
-				throw error
-			}
-		}
-
-		// Should not reach here, but just in case
-		throw lastError ?? new Error('Transaction failed after retries')
+		return executeOptimisticTransactionImpl(state.adapter!, state.logger, state.metrics, fn, mode, options, startTime)
 	},
 
 	/**
@@ -1532,7 +1064,7 @@ const FlashcoreSystemBase = {
 	 * @internal
 	 */
 	_clearSerialQueue(): void {
-		clearSerialQueue()
+		clearSerialQueueImpl()
 	},
 
 	/**
@@ -1543,38 +1075,7 @@ const FlashcoreSystemBase = {
 		model: FlashcoreModel<{ id: string }>,
 		changes: SchemaChange[]
 	): Promise<void> {
-		for (const change of changes) {
-			switch (change.type) {
-				case 'add_index':
-					// Trigger index rebuild for this field
-					if (change.field) {
-						state.logger.debug(`Rebuilding index for field: ${change.field}`)
-						// Index will be built on next access (lazy loading)
-					}
-					state.metrics.indexRebuilds++
-					break
-
-				case 'add_unique':
-					// Validate existing records don't have duplicates
-					if (change.field) {
-						state.logger.debug(`Validating unique constraint on: ${change.field}`)
-						// Validation happens on first access
-					}
-					break
-
-				case 'remove_index':
-					// No action needed - index will not be loaded
-					break
-
-				case 'remove_unique':
-					// No action needed - constraint will not be enforced
-					break
-
-				// Other safe changes just update metadata
-				default:
-					break
-			}
-		}
+		return applySafeChangesImpl(model, changes, state.logger, state.metrics)
 	},
 
 	// ========================================================================
@@ -1592,7 +1093,7 @@ const FlashcoreSystemBase = {
 	 */
 	async extend(plugin: FlashcorePlugin): Promise<void> {
 		if (!state.pluginManager) {
-			throw new FlashcoreError('NOT_INITIALIZED', 'Cannot extend: Flashcore not initialized')
+			throw new FlashcoreError('Cannot extend: Flashcore not initialized', 'NOT_INITIALIZED')
 		}
 
 		// Register the plugin

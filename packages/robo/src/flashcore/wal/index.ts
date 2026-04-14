@@ -2,6 +2,10 @@
  * Flashcore v1 (spec rev 4.3) WAL Module
  *
  * Write-Ahead Logging for crash-safe operations.
+ *
+ * The WriteAheadLog implementation, delta builders, and recovery logic
+ * have moved to @robojs/flashcore-extras. This barrel exports only
+ * types and the global singleton shim.
  */
 
 // Types
@@ -30,36 +34,21 @@ export type {
 	WALEntryHeader,
 	WALEntryInput,
 	RecoveryResult,
-	WALConfig
+	WALConfig,
+	RecoveryContext,
+	// Data types used by CRUD
+	DeltaBuildResult,
+	UniqueChange,
+	UniqueUpdate,
+	SegmentWrite,
+	// Extension interfaces
+	WalManager,
+	WalDeltaBuilders,
+	WalContext
 } from './types.js'
 
-// Manager
-export { WriteAheadLog, setWALManager, getWALManager, isWALEnabled } from './manager.js'
+// Global singleton shim
+export { setWALManager, getWALManager, isWALEnabled, getWalPendingEntriesCount, setWalPendingEntriesCount } from './manager.js'
 
-// Delta builders
-export type { DeltaBuildResult, UniqueChange, UniqueUpdate, SegmentWrite } from './deltas.js'
-
-export {
-	buildCreateDeltas,
-	buildCreateSegmentedDeltas,
-	buildUpdateDeltas,
-	buildUpdateSegmentedDeltas,
-	buildUpdateChunkToSegmentsDeltas,
-	buildUpdateSegmentsToChunkDeltas,
-	buildDeleteDeltas,
-	buildDeleteSegmentedDeltas,
-	computePatch,
-	applyPatch
-} from './deltas.js'
-
-// Recovery
-export type { RecoveryContext } from './recovery.js'
-
-export {
-	recoverWAL,
-	applyCatalogSetDelta,
-	applyCatalogSetSegmentsDelta,
-	applyCatalogDeleteDelta,
-	replayEntryWithContext,
-	rollbackEntryWithContext
-} from './recovery.js'
+// WalContext helper
+export { getWalContext } from './context.js'

@@ -9,9 +9,10 @@
  * @example
  * ```typescript
  * import { Flashcore } from 'robo.js/flashcore'
+ * import { FileAdapter } from 'robo.js/flashcore'
  *
  * // Initialize with an adapter
- * await Flashcore.$.init({ adapter: new MemoryAdapter() })
+ * await Flashcore.$.init({ adapter: new FileAdapter() })
  *
  * // KV operations
  * await Flashcore.set('key', 'value')
@@ -30,10 +31,16 @@ export { Flashcore } from './core/client.js'
 export type { FlashcoreClient } from './core/client.js'
 
 // ─────────────────────────────────────────────────────────────
+// Extension Registry
+// ─────────────────────────────────────────────────────────────
+
+export { registerExtensions, getExtensions, requireExtension } from './core/extensions.js'
+export type { ExtensionRegistry, MigrationExtension, IntegrityExtension, TransactionExtension } from './core/extensions.js'
+
+// ─────────────────────────────────────────────────────────────
 // Adapters
 // ─────────────────────────────────────────────────────────────
 
-export { MemoryAdapter, createMemoryAdapter } from './adapter/builtins/memory.js'
 export { LegacyFileAdapter, createLegacyFileAdapter } from './adapter/builtins/legacy-file.js'
 export { KeyvAdapter, createKeyvAdapter, createKeyvAdapterFromOptions } from './adapter/builtins/keyv.js'
 export { FileAdapter, createFileAdapter } from './adapter/builtins/file.js'
@@ -45,7 +52,7 @@ export type { FileAdapterOptions } from './adapter/builtins/file.js'
 // Adapter Utilities
 // ─────────────────────────────────────────────────────────────
 
-export { normalizeCapabilities, requireCapability, warnMissingCapabilities } from './adapter/capabilities.js'
+export { normalizeCapabilities, requireCapability, warnMissingCapabilities, hasAcidSupport, requiresAcid } from './adapter/capabilities.js'
 export { scanKeys, scanKeysToArray, hasScanCapability } from './adapter/scan.js'
 
 // ─────────────────────────────────────────────────────────────
@@ -71,7 +78,7 @@ export type {
 // ─────────────────────────────────────────────────────────────
 
 export { FlashcoreSystem } from './core/system.js'
-export type { FlashcoreIntrospection, FlashcoreMetrics, FlashcoreSchema } from './core/system.js'
+export type { FlashcoreIntrospection, FlashcoreMetrics, FlashcoreSchema, IntegrityReport, IntegrityCheckOptions, RepairResult, FullRepairResult, RepairOptions } from './core/system.js'
 
 // ─────────────────────────────────────────────────────────────
 // Errors
@@ -120,13 +127,13 @@ export {
 	validateNotReserved,
 	buildModelKey,
 	buildUniqueKey,
+	buildCompoundUniqueKey,
 	buildIndexKey,
 	buildWalEntryKey,
 	buildWalSegmentKey,
 	buildSchemaKey,
 	buildSchemaHistoryKey,
-	buildPluginKey,
-	WAL_ENTRY_PREFIX
+	buildPluginKey
 } from './core/keys.js'
 
 // ─────────────────────────────────────────────────────────────
@@ -205,7 +212,7 @@ export type { FlashcoreModelOptions } from './model/model.js'
 
 export { Catalog, CATALOG_VERSION } from './model/catalog.js'
 export type { CatalogEntry, ChunkStats } from './model/catalog.js'
-export { ChunkManager, createChunkManager, DEFAULT_RECORDS_PER_CHUNK } from './model/chunk.js'
+export { ChunkManager, createChunkManager } from './model/chunk.js'
 
 // ─────────────────────────────────────────────────────────────
 // Locks (Phase 1)
@@ -269,7 +276,8 @@ export {
 } from './index/unique.js'
 export type {
 	UniqueIndexEntry,
-	UniqueConstraintOptions
+	UniqueConstraintOptions,
+	CompoundUniqueConstraintOptions
 } from './index/unique.js'
 
 // ─────────────────────────────────────────────────────────────
@@ -279,52 +287,14 @@ export type {
 export { DEFAULT_SAFETY_CONFIG } from './core/constants.js'
 
 // ─────────────────────────────────────────────────────────────
-// Adapter Wrappers (Phase 3)
-// ─────────────────────────────────────────────────────────────
-
-export { AdapterWrapper } from './adapter/wrappers/base.js'
-export { CacheAdapter, createCacheAdapter } from './adapter/wrappers/cache.js'
-export { CompressionAdapter, createCompressionAdapter } from './adapter/wrappers/compression.js'
-export { EncryptionAdapter, createEncryptionAdapter } from './adapter/wrappers/encryption.js'
-export { ResilienceAdapter, createResilienceAdapter } from './adapter/wrappers/resilience.js'
-export type { CacheOptions, CacheStats } from './adapter/wrappers/cache.js'
-export type { CompressionOptions } from './adapter/wrappers/compression.js'
-export type { EncryptionOptions } from './adapter/wrappers/encryption.js'
-export type { ResilienceOptions } from './adapter/wrappers/resilience.js'
-
-// ─────────────────────────────────────────────────────────────
-// Adapter Builder (Phase 3)
-// ─────────────────────────────────────────────────────────────
-
-export { AdapterBuilder, buildAdapter, AdapterPresets } from './adapter/builder.js'
-
-// ─────────────────────────────────────────────────────────────
 // WAL (Write-Ahead Log) - Phase 4
 // ─────────────────────────────────────────────────────────────
 
-export {
-	WriteAheadLog,
-	setWALManager,
-	getWALManager,
-	isWALEnabled,
-	buildCreateDeltas,
-	buildCreateSegmentedDeltas,
-	buildUpdateDeltas,
-	buildUpdateSegmentedDeltas,
-	buildUpdateChunkToSegmentsDeltas,
-	buildUpdateSegmentsToChunkDeltas,
-	buildDeleteDeltas,
-	buildDeleteSegmentedDeltas,
-	computePatch,
-	applyPatch,
-	recoverWAL,
-	applyCatalogSetDelta,
-	applyCatalogSetSegmentsDelta,
-	applyCatalogDeleteDelta,
-	replayEntryWithContext,
-	rollbackEntryWithContext
-} from './wal/index.js'
+// Global singleton shim (stays in core)
+export { setWALManager, getWALManager, isWALEnabled, getWalPendingEntriesCount, setWalPendingEntriesCount } from './wal/manager.js'
+export { getWalContext } from './wal/context.js'
 
+// Types (stay in core)
 export type {
 	WalOp,
 	WalPhase,
@@ -341,7 +311,6 @@ export type {
 	UniqueReleaseDelta,
 	SegmentPutDelta,
 	SegmentDeleteDelta,
-	SegmentWrite,
 	FilterAddDelta,
 	FilterRemoveDelta,
 	IndexUpsertDelta,
@@ -352,47 +321,30 @@ export type {
 	WALEntryInput,
 	RecoveryResult,
 	WALConfig,
+	RecoveryContext,
+	// Data types used by CRUD
 	DeltaBuildResult,
 	UniqueChange,
 	UniqueUpdate,
-	RecoveryContext
+	SegmentWrite,
+	// Extension interfaces
+	WalManager,
+	WalDeltaBuilders,
+	WalContext
 } from './wal/index.js'
+
+// Extension type
+export type { WalExtension } from './core/extensions.js'
 
 // WAL constants
 export {
+	WAL_ENTRY_PREFIX,
 	WAL_ENTRY_PREFIX as WAL_ENTRY_KEY_PREFIX,
 	WAL_SEGMENT_PREFIX,
 	WAL_STALE_THRESHOLD_MS,
 	WAL_CLOCK_SKEW_TOLERANCE_MS,
 	WAL_DEFAULT_SEGMENT_SIZE
 } from './core/constants.js'
-
-// ─────────────────────────────────────────────────────────────
-// Integrity (Phase 6)
-// ─────────────────────────────────────────────────────────────
-
-export {
-	IntegrityChecker,
-	RepairEngine,
-	rebuildCatalogFromChunks,
-	verifyCatalogIntegrity
-} from './integrity/index.js'
-export type {
-	FilterIntegrityResult,
-	IndexIntegrityResult,
-	UniqueIntegrityResult,
-	IntegrityReport,
-	IntegrityCheckOptions,
-	IntegrityCheckProgress,
-	RepairResult,
-	FullRepairResult,
-	RepairOptions,
-	RepairProgress,
-	CatalogRebuildResult,
-	CatalogRebuildOptions,
-	CatalogRebuildProgress,
-	CatalogVerificationResult
-} from './integrity/index.js'
 
 // ─────────────────────────────────────────────────────────────
 // Index (Phase 6)
@@ -415,31 +367,15 @@ export type {
 } from './index/index.js'
 
 // ─────────────────────────────────────────────────────────────
-// Migration (Phase 7)
+// Migration Types (Phase 7) — implementations in @robojs/flashcore-extras
 // ─────────────────────────────────────────────────────────────
-
-// User-facing API
-export { defineMigration, generateMigrationFilename, generateMigrationContent, MIGRATION_TEMPLATE } from './migration/define.js'
-
-// Migration runner and registry
-export { MigrationRunner, createMigrationRunner, MigrationRegistry, migrationRegistry } from './migration/index.js'
-export type { MigrationRunnerOptions } from './migration/runner.js'
-
-// Schema diff and analysis
-export { analyzeSchemaChanges, analyzeNamespaceChanges, formatSchemaChanges, hasSchemaChanged, summarizeChanges } from './migration/diff.js'
-
-// Schema metadata manager
-export { SchemaMetadataManager } from './migration/metadata.js'
-
-// Schema history manager
-export { SchemaHistoryManager } from './migration/history.js'
-
-// Migration lock
-export { MigrationLockManager } from './migration/lock.js'
-export type { LockAcquisitionResult, LockStatus, MigrationLockOptions } from './migration/lock.js'
 
 // Migration types
 export type {
+	MigrationRunnerOptions,
+	LockAcquisitionResult,
+	LockStatus,
+	MigrationLockOptions,
 	FieldMetadata,
 	RelationMetadata,
 	SchemaMetadata,
@@ -464,7 +400,7 @@ export type {
 	FieldDiffEntry
 } from './migration/types.js'
 
-// Type conversion helpers
+// Type conversion helpers (kept — zero runtime cost utility)
 export { normalizedFieldToMetadata, metadataToNormalizedField } from './migration/types.js'
 
 // Migration constants
@@ -478,27 +414,8 @@ export {
 } from './core/constants.js'
 
 // ─────────────────────────────────────────────────────────────
-// Transactions (Phase 8)
+// Transaction Types (Phase 8) — implementations in @robojs/flashcore-extras
 // ─────────────────────────────────────────────────────────────
-
-export {
-	TransactionContext,
-	SerialTransactionQueue,
-	getSerialQueue,
-	clearSerialQueue
-} from './transaction/context.js'
-
-export {
-	resolveAutoMode,
-	validateMode,
-	hasAcidSupport,
-	requiresAcid,
-	buildTransactionOptions,
-	getModeName,
-	requiresVersionTracking,
-	delay,
-	calculateRetryDelay
-} from './transaction/modes.js'
 
 export type {
 	TransactionMode,

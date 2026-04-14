@@ -7,6 +7,64 @@
 import type { FieldType, RelationType, OnDeleteAction, NormalizedField } from '../schema/types.js'
 
 // ============================================================================
+// Migration Runner Options
+// ============================================================================
+
+/**
+ * Options for the migration runner.
+ */
+export interface MigrationRunnerOptions {
+	/** Lock timeout in milliseconds */
+	lockTimeoutMs?: number
+	/** Function to discover registered migrations */
+	getMigrations?: () => RegisteredMigration[]
+	/** Model accessor factory for migration context */
+	getModelAccessor?: <T extends { id: string }>(name: string) => MigrationModelAccessor<T>
+}
+
+// ============================================================================
+// Migration Lock Types
+// ============================================================================
+
+/**
+ * Result of a lock acquisition attempt.
+ */
+export interface LockAcquisitionResult {
+	/** Whether the lock was acquired */
+	acquired: boolean
+	/** Unique lock ID (used for release) */
+	lockId?: string
+	/** If not acquired, reason why */
+	reason?: 'held' | 'race' | 'error'
+	/** Current lock holder info if lock is held */
+	holder?: string
+	/** When current lock was acquired */
+	acquiredAt?: Date
+}
+
+/**
+ * Current lock status.
+ */
+export interface LockStatus {
+	/** Whether a lock is currently held */
+	locked: boolean
+	/** Lock holder ID if locked */
+	holder?: string
+	/** When lock was acquired */
+	acquiredAt?: Date
+	/** Whether the lock is stale (exceeded timeout) */
+	stale?: boolean
+}
+
+/**
+ * Migration lock manager options.
+ */
+export interface MigrationLockOptions {
+	/** Lock timeout in milliseconds (default: 5 minutes) */
+	timeoutMs?: number
+}
+
+// ============================================================================
 // Schema Metadata Types
 // ============================================================================
 

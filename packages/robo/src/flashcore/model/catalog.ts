@@ -26,6 +26,7 @@ export interface CatalogEntry {
 	kind: 'chunk' | 'segments'
 	chunkId?: number      // For kind='chunk'
 	segmentIds?: string[] // For kind='segments'
+	estimatedSize?: number // Estimated size in bytes for accurate size tracking
 }
 
 /**
@@ -108,7 +109,8 @@ export class Catalog {
 		this.entries.set(id, {
 			id,
 			kind: 'chunk',
-			chunkId
+			chunkId,
+			estimatedSize: recordSize
 		})
 
 		// Update chunk stats
@@ -152,7 +154,9 @@ export class Catalog {
 			const stats = this.chunkStats.get(entry.chunkId)
 			if (stats && stats.count > 0) {
 				stats.count--
-				// Note: we don't track individual record sizes so can't decrement size accurately
+				if (entry.estimatedSize !== undefined && stats.size >= entry.estimatedSize) {
+					stats.size -= entry.estimatedSize
+				}
 			}
 		}
 		// Segmented entries don't affect chunk stats
@@ -337,7 +341,8 @@ export class Catalog {
 				entries.push({
 					id: entry.id,
 					kind: 'chunk',
-					chunkId: entry.chunkId
+					chunkId: entry.chunkId,
+					estimatedSize: entry.estimatedSize
 				})
 			} else if (entry.kind === 'segments' && entry.segmentIds) {
 				entries.push({
@@ -392,7 +397,8 @@ export class Catalog {
 					catalog.entries.set(entry.id, {
 						id: entry.id,
 						kind: 'chunk',
-						chunkId
+						chunkId,
+						estimatedSize: (entry as CatalogEntryData).estimatedSize
 					})
 				}
 			} else if (kind === 'segments') {

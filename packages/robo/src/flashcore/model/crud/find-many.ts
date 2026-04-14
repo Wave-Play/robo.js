@@ -13,10 +13,12 @@ import type { IncludeContext } from '../../relation/types.js'
 import { TypeSerializer } from '../../schema/serialize.js'
 import { evaluateWhere } from '../../query/evaluate.js'
 import { sortRecords } from '../../query/order.js'
-import { DEFAULT_SAFETY_CONFIG } from '../../core/constants.js'
+import { DEFAULT_SAFETY_LIMITS } from '../../core/constants.js'
+import { DataCorruptionError } from '../../core/errors.js'
 import { logger } from '../../core/logger.js'
 import { QueryPlanner, executeIndexPlan, filterMightContain, type AvailableIndexes, type QueryArgs } from '../../query/planner.js'
 import { resolveIncludesBatched, hasIncludes } from '../../relation/include.js'
+import { applySelect } from './shared.js'
 
 /**
  * Context for findMany operations.
@@ -58,7 +60,7 @@ export async function executeFindMany<T extends { id: string }>(
 	ctx: FindManyContext<T>,
 	args?: FindManyArgs<T>
 ): Promise<T[]> {
-	const safetyConfig = ctx.safetyConfig ?? DEFAULT_SAFETY_CONFIG
+	const safetyConfig = ctx.safetyConfig ?? DEFAULT_SAFETY_LIMITS
 
 	// Check if we have indexes available (Phase 6)
 	const indexes: AvailableIndexes = {
@@ -103,7 +105,7 @@ export async function executeFindMany<T extends { id: string }>(
 
 			if (candidateIds !== null) {
 				// Load only matching records
-				records = await loadRecordsByIds<T>(ctx, candidateIds)
+				records = await loadRecordsByIds<T>(ctx, candidateIds, args?.allowCorruptReads === true)
 
 				// Apply post-filter for fields not covered by index
 				if (plan.postFilterFields.length > 0 && args.where) {
@@ -152,7 +154,7 @@ export async function executeFindMany<T extends { id: string }>(
 	}
 
 	// Fall back to full scan
-	records = await loadAllRecords<T>(ctx)
+	records = await loadAllRecords<T>(ctx, args?.allowCorruptReads === true)
 
 	// Filter by where clause
 	let filtered: T[]
@@ -255,9 +257,11 @@ export async function executeCount<T extends { id: string }>(
  * Groups by chunk ID for efficient loading.
  */
 async function loadAllRecords<T extends { id: string }>(
-	ctx: FindManyContext<T>
+	ctx: FindManyContext<T>,
+	allowCorruptReads = false
 ): Promise<T[]> {
 	const records: T[] = []
+	const corruptions: Array<{ id: string; error: unknown }> = []
 
 	// Get all record IDs grouped by chunk
 	const chunkIds = ctx.catalog.getChunkIds()
@@ -281,6 +285,31 @@ async function loadAllRecords<T extends { id: string }>(
 		}
 	}
 
+	// Load segmented records
+	for (const entry of ctx.catalog) {
+		if (entry.kind === 'segments' && entry.segmentIds) {
+			try {
+				const rawRecord = await ctx.chunkManager.loadSegmentedRecord(entry.id, entry.segmentIds)
+				if (rawRecord) {
+					const deserialized = ctx.serializer.deserializeRecord(
+						rawRecord as Record<string, unknown>
+					) as T
+					if (!deserialized.id) {
+						(deserialized as Record<string, unknown>).id = entry.id
+					}
+					records.push(deserialized)
+				}
+			} catch (error) {
+				if (!allowCorruptReads) {
+					corruptions.push({ id: entry.id, error })
+					continue
+				}
+			}
+		}
+	}
+
+	throwOnCorruptReads(ctx.modelName, corruptions, allowCorruptReads)
+
 	return records
 }
 
@@ -291,9 +320,11 @@ async function loadAllRecords<T extends { id: string }>(
  */
 async function loadRecordsByIds<T extends { id: string }>(
 	ctx: FindManyContext<T>,
-	ids: string[]
+	ids: string[],
+	allowCorruptReads = false
 ): Promise<T[]> {
 	const records: T[] = []
+	const corruptions: Array<{ id: string; error: unknown }> = []
 
 	// Group IDs by chunk for efficient loading
 	const idsByChunk = new Map<number, string[]>()
@@ -323,8 +354,11 @@ async function loadRecordsByIds<T extends { id: string }>(
 
 					records.push(deserialized)
 				}
-			} catch {
-				// Skip failed segment loads
+			} catch (error) {
+				if (!allowCorruptReads) {
+					corruptions.push({ id, error })
+					continue
+				}
 			}
 		}
 	}
@@ -351,42 +385,33 @@ async function loadRecordsByIds<T extends { id: string }>(
 		}
 	}
 
+	throwOnCorruptReads(ctx.modelName, corruptions, allowCorruptReads)
+
 	return records
 }
 
-/**
- * Apply select clause to filter returned fields.
- *
- * @param record - Full record
- * @param select - Select clause
- * @returns Filtered record
- */
-function applySelect<T>(
-	record: T,
-	select: Partial<Record<keyof T, boolean>>
-): T {
-	const recordObj = record as Record<string, unknown>
-	const selectEntries = Object.entries(select)
-
-	// If select is empty, return all fields
-	if (selectEntries.length === 0) {
-		return record
+function throwOnCorruptReads(
+	modelName: string,
+	corruptions: Array<{ id: string; error: unknown }>,
+	allowCorruptReads: boolean
+): void {
+	if (allowCorruptReads || corruptions.length === 0) {
+		return
 	}
 
-	const result: Partial<T> = {}
+	const details = corruptions
+		.slice(0, 5)
+		.map(({ id, error }) => `${id}: ${error instanceof Error ? error.message : String(error)}`)
+		.join('; ')
 
-	for (const [key, include] of selectEntries) {
-		if (include && key in recordObj) {
-			(result as Record<string, unknown>)[key] = recordObj[key]
+	throw new DataCorruptionError(
+		`Corrupted records were detected while reading model "${modelName}". ${details}`,
+		{
+			model: modelName,
+			structure: 'chunk',
+			repairGuidance: 'Run integrity checks or repair tooling before retrying application reads.'
 		}
-	}
-
-	// Always include id
-	if ('id' in recordObj) {
-		(result as Record<string, unknown>).id = recordObj.id
-	}
-
-	return result as T
+	)
 }
 
 /**
@@ -401,7 +426,7 @@ export async function* executeFindManyStream<T extends { id: string }>(
 	ctx: FindManyContext<T>,
 	args?: FindManyArgs<T>
 ): AsyncGenerator<T, void, undefined> {
-	const safetyConfig = ctx.safetyConfig ?? DEFAULT_SAFETY_CONFIG
+	const safetyConfig = ctx.safetyConfig ?? DEFAULT_SAFETY_LIMITS
 
 	// For streaming, we still need to apply ordering
 	// So we load all, filter, sort first, then stream

@@ -12,6 +12,7 @@ import type { IncludeContext } from '../../relation/types.js'
 import { TypeSerializer } from '../../schema/serialize.js'
 import { ValidationError } from '../../core/errors.js'
 import { resolveInclude, hasIncludes } from '../../relation/include.js'
+import { extractIdFromWhere, applySelect, loadRecordByEntry, validateWhereClause } from './shared.js'
 
 /**
  * Context for read operation.
@@ -47,9 +48,7 @@ export async function executeFindUnique<T extends { id: string }>(
 	args: FindUniqueArgs<T>
 ): Promise<T | null> {
 	// Validate where clause
-	if (!args.where || typeof args.where !== 'object') {
-		throw new ValidationError('findUnique requires a where clause')
-	}
+	validateWhereClause(args.where, 'findUnique')
 
 	// Extract ID from where clause (may use unique index lookup)
 	const { id, hadUniqueField } = await extractIdFromWhere(args.where, ctx)
@@ -72,22 +71,8 @@ export async function executeFindUnique<T extends { id: string }>(
 		return null
 	}
 
-	let record: unknown
-
-	if (entry.kind === 'segments' && entry.segmentIds) {
-		// Load segmented record
-		record = await ctx.chunkManager.loadSegmentedRecord(id, entry.segmentIds)
-	} else if (entry.kind === 'chunk' && entry.chunkId !== undefined) {
-		// Load from chunk
-		record = await ctx.chunkManager.getRecord(entry.chunkId, id)
-	} else {
-		// Invalid catalog entry
-		return null
-	}
-
+	const record = await loadRecordByEntry(ctx.chunkManager, id, entry)
 	if (!record) {
-		// Record not in storage (catalog inconsistency)
-		// This shouldn't happen in normal operation
 		return null
 	}
 
@@ -113,106 +98,6 @@ export async function executeFindUnique<T extends { id: string }>(
 	}
 
 	return deserialized
-}
-
-/**
- * Result from extracting ID from where clause.
- */
-interface ExtractIdResult {
-	id: string | null
-	hadUniqueField: boolean
-}
-
-/**
- * Extract ID from a where clause.
- *
- * Supports:
- * - Direct ID lookup
- * - Primary key lookup
- * - Unique field lookups via UniqueIndexManager
- *
- * @param where - Where clause
- * @param ctx - Read context
- * @returns ID string and whether a unique field was used
- */
-async function extractIdFromWhere<T>(
-	where: Record<string, unknown>,
-	ctx: ReadContext<T>
-): Promise<ExtractIdResult> {
-	const schema = ctx.schema
-
-	// Direct ID lookup
-	if ('id' in where && typeof where.id === 'string') {
-		return { id: where.id, hadUniqueField: true }
-	}
-
-	// Primary key lookup (if not 'id')
-	if (schema.primaryKey !== 'id' && schema.primaryKey in where) {
-		const pkValue = where[schema.primaryKey]
-		if (typeof pkValue === 'string') {
-			return { id: pkValue, hadUniqueField: true }
-		}
-	}
-
-	// Unique field lookups via UniqueIndexManager
-	if (ctx.uniqueIndexManager && schema.uniqueFields.length > 0) {
-		for (const field of schema.uniqueFields) {
-			if (field in where) {
-				const value = where[field]
-
-				// Skip null/undefined values
-				if (value === null || value === undefined) {
-					continue
-				}
-
-				// Look up via unique index
-				const id = await ctx.uniqueIndexManager.lookup(
-					{ modelName: ctx.modelName, namespace: ctx.namespace, field },
-					value
-				)
-
-				// Whether found or not, we had a unique field
-				return { id, hadUniqueField: true }
-			}
-		}
-	}
-
-	return { id: null, hadUniqueField: false }
-}
-
-/**
- * Apply select clause to filter returned fields.
- *
- * @param record - Full record
- * @param select - Select clause
- * @returns Filtered record
- */
-function applySelect<T>(
-	record: T,
-	select: Partial<Record<keyof T, boolean>>
-): T {
-	const recordObj = record as Record<string, unknown>
-	const selectEntries = Object.entries(select)
-
-	// If select is empty, return all fields
-	if (selectEntries.length === 0) {
-		return record
-	}
-
-	const result: Partial<T> = {}
-
-	for (const [key, include] of selectEntries) {
-		if (include && key in recordObj) {
-			(result as Record<string, unknown>)[key] = recordObj[key]
-		}
-	}
-
-	// Always include id
-	if ('id' in recordObj) {
-		(result as Record<string, unknown>).id = recordObj.id
-	}
-
-	return result as T
 }
 
 /**

@@ -27,7 +27,8 @@ export {
 	createJunctionSchema,
 	isJunctionModel,
 	parseJunctionModelName,
-	generateJunctionId
+	resolveJunctionFKs,
+	bulkDeleteByFK
 } from './junction.js'
 
 // Foreign key validation
@@ -47,7 +48,6 @@ export {
 	checkRestrictConstraints,
 	getRestrictRelations,
 	hasCascadeRelations,
-	hasRestrictRelations,
 	findJunctionModelsForModel,
 	type CascadeContext
 } from './cascade.js'

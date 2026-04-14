@@ -372,3 +372,204 @@ export interface WALConfig {
 	 */
 	maxEntrySize?: number
 }
+
+// ─────────────────────────────────────────────────────────────
+// Data Types (moved from deltas.ts — pure data shapes)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Result from building deltas.
+ */
+export interface DeltaBuildResult {
+	/**
+	 * Authoritative deltas (source of truth changes).
+	 */
+	auth: WalAuthoritativeDelta[]
+
+	/**
+	 * Inverse deltas (for rollback).
+	 */
+	undo: WalInverseDelta[]
+
+	/**
+	 * Derived deltas (filter/index updates, best-effort).
+	 */
+	derived: WalDerivedDelta[]
+}
+
+/**
+ * Unique constraint change descriptor.
+ */
+export interface UniqueChange {
+	/**
+	 * Full unique constraint key (e.g., _model:user:ux:email:alice@example.com).
+	 */
+	key: string
+
+	/**
+	 * The record ID that should own this constraint.
+	 */
+	id: string
+}
+
+/**
+ * Unique constraint update descriptor.
+ */
+export interface UniqueUpdate {
+	/**
+	 * Old unique key to release (null if field was previously null/undefined).
+	 */
+	oldKey: string | null
+
+	/**
+	 * New unique key to acquire (null if field is now null/undefined).
+	 */
+	newKey: string | null
+
+	/**
+	 * Record ID that owns this constraint.
+	 */
+	id: string
+}
+
+/**
+ * Segment write descriptor for large record segmentation.
+ */
+export interface SegmentWrite {
+	segmentKey: string
+	index: number
+	data: string
+}
+
+// ─────────────────────────────────────────────────────────────
+// WAL Extension Interfaces
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Minimal interface matching the WriteAheadLog class shape.
+ * Used by CRUD files and system.ts to interact with the WAL.
+ */
+export interface WalManager {
+	isEnabled(): boolean
+	begin(input: WALEntryInput): Promise<string>
+	markPhase(walId: string, phase: WalPhase): Promise<void>
+	complete(walId: string): Promise<void>
+	deleteEntry(walId: string): Promise<void>
+	readEntry(walId: string): Promise<WALEntry | null>
+	getAllEntryKeys(): Promise<string[]>
+	shouldReplay(entry: WALEntry): boolean
+	isStale(entry: WALEntry): boolean
+	readonly staleThresholdMs: number
+	readonly maxEntrySize: number
+}
+
+/**
+ * Function signatures for all WAL delta operations.
+ */
+export interface WalDeltaBuilders {
+	buildCreateDeltas(
+		chunkKey: string,
+		chunkId: number,
+		id: string,
+		record: unknown,
+		uniqueKeys: UniqueChange[]
+	): DeltaBuildResult
+
+	buildCreateSegmentedDeltas(
+		id: string,
+		segmentIds: string[],
+		segments: SegmentWrite[],
+		uniqueKeys: UniqueChange[]
+	): DeltaBuildResult
+
+	buildUpdateDeltas(
+		chunkId: string,
+		id: string,
+		patch: Record<string, unknown>,
+		inversePatch: Record<string, unknown>,
+		uniqueUpdates: UniqueUpdate[]
+	): DeltaBuildResult
+
+	buildUpdateSegmentedDeltas(
+		id: string,
+		oldSegmentIds: string[],
+		oldSegments: SegmentWrite[],
+		newSegmentIds: string[],
+		newSegments: SegmentWrite[],
+		uniqueUpdates: UniqueUpdate[]
+	): DeltaBuildResult
+
+	buildUpdateChunkToSegmentsDeltas(
+		oldChunkKey: string,
+		oldChunkId: number,
+		id: string,
+		oldRecord: unknown,
+		newSegmentIds: string[],
+		newSegments: SegmentWrite[],
+		uniqueUpdates: UniqueUpdate[]
+	): DeltaBuildResult
+
+	buildUpdateSegmentsToChunkDeltas(
+		id: string,
+		oldSegmentIds: string[],
+		oldSegments: SegmentWrite[],
+		newChunkKey: string,
+		newChunkId: number,
+		newRecord: unknown,
+		uniqueUpdates: UniqueUpdate[]
+	): DeltaBuildResult
+
+	buildDeleteDeltas(
+		chunkKey: string,
+		chunkId: number,
+		id: string,
+		record: unknown,
+		uniqueKeys: UniqueChange[]
+	): DeltaBuildResult
+
+	buildDeleteSegmentedDeltas(
+		id: string,
+		segmentIds: string[],
+		segments: SegmentWrite[],
+		uniqueKeys: UniqueChange[]
+	): DeltaBuildResult
+
+	computePatch(
+		oldRecord: Record<string, unknown>,
+		newRecord: Record<string, unknown>
+	): { patch: Record<string, unknown>; inversePatch: Record<string, unknown> }
+
+	applyPatch<T extends Record<string, unknown>>(
+		record: T,
+		patch: Record<string, unknown>
+	): T
+}
+
+/**
+ * Combined facade passed through CRUD contexts.
+ * Bundles WAL lifecycle methods and delta builders.
+ */
+export interface WalContext {
+	manager: WalManager
+	deltas: WalDeltaBuilders
+}
+
+/**
+ * Extended recovery context that can be used when models are loaded.
+ */
+export interface RecoveryContext {
+	/**
+	 * The storage adapter.
+	 */
+	adapter: import('../adapter/types.js').FlashcoreAdapter
+
+	/**
+	 * Get the catalog key for a model.
+	 */
+	getCatalogKey(namespace: string | undefined, modelName: string): string
+
+	/**
+	 * Get the chunk key for a model.
+	 */
+	getChunkKey(namespace: string | undefined, modelName: string, chunkId: string): string
+}

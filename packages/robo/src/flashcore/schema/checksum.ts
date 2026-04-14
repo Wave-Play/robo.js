@@ -5,6 +5,7 @@
  * Uses FNV-1a 32-bit hash for fast, stable hashing.
  */
 
+import { fnv1a32 } from '../core/hash.js'
 import type { SchemaFields, FieldDef, RelationDef, CompoundUniqueConstraint } from './types.js'
 
 /**
@@ -89,25 +90,6 @@ function isCompoundUnique(value: unknown): value is CompoundUniqueConstraint {
 		'_type' in value &&
 		(value as { _type: string })._type === 'compoundUnique'
 	)
-}
-
-/**
- * FNV-1a 32-bit hash algorithm.
- *
- * Fast, well-distributed hash suitable for checksums.
- * Used by spec for schema checksums.
- */
-function fnv1a32(str: string): number {
-	let hash = 0x811c9dc5 // FNV offset basis
-
-	for (let i = 0; i < str.length; i++) {
-		hash ^= str.charCodeAt(i)
-		// FNV prime (32-bit)
-		hash = Math.imul(hash, 0x01000193)
-	}
-
-	// Ensure unsigned 32-bit integer
-	return hash >>> 0
 }
 
 /**

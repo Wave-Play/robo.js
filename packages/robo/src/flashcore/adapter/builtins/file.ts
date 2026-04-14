@@ -7,13 +7,14 @@
  * - Directory-based scan support
  */
 
-import { readFile, writeFile, rename, unlink, mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { open, readFile, writeFile, rename, unlink, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import type {
 	FlashcoreAdapter,
-	BatchOperation,
-	AdapterCapabilitiesReport
+	AdapterCapabilitiesReport,
+	BatchOperation
 } from '../types.js'
+import { DataCorruptionError } from '../../core/errors.js'
 
 /**
  * Options for the FileAdapter.
@@ -116,6 +117,7 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 
 		// Ensure base directory exists
 		await this.ensureDir(this.baseDir)
+		await this.recoverJournals()
 		this.initialized = true
 	}
 
@@ -133,7 +135,18 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 
 		try {
 			const content = await readFile(filepath, 'utf-8')
-			return JSON.parse(content) as V
+			try {
+				return JSON.parse(content) as V
+			} catch (error) {
+				throw new DataCorruptionError(
+					`Failed to parse Flashcore file data for key "${String(key)}".`,
+					{
+						structure: 'chunk',
+						repairGuidance: 'Restore from backup or rebuild affected derived state.',
+						cause: error instanceof Error ? error : new Error(String(error))
+					}
+				)
+			}
 		} catch (err) {
 			// File doesn't exist
 			if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -156,8 +169,16 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 			: JSON.stringify(value)
 
 		try {
-			await writeFile(tempPath, content, 'utf-8')
+			const handle = await open(tempPath, 'w')
+			try {
+				await handle.writeFile(content, 'utf-8')
+				await handle.sync()
+			} finally {
+				await handle.close()
+			}
+
 			await rename(tempPath, filepath)
+			await this.fsyncDirectory(dirname(filepath))
 			return true
 		} catch (err) {
 			// Clean up temp file on failure
@@ -277,60 +298,58 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 	}
 
 	/**
-	 * Compare and swap: atomically update if current value matches expected.
-	 *
-	 * Note: This implementation is NOT truly atomic on the filesystem level,
-	 * but uses in-memory comparison. For true atomicity, use with chunk/catalog locks.
-	 */
-	async compareAndSwap(key: K, expected: V, next: V): Promise<boolean> {
-		const current = await this.get(key)
-
-		// Compare using JSON serialization
-		const currentJson = JSON.stringify(current)
-		const expectedJson = JSON.stringify(expected)
-
-		if (currentJson !== expectedJson) {
-			return false
-		}
-
-		await this.set(key, next)
-		return true
-	}
-
-	/**
-	 * Apply a batch of operations atomically.
-	 *
-	 * Note: This is NOT truly atomic at the filesystem level.
-	 * For crash safety, use WAL at a higher level.
+	 * Apply a batch of operations atomically using a journal file for crash recovery.
 	 */
 	async atomicBatch(ops: BatchOperation<K, V>[]): Promise<void> {
-		// First, validate all check operations
+		if (ops.length === 0) return
+
+		// Phase 1: Validate all 'check' operations before any mutation
 		for (const op of ops) {
 			if (op.type === 'check') {
 				const current = await this.get(op.key)
 				const currentVersion = (current as { _version?: number } | undefined)?._version
-
 				if (currentVersion !== op.expectedVersion) {
 					throw new Error(
-						`Batch operation failed: version check failed for key "${op.key}". ` +
+						`Batch operation failed: version check failed for key "${String(op.key)}". ` +
 						`Expected version ${op.expectedVersion}, got ${currentVersion}`
 					)
 				}
 			}
 		}
 
-		// Apply all set/delete operations
-		for (const op of ops) {
-			switch (op.type) {
-				case 'set':
-					await this.set(op.key, op.value)
-					break
-				case 'delete':
-					await this.delete(op.key)
-					break
-				// 'check' operations are already validated
-			}
+		// Filter to only mutation ops for the journal
+		const mutationOps = ops.filter((op): op is Exclude<BatchOperation<K, V>, { type: 'check' }> =>
+			op.type !== 'check'
+		)
+		if (mutationOps.length === 0) return
+
+		// Phase 2: Write journal (temp + fsync + rename) as crash-recovery intent
+		const journalId = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+		const journalPath = join(this.baseDir, `_batch_${journalId}.journal`)
+		const tempJournalPath = `${journalPath}.tmp`
+
+		await this.ensureDir(this.baseDir)
+		const journalContent = JSON.stringify({
+			v: 1,
+			ops: mutationOps.map(op =>
+				op.type === 'set'
+					? { t: 's', k: String(op.key), d: op.value }
+					: { t: 'd', k: String(op.key) }
+			)
+		})
+
+		const handle = await open(tempJournalPath, 'w')
+		try {
+			await handle.writeFile(journalContent, 'utf-8')
+			await handle.sync()
+		} finally {
+			await handle.close()
 		}
+		await rename(tempJournalPath, journalPath)
+		await this.fsyncDirectory(this.baseDir)
+
+		// Phase 3: Apply mutations (each set/delete is already individually crash-safe)
+		await this.replayJournal(journalPath)
 	}
 
 	/**
@@ -367,6 +386,73 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 			if ((err as NodeJS.ErrnoException).code !== 'EEXIST') {
 				throw err
 			}
+		}
+	}
+
+	private async replayJournal(journalPath: string): Promise<void> {
+		const raw = await readFile(journalPath, 'utf-8')
+		const journal = JSON.parse(raw) as {
+			v: number
+			ops: Array<{ t: string; k: string; d?: unknown }>
+		}
+
+		for (const op of journal.ops) {
+			if (op.t === 's') {
+				await this.set(op.k as K, op.d as V)
+			} else if (op.t === 'd') {
+				await this.delete(op.k as K)
+			} else {
+				throw new DataCorruptionError(
+					`Unknown journal operation type "${op.t}" for key "${op.k}".`,
+					{
+						structure: 'wal',
+						repairGuidance: 'Journal contains unrecognized operation. It will be discarded on next init.'
+					}
+				)
+			}
+		}
+
+		// Journal complete — remove it
+		await unlink(journalPath).catch(() => {})
+	}
+
+	private async recoverJournals(): Promise<void> {
+		let files: string[]
+		try {
+			files = await readdir(this.baseDir)
+		} catch (err) {
+			if ((err as NodeJS.ErrnoException).code === 'ENOENT') return
+			throw err
+		}
+
+		for (const file of files) {
+			// Replay committed journals
+			if (file.startsWith('_batch_') && file.endsWith('.journal')) {
+				try {
+					await this.replayJournal(join(this.baseDir, file))
+				} catch {
+					// Corrupt journal — discard
+					await unlink(join(this.baseDir, file)).catch(() => {})
+				}
+			}
+
+			// Clean up orphaned temp journals
+			if (file.startsWith('_batch_') && file.endsWith('.journal.tmp')) {
+				await unlink(join(this.baseDir, file)).catch(() => {})
+			}
+		}
+	}
+
+	private async fsyncDirectory(dir: string): Promise<void> {
+		try {
+			const handle = await open(dir, 'r')
+			try {
+				await handle.sync()
+			} finally {
+				await handle.close()
+			}
+		} catch {
+			// Best-effort. Some platforms/filesystems do not permit directory fsync.
 		}
 	}
 

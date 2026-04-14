@@ -183,6 +183,31 @@ export function buildIndexKey(
 }
 
 /**
+ * Build a compound unique index key.
+ *
+ * Key format: _model:{ns}::{model}:cux:{field1}..{field2}:{encodedVal1}..{encodedVal2}
+ *
+ * @param modelName - The model name
+ * @param fields - Array of field names in the compound constraint
+ * @param encodedValues - Array of encoded field values (same order as fields)
+ * @param namespace - Optional namespace
+ * @returns Compound unique index key
+ */
+export function buildCompoundUniqueKey(
+	modelName: string,
+	fields: string[],
+	encodedValues: string[],
+	namespace?: string
+): string {
+	const fieldsPart = fields.join('..')
+	const valuesPart = encodedValues.join('..')
+	if (namespace) {
+		return `_model:${namespace}::${modelName}:cux:${fieldsPart}:${valuesPart}`
+	}
+	return `_model:${modelName}:cux:${fieldsPart}:${valuesPart}`
+}
+
+/**
  * Build a WAL entry key.
  *
  * @param walId - The WAL entry ID
@@ -237,8 +262,3 @@ export function buildSchemaHistoryKey(namespace?: string): string {
 export function buildPluginKey(pluginName: string, suffix: string): string {
 	return `_flashcore:plugin:${pluginName}:${suffix}`
 }
-
-/**
- * Extract the WAL entry prefix for scanning.
- */
-export const WAL_ENTRY_PREFIX = '_flashcore:wal:entry:'

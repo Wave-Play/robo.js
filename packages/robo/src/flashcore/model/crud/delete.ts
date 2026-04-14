@@ -9,44 +9,22 @@ import type { Catalog } from '../catalog.js'
 import type { ChunkManager } from '../chunk.js'
 import type { CatalogLockManager, ChunkLockManager } from '../locks.js'
 import type { UniqueIndexManager } from '../../index/unique.js'
-import type { WriteAheadLog } from '../../wal/manager.js'
-import type { UniqueChange } from '../../wal/deltas.js'
+import type { WalContext, UniqueChange } from '../../wal/types.js'
 import { TypeSerializer } from '../../schema/serialize.js'
 import { executeBeforeDelete, executeAfterDelete } from '../hooks.js'
 import { ValidationError } from '../../core/errors.js'
-import { buildDeleteDeltas, buildDeleteSegmentedDeltas } from '../../wal/deltas.js'
-import { buildModelKey, buildUniqueKey } from '../../core/keys.js'
+import { buildUniqueKey } from '../../core/keys.js'
 import { encodeUniqueValue } from '../../core/encoding.js'
 import { splitRecordToSegments } from '../segments.js'
-
-/**
- * Index update callbacks for derived writes (Phase 6).
- */
-export interface IndexUpdateCallbacks {
-	/** Remove record ID from filter */
-	removeFromFilter?: (id: string) => void
-	/** Remove entry from sorted index */
-	removeFromSortedIndex?: (field: string, value: unknown, id: string) => void
-	/** Mark indexes as dirty for persistence */
-	markDirty?: () => void
-}
-
-/**
- * Cascade callbacks for Phase 9.
- */
-export interface CascadeCallbacks {
-	/**
-	 * Check restrict constraints before delete.
-	 * Throws FlashcoreError if delete should be blocked.
-	 */
-	checkRestrict?: (record: { id: string }) => Promise<void>
-
-	/**
-	 * Execute cascade operations for the delete.
-	 * This handles cascade deletes, setNull, and junction cleanup.
-	 */
-	executeCascades?: (record: { id: string }) => Promise<void>
-}
+import {
+	extractIdFromWhere,
+	loadRecordByEntry,
+	getChunkIdFromEntry,
+	resolveChunkKey,
+	validateWhereClause,
+	type IndexCallbacks,
+	type CascadeCallbacks
+} from './shared.js'
 
 /**
  * Context for delete operation.
@@ -67,14 +45,14 @@ export interface DeleteContext<T> {
 	// Callback to persist catalog after modification
 	persistCatalog: () => Promise<void>
 
-	// Optional WAL manager for crash safety
-	wal?: WriteAheadLog
+	// Optional WAL context for crash safety
+	wal?: WalContext
 
 	// Optional override for building full chunk keys (for WAL deltas)
 	getChunkKey?: (chunkId: number) => string
 
 	// Optional index update callbacks (Phase 6)
-	indexCallbacks?: IndexUpdateCallbacks
+	indexCallbacks?: IndexCallbacks
 
 	// Optional cascade callbacks (Phase 9)
 	cascadeCallbacks?: CascadeCallbacks
@@ -104,9 +82,7 @@ export async function executeDelete<T extends { id: string }>(
 	args: DeleteArgs<T>
 ): Promise<T | null> {
 	// Validate where clause
-	if (!args.where || typeof args.where !== 'object') {
-		throw new ValidationError('delete requires a where clause')
-	}
+	validateWhereClause(args.where, 'delete')
 
 	// Extract ID from where clause (supports unique field lookup)
 	const { id, hadUniqueField } = await extractIdFromWhere(args.where, ctx)
@@ -131,11 +107,11 @@ export async function executeDelete<T extends { id: string }>(
 
 	// Track storage type
 	const isSegmented = entry.kind === 'segments'
-	const chunkId = entry.kind === 'chunk' ? entry.chunkId ?? 0 : 0
+	const chunkId = getChunkIdFromEntry(entry)
 
 	// Track WAL entry ID for cleanup
 	let walId: string | null = null
-	const walEnabled = ctx.wal?.isEnabled() ?? false
+	const walEnabled = ctx.wal?.manager.isEnabled() ?? false
 
 	// Helper to perform delete operation
 	const performDelete = async () => {
@@ -147,18 +123,8 @@ export async function executeDelete<T extends { id: string }>(
 		}
 
 		// Load existing record based on storage type
-		let existingRaw: unknown
-
-		if (currentEntry.kind === 'segments' && currentEntry.segmentIds) {
-			existingRaw = await ctx.chunkManager.loadSegmentedRecord(id, currentEntry.segmentIds)
-		} else if (currentEntry.kind === 'chunk' && currentEntry.chunkId !== undefined) {
-			existingRaw = await ctx.chunkManager.getRecord(currentEntry.chunkId, id)
-		} else {
-			return null
-		}
-
+		const existingRaw = await loadRecordByEntry(ctx.chunkManager, id, currentEntry)
 		if (!existingRaw) {
-			// Record not in storage (catalog inconsistency)
 			return null
 		}
 
@@ -189,13 +155,10 @@ export async function executeDelete<T extends { id: string }>(
 		}
 
 		// Get full chunk key for WAL (only if not segmented)
-		const currentChunkId = currentEntry.kind === 'chunk' ? currentEntry.chunkId ?? 0 : 0
-		const fullChunkKey =
-			currentEntry.kind === 'chunk'
-				? ctx.getChunkKey
-					? ctx.getChunkKey(currentChunkId)
-					: buildModelKey(ctx.modelName, `chunk:${currentChunkId}`, ctx.namespace)
-				: '' // Segmented records don't use chunk keys
+		const currentChunkId = getChunkIdFromEntry(currentEntry)
+		const fullChunkKey = currentEntry.kind === 'chunk'
+			? resolveChunkKey(ctx.modelName, currentChunkId, ctx.namespace, ctx.getChunkKey)
+			: ''
 
 		// Begin WAL entry (if enabled) - include full record for rollback
 		if (walEnabled && ctx.wal) {
@@ -207,11 +170,11 @@ export async function executeDelete<T extends { id: string }>(
 						existingRaw,
 						currentEntry.segmentIds.length
 					)
-					return buildDeleteSegmentedDeltas(id, segmentIds, segments, uniqueKeys)
+					return ctx.wal.deltas.buildDeleteSegmentedDeltas(id, segmentIds, segments, uniqueKeys)
 				})()
-				: buildDeleteDeltas(fullChunkKey, currentChunkId, id, existingRaw, uniqueKeys)
+				: ctx.wal.deltas.buildDeleteDeltas(fullChunkKey, currentChunkId, id, existingRaw, uniqueKeys)
 
-			walId = await ctx.wal.begin({
+			walId = await ctx.wal.manager.begin({
 				model: ctx.modelName,
 				namespace: ctx.namespace,
 				op: 'delete',
@@ -257,9 +220,30 @@ export async function executeDelete<T extends { id: string }>(
 			}
 		}
 
+		// Release compound unique constraints
+		if (ctx.uniqueIndexManager && ctx.schema.compoundUniques.length > 0) {
+			for (const constraint of ctx.schema.compoundUniques) {
+				const values = constraint.fields.map(f => (existing as Record<string, unknown>)[f])
+
+				// Skip if any value is null/undefined
+				if (values.some(v => v === null || v === undefined)) {
+					continue
+				}
+
+				try {
+					await ctx.uniqueIndexManager.releaseCompound(
+						{ modelName: ctx.modelName, namespace: ctx.namespace, fields: constraint.fields },
+						values
+					)
+				} catch {
+					// Ignore release errors - record is already deleted
+				}
+			}
+		}
+
 		// Mark WAL as authoritative (all writes complete)
 		if (walId && ctx.wal) {
-			await ctx.wal.markPhase(walId, 'authoritative')
+			await ctx.wal.manager.markPhase(walId, 'authoritative')
 		}
 
 		// Derived writes: update filter and sorted indexes (Phase 6)
@@ -287,7 +271,7 @@ export async function executeDelete<T extends { id: string }>(
 
 		// Mark derived writes complete
 		if (walId && ctx.wal) {
-			await ctx.wal.markPhase(walId, 'derived')
+			await ctx.wal.manager.markPhase(walId, 'derived')
 		}
 
 		// Execute cascade operations (Phase 9)
@@ -319,7 +303,7 @@ export async function executeDelete<T extends { id: string }>(
 
 	// Complete WAL entry (operation successful)
 	if (walId && ctx.wal) {
-		await ctx.wal.complete(walId)
+		await ctx.wal.manager.complete(walId)
 	}
 
 	// Execute afterDelete hook
@@ -328,61 +312,3 @@ export async function executeDelete<T extends { id: string }>(
 	return result
 }
 
-/**
- * Extract ID from where clause.
- */
-interface ExtractIdResult {
-	id: string | null
-	hadUniqueField: boolean
-}
-
-/**
- * Extract ID from a where clause.
- *
- * Supports:
- * - Direct ID lookup
- * - Primary key lookup (if not 'id')
- * - Unique field lookups via UniqueIndexManager
- */
-async function extractIdFromWhere<T>(
-	where: Record<string, unknown>,
-	ctx: DeleteContext<T>
-): Promise<ExtractIdResult> {
-	const schema = ctx.schema
-
-	// Direct ID lookup
-	if ('id' in where && typeof where.id === 'string') {
-		return { id: where.id, hadUniqueField: true }
-	}
-
-	// Primary key lookup (if not 'id')
-	if (schema.primaryKey !== 'id' && schema.primaryKey in where) {
-		const pkValue = where[schema.primaryKey]
-		if (typeof pkValue === 'string') {
-			return { id: pkValue, hadUniqueField: true }
-		}
-	}
-
-	// Unique field lookups via UniqueIndexManager
-	if (ctx.uniqueIndexManager && schema.uniqueFields.length > 0) {
-		for (const field of schema.uniqueFields) {
-			if (field in where) {
-				const value = where[field]
-
-				// Skip null/undefined values
-				if (value === null || value === undefined) {
-					continue
-				}
-
-				const id = await ctx.uniqueIndexManager.lookup(
-					{ modelName: ctx.modelName, namespace: ctx.namespace, field },
-					value
-				)
-
-				return { id, hadUniqueField: true }
-			}
-		}
-	}
-
-	return { id: null, hadUniqueField: false }
-}

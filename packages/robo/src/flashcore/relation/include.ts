@@ -8,7 +8,7 @@ import type { NormalizedSchema } from '../schema/types.js'
 import type { IncludeClause, IncludeOptions, ParsedIncludeEntry, IncludeContext } from './types.js'
 import { MAX_INCLUDE_DEPTH } from '../core/constants.js'
 import { FlashcoreError } from '../core/errors.js'
-import { getJunctionTableDef } from './junction.js'
+import { getJunctionTableDef, resolveJunctionFKs } from './junction.js'
 
 /**
  * Parse and validate an include clause against the model's schema.
@@ -198,9 +198,7 @@ export async function resolveInclude<T extends { id: string }>(
 					break
 				}
 
-				const isModelA = junctionDef.modelA === modelName
-				const fkSourceField = isModelA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
-				const fkTargetField = isModelA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+				const { fkSource: fkSourceField, fkTarget: fkTargetField } = resolveJunctionFKs(junctionDef, modelName)
 
 				const junctionEntries = await junctionModel.findMany({
 					where: { [fkSourceField]: record.id }
@@ -435,9 +433,7 @@ export async function resolveIncludesBatched<T extends { id: string }>(
 					break
 				}
 
-				const isModelA = junctionDef.modelA === modelName
-				const fkSourceField = isModelA ? junctionDef.foreignKeyA : junctionDef.foreignKeyB
-				const fkTargetField = isModelA ? junctionDef.foreignKeyB : junctionDef.foreignKeyA
+				const { fkSource: fkSourceField, fkTarget: fkTargetField } = resolveJunctionFKs(junctionDef, modelName)
 
 				// Batch fetch all junction entries
 				const parentIds = records.map(r => r.id)

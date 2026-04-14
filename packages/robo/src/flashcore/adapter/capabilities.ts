@@ -5,6 +5,7 @@
  */
 
 import type { AdapterCapabilities, FlashcoreAdapter } from './types.js'
+import { FeatureNotSupportedError } from '../core/errors.js'
 
 /**
  * Normalize adapter capabilities.
@@ -73,9 +74,10 @@ export function requireCapability(
 	const hasCapability = typeof value === 'boolean' ? value : value !== undefined
 
 	if (!hasCapability) {
-		throw new Error(
+		throw new FeatureNotSupportedError(
 			`Feature "${featureName}" requires adapter capability "${required}" which is not available. ` +
-			`Current adapter: ${capabilities.adapter}`
+			`Current adapter: ${capabilities.adapter}`,
+			{ feature: featureName, requiredCapability: String(required) }
 		)
 	}
 }
@@ -105,6 +107,36 @@ export function warnMissingCapabilities(
 		logger.warn(
 			'Adapter does not support multi-key atomic commit. ' +
 			'Only single-mutation transactions are available.'
+		)
+	}
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACID Capability Checks
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Check if ACID transactions are available.
+ */
+export function hasAcidSupport(adapter: FlashcoreAdapter): boolean {
+	return !!(adapter.transaction || adapter.atomicBatch)
+}
+
+/**
+ * Check if multi-key atomic operations are supported.
+ * Required for bulk operations like createMany, updateMany, deleteMany.
+ *
+ * @throws FeatureNotSupportedError if ACID is not available
+ */
+export function requiresAcid(adapter: FlashcoreAdapter): void {
+	if (!hasAcidSupport(adapter)) {
+		throw new FeatureNotSupportedError(
+			'This operation requires a storage adapter with true multi-key atomic commit. ' +
+			'Use an adapter that implements transaction() or atomicBatch().',
+			{
+				feature: 'multi-key atomic commit',
+				requiredCapability: 'transaction|atomicBatch'
+			}
 		)
 	}
 }

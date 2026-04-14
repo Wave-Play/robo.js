@@ -1,5 +1,5 @@
 import type { ChunkManager } from './chunk.js'
-import type { SegmentWrite } from '../wal/deltas.js'
+import type { SegmentWrite } from '../wal/types.js'
 
 /**
  * Split a serialized record into deterministic segment writes.
