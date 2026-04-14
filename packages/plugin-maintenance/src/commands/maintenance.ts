@@ -1,7 +1,7 @@
 import { FLASHCORE_KEY, setMaintenanceEnabled } from '../core/config.js'
 import { Flashcore } from 'robo.js'
-import type { CommandConfig } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
+import type { CommandConfig } from '@robojs/discordjs'
+import type { ChatInputCommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
 	description: 'Set maintenance mode',
@@ -15,7 +15,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction) => {
+export default async (interaction: ChatInputCommandInteraction) => {
 	const enabled = interaction.options.get('enabled')?.value as boolean
 
 	if (enabled) {

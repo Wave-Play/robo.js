@@ -14,6 +14,6 @@
 		"isolatedModules": true,
 		"incremental": true
 	},
-	"include": ["../../plugin-maintenance/**/*.ts"],
-	"exclude": ["../../plugin-maintenance/node_modules"]
+	"include": ["**/*.ts"],
+	"exclude": ["node_modules"]
 }

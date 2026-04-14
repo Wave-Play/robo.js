@@ -13,16 +13,16 @@ import {
 	setMaintenanceEnabled,
 	setMaintenanceMessage
 } from '../core/config.js'
-import type { Client } from 'discord.js'
+import type { StartContext } from 'robo.js'
 
-export default async (_client: Client, options: PluginOptions) => {
+export default async (context: StartContext<PluginOptions>) => {
 	const {
 		excludeCommands = DEFAULT_EXCLUDE_COMMANDS,
 		excludeContexts = DEFAULT_EXCLUDE_CONTEXTS,
 		excludeEvents = DEFAULT_EXCLUDE_EVENTS,
 		maintenanceEnabled = DEFAULT_MAINTENANCE_ENABLED,
 		maintenanceMessage = DEFAULT_MAINTENANCE_MESSAGE
-	} = options ?? {}
+	} = context.pluginConfig ?? {}
 	const previouslyEnabled = await Flashcore.get(FLASHCORE_KEY)
 
 	setExcludeCommands(excludeCommands)

@@ -5,11 +5,14 @@ import {
 	maintenanceEnabled,
 	maintenanceMessage
 } from '../core/config.js'
-import type { MiddlewareData, MiddlewareResult } from 'robo.js'
+import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
 import type { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
-	const { auto, key, plugin, type } = data.record
+	const { key, type } = data.record
+	const record = data.record as Record<string, unknown>
+	const plugin = record.plugin as { name?: string } | undefined
+	const auto = record.auto as boolean | undefined
 	const isRoboDefault = !plugin && auto
 	const isSelfPlugin = plugin?.name === '@robojs/maintenance'
 
