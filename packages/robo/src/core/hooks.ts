@@ -11,6 +11,21 @@ import { dispatchHmrEvent, type HmrEventContext } from './hmr.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { isMainThread, parentPort } from 'node:worker_threads'
+
+/**
+ * Emit a status progress event to the parent CLI (dev.ts) via IPC.
+ * Only sends when running in a worker thread (spirit).
+ */
+function emitStatusProgress(plugin: string, status: 'starting' | 'ready' | 'error', total?: number): void {
+	if (!isMainThread && parentPort) {
+		const payload: Record<string, unknown> = { plugin, status }
+		if (total !== undefined) {
+			payload.total = total
+		}
+		parentPort.postMessage({ event: 'status-progress', payload })
+	}
+}
 
 // Cache for plugin versions to avoid repeated package.json reads
 const pluginVersionCache = new Map<string, string>()
@@ -544,7 +559,19 @@ export async function executeStartHooks(
 	// Resolve all plugin hook paths and versions in parallel, then group by priority
 	const { groups: priorityGroups, sortedPriorities } = await resolveAndGroupHooks(plugins, 'start', { fetchVersions: true })
 
+	// Count total plugins with start hooks for progress tracking
+	let totalPluginsWithHooks = 0
+	for (const group of priorityGroups.values()) {
+		totalPluginsWithHooks += group.length
+	}
+
+	// Signal zero-plugin case so the CLI can transition to 'ready' immediately
+	if (totalPluginsWithHooks === 0) {
+		emitStatusProgress('', 'ready', 0)
+	}
+
 	// Execute each priority group sequentially, but hooks within a group run in parallel
+	let progressSent = false
 	for (const priority of sortedPriorities) {
 		const group = priorityGroups.get(priority)!
 		const hookCount = group.length
@@ -553,15 +580,39 @@ export async function executeStartHooks(
 			// Single hook - run directly
 			const { name, data, hookPath, version } = group[0]
 			loggerInstance.debug(`Executing start hook for ${name} (priority ${priority})...`)
-			await executePluginStartHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
+			emitStatusProgress(name, 'starting', !progressSent ? totalPluginsWithHooks : undefined)
+			progressSent = true
+			try {
+				await executePluginStartHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
+				emitStatusProgress(name, 'ready')
+			} catch (error) {
+				emitStatusProgress(name, 'error')
+				throw error
+			}
 		} else {
 			// Multiple hooks at same priority - run in parallel
 			loggerInstance.debug(`Executing ${hookCount} start hooks in parallel (priority ${priority}): ${group.map((e) => e.name).join(', ')}`)
-			await Promise.all(
-				group.map(({ name, data, hookPath, version }) =>
-					executePluginStartHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
-				)
+			for (const { name } of group) {
+				emitStatusProgress(name, 'starting', !progressSent ? totalPluginsWithHooks : undefined)
+				progressSent = true
+			}
+			const results = await Promise.allSettled(
+				group.map(async ({ name, data, hookPath, version }) => {
+					try {
+						await executePluginStartHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
+						emitStatusProgress(name, 'ready')
+					} catch (error) {
+						emitStatusProgress(name, 'error')
+						throw error
+					}
+				})
 			)
+
+			// Re-throw the first rejection if any
+			const firstRejection = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
+			if (firstRejection) {
+				throw firstRejection.reason
+			}
 		}
 	}
 

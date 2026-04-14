@@ -69,6 +69,7 @@ let _globalOverwrites: string[] = []
 export class Env<T> {
 	private _variables: T
 	private static _data: Record<string, string>
+	private static _loadedMode: string | undefined
 
 	/**
 	 * Creates a new instance of the Env class with the specified schema with type-checking and default values.
@@ -146,15 +147,23 @@ export class Env<T> {
 	 * @returns Record object containing loaded environment variables.
 	 */
 	public static async load(options: LoadOptions = {}) {
+		// Short-circuit if already loaded with the same mode (unless overwrite is requested)
+		const mode = options.mode ?? ''
+		if (!options.overwrite && Env._loadedMode !== undefined && Env._loadedMode === mode) {
+			return Env._data ?? {}
+		}
+
 		const filePath = await getFilePathAsync(options)
 
 		if (filePath) {
 			const envContent = await readFile(filePath, 'utf-8')
 			const newEnv = parseEnvFile(envContent)
 			Env._data = newEnv
+			Env._loadedMode = mode
 
 			return applyEnv(options, newEnv)
 		} else {
+			Env._loadedMode = mode
 			return {}
 		}
 	}
@@ -168,15 +177,23 @@ export class Env<T> {
 	 * @returns Record object containing loaded environment variables.
 	 */
 	public static loadSync(options: LoadOptions = {}) {
+		// Short-circuit if already loaded with the same mode (unless overwrite is requested)
+		const mode = options.mode ?? ''
+		if (!options.overwrite && Env._loadedMode !== undefined && Env._loadedMode === mode) {
+			return Env._data ?? {}
+		}
+
 		const filePath = getFilePath(options)
 
 		if (filePath) {
 			const envContent = readFileSync(filePath, 'utf-8')
 			const newEnv = parseEnvFile(envContent)
 			Env._data = newEnv
+			Env._loadedMode = mode
 
 			return applyEnv(options, newEnv)
 		} else {
+			Env._loadedMode = mode
 			return {}
 		}
 	}

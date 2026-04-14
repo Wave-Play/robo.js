@@ -11,6 +11,7 @@ import type { default as Typescript } from 'typescript'
 
 // Global config reference
 let _config: Config = null
+let _mainConfigPath: string | null = null
 const _configPaths: Set<string> = new Set()
 
 /**
@@ -28,8 +29,16 @@ export function getConfigPaths(): Set<string> {
 	return _configPaths
 }
 
+/**
+ * Returns the main config path resolved by the last `loadConfig()` call.
+ */
+export function getMainConfigPath(): string | null {
+	return _mainConfigPath
+}
+
 export async function loadConfig(file = 'robo', compile = false): Promise<Config> {
 	const configPath = await loadConfigPath(file)
+	_mainConfigPath = configPath
 	let config: Config
 
 	if (configPath) {

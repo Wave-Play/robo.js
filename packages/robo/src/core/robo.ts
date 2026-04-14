@@ -1,8 +1,8 @@
 import { registerProcessEvents } from './process.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS } from './constants.js'
-import { consoleDrain, createLevelFilteredDrain, createMultiDrain, logger, LogLevel } from './logger.js'
-import { createFileDrain } from './drains.js'
+import { consoleDrain, createLevelFilteredDrain, createMultiDrain, Logger, logger, LogLevel } from './logger.js'
+import { createFileDrain, setFileDrainSessionId } from './drains.js'
 import { Env } from './env.js'
 import { executeEventHandler } from './handlers.js'
 import { Nanocore } from '../internal/nanocore.js'
@@ -14,6 +14,7 @@ import { loadState } from './state.js'
 import { portal, populatePortal } from './portal.js'
 import { isMainThread } from 'node:worker_threads'
 import { Globals } from './globals.js'
+import { Status } from './status.js'
 import type { Config, PluginData } from '../types/index.js'
 import type { BuildCommandOptions } from '../cli/commands/build/index.js'
 import type { CliContext } from '../types/cli.js'
@@ -31,7 +32,7 @@ import type { CliContext } from '../types/cli.js'
  *
  * [**Learn more:** Robo](https://robojs.dev/robojs/overview)
  */
-export const Robo = { restart, start, stop, build }
+export const Robo = { restart, start, stop, build, status: Status }
 
 // Re-export portal from portal module for convenience
 export { portal }
@@ -82,6 +83,11 @@ export async function build(options?: BuildOptions) {
 async function start(options?: StartOptions) {
 	const pid = process.pid
 	const id = String(process.env.ROBO_INSTANCE_ID ?? pid)
+
+	// Generate and set session ID for log correlation
+	const sessionId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+	Logger.setSessionId(sessionId)
+	setFileDrainSessionId(sessionId)
 
 	// In mock test mode (without verbose), suppress console output immediately
 	// This must happen before any other code that might use the logger
@@ -138,7 +144,7 @@ async function start(options?: StartOptions) {
 				createFileDrain({
 					path: `.robo/logs/${logMode}.log`,
 					level: 'debug',
-					timestamp: 'short',
+					timestamp: 'iso',
 					colorMap: config?.logger?.colorMap
 				})
 			)
@@ -223,7 +229,19 @@ async function start(options?: StartOptions) {
  * @param exitCode - The exit code to use when stopping Robo
  * @param reason - The reason for stopping (defaults to 'signal' if exitCode is 0, 'error' otherwise)
  */
+let _stopPromise: Promise<void> | null = null
+
 async function stop(exitCode = 0, reason?: 'signal' | 'error' | 'restart') {
+	// Prevent multiple concurrent stop calls (e.g. duplicate SIGINT handlers)
+	if (_stopPromise) {
+		return _stopPromise
+	}
+
+	_stopPromise = _stopInternal(exitCode, reason)
+	return _stopPromise
+}
+
+async function _stopInternal(exitCode: number, reason?: 'signal' | 'error' | 'restart') {
 	await Nanocore.update('watch', { status: exitCode === 0 ? 'stopping' : 'error' })
 
 	// Determine reason if not provided
