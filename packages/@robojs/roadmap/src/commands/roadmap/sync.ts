@@ -34,9 +34,9 @@ import {
 	Colors,
 	SeparatorSpacingSize
 } from 'discord.js'
-import { createCommandConfig } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-import { getProvider, isProviderReady } from '../../events/_start.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import type { CommandResult } from '@robojs/discordjs'
+import { getProvider, isProviderReady } from '../../robo/start.js'
 import { syncRoadmap, type SyncProgressUpdate, SyncCanceledError } from '../../core/sync-engine.js'
 import { getAllForumChannels } from '../../core/forum-manager.js'
 import { roadmapLogger } from '../../core/logger.js'

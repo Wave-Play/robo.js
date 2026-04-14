@@ -16,7 +16,8 @@ import {
 	ButtonBuilder,
 	Colors
 } from 'discord.js'
-import { createCommandConfig, logger, type CommandResult } from 'robo.js'
+import { createCommandConfig, type CommandResult } from '@robojs/discordjs'
+import { logger } from 'robo.js'
 import { createOrGetRoadmapCategory } from '../../core/forum-manager.js'
 import {
 	getSettings,
@@ -26,7 +27,7 @@ import {
 	type RoadmapSettings
 } from '../../core/settings.js'
 import { Buttons, ID_NAMESPACE } from '../../core/constants.js'
-import { getProvider } from '../../events/_start.js'
+import { getProvider } from '../../robo/start.js'
 
 /**
  * Creates a minimal placeholder button accessory for sections.

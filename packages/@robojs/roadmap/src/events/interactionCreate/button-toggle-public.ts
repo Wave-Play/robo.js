@@ -1,10 +1,11 @@
 import { type ButtonInteraction, PermissionFlagsBits } from 'discord.js'
-import { logger, type EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
+import { logger } from 'robo.js'
 import { toggleForumAccess, getRoadmapCategory, getAllForumChannels } from '../../core/forum-manager.js'
 import { getSettings, isForumPublic } from '../../core/settings.js'
 import { Buttons } from '../../core/constants.js'
 import { createSetupMessage } from '../../commands/roadmap/setup.js'
-import { getProvider } from '../_start.js'
+import { getProvider } from '../../robo/start.js'
 
 /**
  * Button interaction handler for toggling roadmap category access between public and private modes.

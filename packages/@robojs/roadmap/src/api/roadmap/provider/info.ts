@@ -1,4 +1,4 @@
-import { isProviderReady, getProvider } from '../../../events/_start.js'
+import { isProviderReady, getProvider } from '../../../robo/start.js'
 import { success, wrapHandler, validateMethod, ERROR_CODES } from '../utils.js'
 import type { RoboRequest } from '@robojs/server'
 

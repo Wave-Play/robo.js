@@ -1,5 +1,5 @@
 import { type ButtonInteraction, PermissionFlagsBits, MessageFlags, ContainerBuilder, SectionBuilder, TextDisplayBuilder, ButtonBuilder, ButtonStyle, Colors, SeparatorBuilder, SeparatorSpacingSize } from 'discord.js'
-import { type EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import { Buttons } from '../../core/constants.js'
 import { roadmapLogger } from '../../core/logger.js'
 import { getAssigneeMapping, getColumnMapping } from '../../core/settings.js'

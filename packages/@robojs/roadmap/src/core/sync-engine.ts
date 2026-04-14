@@ -26,7 +26,7 @@ import {
 } from './settings.js'
 import { getAllForumChannels, updateForumTagsForColumn } from './forum-manager.js'
 import { roadmapLogger } from './logger.js'
-import { options } from '../events/_start.js'
+import { options } from '../robo/start.js'
 
 /**
  * Error thrown when a sync is canceled via AbortSignal.

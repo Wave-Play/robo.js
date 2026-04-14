@@ -1,5 +1,5 @@
 import { syncRoadmap } from '../../../core/sync-engine.js'
-import { getProvider, isProviderReady } from '../../../events/_start.js'
+import { getProvider, isProviderReady } from '../../../robo/start.js'
 import { getAllForumChannels } from '../../../core/forum-manager.js'
 import { getGuildFromRequest, success, wrapHandler, validateMethod, ERROR_CODES } from '../utils.js'
 import type { RoboRequest } from '@robojs/server'

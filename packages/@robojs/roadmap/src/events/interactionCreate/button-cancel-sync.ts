@@ -1,5 +1,5 @@
 import { type ButtonInteraction, PermissionFlagsBits } from 'discord.js'
-import { type EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
 import { Buttons } from '../../core/constants.js'
 import { roadmapLogger } from '../../core/logger.js'
 import { activeSyncs } from '../../commands/roadmap/sync.js'

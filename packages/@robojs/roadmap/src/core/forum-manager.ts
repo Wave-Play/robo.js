@@ -15,7 +15,7 @@
 
 import type { Guild, ForumChannel, CategoryChannel, OverwriteResolvable, GuildForumTagData } from 'discord.js'
 import { ChannelType, PermissionFlagsBits } from 'discord.js'
-import { client } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
 import { getSettings, updateSettings } from './settings.js'
 import type { RoadmapColumn } from '../types.js'
 import { roadmapLogger } from './logger.js'
@@ -114,7 +114,7 @@ export async function createOrGetRoadmapCategory(
 		}
 
 		// Build permission overwrites for category (private by default)
-		const botId = client.user?.id ?? guild.members.me?.id
+		const botId = getClient().user?.id ?? guild.members.me?.id
 		const permissions: OverwriteResolvable[] = [
 			// Deny @everyone by default (private mode)
 			{
@@ -280,7 +280,7 @@ export async function toggleForumAccess(guild: Guild, mode: ForumPermissionMode)
 		const category = channel as CategoryChannel
 
 		// Get bot ID for permission preservation
-		const botId = client.user?.id ?? guild.members.me?.id
+		const botId = getClient().user?.id ?? guild.members.me?.id
 
 		// Apply permission mode to category
 		if (mode === 'private') {

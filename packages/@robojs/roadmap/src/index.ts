@@ -217,5 +217,5 @@ export * from './core/date-helpers.js'
  * }
  * ```
  */
-export { getProvider, isProviderReady, options } from './events/_start.js'
-export type { RoadmapPluginOptions } from './events/_start.js'
+export { getProvider, isProviderReady, options } from './robo/start.js'
+export type { RoadmapPluginOptions } from './robo/start.js'

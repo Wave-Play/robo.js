@@ -5,7 +5,8 @@ import {
 	ActionRowBuilder,
 	MessageFlags
 } from 'discord.js'
-import { logger, type EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
+import { logger } from 'robo.js'
 import { Buttons, Selects } from '../../core/constants.js'
 import { getAuthorizedCreatorRoles } from '../../core/settings.js'
 

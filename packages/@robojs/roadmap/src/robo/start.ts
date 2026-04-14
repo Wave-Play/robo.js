@@ -1,5 +1,5 @@
 /**
- * Plugin initialization event handler
+ * Plugin initialization hook
  *
  * This module handles the plugin lifecycle by:
  * - Loading plugin options from config files or defaults
@@ -13,12 +13,12 @@
  * @module
  */
 
-import type { Client } from 'discord.js'
-import { getPluginOptions, logger } from 'robo.js'
+import { logger, Robo } from 'robo.js'
 import { JiraProvider } from '../providers/jira.js'
 import type { JiraProviderConfig } from '../providers/jira.js'
 import type { RoadmapProvider } from '../providers/base.js'
 import type { ProviderConfig } from '../types.js'
+import type { StartContext } from 'robo.js'
 
 /**
  * Plugin options interface
@@ -290,7 +290,7 @@ async function instantiateProvider(config: ProviderConfig): Promise<RoadmapProvi
 }
 
 /**
- * Plugin initialization event handler
+ * Plugin initialization hook
  *
  * This is the main entry point for plugin initialization. It loads plugin options,
  * resolves provider configuration, instantiates and initializes the provider,
@@ -299,8 +299,7 @@ async function instantiateProvider(config: ProviderConfig): Promise<RoadmapProvi
  * The initialization is graceful - if configuration is missing or invalid, the plugin
  * loads but remains inactive, with informative logging to guide users.
  *
- * @param _client - Discord.js client instance (unused)
- * @param pluginOptions - Plugin options from config or defaults
+ * @param context - Start context with plugin configuration
  *
  * @example
  * Typical plugin configuration:
@@ -330,10 +329,9 @@ async function instantiateProvider(config: ProviderConfig): Promise<RoadmapProvi
  * - If configuration is invalid, plugin loads but logs actionable error guidance
  * - Commands check isProviderReady() before attempting to use the provider
  */
-export default async function (_client: Client, pluginOptions?: RoadmapPluginOptions) {
+export default async function (context: StartContext<RoadmapPluginOptions>) {
 	// Load plugin options from config or defaults
-	const rawOptions = pluginOptions ?? getPluginOptions('@robojs/roadmap') ?? {}
-	options = rawOptions as RoadmapPluginOptions
+	options = (context.pluginConfig ?? {}) as RoadmapPluginOptions
 	initLogger.debug('Loading roadmap plugin options')
 
 	// Resolve provider configuration from multiple sources
@@ -358,7 +356,7 @@ export default async function (_client: Client, pluginOptions?: RoadmapPluginOpt
 		try {
 			await _provider.init()
 			_initialized = true
-			initLogger.ready('Roadmap provider is ready')
+			Robo.status.set('roadmap', 'Provider ready')
 
 			return
 		} catch (error) {
@@ -368,7 +366,7 @@ export default async function (_client: Client, pluginOptions?: RoadmapPluginOpt
 			// Check if error indicates provider is already initialized
 			if (messageLower.includes('already initialized') || messageLower.includes('already ready')) {
 				_initialized = true
-				initLogger.ready('Roadmap provider is ready (was already initialized)')
+				Robo.status.set('roadmap', 'Provider ready')
 
 				return
 			}
@@ -389,7 +387,7 @@ export default async function (_client: Client, pluginOptions?: RoadmapPluginOpt
 
 		// Get provider info for logging
 		const info = await _provider.getProviderInfo()
-		initLogger.ready(`Roadmap provider initialized: ${info.name} v${info.version}`)
+		Robo.status.set('roadmap', `Provider initialized: ${info.name} v${info.version}`)
 
 		// Check auto-sync option (not yet implemented)
 		if (options.autoSync === true) {

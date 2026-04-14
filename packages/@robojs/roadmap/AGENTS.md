@@ -17,7 +17,8 @@ Note: This file is for AI agents and maintainers, not end users.
   - `src/providers/` – Provider implementations (`base.ts`, `jira.ts`)
   - `src/core/` – Core modules (`sync-engine.ts`, `forum-manager.ts`, `settings.ts`, `constants.ts`)
   - `src/commands/` – Discord slash commands (`roadmap/setup.ts`, `roadmap/sync.ts`, `roadmap/add.ts`, `roadmap/edit.ts`)
-  - `src/events/` – Lifecycle and interaction handlers (`_start.ts`, `interactionCreate/*`)
+  - `src/robo/` – Lifecycle hooks (`start.ts`)
+  - `src/events/` – Interaction handlers (`interactionCreate/*`)
   - `src/api/` – REST API endpoints (requires `@robojs/server`)
 
 ### High-level flow (Mermaid)
@@ -317,7 +318,7 @@ Follow these standards for all new code and update existing code during maintena
 
 ### Configuration Precedence (Initialization)
 
-- Location: `src/events/_start.ts`
+- Location: `src/robo/start.ts`
 - Order:
   1. Pre-instantiated provider in `pluginOptions.provider`
   2. Provider config object in `pluginOptions.provider`
@@ -758,7 +759,7 @@ sequenceDiagram
 
 ## Configuration
 
-### Plugin Options (`RoadmapPluginOptions` in `src/events/_start.ts`)
+### Plugin Options (`RoadmapPluginOptions` in `src/robo/start.ts`)
 
 - `provider?: ProviderConfig | RoadmapProvider`
 - `autocompleteCacheTtl?: number` (default: 300000 = 5 minutes)
@@ -938,7 +939,7 @@ When modifying core files, always reflect changes here:
 - Commands (`src/commands/**`): options, flows, auth
 - API (`src/api/**`): endpoints, error codes, security notes
 - Types (`src/types.ts`): any new/changed interfaces
-- Initialization (`src/events/_start.ts`): provider resolution and options
+- Initialization (`src/robo/start.ts`): provider resolution and options
 
 Update checklist for agents:
 
@@ -978,8 +979,9 @@ packages/@robojs/roadmap/
 │   │       ├── sync.ts             # /roadmap sync
 │   │       ├── add.ts              # /roadmap add
 │   │       └── edit.ts             # /roadmap edit
+│   ├── robo/
+│   │   └── start.ts                # Plugin initialization hook
 │   ├── events/
-│   │   ├── _start.ts               # Plugin initialization
 │   │   └── interactionCreate/
 │   │       ├── button-toggle-public.ts
 │   │       └── select-authorized-creator-roles.ts

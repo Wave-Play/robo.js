@@ -29,9 +29,9 @@
 
 import type { ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js'
 import { EmbedBuilder, PermissionFlagsBits } from 'discord.js'
-import { createCommandConfig } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-import { getProvider, isProviderReady, options } from '../../events/_start.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import type { CommandResult } from '@robojs/discordjs'
+import { getProvider, isProviderReady, options } from '../../robo/start.js'
 import { canUserCreateCards } from '../../core/settings.js'
 import type { CreateCardInput } from '../../types.js'
 import { syncSingleCard } from '../../core/sync-engine.js'

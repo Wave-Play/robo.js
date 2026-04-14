@@ -86,9 +86,9 @@
  */
 
 import type { RoboRequest } from '@robojs/server'
-import { client } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
 import { ChannelType, type ForumChannel, type ThreadChannel } from 'discord.js'
-import { getProvider, isProviderReady } from '../../../../events/_start.js'
+import { getProvider, isProviderReady } from '../../../../robo/start.js'
 import { getSyncedPostId } from '../../../../core/settings.js'
 import { formatCardContentV2, formatThreadName, moveThreadToNewForum, syncSingleCard } from '../../../../core/sync-engine.js'
 import { getForumChannelForColumn } from '../../../../core/forum-manager.js'
@@ -401,7 +401,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 			} else {
 				let existingThread: ThreadChannel | null = null
 				try {
-					const channel = await client.channels.fetch(threadId)
+					const channel = await getClient().channels.fetch(threadId)
 					if (channel && channel.isThread()) {
 						// Cast through unknown to satisfy TypeScript's private property checks between thread channel variants
 						existingThread = channel as unknown as ThreadChannel
@@ -525,7 +525,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 				if (threadId) {
 					try {
 						// Fetch Discord thread channel
-						const channel = await client.channels.fetch(threadId)
+						const channel = await getClient().channels.fetch(threadId)
 						if (channel && channel.isThread()) {
 							const thread = channel
 							const forum = thread.parent as ForumChannel | null
@@ -578,7 +578,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 								const starter = await thread.fetchStarterMessage()
 
 								// Only edit if message was created by bot
-								if (starter && starter.author?.id === client.user?.id) {
+								if (starter && starter.author?.id === getClient().user?.id) {
 									// Format card content with Components v2
 									const { flags, components } = await formatCardContentV2(result.card, guild.id, guild)
 

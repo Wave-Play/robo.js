@@ -77,7 +77,7 @@
  */
 
 import type { RoboRequest } from '@robojs/server'
-import { getProvider, isProviderReady } from '../../../events/_start.js'
+import { getProvider, isProviderReady } from '../../../robo/start.js'
 import { syncSingleCard } from '../../../core/sync-engine.js'
 import { getAllForumChannels } from '../../../core/forum-manager.js'
 import {

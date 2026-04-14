@@ -1,7 +1,7 @@
 import { createOrGetRoadmapCategory } from '../../../../core/forum-manager.js'
 import { getSettings } from '../../../../core/settings.js'
 import { getGuildFromRequest, success, wrapHandler, validateMethod, ERROR_CODES } from '../../utils.js'
-import { getProvider, isProviderReady } from '../../../../events/_start.js'
+import { getProvider, isProviderReady } from '../../../../robo/start.js'
 import type { RoboRequest } from '@robojs/server'
 
 /**

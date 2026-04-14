@@ -2,12 +2,13 @@ import {
 	type StringSelectMenuInteraction,
 	PermissionFlagsBits
 } from 'discord.js'
-import { logger, type EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
+import { logger } from 'robo.js'
 import { Selects } from '../../core/constants.js'
 import { setColumnMapping, getSettings } from '../../core/settings.js'
 import { createSetupMessage } from '../../commands/roadmap/setup.js'
 import { getRoadmapCategory, getAllForumChannels } from '../../core/forum-manager.js'
-import { getProvider } from '../_start.js'
+import { getProvider } from '../../robo/start.js'
 
 /**
  * Global cache for button flow pending column mappings.

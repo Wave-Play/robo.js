@@ -35,13 +35,13 @@ import type {
 	ForumChannel
 } from 'discord.js'
 import { ChannelType, EmbedBuilder, PermissionFlagsBits } from 'discord.js'
-import { createCommandConfig } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-import { getProvider, isProviderReady, options } from '../../events/_start.js'
+import { createCommandConfig } from '@robojs/discordjs'
+import type { CommandResult } from '@robojs/discordjs'
+import { getProvider, isProviderReady, options } from '../../robo/start.js'
 import { canUserCreateCards, getSettings, getSyncedPostId } from '../../core/settings.js'
-import type { UpdateCardInput, RoadmapCard, RoadmapColumn } from '../../types.js'
+import type { UpdateCardInput, UpdateCardResult, RoadmapCard, RoadmapColumn } from '../../types.js'
 import { formatCardContentV2, formatThreadName, moveThreadToNewForum } from '../../core/sync-engine.js'
-import { client } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
 import { roadmapLogger } from '../../core/logger.js'
 import { getForumChannelForColumn } from '../../core/forum-manager.js'
 
@@ -541,7 +541,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 	}
 
 	// Update card via provider
-	let result
+	let result: UpdateCardResult
 	try {
 		result = await provider.updateCard(cardId, input)
 
@@ -602,7 +602,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 	if (threadId) {
 		try {
-			const channel = await client.channels.fetch(threadId)
+			const channel = await getClient().channels.fetch(threadId)
 			if (channel && channel.isThread()) {
 				// Cast through unknown to satisfy TypeScript's private property checks between thread channel variants
 				syncedThread = channel as unknown as ThreadChannel
@@ -644,7 +644,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			}
 
 			const starterMessage = await syncedThread.fetchStarterMessage()
-			if (starterMessage && starterMessage.author?.id === client.user?.id) {
+			if (starterMessage && starterMessage.author?.id === getClient().user?.id) {
 				const { flags, components } = await formatCardContentV2(result.card, interaction.guildId!, interaction.guild!)
 				// Explicitly remove content field when using Components v2
 				await starterMessage.edit({ flags, components, content: null })

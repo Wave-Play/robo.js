@@ -1,4 +1,4 @@
-import { client } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
 import type { RoboRequest } from '@robojs/server'
 import type { Guild } from 'discord.js'
 import { roadmapLogger } from '../../core/logger.js'
@@ -66,7 +66,7 @@ export async function getGuildFromRequest(request: RoboRequest): Promise<Guild> 
 	}
 
 	try {
-		const guild = await client.guilds.fetch(guildId)
+		const guild = await getClient().guilds.fetch(guildId)
 		roadmapLogger.debug(`Fetched guild: ${guild.name} (${guild.id})`)
 		return guild as unknown as Guild
 	} catch (err) {

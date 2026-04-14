@@ -1,10 +1,11 @@
 import { type RoleSelectMenuInteraction, PermissionFlagsBits } from 'discord.js'
-import { logger, type EventConfig } from 'robo.js'
+import type { EventConfig } from '@robojs/discordjs'
+import { logger } from 'robo.js'
 import { Selects } from '../../core/constants.js'
 import { setAuthorizedCreatorRoles, getSettings } from '../../core/settings.js'
 import { createSetupMessage } from '../../commands/roadmap/setup.js'
 import { getRoadmapCategory, getAllForumChannels } from '../../core/forum-manager.js'
-import { getProvider } from '../_start.js'
+import { getProvider } from '../../robo/start.js'
 
 /**
  * Global cache for role management webhook info.
