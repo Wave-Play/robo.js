@@ -13,6 +13,7 @@
  * Learn more:
  * https://robojs.dev/plugins/server
  */
+// @ts-expect-error - resolved at runtime in consumer projects
 import type { RoboRequest } from '@robojs/server'
 
 export function GET() {

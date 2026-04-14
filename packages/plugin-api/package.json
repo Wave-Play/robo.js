@@ -8,11 +8,11 @@
 	"exports": {
 		".": {
 			"import": "./.robo/build/index.js",
-			"types": "./src/index.ts"
+			"types": "./.robo/build/index.d.ts"
 		},
 		"./client": {
 			"import": "./.robo/build/client/dev-reload.js",
-			"types": "./src/client/dev-reload.ts"
+			"types": "./.robo/build/client/dev-reload.d.ts"
 		},
 		"./engines": {
 			"import": "./engines.js",
@@ -31,7 +31,7 @@
 	"files": [
 		".robo/",
 		"seed/",
-		"src/",
+		"skills/",
 		"engines.d.ts",
 		"engines.js",
 		"testing.d.ts",
@@ -49,6 +49,7 @@
 		"registry": "https://registry.npmjs.org/"
 	},
 	"scripts": {
+		"bench": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --loader ts-node/esm __benchmarks__/automated/run-all.ts",
 		"build": "robo build plugin",
 		"dev": "robo build plugin --watch",
 		"lint": "pnpm lint:eslint && pnpm lint:style",

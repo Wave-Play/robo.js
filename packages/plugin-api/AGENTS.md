@@ -3,14 +3,14 @@
 > **Keep this living.** Any time request handling, engine selection, or public APIs change, come back and refresh these notes so future runs stay accurate.
 
 ## Mission & Scope
-- Provides Robo projects with an HTTP layer: maps `/src/api` files into routes, serves static assets, and exposes hooks for custom web servers (`packages/plugin-api/src/events/_start.ts:91`).
+- Provides Robo projects with an HTTP layer: maps `/src/api` files into routes, serves static assets, and exposes hooks for custom web servers (`packages/plugin-api/src/robo/start.ts:91`).
 - Ships with two engines (Node http + Fastify) and lets consumers inject their own by extending `BaseEngine` (`packages/plugin-api/src/engines/base.ts:9`).
 - Designed to play nicely with other plugins (Vite dev server, custom websocket handlers, SPA fallbacks) without forcing a specific web framework.
 
 ## Lifecycle & Boot
-- Entry point is `_start` event handler; captures plugin options, sets defaults (`prefix`→`/api`), and writes them to `globalThis.roboServer` for cross-plugin visibility (`packages/plugin-api/src/events/_start.ts:25`).
-- Chooses Fastify when `fastify` is present in dependencies; otherwise instantiates the bundled Node engine (`packages/plugin-api/src/events/_start.ts:108`).
-- Starts the selected engine, registers every API module from the portal index (converts `[param]` to `:param`), and optionally spins up a Vite middleware server during development (`packages/plugin-api/src/events/_start.ts:55`).
+- Entry point is start lifecycle hook; captures plugin options, sets defaults (`prefix`→`/api`), and writes them to `globalThis.roboServer` for cross-plugin visibility (`packages/plugin-api/src/robo/start.ts:25`).
+- Chooses Fastify when `fastify` is present in dependencies; otherwise instantiates the bundled Node engine (`packages/plugin-api/src/robo/start.ts:108`).
+- Starts the selected engine, registers every API module from the portal index (converts `[param]` to `:param`), and optionally spins up a Vite middleware server during development (`packages/plugin-api/src/robo/start.ts:55`).
 - Signals readiness by toggling `globalThis.roboServer.ready`; `Server.ready()` and `getServerEngine()` resolve once that flag is observed (`packages/plugin-api/src/core/plugin-utils.ts:6`).
 
 ## Public Surface (`src/index.ts`)
@@ -35,14 +35,14 @@
 - `BaseEngine` defines the required lifecycle: `init`, `start`, `stop`, `registerRoute`, `registerWebsocket`, `registerNotFound`, `setupVite`, `getHttpServer`, and `isRunning` (`packages/plugin-api/src/engines/base.ts:9`). Consumers can supply custom engines (e.g., Express, Hono) through plugin config.
 
 ## Configuration Surface
-- Plugin options (via config file or `npx robo add`) accept: `hostname`, `port`, `prefix`, `engine`, `cors`, `vite`. Environment vars `ROBO_HOSTNAME` and `PORT` provide defaults when fields are omitted (`packages/plugin-api/src/events/_start.ts:45`).
+- Plugin options (via config file or `npx robo add`) accept: `hostname`, `port`, `prefix`, `engine`, `cors`, `vite`. Environment vars `ROBO_HOSTNAME` and `PORT` provide defaults when fields are omitted (`packages/plugin-api/src/robo/start.ts:45`).
 - `prefix` supports `false`/`null` to disable automatic `/api` – the router will register bare paths (watch the SPA fallback which assumes a non-empty prefix for API detection) (`packages/plugin-api/src/core/handler.ts:338`).
 - `cors: true` enables permissive `Access-Control-Allow-*` headers and handles OPTIONS short-circuiting (`packages/plugin-api/src/core/handler.ts:27`).
 
 ## Globals, Ready Flow & Tooling Hooks
 - `globalThis.roboServer` stores `{ engine, ready }`; the ready flag is polled by `_readyPromise` with a 400 ms interval – keep that in mind when awaiting immediately after start (`packages/plugin-api/src/core/plugin-utils.ts:6`).
-- Nanocore receives `localUrl` via `Nanocore.update('watch', { localUrl })` so CLI tooling can display the dev server location (`packages/plugin-api/src/events/_start.ts:103`).
-- Vite integration: when dev dependencies include Vite and no server was injected, `_start` loads the project’s `config/vite.(ts|mjs)` and runs it in middleware mode, reusing the engine’s HTTP server. Engine automatically registers `/hmr` to guard the path for Vite (`packages/plugin-api/src/events/_start.ts:61`).
+- Nanocore receives `localUrl` via `Nanocore.update('watch', { localUrl })` so CLI tooling can display the dev server location (`packages/plugin-api/src/robo/start.ts:103`).
+- Vite integration: when dev dependencies include Vite and no server was injected, the start hook loads the project's `config/vite.(ts|mjs)` and runs it in middleware mode, reusing the engine's HTTP server. Engine automatically registers `/hmr` to guard the path for Vite (`packages/plugin-api/src/robo/start.ts:61`).
 
 ## Operational Notes & Gotchas
 - Body buffering happens before handler execution; large uploads may require a custom engine that streams instead of buffering (`packages/plugin-api/src/core/robo-request.ts:60`).
