@@ -19,7 +19,12 @@ export class Router {
 
 	addRoute(route: Route) {
 		this._router.insert(route.path, route)
-		this._routes.push(route)
+		const routeIndex = this._routes.findIndex((existing) => existing.path === route.path)
+		if (routeIndex === -1) {
+			this._routes.push(route)
+		} else {
+			this._routes[routeIndex] = route
+		}
 	}
 
 	find(path: string): RouteResult {
@@ -40,9 +45,21 @@ export class Router {
 	}
 
 	removeRoute(path: string) {
-		this._router.remove(path)
+		const removed = this._router.remove(path)
+		if (!removed) {
+			return false
+		}
+
 		const routeIndex = this._routes.findIndex((route) => route.path === path)
-		this._routes.splice(routeIndex, 1)
+		if (routeIndex !== -1) {
+			this._routes.splice(routeIndex, 1)
+		}
+
+		return true
+	}
+
+	hasRoute(path: string) {
+		return this._routes.some((route) => route.path === path)
 	}
 
 	stats() {

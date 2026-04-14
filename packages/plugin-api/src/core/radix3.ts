@@ -196,34 +196,56 @@ function insert(ctx: RadixRouterContext, path: string, data: unknown) {
 }
 
 function remove(ctx: RadixRouterContext, path: string) {
-	let success = false
 	const sections = path.split('/')
 	let node = ctx.rootNode
 
 	for (const section of sections) {
 		node = node.children.get(section)
 		if (!node) {
-			return success
+			return false
 		}
 	}
 
-	if (node.data) {
-		const lastSection = sections[sections.length - 1]
-		node.data = null
-		if (Object.keys(node.children).length === 0) {
-			const parentNode = node.parent
-			parentNode.children.delete(lastSection)
+	if (!node.data) {
+		return false
+	}
+
+	delete ctx.staticRoutesMap[path]
+	node.data = null
+
+	let currentNode: RadixNode | null = node
+	let sectionIndex = sections.length - 1
+
+	while (currentNode && currentNode.parent && shouldPruneNode(currentNode)) {
+		const parentNode = currentNode.parent
+		const section = sections[sectionIndex]
+
+		if (parentNode.children.get(section) === currentNode) {
+			parentNode.children.delete(section)
+		}
+		if (parentNode.wildcardChildNode === currentNode) {
 			parentNode.wildcardChildNode = null
-			// Remove from placeholderChildren array
-			const placeholderIndex = parentNode.placeholderChildren.indexOf(node)
-			if (placeholderIndex !== -1) {
-				parentNode.placeholderChildren.splice(placeholderIndex, 1)
-			}
 		}
-		success = true
+
+		const placeholderIndex = parentNode.placeholderChildren.indexOf(currentNode)
+		if (placeholderIndex !== -1) {
+			parentNode.placeholderChildren.splice(placeholderIndex, 1)
+		}
+
+		currentNode = parentNode
+		sectionIndex--
 	}
 
-	return success
+	return true
+}
+
+function shouldPruneNode(node: RadixNode): boolean {
+	return (
+		node.data === null &&
+		node.children.size === 0 &&
+		node.wildcardChildNode === null &&
+		node.placeholderChildren.length === 0
+	)
 }
 
 function createRadixNode(options: Partial<RadixNode> = {}): RadixNode {
