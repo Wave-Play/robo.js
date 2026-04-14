@@ -193,18 +193,18 @@ export default (member) => {
 }
 ```
 
-### Lifecycle Events
+### Lifecycle Hooks
 
-Prefixed with `_`:
+Located in `/src/robo/`:
 
 ```typescript
-// /src/events/_start.ts
-export default async (client) => {
+// /src/robo/start.ts
+export default async (context) => {
   await connectToDatabase()
 }
 
-// /src/events/_stop.ts
-export default async (client) => {
+// /src/robo/stop.ts
+export default async () => {
   await closeConnections()
 }
 ```

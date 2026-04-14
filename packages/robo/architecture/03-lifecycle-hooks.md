@@ -6,19 +6,19 @@ Robo.js provides lifecycle events that allow projects and plugins to execute cod
 
 | Event | Trigger | Use Case |
 |-------|---------|----------|
-| `_start` | Robo starts up | Initialize services, connect to databases |
-| `_stop` | Robo shuts down | Cleanup resources, save state |
-| `_restart` | Robo restarts (dev mode) | Preserve state, graceful handoff |
+| `start` | Robo starts up | Initialize services, connect to databases |
+| `stop` | Robo shuts down | Cleanup resources, save state |
+| `restart` | Robo restarts (dev mode) | Preserve state, graceful handoff |
 
 ## Event Naming Convention
 
-Lifecycle events are prefixed with `_` to distinguish them from Discord events:
+Lifecycle hooks live under `/src/robo/`, separate from Discord events in `/src/events/`:
 
 ```
+/src/robo/
+├── start.ts            # Lifecycle: startup
+├── stop.ts             # Lifecycle: shutdown (also runs on restart)
 /src/events/
-├── _start.ts           # Lifecycle: startup
-├── _stop.ts            # Lifecycle: shutdown
-├── _restart.ts         # Lifecycle: restart
 ├── ready.ts            # Discord: client ready
 └── messageCreate.ts    # Discord: message received
 ```
@@ -206,29 +206,22 @@ export async function executeEventHandler(
 ### Lifecycle Handler Structure
 
 ```typescript
-// /src/events/_start.ts
-import type { Client } from 'discord.js'
+// /src/robo/start.ts
+import type { StartContext } from 'robo.js'
 
-export default async (client: Client, options?: PluginOptions) => {
-  // client: Discord.js client instance (may be undefined if disableBot)
-  // options: Plugin-specific options (for plugins)
-  
+export default async (context: StartContext) => {
+  // context provides pluginConfig, client, etc.
+
   console.log('Starting up...')
   await initializeDatabase()
   await connectToExternalServices()
 }
 
-// /src/events/_stop.ts
-export default async (client: Client, options?: PluginOptions) => {
+// /src/robo/stop.ts (also runs on restart)
+export default async () => {
   console.log('Shutting down...')
   await saveState()
   await closeConnections()
-}
-
-// /src/events/_restart.ts
-export default async (client: Client, options?: PluginOptions) => {
-  console.log('Restarting...')
-  // State is automatically preserved via the State API
 }
 ```
 
@@ -237,8 +230,8 @@ export default async (client: Client, options?: PluginOptions) => {
 Plugins receive their configured options:
 
 ```typescript
-// @robojs/server/src/events/_start.ts
-import type { Client } from 'discord.js'
+// @robojs/server/src/robo/start.ts
+import type { StartContext } from 'robo.js'
 
 interface PluginConfig {
   port?: number
@@ -246,9 +239,9 @@ interface PluginConfig {
   engine?: BaseEngine
 }
 
-export default async (client: Client, options: PluginConfig) => {
-  const { port = 3000, hostname, engine } = options ?? {}
-  
+export default async (context: StartContext<PluginConfig>) => {
+  const { port = 3000, hostname, engine } = context.pluginConfig ?? {}
+
   // Initialize server with provided options
   await engine.start({ hostname, port })
 }
@@ -391,20 +384,20 @@ Multiple handlers can listen to the same lifecycle event:
 
 ```typescript
 // Project handler
-// /src/events/_start.ts
-export default async (client) => {
+// /src/robo/start.ts
+export default async (context) => {
   console.log('Project startup')
 }
 
 // Plugin A handler
-// @plugin-a/src/events/_start.ts
-export default async (client, options) => {
+// @plugin-a/src/robo/start.ts
+export default async (context) => {
   console.log('Plugin A startup')
 }
 
 // Plugin B handler
-// @plugin-b/src/events/_start.ts
-export default async (client, options) => {
+// @plugin-b/src/robo/start.ts
+export default async (context) => {
   console.log('Plugin B startup')
 }
 ```

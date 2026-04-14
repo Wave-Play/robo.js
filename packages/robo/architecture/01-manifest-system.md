@@ -122,9 +122,9 @@ interface EventConfig extends BaseConfig {
       { "__path": "/.robo/build/events/ready.js" }
     ],
     "_start": [
-      { "__path": "/.robo/build/events/_start.js" },
-      { 
-        "__path": "/.robo/build/events/_start.js",
+      { "__path": "/.robo/build/robo/start.js" },
+      {
+        "__path": "/.robo/build/robo/start.js",
         "__plugin": { "name": "@robojs/server", "path": "node_modules/@robojs/server" }
       }
     ]

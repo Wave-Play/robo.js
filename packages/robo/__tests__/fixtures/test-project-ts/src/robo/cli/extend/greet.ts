@@ -15,7 +15,7 @@ export async function before(ctx: CliContext) {
 }
 
 export async function after(ctx: CliContext) {
-	const count = (ctx.options.count as number) || 1
+	const count = ((ctx.options as Record<string, unknown>).count as number) || 1
 	console.log(`[greet extension] After hook - result:`, ctx.result)
 	if (count > 1) {
 		console.log(`[greet extension] Would repeat ${count} times`)

@@ -84,7 +84,7 @@
 	"license": "MIT",
 	"files": [
 		"dist/",
-		"src/",
+		"skills/",
 		"cli.d.ts",
 		"cli.js",
 		"flashcore.d.ts",

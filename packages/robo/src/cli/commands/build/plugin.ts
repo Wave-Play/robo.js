@@ -1,4 +1,4 @@
-import { color, composeColors } from '../../../core/color.js'
+import { color, composeColors, type Wrapper } from '../../../core/color.js'
 import { Command } from '../../utils/cli-handler.js'
 import { logger } from '../../../core/logger.js'
 import { getProjectSize } from '../../utils/build-summary.js'
@@ -18,7 +18,7 @@ import { loadPluginData } from '../../utils/build-hooks.js'
 import type { CliContext } from '../../../types/cli.js'
 import type { PluginData } from '../../../types/common.js'
 import type { MetadataAggregatorRegistry } from '../../../types/manifest-v1.js'
-import type { RouteEntries, ProcessedEntry } from '../../../types/routes.js'
+import type { RouteEntries } from '../../../types/routes.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
@@ -82,8 +82,9 @@ async function pluginAction(context: CliContext) {
 
 	// Generate manifest using the granular format
 	const manifestTime = Date.now()
-	const buildDir = config.experimental?.buildDirectory
-		? path.join(process.cwd(), config.experimental.buildDirectory)
+	const buildDirOption = config.experimental?.buildDirectory
+	const buildDir = buildDirOption
+		? path.join(process.cwd(), typeof buildDirOption === 'function' ? buildDirOption({ mode: options.dev ? 'development' : 'production', baseDir: process.cwd() }) : buildDirOption)
 		: path.join(process.cwd(), '.robo', 'build')
 
 	// Load dependent plugins from config (e.g., @robojs/discordjs)
@@ -93,10 +94,10 @@ async function pluginAction(context: CliContext) {
 
 	// Create a plugin data entry for self (the plugin being built)
 	const pkg = await readPackageJson()
-	const pluginName = pkg.name ?? 'unnamed-plugin'
+	const pluginName = (pkg.name as string) ?? 'unnamed-plugin'
 	const selfPluginData: PluginData = {
 		name: pluginName,
-		version: pkg.version ?? '0.0.0',
+		version: (pkg.version as string) ?? '0.0.0',
 		path: '.',
 		namespace: inferNamespace(pluginName),
 		hooks: [],
@@ -296,7 +297,7 @@ async function printPluginBuildSummary(
 	const entries: Array<{ type: string; name: string; description?: string; extra?: { parent?: string; type?: string } }> = []
 
 	// Collect all entries from route entries
-	for (const [namespace, routes] of Object.entries(routeEntries)) {
+	for (const [_namespace, routes] of Object.entries(routeEntries)) {
 		for (const [routeName, handlers] of Object.entries(routes)) {
 			for (const handler of handlers) {
 				const metadata = handler.metadata as Record<string, unknown> | undefined
@@ -365,7 +366,7 @@ async function printPluginBuildSummary(
 	}
 
 	// Determine size color
-	let sizeColor = color.green
+	let sizeColor: Wrapper = color.green
 	if (totalSize >= 1024 * 1024 * 1024) {
 		sizeColor = composeColors(color.red)
 	} else if (totalSize >= 500 * 1024 * 1024) {

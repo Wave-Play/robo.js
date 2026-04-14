@@ -2,7 +2,6 @@ import { Command } from '../../utils/cli-handler.js'
 import { startPhase, endPhase, PERF_ENABLED, finalize } from '../../utils/perf-metrics.js'
 import { logger as defaultLogger, Logger } from '../../../core/logger.js'
 import { loadConfig } from '../../../core/config.js'
-import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import path from 'node:path'
 import { Env } from '../../../core/env.js'
@@ -234,6 +233,8 @@ export async function buildAction(context: CliContext) {
 	logger.debug(`Generated granular manifest in ${Date.now() - granularStartTime}ms`)
 
 	if (!options.dev) {
+		const { getProjectSize, printBuildSummary } = await import('../../utils/build-summary.js')
+
 		// Get the size of the entire current working directory
 		const sizeStartTime = Date.now()
 		const totalSize = await getProjectSize(process.cwd())
