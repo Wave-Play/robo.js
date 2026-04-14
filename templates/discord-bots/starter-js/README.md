@@ -102,21 +102,21 @@ You even get `/dev` **[Subcommands](https://robojs.dev/discord-bots/commands#sub
 
 ## Client Configuration
 
-**Robo.js** manages your **Discord.js** `Client` instance. You may import `client` anywhere in your project.
+**Robo.js** manages your **Discord.js** `Client` instance via the `@robojs/discordjs` plugin. You can call `getClient()` anywhere in your project.
 
 ```javascript
 // File: /src/commands/name.js
-import { client } from 'robo.js'
+import { getClient } from '@robojs/discordjs'
 
 export default () => {
-	return `My name is ${client.user.username}`
+	return `My name is ${getClient()?.user?.username}`
 }
 ```
 
-Intents or other configurations can be set in the `config/robo.mjs` file.
+Intents or other configurations can be set in the `config/plugins/robojs/discordjs.mjs` file.
 
 ```javascript
-// File: /config/robo.mjs
+// File: /config/plugins/robojs/discordjs.mjs
 export default {
 	clientOptions: {
 		intents: ['Guilds', 'GuildMessages']

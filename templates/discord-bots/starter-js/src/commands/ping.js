@@ -1,4 +1,5 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { logger } from 'robo.js'
+import { createCommandConfig } from '@robojs/discordjs'
 
 /*
  * Customize your command details and options here.
