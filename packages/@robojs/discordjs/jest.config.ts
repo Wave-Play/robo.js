@@ -10,7 +10,9 @@ const config: Config = {
 			'ts-jest',
 			{
 				useESM: true,
+				diagnostics: false,
 				tsconfig: {
+					target: 'ESNext',
 					module: 'ESNext',
 					moduleResolution: 'bundler',
 					esModuleInterop: true,

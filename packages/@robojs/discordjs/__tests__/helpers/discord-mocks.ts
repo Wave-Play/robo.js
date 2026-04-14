@@ -307,6 +307,45 @@ export function createMockContextMenuInteraction(options?: {
 }
 
 /**
+ * Create a mock Message for prefix command testing.
+ * Provides author, guild, channel (with sendTyping), member (with permissions), and reply.
+ */
+export function createMockMessage(options: {
+	content?: string
+	authorBot?: boolean
+	authorId?: string
+	guildId?: string | null
+	permissions?: string[]
+} = {}) {
+	const {
+		content = '!ping',
+		authorBot = false,
+		authorId = 'user123',
+		guildId = '123456',
+		permissions = []
+	} = options
+	const permissionSet = new Set(permissions)
+
+	return {
+		content,
+		author: { id: authorId, bot: authorBot },
+		guild: guildId ? { id: guildId } : null,
+		guildId,
+		channel: {
+			sendTyping: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
+		},
+		member: guildId
+			? {
+					permissions: {
+						has: jest.fn((perm: string) => permissionSet.has(perm))
+					}
+				}
+			: null,
+		reply: jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
+	}
+}
+
+/**
  * Reset all mock function calls on a mock object
  */
 export function resetMockCalls(mockObj: Record<string, unknown>): void {

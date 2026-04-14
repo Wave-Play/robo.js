@@ -261,7 +261,10 @@ export function resetRestMock(): void {
 export const Routes = {
 	applicationCommands: (appId: string) => `/applications/${appId}/commands`,
 	applicationGuildCommands: (appId: string, guildId: string) =>
-		`/applications/${appId}/guilds/${guildId}/commands`
+		`/applications/${appId}/guilds/${guildId}/commands`,
+	applicationCommand: (appId: string, cmdId: string) => `/applications/${appId}/commands/${cmdId}`,
+	applicationGuildCommand: (appId: string, guildId: string, cmdId: string) =>
+		`/applications/${appId}/guilds/${guildId}/commands/${cmdId}`
 }
 
 // Builders for commands
@@ -678,8 +681,8 @@ class SubcommandBuilder {
 		return this
 	}
 
-	addNumberOption(fn: (option: IntegerOption) => IntegerOption): this {
-		const option = new IntegerOption()
+	addNumberOption(fn: (option: NumberOption) => NumberOption): this {
+		const option = new NumberOption()
 		fn(option)
 		this.options.push(option)
 		return this
@@ -692,6 +695,9 @@ class SubcommandBuilder {
 		return this
 	}
 }
+
+// Export SubcommandBuilder alias matching discord.js export name
+export const SlashCommandSubcommandBuilder = SubcommandBuilder
 
 class SubcommandGroupBuilder {
 	name = ''

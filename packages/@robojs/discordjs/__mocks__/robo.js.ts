@@ -83,8 +83,12 @@ export const env = {
 }
 
 // Mock Manifest (used by invite command)
+const routeSummaries: Record<string, Array<{ key: string; metadata?: Record<string, unknown>; auto?: boolean }>> = {}
+
 export const Manifest = {
-	metadata: jest.fn<() => unknown>().mockReturnValue(null)
+	metadata: jest.fn<() => unknown>().mockReturnValue(null),
+	routeSummaries: jest.fn(async (namespace: string, route: string) => routeSummaries[`${namespace}.${route}`] ?? []),
+	routeSummariesSync: jest.fn((namespace: string, route: string) => routeSummaries[`${namespace}.${route}`] ?? [])
 }
 
 // color utilities (pass-through for tests)
@@ -106,6 +110,17 @@ export const composeColors = (..._fns: Array<(s: string) => string>) => (s: stri
 
 // Mock getPluginOptions
 export const getPluginOptions = jest.fn(() => null)
+
+// Mock getConfig
+let configData: Record<string, unknown> | null = null
+export const getConfig = jest.fn(() => configData)
+
+/**
+ * Set config data for tests
+ */
+export function setConfigData(config: Record<string, unknown> | null): void {
+	configData = config
+}
 
 // State management mocks
 export const getState = jest.fn(() => undefined)
@@ -144,11 +159,34 @@ export function clearPortalData(): void {
 	Object.keys(portalData).forEach((key) => delete portalData[key])
 }
 
+export function setRouteSummaries(
+	namespace: string,
+	route: string,
+	summaries: Array<{ key: string; metadata?: Record<string, unknown>; auto?: boolean }>
+): void {
+	routeSummaries[`${namespace}.${route}`] = summaries
+}
+
+export function clearRouteSummaries(): void {
+	Object.keys(routeSummaries).forEach((key) => delete routeSummaries[key])
+}
+
 // Mode mock for environment detection
 export const Mode = {
+	color: (s: string) => s,
 	isDev: jest.fn(() => true),
 	isProduction: jest.fn(() => false),
 	get: jest.fn(() => 'development')
 }
 
-export default { Flashcore, logger, Env, env, color, getPluginOptions, Boot, portal, Mode, registerEnvPattern, Manifest }
+// Robo mock for lifecycle hooks
+export const Robo = {
+	status: {
+		set: jest.fn(),
+		remove: jest.fn(),
+		flash: jest.fn(),
+		getAll: jest.fn(() => new Map())
+	}
+}
+
+export default { Flashcore, logger, Env, env, color, getPluginOptions, getConfig, Boot, portal, Mode, registerEnvPattern, Manifest, Robo }
