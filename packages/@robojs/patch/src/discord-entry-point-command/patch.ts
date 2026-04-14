@@ -1,3 +1,4 @@
+import { Robo } from 'robo.js'
 import { patchLogger } from '../core/loggers.js'
 
 export const DiscordEntryPointCommand = { patch }
@@ -30,6 +31,7 @@ async function patch() {
 
 	if (entryCommand) {
 		patchLogger.debug('Entry command already exists. No need to fix.', entryCommand)
+		Robo.status.set('patch', 'Entry point ✓')
 		return
 	}
 
@@ -50,7 +52,7 @@ async function patch() {
 		throw 'Error creating entry command.'
 	}
 
-	patchLogger.ready('Successfully registered missing entry point command.')
+	Robo.status.set('patch', 'Entry point ✓')
 }
 
 interface RequestOptions {

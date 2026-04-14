@@ -43,7 +43,7 @@ Core components:
 - `src/discord-proxy/utils.ts` — URL patching helpers and Discord detection (46 lines)
 - `src/discord-proxy/vite-plugin.ts` — Vite plugin for automatic script injection (81 lines)
 - `src/discord-entry-point-command/patch.ts` — Ensures entry point command exists (80 lines)
-- `src/events/_start.ts` — Calls entry point patch automatically when env is present (10 lines)
+- `src/robo/start.ts` — Calls entry point patch automatically when env is present (10 lines)
 - `src/core/loggers.ts` — `patchLogger = logger.fork('patch')` (4 lines)
 
 Data flow (high level):
@@ -255,7 +255,7 @@ Source
 - `src/discord-proxy/vite-plugin.ts` — Vite integration
 - `src/discord-proxy/script.ts` — Standalone script for UMD bundle
 - `src/discord-entry-point-command/patch.ts` — Entry point command logic
-- `src/events/_start.ts` — Auto-run entry point patch on startup
+- `src/robo/start.ts` — Auto-run entry point patch on startup
 - `src/core/loggers.ts` — `patchLogger`
 
 Config / Build
