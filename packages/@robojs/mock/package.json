@@ -36,6 +36,10 @@
 			"types": "./.robo/build/types/index.d.ts"
 		}
 	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
 	"keywords": [
 		"discord",
 		"mock",

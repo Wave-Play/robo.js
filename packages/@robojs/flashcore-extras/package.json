@@ -14,6 +14,10 @@
     "./transactions": { "import": "./.robo/build/transactions/index.js", "types": "./.robo/build/transactions/index.d.ts" },
     "./wal": { "import": "./.robo/build/wal/index.js", "types": "./.robo/build/wal/index.d.ts" }
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "files": [".robo/", "LICENSE"],
   "scripts": {
     "build": "robo build plugin",
