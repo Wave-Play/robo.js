@@ -42,7 +42,6 @@
 	],
 	"files": [
 		".robo/",
-		"src/",
 		"client.d.ts",
 		"client.js",
 		"LICENSE",

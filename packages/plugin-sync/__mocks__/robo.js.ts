@@ -39,4 +39,34 @@ export const color = {
 	reset: (s: string) => s
 }
 
-export default { logger, color }
+const routeSummaries: Record<string, Array<Record<string, unknown>>> = {}
+const portalData: Record<string, Record<string, unknown>> = {}
+
+export const Manifest = {
+	routeSummaries: jest.fn(async (namespace: string, route: string) => routeSummaries[`${namespace}.${route}`] ?? []),
+	routeSummariesSync: jest.fn((namespace: string, route: string) => routeSummaries[`${namespace}.${route}`] ?? [])
+}
+
+export function setRouteSummaries(namespace: string, route: string, summaries: Array<Record<string, unknown>>): void {
+	routeSummaries[`${namespace}.${route}`] = summaries
+}
+
+export function clearRouteSummaries(): void {
+	Object.keys(routeSummaries).forEach((key) => delete routeSummaries[key])
+}
+
+export const portal = {
+	getHandler: jest.fn(),
+	ensureRoute: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+	getByType: jest.fn((type: string) => portalData[type] ?? {})
+}
+
+export function setPortalData(type: string, data: Record<string, unknown>): void {
+	portalData[type] = data
+}
+
+export function clearPortalData(): void {
+	Object.keys(portalData).forEach((key) => delete portalData[key])
+}
+
+export default { logger, color, Manifest, portal }

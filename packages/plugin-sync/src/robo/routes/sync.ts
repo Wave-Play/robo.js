@@ -5,9 +5,21 @@
  * Sync handlers provide server-side validation, transformation, and RPC
  * capabilities for @robojs/sync state management.
  */
+import { Manifest } from 'robo.js'
 import type { RouteConfig, ScannedEntry, ProcessedEntry, PortalAPI, HandlerRecord } from 'robo.js'
-import { registerHandler, registerMiddleware } from '../../server/handlers.js'
-import type { SyncHandlerModule, SyncMiddlewareModule, SyncHandlerRecord, SyncMiddlewareRecord } from '../../server/types.js'
+import {
+	registerHandler,
+	registerMiddleware,
+	unregisterHandlerByPortalKey,
+	unregisterMiddlewareByPortalKey
+} from '../../server/handlers.js'
+import { syncLogger } from '../../core/logger.js'
+import type {
+	SyncHandlerModule,
+	SyncHandlerRecord,
+	SyncMiddlewareModule,
+	SyncMiddlewareRecord
+} from '../../server/types.js'
 
 /**
  * Reserved export names that are not RPC methods.
@@ -61,9 +73,7 @@ export const NamespaceController = (portal: PortalAPI): SyncNamespaceController 
 	},
 
 	list(): string[] {
-		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
-		const syncData = portalApi.getByType('sync:sync')
-		return Object.keys(syncData)
+		return Manifest.routeSummariesSync('sync', 'sync').map((summary) => summary.key)
 	}
 })
 
@@ -71,62 +81,133 @@ export const NamespaceController = (portal: PortalAPI): SyncNamespaceController 
  * Initialize sync handlers from loaded manifest entries.
  * Called during plugin startup.
  */
-export async function initializeSyncHandlers(portal: PortalAPI): Promise<void> {
-	const portalApi = portal as unknown as {
-		getByType: (type: string) => Record<string, HandlerRecord>
-		importRecord: (record: HandlerRecord) => Promise<void>
+export async function initializeSyncHandlers(_portal: PortalAPI): Promise<void> {
+	const summaries = await Manifest.routeSummaries('sync', 'sync')
+
+	for (const summary of summaries) {
+		registerSummary(summary)
 	}
-	const syncData = portalApi.getByType('sync:sync')
+}
 
-	for (const [key, record] of Object.entries(syncData)) {
-		// Check if this is a middleware file (supports both 'middleware' and '_middleware' naming)
-		const isMiddleware = key.endsWith('/middleware') || key === 'middleware' ||
-		                     key.endsWith('/_middleware') || key === '_middleware'
+export async function refreshSyncHandlersFromPortal(portal: PortalAPI, keys: string[]): Promise<void> {
+	await portal.ensureRoute('sync', 'sync')
 
-		// Pre-import the handler module using portal (handles path resolution)
-		try {
-			await portalApi.importRecord(record)
-		} catch (error) {
-			// Log but continue - handler can be loaded lazily later if needed
-			console.warn(`Failed to pre-import sync handler: ${key}`, error)
+	const records = portal.getByType('sync:sync') as Record<string, HandlerRecord | HandlerRecord[]>
+	const uniqueKeys = [...new Set(keys)]
+
+	for (const key of uniqueKeys) {
+		const recordOrArray = records[key]
+
+		if (!recordOrArray) {
+			unregisterHandlerByPortalKey(key)
+			unregisterMiddlewareByPortalKey(key)
 			continue
 		}
 
-		if (isMiddleware) {
-			const middlewareRecord: SyncMiddlewareRecord = {
-				path: key,
-				exports: {
-					before: record.exports.named?.includes('before'),
-					after: record.exports.named?.includes('after')
-				},
-				// Store pre-loaded handler reference from portal
-				handler: record.handler as SyncMiddlewareModule
-			}
-			// Middleware path is the directory it applies to
-			const dirPath = key.replace(/\/(middleware|_middleware)$/, '').replace(/^(middleware|_middleware)$/, '')
-			registerMiddleware({ ...middlewareRecord, path: dirPath || '' })
-		} else {
-			// Regular handler - extract dynamic params from metadata if available
-			const metadata = record.metadata as Record<string, unknown> | undefined
-			const params = (metadata?.params as string[]) || undefined
+		const record = Array.isArray(recordOrArray) ? recordOrArray[0] : recordOrArray
+		let module = null
 
-			const handlerRecord: SyncHandlerRecord = {
-				key,
-				path: record.path,
-				exports: {
-					schema: record.exports.named?.includes('schema'),
-					validate: record.exports.named?.includes('validate'),
-					transform: record.exports.named?.includes('transform'),
-					onUpdate: record.exports.named?.includes('onUpdate'),
-					named: (record.exports.named || []).filter((e) => !RESERVED_EXPORTS.includes(e))
-				},
-				params,
-				// Store pre-loaded handler reference from portal
-				handler: record.handler as SyncHandlerModule
-			}
-			registerHandler(handlerRecord)
+		try {
+			module = (await portal.getHandler('sync', 'sync', key)) as SyncHandlerModule | SyncMiddlewareModule | null
+		} catch (error) {
+			syncLogger.debug(`[HMR] Failed to import sync route ${key}:`, error)
+			continue
 		}
+
+		registerLiveRecord(key, record, module)
 	}
+}
+
+function extractParamsFromKey(key: string): string[] | undefined {
+	const params = Array.from(key.matchAll(/\[([^[.\]/]+)\]/g), (match) => match[1])
+	return params.length > 0 ? params : undefined
+}
+
+function isMiddlewareKey(key: string): boolean {
+	return key.endsWith('/middleware') || key === 'middleware' ||
+		key.endsWith('/_middleware') || key === '_middleware'
+}
+
+function middlewareDirectory(key: string): string {
+	return key.replace(/\/(middleware|_middleware)$/, '').replace(/^(middleware|_middleware)$/, '') || ''
+}
+
+function registerSummary(summary: {
+	key: string
+	path: string
+	exports: { named?: string[] }
+}): void {
+	const key = summary.key
+
+	if (isMiddlewareKey(key)) {
+		const middlewareRecord: SyncMiddlewareRecord = {
+			path: middlewareDirectory(key),
+			exports: {
+				before: summary.exports.named?.includes('before'),
+				after: summary.exports.named?.includes('after')
+			},
+			portalKey: key
+		}
+		registerMiddleware(middlewareRecord)
+		return
+	}
+
+	const handlerRecord: SyncHandlerRecord = {
+		key,
+		path: summary.path,
+		exports: {
+			schema: summary.exports.named?.includes('schema'),
+			validate: summary.exports.named?.includes('validate'),
+			transform: summary.exports.named?.includes('transform'),
+			onUpdate: summary.exports.named?.includes('onUpdate'),
+			named: (summary.exports.named || []).filter((entry) => !RESERVED_EXPORTS.includes(entry))
+		},
+		params: extractParamsFromKey(key),
+		portalKey: key
+	}
+	registerHandler(handlerRecord)
+}
+
+function registerLiveRecord(
+	key: string,
+	record: HandlerRecord,
+	module: SyncHandlerModule | SyncMiddlewareModule | null
+): void {
+	if (isMiddlewareKey(key)) {
+		const middlewareModule = module as SyncMiddlewareModule | null
+		registerMiddleware({
+			path: middlewareDirectory(key),
+			exports: {
+				before: typeof middlewareModule?.before === 'function' || record.exports.named.includes('before'),
+				after: typeof middlewareModule?.after === 'function' || record.exports.named.includes('after')
+			},
+			handler: middlewareModule ?? undefined,
+			portalKey: key
+		})
+		return
+	}
+
+	const handlerModule = module as SyncHandlerModule | null
+	const namedExports = Object.keys(handlerModule ?? {}).filter((exportName) =>
+		!['default', 'config', 'module'].includes(exportName)
+	)
+
+	registerHandler({
+		key,
+		path: record.path,
+		exports: {
+			schema: 'schema' in (handlerModule ?? {}) || record.exports.named.includes('schema'),
+			validate: typeof handlerModule?.validate === 'function' || record.exports.named.includes('validate'),
+			transform: typeof handlerModule?.transform === 'function' || record.exports.named.includes('transform'),
+			onUpdate: typeof handlerModule?.onUpdate === 'function' || record.exports.named.includes('onUpdate'),
+			named: (namedExports.length > 0 ? namedExports : record.exports.named).filter(
+				(entry) => !RESERVED_EXPORTS.includes(entry)
+			)
+		},
+		params: extractParamsFromKey(key),
+		handler: handlerModule ?? undefined,
+		portalKey: key
+	})
 }
 
 /**

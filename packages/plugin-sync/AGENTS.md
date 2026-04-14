@@ -22,7 +22,7 @@ Core components:
 - `src/core/types.ts` — Message protocol types.
 - `src/core/utils.ts` — Key normalization to dot‑notation.
 - `src/core/logger.ts` — Shared logger fork (`sync`).
-- `src/events/_start.ts` — Plugin lifecycle; waits for `@robojs/server` then starts WS.
+- `src/robo/start.ts` — Plugin lifecycle; waits for `@robojs/server` then starts WS.
 - `src/index.ts` — Public exports.
 
 Data flow (high level):
@@ -147,7 +147,7 @@ const [count, setCount] = useSyncState(0, ['global', 'counter'])
 
 ## 8. Server Integration with `@robojs/server`
 
-- Required peer dependency; plugin waits for server readiness in `src/events/_start.ts`:
+- Required peer dependency; plugin waits for server readiness in `src/robo/start.ts`:
   - `import { ready } from '@robojs/server'`
   - `await ready()` then `SyncServer.start()`.
 - Node engine integration (`getServerEngine<NodeEngine>()`): registers the WebSocket upgrade handler at path `/sync`.
@@ -204,7 +204,7 @@ Optimization tips:
 
 ## 11. Hidden Gotchas & Edge Cases
 
-1) `@robojs/server` is required; without it, `_start.ts` can’t register the WS path.
+1) `@robojs/server` is required; without it, `start.ts` can't register the WS path.
 2) WebSocket path is hardcoded to `/sync` (both server and client).
 3) No reconnection logic; refresh to reconnect.
 4) Offline updates are queued only in memory; lost on refresh.
@@ -240,7 +240,7 @@ export const syncLogger = defaultLogger.fork('sync')
 - `src/core/types.ts` — protocol types.
 - `src/core/utils.ts` — `normalizeKey` helper.
 - `src/core/logger.ts` — logger fork (`sync`).
-- `src/events/_start.ts` — waits for server ready, then starts WS server.
+- `src/robo/start.ts` — waits for server ready, then starts WS server.
 
 ## 14. Comparison with Colyseus
 

@@ -102,7 +102,7 @@ afterEach(() => {
 
 describe('SyncServer', () => {
 	async function getServer() {
-		const { SyncServer } = await import('../.robo/build/core/server.js')
+		const { SyncServer } = await import('../src/core/server.js')
 		SyncServer.start()
 		return SyncServer
 	}
@@ -815,8 +815,8 @@ describe('SyncServer', () => {
 			const clients = zone.getClients()
 
 			expect(clients.length).toBe(2)
-			expect(clients.map((c) => c.id)).toContain(ws1ClientId)
-			expect(clients.map((c) => c.id)).toContain(ws2ClientId)
+			expect(clients.map((c: { id: string }) => c.id)).toContain(ws1ClientId)
+			expect(clients.map((c: { id: string }) => c.id)).toContain(ws2ClientId)
 		})
 
 		test('broadcast sends to all subscribers with __server__ fromClientId', async () => {

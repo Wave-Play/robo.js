@@ -1,6 +1,7 @@
 import { syncLogger } from '../core/logger.js'
 import { normalizeKey } from '../core/utils.js'
 import { validateSchema } from './schema.js'
+import { portal } from 'robo.js'
 import type {
 	SyncHandlerRecord,
 	SyncMiddlewareRecord,
@@ -21,9 +22,11 @@ import type { Client, ServerZone } from '../core/types.js'
 
 // Registered handlers by pattern (e.g., 'game.[roomId].position')
 const _handlers: Map<string, SyncHandlerRecord> = new Map()
+const _handlerPortalKeys: Map<string, string> = new Map()
 
 // Registered middleware by directory path
 const _middleware: Map<string, SyncMiddlewareRecord> = new Map()
+const _middlewarePortalKeys: Map<string, string> = new Map()
 
 // Compiled regex patterns for matching
 const _patterns: Map<string, { regex: RegExp; params: string[] }> = new Map()
@@ -34,6 +37,9 @@ const _patterns: Map<string, { regex: RegExp; params: string[] }> = new Map()
 export function registerHandler(record: SyncHandlerRecord): void {
 	const pattern = keyToPattern(record.key)
 	_handlers.set(pattern, record)
+	if (record.portalKey) {
+		_handlerPortalKeys.set(record.portalKey, pattern)
+	}
 
 	// Compile regex pattern for matching
 	const { regex, params } = compilePattern(pattern)
@@ -47,7 +53,31 @@ export function registerHandler(record: SyncHandlerRecord): void {
  */
 export function registerMiddleware(record: SyncMiddlewareRecord): void {
 	_middleware.set(record.path, record)
+	if (record.portalKey) {
+		_middlewarePortalKeys.set(record.portalKey, record.path)
+	}
 	syncLogger.debug(`Registered sync middleware: ${record.path}`)
+}
+
+export function unregisterHandlerByPortalKey(portalKey: string): void {
+	const pattern = _handlerPortalKeys.get(portalKey)
+	if (!pattern) {
+		return
+	}
+
+	_handlerPortalKeys.delete(portalKey)
+	_handlers.delete(pattern)
+	_patterns.delete(pattern)
+}
+
+export function unregisterMiddlewareByPortalKey(portalKey: string): void {
+	const middlewarePath = _middlewarePortalKeys.get(portalKey)
+	if (!middlewarePath) {
+		return
+	}
+
+	_middlewarePortalKeys.delete(portalKey)
+	_middleware.delete(middlewarePath)
 }
 
 /**
@@ -133,27 +163,45 @@ export function findMiddleware(cleanKey: string): SyncMiddlewareRecord[] {
 }
 
 /**
- * Load a handler module.
- * Handlers are pre-loaded during initialization via the portal.
+ * Load a handler module on demand through the portal.
  */
 async function loadHandler(record: SyncHandlerRecord): Promise<SyncHandlerModule | null> {
 	if (record.handler) return record.handler
 
-	// Handler should have been pre-loaded during initialization
-	syncLogger.warn(`Handler not pre-loaded: ${record.key}. This may indicate an initialization issue.`)
-	return null
+	try {
+		const portalKey = record.portalKey ?? record.key
+		if (!portalKey) {
+			return null
+		}
+
+		const handler = (await portal.getHandler('sync', 'sync', portalKey)) as unknown as SyncHandlerModule
+		record.handler = handler
+		return handler
+	} catch (error) {
+		syncLogger.warn(`Failed to lazy-load handler: ${record.key}`, error)
+		return null
+	}
 }
 
 /**
- * Load a middleware module.
- * Middleware is pre-loaded during initialization via the portal.
+ * Load a middleware module on demand through the portal.
  */
 async function loadMiddleware(record: SyncMiddlewareRecord): Promise<SyncMiddlewareModule | null> {
 	if (record.handler) return record.handler
 
-	// Middleware should have been pre-loaded during initialization
-	syncLogger.warn(`Middleware not pre-loaded: ${record.path}. This may indicate an initialization issue.`)
-	return null
+	try {
+		const portalKey = record.portalKey ?? record.path
+		if (!portalKey) {
+			return null
+		}
+
+		const handler = (await portal.getHandler('sync', 'sync', portalKey)) as unknown as SyncMiddlewareModule
+		record.handler = handler
+		return handler
+	} catch (error) {
+		syncLogger.warn(`Failed to lazy-load middleware: ${record.path}`, error)
+		return null
+	}
 }
 
 // ============================================================================
@@ -431,6 +479,8 @@ export function clearHandlers(): void {
 	_handlers.clear()
 	_middleware.clear()
 	_patterns.clear()
+	_handlerPortalKeys.clear()
+	_middlewarePortalKeys.clear()
 }
 
 /**

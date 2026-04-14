@@ -170,6 +170,8 @@ export interface SyncHandlerRecord {
 	key: string
 	/** Path to the handler module */
 	path: string
+	/** Portal key for lazy runtime loading */
+	portalKey?: string
 	/** Named exports available */
 	exports: {
 		schema?: boolean
@@ -190,6 +192,8 @@ export interface SyncHandlerRecord {
 export interface SyncMiddlewareRecord {
 	/** Directory path this middleware applies to */
 	path: string
+	/** Original portal key used for lazy runtime loading */
+	portalKey?: string
 	/** Named exports available */
 	exports: {
 		before?: boolean

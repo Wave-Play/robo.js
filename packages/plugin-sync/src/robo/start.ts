@@ -1,6 +1,7 @@
 import { syncLogger } from '../core/logger.js'
 import { SyncServer } from '../core/server.js'
 import { initializeSyncHandlers } from './routes/sync.js'
+import { clearHandlers } from '../server/handlers.js'
 import { ready } from '@robojs/server'
 import { portal } from 'robo.js'
 
@@ -11,6 +12,7 @@ export default async () => {
 
 	// Initialize sync handlers from portal
 	try {
+		clearHandlers()
 		await initializeSyncHandlers(portal)
 		syncLogger.debug('Sync handlers initialized')
 	} catch (error) {
