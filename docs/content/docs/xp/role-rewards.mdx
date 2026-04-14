@@ -11,6 +11,7 @@ Configure level-to-role mappings via `/xp config` or the API. When a user's leve
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { config } from '@robojs/xp'
 
@@ -23,8 +24,10 @@ await config.set(guildId, {
 	]
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { config } from '@robojs/xp'
 
@@ -37,6 +40,7 @@ await config.set(guildId, {
 	]
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -48,14 +52,18 @@ Users keep all role rewards from previous levels. A level 25 user has the level 
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 await config.set(guildId, { rewardsMode: 'stack' })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 await config.set(guildId, { rewardsMode: 'stack' })
 ```
+
 </Tab>
 </Tabs>
 
@@ -65,14 +73,18 @@ Users only keep the highest qualifying role. A level 25 user has only the level 
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 await config.set(guildId, { rewardsMode: 'replace' })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 await config.set(guildId, { rewardsMode: 'replace' })
 ```
+
 </Tab>
 </Tabs>
 
@@ -84,14 +96,18 @@ By default, users keep their role rewards even if they lose levels (e.g., from `
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 await config.set(guildId, { removeRewardOnXpLoss: true })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 await config.set(guildId, { removeRewardOnXpLoss: true })
 ```
+
 </Tab>
 </Tabs>
 
@@ -119,6 +135,7 @@ Trigger reconciliation programmatically when needed (e.g., after changing reward
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { rewards, config, XP } from '@robojs/xp'
 
@@ -127,8 +144,10 @@ const userLevel = await XP.getLevel(guildId, userId)
 
 await rewards.reconcile(guildId, userId, userLevel, guildConfig)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { rewards, config, XP } from '@robojs/xp'
 
@@ -137,6 +156,7 @@ const userLevel = await XP.getLevel(guildId, userId)
 
 await rewards.reconcile(guildId, userId, userLevel, guildConfig)
 ```
+
 </Tab>
 </Tabs>
 
@@ -162,6 +182,7 @@ This prevents conflicts where multiple progression systems would compete over th
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { events } from '@robojs/xp'
 import { getClient } from '@robojs/discordjs'
@@ -178,8 +199,10 @@ events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
 	}
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { events } from '@robojs/xp'
 import { getClient } from '@robojs/discordjs'
@@ -196,6 +219,7 @@ events.onLevelUp(async ({ guildId, userId, newLevel, storeId }) => {
 	}
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -218,16 +242,20 @@ Check that `removeRewardOnXpLoss` is enabled:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 const guildConfig = await config.get(guildId)
 console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 const guildConfig = await config.get(guildId)
 console.log('Remove on loss:', guildConfig.removeRewardOnXpLoss) // false by default
 ```
+
 </Tab>
 </Tabs>
 

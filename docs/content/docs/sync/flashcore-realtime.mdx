@@ -13,6 +13,7 @@ This is a server-side feature. It runs in the Robo backend, not in the browser.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { Flashcore } from 'robo.js'
 import { realtime } from '@robojs/sync/flashcore'
@@ -21,8 +22,10 @@ await Flashcore.init({
 	plugins: [realtime()]
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { Flashcore } from 'robo.js'
 import { realtime } from '@robojs/sync/flashcore'
@@ -31,6 +34,7 @@ await Flashcore.init({
 	plugins: [realtime()]
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -40,6 +44,7 @@ Pass a config object to customize limits and timeouts.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 realtime({
 	maxSubscriptionsPerModel: 500,
@@ -48,8 +53,10 @@ realtime({
 	maxRecordsPerSubscription: 5000
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 realtime({
 	maxSubscriptionsPerModel: 500,
@@ -58,6 +65,7 @@ realtime({
 	maxRecordsPerSubscription: 5000
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -74,6 +82,7 @@ Once initialized, Flashcore models gain a `.subscribe()` method.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 const unsubscribe = User.subscribe({
 	where: { status: 'active' },
@@ -88,8 +97,10 @@ const unsubscribe = User.subscribe({
 // Stop listening
 unsubscribe()
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 const unsubscribe = User.subscribe({
 	where: { status: 'active' },
@@ -104,6 +115,7 @@ const unsubscribe = User.subscribe({
 // Stop listening
 unsubscribe()
 ```
+
 </Tab>
 </Tabs>
 
@@ -122,6 +134,7 @@ The `onChange` callback receives an array of [RFC 6902](https://tools.ietf.org/h
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface JSONPatch {
 	op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test'
@@ -130,11 +143,14 @@ interface JSONPatch {
 	from?: string
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 
 ```
+
 </Tab>
 </Tabs>
 
@@ -142,6 +158,7 @@ Example:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 onChange: (user, patches) => {
 	for (const patch of patches) {
@@ -151,8 +168,10 @@ onChange: (user, patches) => {
 	}
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 onChange: (user, patches) => {
 	for (const patch of patches) {
@@ -162,6 +181,7 @@ onChange: (user, patches) => {
 	}
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -171,6 +191,7 @@ Exceeding configured limits throws a `SubscriptionLimitError`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { SubscriptionLimitError } from '@robojs/sync/flashcore'
 
@@ -183,8 +204,10 @@ try {
 	}
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { SubscriptionLimitError } from '@robojs/sync/flashcore'
 
@@ -197,6 +220,7 @@ try {
 	}
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -206,16 +230,20 @@ Query subscription counts from the Flashcore client:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 const totalSubs = Flashcore.getSubscriptionCount()
 const userSubs = Flashcore.getModelSubscriptionCount('User')
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 const totalSubs = Flashcore.getSubscriptionCount()
 const userSubs = Flashcore.getModelSubscriptionCount('User')
 ```
+
 </Tab>
 </Tabs>
 

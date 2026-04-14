@@ -13,6 +13,7 @@ Create an isolated test session:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { createTestSession } from '@robojs/mock/testing'
 
@@ -24,8 +25,10 @@ const session = await createTestSession(__filename, {
   }
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { createTestSession } from '@robojs/mock/testing'
 
@@ -37,6 +40,7 @@ const session = await createTestSession(__filename, {
   }
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -70,6 +74,7 @@ const session = await createTestSession(__filename, {
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface TestSession {
   id: string                    // Session ID
@@ -94,8 +99,10 @@ interface TestSession {
   destroy(): Promise<void>      // Cleanup
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // TestSession shape:
 // {
@@ -110,6 +117,7 @@ interface TestSession {
 //   destroy(): Promise<void>       // Cleanup
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -119,18 +127,22 @@ Delete a session:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { deleteSession } from '@robojs/mock/testing'
 
 await deleteSession(session.id)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { deleteSession } from '@robojs/mock/testing'
 
 await deleteSession(session.id)
 ```
+
 </Tab>
 </Tabs>
 
@@ -140,18 +152,22 @@ Reset session to initial state:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { resetSession } from '@robojs/mock/testing'
 
 await resetSession(session.id)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { resetSession } from '@robojs/mock/testing'
 
 await resetSession(session.id)
 ```
+
 </Tab>
 </Tabs>
 
@@ -165,6 +181,7 @@ Inject any Discord Gateway event:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { dispatchEvent } from '@robojs/mock/testing'
 
@@ -178,8 +195,10 @@ await dispatchEvent(sessionId, 'MESSAGE_CREATE', {
   }
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { dispatchEvent } from '@robojs/mock/testing'
 
@@ -193,6 +212,7 @@ await dispatchEvent(sessionId, 'MESSAGE_CREATE', {
   }
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -212,6 +232,7 @@ Trigger interactions (commands, buttons, etc.):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { dispatchInteraction } from '@robojs/mock/testing'
 
@@ -237,8 +258,10 @@ await dispatchInteraction(sessionId, {
   message: { id: messageId }
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { dispatchInteraction } from '@robojs/mock/testing'
 
@@ -264,6 +287,7 @@ await dispatchInteraction(sessionId, {
   message: { id: messageId }
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -286,6 +310,7 @@ Assert an action occurred:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { expectAction } from '@robojs/mock/testing'
 
@@ -300,8 +325,10 @@ await expectAction(sessionId, {
   timeout: 5000
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { expectAction } from '@robojs/mock/testing'
 
@@ -316,6 +343,7 @@ await expectAction(sessionId, {
   timeout: 5000
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -350,6 +378,7 @@ Assert an action did not occur:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { expectNoAction } from '@robojs/mock/testing'
 
@@ -359,8 +388,10 @@ await expectNoAction(sessionId, {
   waitMs: 2000
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { expectNoAction } from '@robojs/mock/testing'
 
@@ -370,6 +401,7 @@ await expectNoAction(sessionId, {
   waitMs: 2000
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -391,6 +423,7 @@ Wait for actions and return them:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { waitForAction } from '@robojs/mock/testing'
 
@@ -406,8 +439,10 @@ expect(data.response_data?.content).toBe('Success')
 // Shorthand: pass a string instead of options object
 const actions = await waitForAction(sessionId, 'message_sent')
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { waitForAction } from '@robojs/mock/testing'
 
@@ -422,6 +457,7 @@ expect(actions[0].data.response_data?.content).toBe('Success')
 // Shorthand: pass a string instead of options object
 const actions = await waitForAction(sessionId, 'message_sent')
 ```
+
 </Tab>
 </Tabs>
 
@@ -429,6 +465,7 @@ const actions = await waitForAction(sessionId, 'message_sent')
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 // Full options object
 interface WaitForActionOptions {
@@ -440,13 +477,16 @@ interface WaitForActionOptions {
 // Or pass a string (treated as { type: string })
 waitForAction(sessionId, 'message_sent')
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // Full options object: { type, timeout, filter }
 // Or pass a string (treated as { type: string })
 waitForAction(sessionId, 'message_sent')
 ```
+
 </Tab>
 </Tabs>
 
@@ -462,6 +502,7 @@ Wait for any action matching a filter:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { waitForAnyAction } from '@robojs/mock/testing'
 
@@ -477,8 +518,10 @@ const action = await waitForAnyAction(
   10000  // 10 second timeout
 )
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { waitForAnyAction } from '@robojs/mock/testing'
 
@@ -494,6 +537,7 @@ const action = await waitForAnyAction(
   10000  // 10 second timeout
 )
 ```
+
 </Tab>
 </Tabs>
 
@@ -513,6 +557,7 @@ Wait for a message:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { waitForMessage } from '@robojs/mock/testing'
 
@@ -525,8 +570,10 @@ const action = await waitForMessage(sessionId, {
 // All options are optional
 const action = await waitForMessage(sessionId)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { waitForMessage } from '@robojs/mock/testing'
 
@@ -539,6 +586,7 @@ const action = await waitForMessage(sessionId, {
 // All options are optional
 const action = await waitForMessage(sessionId)
 ```
+
 </Tab>
 </Tabs>
 
@@ -558,6 +606,7 @@ Wait for an interaction response:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { waitForInteractionResponse } from '@robojs/mock/testing'
 
@@ -566,8 +615,10 @@ const action = await waitForInteractionResponse(sessionId, {
   timeout: 5000
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { waitForInteractionResponse } from '@robojs/mock/testing'
 
@@ -576,6 +627,7 @@ const action = await waitForInteractionResponse(sessionId, {
   timeout: 5000
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -596,6 +648,7 @@ Get current session state:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { getSessionState } from '@robojs/mock/testing'
 
@@ -606,8 +659,10 @@ console.log(state.botUser)
 console.log(state.guilds)
 console.log(state.channels)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { getSessionState } from '@robojs/mock/testing'
 
@@ -618,6 +673,7 @@ console.log(state.botUser)
 console.log(state.guilds)
 console.log(state.channels)
 ```
+
 </Tab>
 </Tabs>
 
@@ -627,6 +683,7 @@ Get recorded actions:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { getSessionActions } from '@robojs/mock/testing'
 
@@ -641,8 +698,10 @@ const result = await getSessionActions(sessionId, {
   since: Date.now() - 60000  // Last minute
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { getSessionActions } from '@robojs/mock/testing'
 
@@ -657,6 +716,7 @@ const result = await getSessionActions(sessionId, {
   since: Date.now() - 60000  // Last minute
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -676,6 +736,7 @@ Get messages from a channel:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { getChannelMessages } from '@robojs/mock/testing'
 
@@ -685,8 +746,10 @@ const messages = await getChannelMessages(sessionId, channelId)
 // Get last 100 messages
 const messages = await getChannelMessages(sessionId, channelId, 100)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { getChannelMessages } from '@robojs/mock/testing'
 
@@ -696,6 +759,7 @@ const messages = await getChannelMessages(sessionId, channelId)
 // Get last 100 messages
 const messages = await getChannelMessages(sessionId, channelId, 100)
 ```
+
 </Tab>
 </Tabs>
 
@@ -715,6 +779,7 @@ Get all actions including pre-test:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { getHistoricalActions } from '@robojs/mock/testing'
 
@@ -731,8 +796,10 @@ const filtered = await getHistoricalActions(sessionId, {
   filter: (action) => (action.data as any)?.content?.includes('hello')
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { getHistoricalActions } from '@robojs/mock/testing'
 
@@ -749,6 +816,7 @@ const filtered = await getHistoricalActions(sessionId, {
   filter: (action) => action.data?.content?.includes('hello')
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -769,6 +837,7 @@ Start a bot connected to mock server:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { startMockRobo } from '@robojs/mock/testing'
 
@@ -783,8 +852,10 @@ const handle = await startMockRobo({
 
 await handle.stop()
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { startMockRobo } from '@robojs/mock/testing'
 
@@ -799,6 +870,7 @@ const handle = await startMockRobo({
 
 await handle.stop()
 ```
+
 </Tab>
 </Tabs>
 
@@ -806,6 +878,7 @@ await handle.stop()
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface StartMockRoboOptions {
   name?: string                                      // Bot name
@@ -818,8 +891,10 @@ interface StartMockRoboOptions {
   hmr?: boolean                                      // Hot module replacement
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // StartMockRoboOptions shape:
 // {
@@ -833,6 +908,7 @@ interface StartMockRoboOptions {
 //   hmr: boolean           // Hot module replacement
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -853,6 +929,7 @@ interface StartMockRoboOptions {
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface MockRoboHandle {
   client: unknown              // Discord.js client (null when hmr: true)
@@ -883,8 +960,10 @@ interface MockRoboHandle {
   waitForFullRestart?: (timeout?: number, fromCount?: number) => Promise<void>
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // MockRoboHandle shape:
 // {
@@ -904,6 +983,7 @@ interface MockRoboHandle {
 //   waitForFullRestart(timeout, fromCount)
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -913,6 +993,7 @@ Wait for mock server to be ready:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { waitForMockServer } from '@robojs/mock/testing'
 
@@ -927,8 +1008,10 @@ await waitForMockServer({
   interval: 1000  // Check every 1 second
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { waitForMockServer } from '@robojs/mock/testing'
 
@@ -943,6 +1026,7 @@ await waitForMockServer({
   interval: 1000  // Check every 1 second
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -962,6 +1046,7 @@ Manage test users:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { TestUsers } from '@robojs/mock/testing'
 
@@ -990,8 +1075,10 @@ await users.as(bob, async () => {
   // Actions here are from Bob's perspective
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { TestUsers } from '@robojs/mock/testing'
 
@@ -1020,6 +1107,7 @@ await users.as(bob, async () => {
   // Actions here are from Bob's perspective
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -1037,6 +1125,7 @@ Create session-bound helpers. Accepts either a `Session` instance or a `sessionI
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
 
@@ -1062,8 +1151,10 @@ await interactions.conversation(channelId, [
   { user: 'Alice', content: 'How are you?' }
 ])
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
 
@@ -1089,6 +1180,7 @@ await interactions.conversation(channelId, [
   { user: 'Alice', content: 'How are you?' }
 ])
 ```
+
 </Tab>
 </Tabs>
 
@@ -1110,18 +1202,22 @@ Wait for specified duration:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { sleep } from '@robojs/mock/testing'
 
 await sleep(1000)  // Wait 1 second
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { sleep } from '@robojs/mock/testing'
 
 await sleep(1000)  // Wait 1 second
 ```
+
 </Tab>
 </Tabs>
 
@@ -1131,18 +1227,22 @@ Generate a Discord snowflake ID:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { generateSnowflake } from '@robojs/mock/testing'
 
 const id = generateSnowflake()  // '1234567890123456789'
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { generateSnowflake } from '@robojs/mock/testing'
 
 const id = generateSnowflake()  // '1234567890123456789'
 ```
+
 </Tab>
 </Tabs>
 
@@ -1152,18 +1252,22 @@ Deep equality comparison:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { deepEquals } from '@robojs/mock/testing'
 
 const equal = deepEquals(actual, expected)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { deepEquals } from '@robojs/mock/testing'
 
 const equal = deepEquals(actual, expected)
 ```
+
 </Tab>
 </Tabs>
 
@@ -1173,18 +1277,22 @@ Generate diff between values:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { generateDiff } from '@robojs/mock/testing'
 
 const diff = generateDiff(expected, actual)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { generateDiff } from '@robojs/mock/testing'
 
 const diff = generateDiff(expected, actual)
 ```
+
 </Tab>
 </Tabs>
 
@@ -1194,18 +1302,22 @@ Clear all recorded actions for a session:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { clearSessionActions } from '@robojs/mock/testing'
 
 await clearSessionActions(sessionId)
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { clearSessionActions } from '@robojs/mock/testing'
 
 await clearSessionActions(sessionId)
 ```
+
 </Tab>
 </Tabs>
 
@@ -1217,6 +1329,7 @@ Make direct REST API calls to the mock server:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { mockRestAPI } from '@robojs/mock/testing'
 
@@ -1229,8 +1342,10 @@ const message = await mockRestAPI(token, `/channels/${channelId}/messages`, {
   body: { content: 'Hello from REST!' }
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { mockRestAPI } from '@robojs/mock/testing'
 
@@ -1243,6 +1358,7 @@ const message = await mockRestAPI(token, `/channels/${channelId}/messages`, {
   body: { content: 'Hello from REST!' }
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -1254,6 +1370,7 @@ Make direct calls to the mock server's control API:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { controlAPI } from '@robojs/mock/testing'
 
@@ -1269,8 +1386,10 @@ const newSession = await controlAPI('/sessions', {
 // Delete a session
 await controlAPI(`/sessions/${sessionId}`, { method: 'DELETE' })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { controlAPI } from '@robojs/mock/testing'
 
@@ -1286,6 +1405,7 @@ const newSession = await controlAPI('/sessions', {
 // Delete a session
 await controlAPI(`/sessions/${sessionId}`, { method: 'DELETE' })
 ```
+
 </Tab>
 </Tabs>
 
@@ -1309,6 +1429,7 @@ Configure the mock server connection:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { configureMock } from '@robojs/mock/testing'
 
@@ -1317,8 +1438,10 @@ configureMock({
   defaultTimeout: 10000
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { configureMock } from '@robojs/mock/testing'
 
@@ -1327,6 +1450,7 @@ configureMock({
   defaultTimeout: 10000
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -1336,20 +1460,24 @@ Get current mock configuration:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { getMockConfig } from '@robojs/mock/testing'
 
 const config = getMockConfig()
 // { baseUrl, controlUrl, restUrl, gatewayUrl, defaultTimeout }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { getMockConfig } from '@robojs/mock/testing'
 
 const config = getMockConfig()
 // { baseUrl, controlUrl, restUrl, gatewayUrl, defaultTimeout }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1357,6 +1485,7 @@ const config = getMockConfig()
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface MockConfig {
   baseUrl: string        // Base URL for the mock server
@@ -1366,8 +1495,10 @@ interface MockConfig {
   defaultTimeout: number // Default timeout for operations (ms)
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // MockConfig shape:
 // {
@@ -1378,6 +1509,7 @@ interface MockConfig {
 //   defaultTimeout: number  // Default timeout for operations (ms)
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1387,18 +1519,22 @@ Reset configuration to defaults:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { resetMockConfig } from '@robojs/mock/testing'
 
 resetMockConfig()
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { resetMockConfig } from '@robojs/mock/testing'
 
 resetMockConfig()
 ```
+
 </Tab>
 </Tabs>
 
@@ -1408,6 +1544,7 @@ Structure of recorded actions:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface RecordedAction {
   id: string               // Unique ID
@@ -1417,8 +1554,10 @@ interface RecordedAction {
   sequence?: number        // Optional sequence number
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // RecordedAction shape:
 // {
@@ -1429,6 +1568,7 @@ interface RecordedAction {
 //   sequence: number          // Optional sequence number
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1625,6 +1765,7 @@ Record an assertion result to the test registry for UI persistence:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { recordAssertion } from '@robojs/mock/testing'
 
@@ -1636,8 +1777,10 @@ recordAssertion(sessionId, {
   diff: undefined
 })
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { recordAssertion } from '@robojs/mock/testing'
 
@@ -1649,6 +1792,7 @@ recordAssertion(sessionId, {
   diff: undefined
 })
 ```
+
 </Tab>
 </Tabs>
 
@@ -1667,6 +1811,7 @@ Lower-level session creation without test file tracking:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { createSession } from '@robojs/mock/testing'
 
@@ -1681,8 +1826,10 @@ const session = await createSession({
 console.log(session.id)    // Session ID
 console.log(session.token) // Bot token
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { createSession } from '@robojs/mock/testing'
 
@@ -1697,6 +1844,7 @@ const session = await createSession({
 console.log(session.id)    // Session ID
 console.log(session.token) // Bot token
 ```
+
 </Tab>
 </Tabs>
 
@@ -1716,6 +1864,7 @@ The default `MockConfig` constant used as a fallback when no explicit configurat
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { DEFAULT_MOCK_CONFIG } from '@robojs/mock/testing'
 
@@ -1728,8 +1877,10 @@ console.log(DEFAULT_MOCK_CONFIG)
 //   defaultTimeout: 5000
 // }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { DEFAULT_MOCK_CONFIG } from '@robojs/mock/testing'
 
@@ -1742,6 +1893,7 @@ console.log(DEFAULT_MOCK_CONFIG)
 //   defaultTimeout: 5000
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1757,6 +1909,7 @@ Options for `startMockRobo`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface StartMockRoboOptions {
   name?: string               // Session name
@@ -1769,8 +1922,10 @@ interface StartMockRoboOptions {
   hmr?: boolean               // Enable HMR mode (spawns child process)
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // StartMockRoboOptions shape:
 // {
@@ -1784,6 +1939,7 @@ interface StartMockRoboOptions {
 //   hmr: boolean                // Enable HMR mode (spawns child process)
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1793,14 +1949,17 @@ Object returned by `createTestUtils`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface TestUtils {
   users: TestUsers             // User management utilities
   interactions: TestInteractions  // Interaction simulation utilities
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // TestUtils shape:
 // {
@@ -1808,6 +1967,7 @@ interface TestUtils {
 //   interactions: TestInteractions // Interaction simulation utilities
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1817,6 +1977,7 @@ Message returned from `getChannelMessages`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface MockMessage {
   id: string
@@ -1829,8 +1990,10 @@ interface MockMessage {
   [key: string]: unknown       // Additional fields vary by message type
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // MockMessage shape:
 // {
@@ -1840,6 +2003,7 @@ interface MockMessage {
 //   ...additionalFields         // Additional fields vary by message type
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1849,6 +2013,7 @@ Result of a single assertion, used for UI persistence:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 interface AssertionResult {
   description: string          // Human-readable description
@@ -1858,8 +2023,10 @@ interface AssertionResult {
   diff?: string                // Human-readable diff for UI display
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // AssertionResult shape:
 // {
@@ -1870,6 +2037,7 @@ interface AssertionResult {
 //   diff: string          // Human-readable diff for UI display
 // }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1900,6 +2068,7 @@ Launch an activity in the current session:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 // Via Stage WS
 {
@@ -1912,8 +2081,10 @@ Launch an activity in the current session:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // Via Stage WS
 {
@@ -1926,6 +2097,7 @@ Launch an activity in the current session:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1937,18 +2109,22 @@ Close the running activity for the current session:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'close_activity'
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'close_activity'
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1960,6 +2136,7 @@ Forward an RPC message to or from the activity:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_rpc',
@@ -1970,8 +2147,10 @@ Forward an RPC message to or from the activity:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_rpc',
@@ -1982,6 +2161,7 @@ Forward an RPC message to or from the activity:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -1991,6 +2171,7 @@ Change the authentication simulation mode:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_set_auth_settings',
@@ -1999,8 +2180,10 @@ Change the authentication simulation mode:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_set_auth_settings',
@@ -2009,6 +2192,7 @@ Change the authentication simulation mode:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -2018,6 +2202,7 @@ Update platform state to trigger SDK events:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_set_platform_state',
@@ -2029,8 +2214,10 @@ Update platform state to trigger SDK events:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_set_platform_state',
@@ -2042,6 +2229,7 @@ Update platform state to trigger SDK events:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -2053,6 +2241,7 @@ Update in-app purchase state:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_set_iap_state',
@@ -2062,8 +2251,10 @@ Update in-app purchase state:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_set_iap_state',
@@ -2073,6 +2264,7 @@ Update in-app purchase state:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -2082,6 +2274,7 @@ Update URL mapping rules:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_set_url_mappings',
@@ -2092,8 +2285,10 @@ Update URL mapping rules:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_set_url_mappings',
@@ -2104,6 +2299,7 @@ Update URL mapping rules:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -2113,6 +2309,7 @@ Switch Content Security Policy mode:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_set_csp_mode',
@@ -2121,8 +2318,10 @@ Switch Content Security Policy mode:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_set_csp_mode',
@@ -2131,6 +2330,7 @@ Switch Content Security Policy mode:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -2140,6 +2340,7 @@ Manually emit an SDK event to the activity:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 {
   command: 'activity_emit_event',
@@ -2149,8 +2350,10 @@ Manually emit an SDK event to the activity:
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 {
   command: 'activity_emit_event',
@@ -2160,6 +2363,7 @@ Manually emit an SDK event to the activity:
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -2185,6 +2389,7 @@ Most test files only need the `testing` export:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import {
   createTestSession,
@@ -2193,8 +2398,10 @@ import {
   waitForAction
 } from '@robojs/mock/testing'
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import {
   createTestSession,
@@ -2203,6 +2410,7 @@ import {
   waitForAction
 } from '@robojs/mock/testing'
 ```
+
 </Tab>
 </Tabs>
 
@@ -2210,17 +2418,21 @@ For custom integrations or advanced scenarios, import from the core or session p
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 import { sessionManager, createMockGuild } from '@robojs/mock'
 import { MockServerState } from '@robojs/mock/session'
 import type { ActionType, ScenarioDefinition } from '@robojs/mock/types'
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 import { sessionManager, createMockGuild } from '@robojs/mock'
 import { MockServerState } from '@robojs/mock/session'
 ```
+
 </Tab>
 </Tabs>
 

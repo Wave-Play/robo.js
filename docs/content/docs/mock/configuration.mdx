@@ -11,6 +11,7 @@ Create your mock plugin config file:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 export default {
   // Auto-open Stage UI in browser when starting mock mode
@@ -41,8 +42,10 @@ export default {
   dataDirectory: 'mock'
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 export default {
   // Auto-open Stage UI in browser when starting mock mode
@@ -73,6 +76,7 @@ export default {
   dataDirectory: 'mock'
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -101,6 +105,7 @@ Configure session defaults for testing:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 defaultSessionConfig: {
   botUser: {
@@ -111,8 +116,10 @@ defaultSessionConfig: {
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 defaultSessionConfig: {
   botUser: {
@@ -123,6 +130,7 @@ defaultSessionConfig: {
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -130,6 +138,7 @@ defaultSessionConfig: {
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 defaultSessionConfig: {
   guilds: [{
@@ -143,8 +152,10 @@ defaultSessionConfig: {
   }]
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 defaultSessionConfig: {
   guilds: [{
@@ -158,6 +169,7 @@ defaultSessionConfig: {
   }]
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -165,6 +177,7 @@ defaultSessionConfig: {
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 defaultSessionConfig: {
   users: [
@@ -173,8 +186,10 @@ defaultSessionConfig: {
   ]
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 defaultSessionConfig: {
   users: [
@@ -183,6 +198,7 @@ defaultSessionConfig: {
   ]
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -192,6 +208,7 @@ Control which intents (event categories your bot subscribes to) are enforced:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 import { GatewayIntentBits } from 'discord-api-types/v10'
 
@@ -207,8 +224,10 @@ defaultSessionConfig: {
   )
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 import { GatewayIntentBits } from 'discord-api-types/v10'
 
@@ -224,6 +243,7 @@ defaultSessionConfig: {
   )
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -237,18 +257,22 @@ Control how strictly permissions are checked:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 defaultSessionConfig: {
   permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 defaultSessionConfig: {
   permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -296,6 +320,7 @@ Mock Server integrates with @robojs/server. Configure server options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/server.ts"
 export default {
   cors: true,
@@ -305,8 +330,10 @@ export default {
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/server.mjs"
 export default {
   cors: true,
@@ -316,6 +343,7 @@ export default {
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -333,18 +361,22 @@ Mock Server routes are prefixed by default:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/server.ts"
 pluginPrefixes: {
   '@robojs/mock': '/test'  // Stage at /test/stage/
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/server.mjs"
 pluginPrefixes: {
   '@robojs/mock': '/test'  // Stage at /test/stage/
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -352,6 +384,7 @@ pluginPrefixes: {
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/server.ts"
 pluginPrefixes: {
   '@robojs/mock': {
@@ -360,8 +393,10 @@ pluginPrefixes: {
   }
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/server.mjs"
 pluginPrefixes: {
   '@robojs/mock': {
@@ -370,6 +405,7 @@ pluginPrefixes: {
   }
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -435,18 +471,22 @@ The mock server generates an application ID automatically for each session. If y
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts title="config/plugins/robojs/mock.ts"
 defaultSessionConfig: {
   applicationId: '1234567890'
 }
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js title="config/plugins/robojs/mock.mjs"
 defaultSessionConfig: {
   applicationId: '1234567890'
 }
 ```
+
 </Tab>
 </Tabs>
 
@@ -456,18 +496,22 @@ Mock Server detects infinite loops when bots trigger themselves:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 // Defaults (not configurable via config file)
 loopThreshold: 10,      // Events per second
 loopCooldown: 5000      // Milliseconds
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 // Defaults (not configurable via config file)
 loopThreshold: 10,      // Events per second
 loopCooldown: 5000      // Milliseconds
 ```
+
 </Tab>
 </Tabs>
 
@@ -477,14 +521,18 @@ To disable for a specific session (via code):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
 <Tab value="TypeScript">
+
 ```ts
 session.loopProtectionEnabled = false
 ```
+
 </Tab>
 <Tab value="JavaScript">
+
 ```js
 session.loopProtectionEnabled = false
 ```
+
 </Tab>
 </Tabs>
 
