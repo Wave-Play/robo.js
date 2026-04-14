@@ -9,7 +9,7 @@
 - Integrates with the broader Robo ecosystem (Flashcore, portal commands, Sage deferral, @robojs/server).
 
 ## Lifecycle & Boot
-- Entry: `src/events/_start.ts` captures plugin options (`instructions`, `commands`, `restrict`, `whitelist`, `insight`, `engine`, `voice`).
+- Entry: `src/robo/start.ts` captures plugin options (`instructions`, `commands`, `restrict`, `whitelist`, `insight`, `engine`, `voice`).
 - If `engine` is omitted and `OPENAI_API_KEY` exists, it lazily `import()`s `OpenAiEngine` at runtime instead of bundling it eagerly.
 - Insights default to `true`; they wire the `/documents` vector store sync.
 - On successful `engine.init()` the plugin calls `setEngineReady()` and logs “AI is ready!”.
@@ -168,7 +168,7 @@
   - This prevents entire requests from failing due to transient MCP server issues while maintaining user awareness of tool unavailability.
 - **Engine support**: MCP is currently implemented in `OpenAiEngine` via `buildToolset()` and can be extended to custom engines by implementing the optional `getMCPTools()` method from `BaseEngine`.
 - **Limitations**: MCP tools are only available in 'worker' context (standard chat), not in 'realtime' (voice) or 'chat' (legacy) contexts, matching the pattern of web_search.
-- **Integration points**: Reference `_start.ts` for plugin options loading, `base.ts` for type definitions (`MCPTool` interface), and `openai/engine.ts` for tool injection logic and error handling (`createResponseWithMcpHandling()`).
+- **Integration points**: Reference `start.ts` for plugin options loading, `base.ts` for type definitions (`MCPTool` interface), and `openai/engine.ts` for tool injection logic and error handling (`createResponseWithMcpHandling()`).
 
 ## Token Usage & Limits
 - **Token Ledger Subsystem** (`core/token-ledger.ts`) provides comprehensive usage tracking:

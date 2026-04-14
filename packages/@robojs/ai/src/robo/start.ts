@@ -8,7 +8,7 @@ import { voiceManager } from '@/core/voice/index.js'
 import { tokenLedger, type TokenLimitConfig, type TokenLedgerHooks } from '../core/token-ledger.js'
 import type { VoiceConfigPatch } from '../core/voice/config.js'
 import type { BaseEngine, Hook, HookEvent, MCPTool } from '@/engines/base.js'
-import { StartContext } from 'robo.js'
+import { Robo, StartContext } from 'robo.js'
 
 /** Voice configuration with optional per-guild overrides and instructions. */
 interface VoicePluginVoiceOptions extends VoiceConfigPatch {
@@ -156,7 +156,7 @@ export default async (context: StartContext<PluginOptions>) => {
 		// Initialize engine and mark as ready
 		await options.engine.init()
 		setEngineReady()
-		logger.ready('AI is ready!')
+		Robo.status.set('ai', 'AI ready')
 	} catch (error) {
 		logger.error('Failed to initialize AI engine', error)
 	}

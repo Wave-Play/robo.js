@@ -1,6 +1,7 @@
 import { AI, TokenLimitError } from '@robojs/ai'
 import { AttachmentBuilder, CommandInteraction } from 'discord.js'
-import { createCommandConfig, type CommandOptions, type CommandResult, logger } from 'robo.js'
+import { createCommandConfig, type CommandOptions, type CommandResult } from '@robojs/discordjs'
+import { logger } from 'robo.js'
 
 /*
   AI Image Generation Command

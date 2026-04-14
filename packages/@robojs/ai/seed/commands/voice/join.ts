@@ -1,5 +1,5 @@
 import { ChannelType, ChatInputCommandInteraction } from 'discord.js'
-import { CommandOptions, createCommandConfig } from 'robo.js'
+import { CommandOptions, createCommandConfig } from '@robojs/discordjs'
 import { AI, TokenLimitError } from '@robojs/ai'
 
 /*
@@ -26,7 +26,7 @@ export const config = createCommandConfig({
 			channelTypes: [ChannelType.GuildVoice, ChannelType.GuildStageVoice]
 		}
 	]
-} as const)
+})
 
 /**
  * Starts a voice session in the specified channel using the AI's voice capabilities.
@@ -35,12 +35,17 @@ export const config = createCommandConfig({
  * Reply is ephemeral to avoid channel clutter.
  */
 export default async (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+	const channel = options.channel
+	if (!channel || typeof channel === 'string') {
+		return { content: 'Please specify a valid voice channel.', ephemeral: true }
+	}
+
 	// Catch TokenLimitError specifically to handle exceeded token usage limits.
 	try {
 		// Start a voice session for this guild/channel. deaf: false allows the bot to hear others.
 		await AI.startVoice({
 			guildId: interaction.guildId!,
-			channelId: options.channel.id,
+			channelId: channel.id,
 			deaf: false
 		})
 	} catch (error) {
@@ -51,5 +56,5 @@ export default async (interaction: ChatInputCommandInteraction, options: Command
 	}
 
 	// Success message is ephemeral to notify only the command user without pinging the channel.
-	return { content: `Joining ${options.channel.name}…`, ephemeral: true }
+	return { content: `Joining ${channel.name}…`, ephemeral: true }
 }

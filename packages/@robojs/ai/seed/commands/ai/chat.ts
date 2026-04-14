@@ -1,5 +1,5 @@
 import { AI, ChatMessage } from '@robojs/ai'
-import { CommandOptions, createCommandConfig } from 'robo.js'
+import { CommandOptions, createCommandConfig } from '@robojs/discordjs'
 import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
 
 /*

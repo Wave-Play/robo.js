@@ -1,6 +1,6 @@
 import { AI, tokenLedger } from '@robojs/ai'
 import { CommandInteraction, EmbedBuilder, PermissionFlagsBits } from 'discord.js'
-import { createCommandConfig, type CommandOptions, type CommandResult } from 'robo.js'
+import { createCommandConfig, type CommandOptions, type CommandResult } from '@robojs/discordjs'
 
 const WINDOW_CHOICES = [
 	{ name: 'Daily totals', value: 'day' },

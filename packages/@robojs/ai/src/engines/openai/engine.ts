@@ -616,7 +616,8 @@ export class OpenAiEngine extends BaseEngine {
 	public getInfo() {
 		return {
 			name: 'OpenAI',
-			version: packageJson.version
+			version: packageJson.version,
+			model: this._chatDefaults.model
 		}
 	}
 
