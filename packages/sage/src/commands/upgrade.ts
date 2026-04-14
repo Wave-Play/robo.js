@@ -310,7 +310,7 @@ async function showListOfPlugins(u_options: Array<Separator | Choice<string>>, h
 	const selectedPlugins = await checkbox(
 		{
 			message: 'Select plugins that you want to update:',
-			choices: u_options.filter((option) => option instanceof Separator === false && option.short !== 'cl'),
+			choices: u_options.filter((option): option is Choice<string> => !(option instanceof Separator) && option.short !== 'cl'),
 			loop: false
 		},
 		{
@@ -345,29 +345,28 @@ async function showChangelogList(
 			choices: u_options.filter((option) => {
 				if (option instanceof Separator) {
 					if (option.separator === CustomSeparator) {
-						return option
+						return true
 					}
 
 					if (pluginNames.includes(option.separator)) {
-						return {
-							...option,
-							separate: option.separator + ':'
-						}
+						return true
+					}
+
+					return false
+				}
+
+				if (option.value === 'abort' || option.value === 'update') {
+					return true
+				}
+
+				if (option.short === 'cl') {
+					const value = JSON.parse(option.value as string)
+					if (pluginNames.includes(value.name)) {
+						return true
 					}
 				}
 
-				if (option instanceof Separator === false) {
-					if (option.value === 'abort' || option.value === 'update') {
-						return option
-					}
-
-					if (option.short === 'cl') {
-						const value = JSON.parse(option.value as string)
-						if (pluginNames.includes(value.name)) {
-							return option
-						}
-					}
-				}
+				return false
 			}),
 			loop: false
 		},
@@ -463,4 +462,5 @@ function isValidPlugin(plugin: PluginToUpdate): plugin is PluginToUpdate {
 	if (plugin?.data !== undefined) {
 		return true
 	}
+	return false
 }

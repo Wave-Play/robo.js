@@ -10,7 +10,6 @@
 	"type": "module",
 	"files": [
 		"dist/",
-		"src/",
 		"LICENSE",
 		"README.md"
 	],
@@ -48,6 +47,7 @@
 	},
 	"dependencies": {
 		"@inquirer/prompts": "^4.3.2",
+		"@robojs/discordjs": "workspace:*",
 		"commander": "10.0.0",
 		"depcheck": "^1.4.7",
 		"discord.js": "14.22.1",

@@ -2,7 +2,8 @@ import { Command } from 'commander'
 import { writeFile } from 'node:fs/promises'
 import { logger } from '../core/logger.js'
 import { Manifest } from 'robo.js'
-import type { CommandOption, HandlerEntry } from 'robo.js'
+import type { HandlerEntry } from 'robo.js'
+import type { CommandOption } from '@robojs/discordjs'
 import path from 'node:path'
 
 const command = new Command('generate')
