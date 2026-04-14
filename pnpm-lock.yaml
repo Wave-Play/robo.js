@@ -1220,19 +1220,19 @@ importers:
   templates/discord-bots/mockbot-ts:
     dependencies:
       '@robojs/discordjs':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/discordjs
+        specifier: link:..\..\..\packages\@robojs\discordjs
         version: link:../../../packages/@robojs/discordjs
       '@robojs/mock':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/mock
+        specifier: link:..\..\..\packages\@robojs\mock
         version: link:../../../packages/@robojs/mock
       '@robojs/server':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api
+        specifier: link:..\..\..\packages\plugin-api
         version: link:../../../packages/plugin-api
       discord.js:
         specifier: ^14.25.1
         version: 14.25.1
       robo.js:
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/robo
+        specifier: link:..\..\..\packages\robo
         version: link:../../../packages/robo
     devDependencies:
       '@swc/core':
