@@ -57,6 +57,22 @@ Once running, open the Stage UI in your browser at `http://localhost:3000/mock/s
 - **Permission Checking** - Full Discord permission system emulation.
 - **DevTools Panel** - Built-in debugging tools for events, state, network, and performance.
 
+## Terminal Commands
+
+During `robo dev --mock`, use `/mock` commands in the interactive terminal:
+
+| Command | Description |
+|---------|-------------|
+| `/mock status` | Session dashboard with entity counts and features |
+| `/mock stage` | Open Stage UI in your browser |
+| `/mock actions` | List recorded bot actions |
+| `/mock reset` | Reset session state |
+| `/mock command` | Invoke a slash command |
+| `/mock sessions` | List all active sessions |
+| `/mock use` | Switch target session |
+
+See the [CLI Reference](https://robojs.dev/docs/mock/cli) for options and examples.
+
 ## Testing API
 
 Import testing utilities from `@robojs/mock/testing`:

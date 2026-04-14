@@ -8,7 +8,7 @@
 	"files": [
 		".robo/",
 		"public/",
-		"src/",
+		"src/testing/jest-reporter.cjs",
 		"LICENSE",
 		"README.md"
 	],
