@@ -1,6 +1,6 @@
 // @ts-expect-error - This is a generated file
 import type { Locale, LocaleKey, ParamsFor } from '../../generated/types'
-import type { CommandConfig, CommandOption } from 'robo.js'
+import type { CommandConfig, CommandOption } from '@robojs/discordjs'
 
 type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
 

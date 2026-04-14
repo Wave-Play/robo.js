@@ -11,16 +11,16 @@ import {
 	sanitizeDottedArgs
 } from './utils.js'
 import { join } from 'node:path'
-import { createCommandConfig as _createCommandConfig, getPluginOptions, State } from 'robo.js'
+import { createCommandConfig as _createCommandConfig } from '@robojs/discordjs'
+import { getPluginOptions, State } from 'robo.js'
 import type {
-	BaseFromLocale,
 	LocaleCommandConfig,
 	LocaleLike,
 	MaybeArgs,
 	PluginConfig,
 	ValidatedCommandConfig
 } from './types'
-import type { SmartCommandConfig } from 'robo.js'
+import type { CommandConfig, SmartCommandConfig } from '@robojs/discordjs'
 
 let _isLoaded = false
 
@@ -39,7 +39,7 @@ let _isLoaded = false
  * ```ts
  * import { createCommandConfig, t } from '@robojs/i18n'
  * import type { ChatInputCommandInteraction } from 'discord.js'
- * import type { CommandOptions } from 'robo.js'
+ * import type { CommandOptions } from '@robojs/discordjs'
  *
  * export const config = createCommandConfig({
  *   nameKey: 'commands:ping.name',
@@ -141,7 +141,7 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 	}
 
 	i18nLogger.debug('Creating localized command config:', { config })
-	return _createCommandConfig(config as unknown as SmartCommandConfig<BaseFromLocale<C>>)
+	return _createCommandConfig(config as unknown as SmartCommandConfig<CommandConfig>)
 }
 
 /**

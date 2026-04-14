@@ -16,7 +16,7 @@
   - `src/core/utils.ts` – Locale loading, path scanning, parameter flattening.
   - `src/core/types.ts` – Type definitions and helpers.
   - `src/core/loggers.ts` – Forked plugin logger.
-  - `src/events/_start.ts` – Lifecycle hook to load locales on startup.
+  - `src/robo/start.ts` – Lifecycle hook to load locales on startup.
   - `src/cli/index.ts` – `npx i18n` entry point.
 
 ---
@@ -250,7 +250,7 @@ packages/@robojs/i18n/
 │   │   ├── utils.ts
 │   │   ├── types.ts
 │   │   └── loggers.ts
-│   ├── events/_start.ts
+│   ├── robo/start.ts
 │   └── cli/index.ts
 ├── generated/types.d.ts
 ├── config/robo.ts

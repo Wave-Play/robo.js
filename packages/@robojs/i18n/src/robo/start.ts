@@ -1,7 +1,7 @@
-import { i18nLogger } from '~/core/loggers.js'
+import { Robo } from 'robo.js'
 import { loadLocales } from '~/core/utils.js'
 
 export default () => {
 	const time = loadLocales()
-	i18nLogger.ready(`Locales loaded in ${time}ms`)
+	Robo.status.set('i18n', `Locales loaded in ${time}ms`)
 }
