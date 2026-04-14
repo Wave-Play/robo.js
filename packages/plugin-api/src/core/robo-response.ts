@@ -7,7 +7,7 @@ export class RoboResponse extends Response {
 	}
 
 	public static json<JsonBody>(body: JsonBody, init?: ResponseInit): RoboResponse {
-		const response: Response = Response.json(body, init)
+		const response: Response = (Response as any).json(body, init)
 		return new RoboResponse(response.body, response)
 	}
 }

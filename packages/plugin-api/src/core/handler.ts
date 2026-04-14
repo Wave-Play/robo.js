@@ -149,7 +149,7 @@ export function createServerHandler(router: Router, vite?: ViteDevServer, onNotF
 
 				// Copy headers from the response to the raw response, taking care to merge set-cookie headers
 				const h = response.headers
-				const setCookies: string[] | undefined = typeof h.getSetCookie === 'function' ? h.getSetCookie() : undefined
+				const setCookies: string[] | undefined = typeof (h as any).getSetCookie === 'function' ? (h as any).getSetCookie() : undefined
 
 				if (setCookies && setCookies.length) {
 					appendHeader(this.raw, 'Set-Cookie', setCookies)
