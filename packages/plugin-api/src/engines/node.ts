@@ -4,7 +4,7 @@ import { getPluginRouteRegistry } from '../core/plugin-routes.js'
 import { Router } from '../core/router.js'
 import { BaseEngine } from '../engines/base.js'
 import http from 'node:http'
-import { color, composeColors } from 'robo.js'
+import { color, composeColors, Robo } from 'robo.js'
 import type { NotFoundHandler, RouteHandler, WebSocketHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from '../engines/base.js'
 import type { ViteDevServer } from 'vite'
@@ -66,6 +66,41 @@ export class NodeEngine extends BaseEngine {
 		this._router?.addRoute({ handler, path })
 	}
 
+	public unregisterRoute(path: string) {
+		if (!this._router) {
+			return
+		}
+
+		const hadRoute = this._router.hasRoute(path)
+		const removed = this._router.removeRoute(path)
+
+		if (hadRoute && !removed) {
+			throw new Error(`Failed to unregister route: ${path}`)
+		}
+	}
+
+	public replaceRoute(path: string, handler: RouteHandler) {
+		if (!this._router) {
+			return
+		}
+		if (!this._router.hasRoute(path)) {
+			throw new Error(`Cannot replace missing route: ${path}`)
+		}
+
+		this._router.addRoute({ handler, path })
+		if (!this._router.hasRoute(path)) {
+			throw new Error(`Failed to replace route: ${path}`)
+		}
+	}
+
+	public hasRoute(path: string): boolean {
+		return this._router?.hasRoute(path) ?? false
+	}
+
+	public supportsRouteMutation(): boolean {
+		return true
+	}
+
 	public registerWebsocket(path: string, handler: WebSocketHandler) {
 		logger.debug('Registering WebSocket handler for path:', path)
 		this._websocketHandlers[path] = handler
@@ -95,19 +130,37 @@ export class NodeEngine extends BaseEngine {
 			// Start server
 			this._isRunning = true
 			this._server.listen(port, hostname, () => {
-				logger.ready(`Server is live at ${composeColors(color.bold, color.blue)(`http://${hostname}:${port}`)}`)
+				Robo.status.set(
+					'server',
+					`Server is live at ${composeColors(color.bold, color.blue)(`http://${hostname}:${port}`)}`,
+					{ priority: 2 }
+				)
 				resolve()
 			})
 		})
 	}
 
+	private _stopPromise: Promise<void> | null = null
+
 	public async stop(): Promise<void> {
+		// Prevent multiple concurrent stop calls
+		if (this._stopPromise) {
+			return this._stopPromise
+		}
+
+		this._stopPromise = this._stopInternal()
+		return this._stopPromise
+	}
+
+	private async _stopInternal(): Promise<void> {
 		const serverPromise = new Promise<void>((resolve) => {
-			if (!this._server) {
+			if (!this._server || !this._isRunning) {
 				logger.debug(`Server isn't running. Nothing to stop here.`)
 				resolve()
 				return
 			}
+
+			this._isRunning = false
 
 			// Force close all connections to ensure clean shutdown
 			this._server.closeAllConnections()
@@ -117,7 +170,6 @@ export class NodeEngine extends BaseEngine {
 					logger.error(`Error stopping the server: ${err}`)
 				}
 
-				this._isRunning = false
 				logger.debug('Server has been stopped successfully.')
 				resolve()
 			})

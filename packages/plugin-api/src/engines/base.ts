@@ -40,6 +40,26 @@ export abstract class BaseEngine {
 	 */
 	public abstract registerRoute(path: string, handler: RouteHandler): void | Promise<void>
 
+	/**
+	 * Unregisters a route handler for the given path.
+	 */
+	public abstract unregisterRoute(path: string): void | Promise<void>
+
+	/**
+	 * Replaces an existing route handler atomically for the given path.
+	 */
+	public abstract replaceRoute(path: string, handler: RouteHandler): void | Promise<void>
+
+	/**
+	 * Returns whether the engine currently has a route registered for the path.
+	 */
+	public abstract hasRoute(path: string): boolean
+
+	/**
+	 * Returns whether the engine can mutate routes at runtime without restart.
+	 */
+	public abstract supportsRouteMutation(): boolean
+
 	public abstract registerWebsocket(path: string, handler: WebSocketHandler): void | Promise<void>
 
 	public abstract registerNotFound(handler: NotFoundHandler): void | Promise<void>

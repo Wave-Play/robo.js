@@ -4,7 +4,7 @@ import { RoboRequest, applyParams } from '../core/robo-request.js'
 import { BaseEngine } from './base.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'
-import { color, composeColors } from 'robo.js'
+import { color, composeColors, Robo } from 'robo.js'
 import type { NotFoundHandler, RoboReply, RouteHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from './base.js'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -171,6 +171,22 @@ export class FastifyEngine extends BaseEngine {
 		})
 	}
 
+	public unregisterRoute(_path: string): void {
+		logger.debug('Route mutation is not supported by the Fastify engine.')
+	}
+
+	public replaceRoute(_path: string, _handler: RouteHandler): void {
+		logger.debug('Route mutation is not supported by the Fastify engine.')
+	}
+
+	public hasRoute(_path: string): boolean {
+		return false
+	}
+
+	public supportsRouteMutation(): boolean {
+		return false
+	}
+
 	public registerWebsocket(): void {
 		logger.warn(`Websockets are not supported in Fastify engine yet.`)
 	}
@@ -197,7 +213,7 @@ export class FastifyEngine extends BaseEngine {
 				// Start server
 				this._isRunning = true
 				this._server.listen({ host: hostname, port }, () => {
-					logger.ready(`Fastify server is live at`, composeColors(color.bold, color.blue)(`http://${hostname ?? 'localhost'}:${port}`))
+					Robo.status.set('server', `Fastify server is live at ${composeColors(color.bold, color.blue)(`http://${hostname ?? 'localhost'}:${port}`)}`, { priority: 2 })
 					resolve()
 				})
 			}
@@ -205,18 +221,31 @@ export class FastifyEngine extends BaseEngine {
 		})
 	}
 
+	private _stopPromise: Promise<void> | null = null
+
 	public async stop(): Promise<void> {
+		// Prevent multiple concurrent stop calls
+		if (this._stopPromise) {
+			return this._stopPromise
+		}
+
+		this._stopPromise = this._stopInternal()
+		return this._stopPromise
+	}
+
+	private async _stopInternal(): Promise<void> {
 		const serverPromise = new Promise<void>((resolve) => {
-			if (!this._server) {
+			if (!this._server || !this._isRunning) {
 				logger.debug(`Fastify server isn't running. Nothing to stop here.`)
 				resolve()
 				return
 			}
 
+			this._isRunning = false
+
 			this._server
 				.close()
 				.then(() => {
-					this._isRunning = false
 					logger.debug('Fastify server has been stopped successfully.')
 					resolve()
 				})
