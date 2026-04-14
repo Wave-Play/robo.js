@@ -2,6 +2,7 @@
  * Route definition for HTTP API endpoints.
  * Directory inferred from filename: /src/api/
  */
+import { Manifest } from 'robo.js'
 import type { RouteConfig, ScannedEntry, ProcessedEntry, PortalAPI } from 'robo.js'
 import type { HandlerRecord } from 'robo.js'
 
@@ -157,9 +158,7 @@ export const NamespaceController = (portal: PortalAPI): ApiNamespaceController =
 	},
 
 	list(): string[] {
-		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
-		const apiData = portalApi.getByType('server:api')
-		return Object.keys(apiData)
+		return Manifest.routeSummariesSync('server', 'api').map((summary) => summary.key)
 	}
 })
 
