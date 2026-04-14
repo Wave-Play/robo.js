@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { LogDrain, Logger } from '../../src/core/logger.js'
+import type { LogDrain, LogMetadata, Logger } from '../../src/core/logger.js'
 
 /**
  * Creates a temporary directory for test log files.
@@ -27,17 +27,30 @@ export function readLogFile(filePath: string): string[] {
 /**
  * Parses a JSON log line.
  */
-export function parseJsonLogLine(line: string): { timestamp: string; level: string; message: string } {
+export function parseJsonLogLine(line: string): { timestamp: string; level: string; message: string; source?: string; sessionId?: string; pid?: number } {
 	return JSON.parse(line)
+}
+
+/**
+ * Creates a LogMetadata object for tests.
+ */
+export function createTestMeta(overrides?: Partial<LogMetadata>): LogMetadata {
+	return {
+		source: null,
+		timestamp: new Date(),
+		sessionId: null,
+		pid: process.pid,
+		...overrides
+	}
 }
 
 /**
  * Creates a mock drain that captures all log calls.
  */
-export function createMockDrain(): { drain: LogDrain; calls: Array<{ level: string; data: unknown[] }> } {
-	const calls: Array<{ level: string; data: unknown[] }> = []
-	const drain: LogDrain = async (_logger: Logger, level: string, ...data: unknown[]) => {
-		calls.push({ level, data })
+export function createMockDrain(): { drain: LogDrain; calls: Array<{ level: string; meta: LogMetadata; data: unknown[] }> } {
+	const calls: Array<{ level: string; meta: LogMetadata; data: unknown[] }> = []
+	const drain: LogDrain = async (_logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]) => {
+		calls.push({ level, meta, data })
 	}
 	return { drain, calls }
 }
@@ -47,11 +60,11 @@ export function createMockDrain(): { drain: LogDrain; calls: Array<{ level: stri
  */
 export function createDelayedMockDrain(
 	delayMs: number
-): { drain: LogDrain; calls: Array<{ level: string; data: unknown[] }> } {
-	const calls: Array<{ level: string; data: unknown[] }> = []
-	const drain: LogDrain = async (_logger: Logger, level: string, ...data: unknown[]) => {
+): { drain: LogDrain; calls: Array<{ level: string; meta: LogMetadata; data: unknown[] }> } {
+	const calls: Array<{ level: string; meta: LogMetadata; data: unknown[] }> = []
+	const drain: LogDrain = async (_logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]) => {
 		await new Promise((resolve) => setTimeout(resolve, delayMs))
-		calls.push({ level, data })
+		calls.push({ level, meta, data })
 	}
 	return { drain, calls }
 }

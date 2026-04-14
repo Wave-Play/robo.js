@@ -1,13 +1,25 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { appendFile, mkdir, stat } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { basename, dirname, extname, resolve } from 'node:path'
 import { ANSI_REGEX } from './logger.js'
-import type { Logger, LogDrain } from './logger.js'
+import type { Logger, LogDrain, LogMetadata } from './logger.js'
 import type { FileDrainOptions, TimestampFormat } from '../types/config.js'
 
 // Default values
 const DEFAULT_MAX_SIZE = 10 * 1024 * 1024 // 10MB
 const DEFAULT_MAX_FILES = 5
+const DEFAULT_MAX_SESSION_FILES = 10
+
+// Session state - set by Robo.start() via setFileDrainSessionId()
+let _currentSessionId: string | null = null
+
+/**
+ * Sets the current session ID for file drains.
+ * Called by Robo.start() before creating file drains.
+ */
+export function setFileDrainSessionId(id: string): void {
+	_currentSessionId = id
+}
 
 // Log level priority values (must match logger.ts)
 const LogLevelValues: Record<string, number> = {
@@ -214,14 +226,14 @@ interface FormatLogEntryResult {
 function formatLogEntry(
 	level: string,
 	data: unknown[],
+	meta: LogMetadata,
 	timestamp: TimestampFormat,
 	format: 'text' | 'json',
 	stripAnsi: boolean,
 	colorMap: boolean,
 	lineNumber: number
 ): FormatLogEntryResult {
-	const now = new Date()
-	const ts = formatTimestamp(now, timestamp)
+	const ts = formatTimestamp(meta.timestamp, timestamp)
 
 	// Build message from data
 	let message = data
@@ -259,19 +271,29 @@ function formatLogEntry(
 
 	let entry: string
 	if (format === 'json') {
-		entry =
-			JSON.stringify({
-				timestamp: ts || now.toISOString(),
-				level,
-				message
-			}) + '\n'
+		const jsonObj: Record<string, unknown> = {
+			timestamp: meta.timestamp.toISOString(),
+			level,
+			message
+		}
+		if (meta.source) {
+			jsonObj.source = meta.source
+		}
+		if (meta.sessionId) {
+			jsonObj.sessionId = meta.sessionId
+		}
+		jsonObj.pid = meta.pid
+		entry = JSON.stringify(jsonObj) + '\n'
 	} else {
-		// Plain text format
+		// Plain text format: [timestamp] [LEVEL] [source]? - message
 		const parts: string[] = []
 		if (ts) {
 			parts.push(`[${ts}]`)
 		}
 		parts.push(`[${level.toUpperCase()}]`)
+		if (meta.source) {
+			parts.push(`[${meta.source}]`)
+		}
 		parts.push('-')
 		parts.push(message)
 		entry = parts.join(' ') + '\n'
@@ -320,6 +342,98 @@ function rotateFile(filePath: string, maxFiles: number, hasColorMap: boolean = f
 }
 
 /**
+ * Rotates the current session log by archiving it with a timestamp-based name.
+ * Prunes old archives beyond the maxSessionFiles limit.
+ */
+export function rotateSession(filePath: string, maxSessionFiles: number, hasColorMap: boolean = false): void {
+	if (!existsSync(filePath)) {
+		return
+	}
+
+	// Use file mtime for the archive timestamp
+	let mtime: Date
+	try {
+		mtime = statSync(filePath).mtime
+	} catch {
+		mtime = new Date()
+	}
+
+	// Format timestamp for filename: replace colons with hyphens for filesystem safety
+	const ts = mtime.toISOString().replace(/:/g, '-').replace(/\.\d{3}Z$/, 'Z')
+	const ext = extname(filePath)
+	const base = filePath.slice(0, -ext.length)
+	const archivePath = `${base}.${ts}${ext}`
+
+	renameSync(filePath, archivePath)
+
+	// Also rename colormap if it exists
+	if (hasColorMap) {
+		const colorMapPath = `${filePath}.colormap`
+		if (existsSync(colorMapPath)) {
+			renameSync(colorMapPath, `${archivePath}.colormap`)
+		}
+	}
+
+	// Prune old archives
+	pruneOldArchives(filePath, maxSessionFiles, hasColorMap)
+}
+
+/**
+ * Prunes old archive files beyond the maxFiles limit.
+ * Archives use ISO timestamp names that sort lexicographically.
+ */
+function pruneOldArchives(filePath: string, maxFiles: number, hasColorMap: boolean): void {
+	const dir = dirname(filePath)
+	const ext = extname(filePath)
+	const baseName = basename(filePath, ext)
+
+	if (!existsSync(dir)) {
+		return
+	}
+
+	try {
+		// Match files like: development.2026-04-13T10-30-00Z.log
+		const archivePattern = new RegExp(`^${escapeRegex(baseName)}\\.\\d{4}-\\d{2}-\\d{2}T[\\w-]+${escapeRegex(ext)}$`)
+		const archives = readdirSync(dir)
+			.filter((f) => archivePattern.test(f))
+			.sort()
+			.reverse() // Newest first (ISO timestamps sort lexicographically)
+
+		// Delete archives beyond the limit
+		for (let i = maxFiles; i < archives.length; i++) {
+			const archivePath = resolve(dir, archives[i])
+			unlinkSync(archivePath)
+
+			// Also remove colormap
+			if (hasColorMap) {
+				const cmPath = `${archivePath}.colormap`
+				if (existsSync(cmPath)) {
+					unlinkSync(cmPath)
+				}
+			}
+		}
+	} catch {
+		// Best-effort cleanup
+	}
+}
+
+function escapeRegex(str: string): string {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Writes a session header line as the first entry in a new log file.
+ */
+export function writeSessionHeader(filePath: string, sessionId: string, pid: number): void {
+	const header = `--- session ${sessionId} started ${new Date().toISOString()} pid ${pid} ---\n`
+	const dir = dirname(filePath)
+	if (!existsSync(dir)) {
+		mkdirSync(dir, { recursive: true })
+	}
+	writeFileSync(filePath, header, { flag: 'a', encoding: 'utf8' })
+}
+
+/**
  * Creates a file-based log drain.
  *
  * This drain writes log entries to a file with support for:
@@ -358,7 +472,9 @@ export function createFileDrain(options: FileDrainOptions): LogDrain {
 		stripAnsi = true,
 		maxSize = DEFAULT_MAX_SIZE,
 		maxFiles = DEFAULT_MAX_FILES,
-		colorMap = false
+		colorMap = false,
+		sessionRotation = true,
+		maxSessionFiles = DEFAULT_MAX_SESSION_FILES
 	} = options
 
 	// colorMap only makes sense when stripAnsi is true
@@ -372,6 +488,18 @@ export function createFileDrain(options: FileDrainOptions): LogDrain {
 	const dir = dirname(absolutePath)
 	if (!existsSync(dir)) {
 		mkdirSync(dir, { recursive: true })
+	}
+
+	// Perform session rotation if enabled
+	if (sessionRotation !== false) {
+		rotateSession(absolutePath, maxSessionFiles, enableColorMap)
+	}
+
+	// Write session header using the shared session state
+	const sessionId = _currentSessionId
+	if (sessionId) {
+		const pid = typeof process !== 'undefined' ? process.pid : 0
+		writeSessionHeader(absolutePath, sessionId, pid)
 	}
 
 	// Track current file size for rotation decisions
@@ -403,7 +531,7 @@ export function createFileDrain(options: FileDrainOptions): LogDrain {
 	const pendingWrites: Promise<void>[] = []
 
 	// Create the drain function
-	const drain: LogDrain = async (logger: Logger, level: string, ...data: unknown[]): Promise<void> => {
+	const drain: LogDrain = async (logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]): Promise<void> => {
 		// Level filtering
 		if (minLevel) {
 			const levelValues = logger.getLevelValues()
@@ -419,6 +547,7 @@ export function createFileDrain(options: FileDrainOptions): LogDrain {
 		const { entry, colorMapEntries } = formatLogEntry(
 			level,
 			data,
+			meta,
 			timestamp,
 			format,
 			stripAnsi,

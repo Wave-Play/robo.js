@@ -19,7 +19,7 @@
 
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals'
 import { Logger, consoleDrain, logger } from '../../src/core/logger.js'
-import { createMockDrain, createDelayedMockDrain } from '../utils/logging-test-helpers.js'
+import { createMockDrain, createDelayedMockDrain, createTestMeta } from '../utils/logging-test-helpers.js'
 
 // ============================================================================
 // Test Helpers
@@ -135,9 +135,8 @@ describe('Logger constructor', () => {
 		await parent.flush()
 
 		expect(calls.length).toBe(1)
-		// Prefix should be in the data
-		const dataStr = calls[0].data.join(' ')
-		expect(dataStr).toContain('MyPrefix')
+		// Prefix should be in the meta source
+		expect(calls[0].meta.source).toContain('MyPrefix')
 	})
 
 	test('respects parent option (creates forked-like logger)', async () => {
@@ -149,8 +148,7 @@ describe('Logger constructor', () => {
 		await parent.flush()
 
 		expect(calls.length).toBe(1)
-		const dataStr = calls[0].data.join(' ')
-		expect(dataStr).toContain('Child')
+		expect(calls[0].meta.source).toContain('Child')
 	})
 
 	test('respects customLevels option', async () => {
@@ -416,7 +414,7 @@ describe('Log level filtering', () => {
 
 describe('Logger log methods', () => {
 	let testLogger: Logger
-	let calls: Array<{ level: string; data: unknown[] }>
+	let calls: Array<{ level: string; meta: unknown; data: unknown[] }>
 
 	beforeEach(() => {
 		const mock = createMockDrain()
@@ -649,8 +647,7 @@ describe('Logger.fork()', () => {
 		forked.info('message')
 		await parent.flush()
 
-		const dataStr = calls[0].data.join(' ')
-		expect(dataStr).toContain('myPrefix')
+		expect(calls[0].meta.source).toContain('myPrefix')
 	})
 
 	test('chained forks use intermediate parent prefix', async () => {
@@ -666,10 +663,9 @@ describe('Logger.fork()', () => {
 		forked2.info('deep message')
 		await parent.flush()
 
-		const dataStr = calls[0].data.join(' ')
 		// Only the first fork's prefix appears in final output due to delegation behavior
-		expect(dataStr).toContain('level1')
-		expect(dataStr).toContain('deep message')
+		expect(calls[0].meta.source).toContain('level1')
+		expect(calls[0].data).toContain('deep message')
 	})
 
 	test('forked logger uses parent drain', async () => {
@@ -911,7 +907,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Note: consoleDrain checks isBrowser() which checks window and document
 		// Since we've set them, it should use console methods
-		await consoleDrain(testLogger, 'info', 'browser log')
+		await consoleDrain(testLogger, 'info', createTestMeta(), 'browser log')
 
 		capture.restore()
 
@@ -923,7 +919,7 @@ describe('consoleDrain - Browser environment', () => {
 		const capture = captureConsoleCalls()
 		const testLogger = new Logger({ level: 'trace' })
 
-		await consoleDrain(testLogger, 'warn', 'browser warning')
+		await consoleDrain(testLogger, 'warn', createTestMeta(), 'browser warning')
 
 		capture.restore()
 
@@ -934,7 +930,7 @@ describe('consoleDrain - Browser environment', () => {
 		const capture = captureConsoleCalls()
 		const testLogger = new Logger({ level: 'trace' })
 
-		await consoleDrain(testLogger, 'error', 'browser error')
+		await consoleDrain(testLogger, 'error', createTestMeta(), 'browser error')
 
 		capture.restore()
 
@@ -946,7 +942,7 @@ describe('consoleDrain - Browser environment', () => {
 		const testLogger = new Logger({ level: 'trace' })
 		const obj = { key: 'value' }
 
-		await consoleDrain(testLogger, 'info', 'data:', obj)
+		await consoleDrain(testLogger, 'info', createTestMeta(), 'data:', obj)
 
 		capture.restore()
 
@@ -960,7 +956,7 @@ describe('consoleDrain - Browser environment', () => {
 		const capture = captureConsoleCalls()
 		const testLogger = new Logger({ level: 'trace' })
 
-		await consoleDrain(testLogger, 'info', 'plain text without colors')
+		await consoleDrain(testLogger, 'info', createTestMeta(), 'plain text without colors')
 
 		capture.restore()
 
@@ -973,7 +969,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Red ANSI code followed by reset
 		const ansiString = '\x1b[31mred text\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -994,7 +990,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Green foreground (code 32)
 		const ansiString = '\x1b[32mgreen\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1011,7 +1007,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Bold (code 1)
 		const ansiString = '\x1b[1mbold text\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1027,7 +1023,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Bold + cyan (codes 1 and 36)
 		const ansiString = '\x1b[1;36mbold cyan\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1046,7 +1042,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// String with % that should be escaped
 		const ansiString = '\x1b[31m100% complete\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1062,7 +1058,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Underline (code 4)
 		const ansiString = '\x1b[4munderlined\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1078,7 +1074,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Italic (code 3)
 		const ansiString = '\x1b[3mitalic\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1094,7 +1090,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Yellow background (code 43)
 		const ansiString = '\x1b[43mhighlighted\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1110,7 +1106,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Bright magenta (code 95)
 		const ansiString = '\x1b[95mbright magenta\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1126,7 +1122,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		const obj = { data: 123 }
 		const ansiString = '\x1b[32mprefix\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString, obj, 'suffix')
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString, obj, 'suffix')
 
 		capture.restore()
 
@@ -1144,7 +1140,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Dim (code 2)
 		const ansiString = '\x1b[2mdim text\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1161,7 +1157,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Strikethrough (code 9)
 		const ansiString = '\x1b[9mstrikethrough\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1179,7 +1175,7 @@ describe('consoleDrain - Browser environment', () => {
 
 		// Red then green then blue
 		const ansiString = '\x1b[31mred\x1b[32mgreen\x1b[34mblue\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1763,7 +1759,7 @@ describe('Browser ANSI - Additional styles', () => {
 		const testLogger = new Logger({ level: 'trace' })
 
 		const ansiString = '\x1b[7minverted\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1778,7 +1774,7 @@ describe('Browser ANSI - Additional styles', () => {
 		const testLogger = new Logger({ level: 'trace' })
 
 		const ansiString = '\x1b[8mhidden\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1794,7 +1790,7 @@ describe('Browser ANSI - Additional styles', () => {
 
 		// Bold then reset bold
 		const ansiString = '\x1b[1mbold\x1b[22mnot bold\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1809,7 +1805,7 @@ describe('Browser ANSI - Additional styles', () => {
 
 		// Underline then reset
 		const ansiString = '\x1b[4munderlined\x1b[24mnot underlined\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1822,7 +1818,7 @@ describe('Browser ANSI - Additional styles', () => {
 
 		// Red then default
 		const ansiString = '\x1b[31mred\x1b[39mdefault\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1838,15 +1834,15 @@ describe('Browser ANSI - Additional styles', () => {
 
 		// All 8 standard colors: 30-37
 		const ansiString = '\x1b[30mblack\x1b[31mred\x1b[32mgreen\x1b[33myellow\x1b[34mblue\x1b[35mmagenta\x1b[36mcyan\x1b[37mwhite\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
 		const args = capture.logs[0]
 		const formatStr = args[0] as string
-		// Should have 8 color sections
+		// Should have 8 color sections from the data, plus additional from the level label
 		const percentCCount = (formatStr.match(/%c/g) || []).length
-		expect(percentCCount).toBe(8)
+		expect(percentCCount).toBeGreaterThanOrEqual(8)
 	})
 
 	test('handles all bright foreground colors', async () => {
@@ -1856,14 +1852,14 @@ describe('Browser ANSI - Additional styles', () => {
 		// All 8 bright colors: 90-97
 		const ansiString =
 			'\x1b[90mgray\x1b[91mred\x1b[92mgreen\x1b[93myellow\x1b[94mblue\x1b[95mmagenta\x1b[96mcyan\x1b[97mwhite\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
 		const args = capture.logs[0]
 		const formatStr = args[0] as string
 		const percentCCount = (formatStr.match(/%c/g) || []).length
-		expect(percentCCount).toBe(8)
+		expect(percentCCount).toBeGreaterThanOrEqual(8)
 	})
 
 	test('handles dim with existing color', async () => {
@@ -1872,7 +1868,7 @@ describe('Browser ANSI - Additional styles', () => {
 
 		// Set red color first, then dim it
 		const ansiString = '\x1b[31m\x1b[2mdim red\x1b[0m'
-		await consoleDrain(testLogger, 'info', ansiString)
+		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()
 
@@ -1893,7 +1889,7 @@ describe('Browser ANSI - Additional styles', () => {
 
 		const obj1 = { a: 1 }
 		const obj2 = { b: 2 }
-		await consoleDrain(testLogger, 'info', obj1, obj2)
+		await consoleDrain(testLogger, 'info', createTestMeta(), obj1, obj2)
 
 		capture.restore()
 
@@ -1980,6 +1976,49 @@ describe('Node.js output includes ANSI colors', () => {
 // Exports Test
 // ============================================================================
 
+// ============================================================================
+// Session ID Tests
+// ============================================================================
+
+describe('Logger.setSessionId()', () => {
+	afterEach(() => {
+		Logger._sessionId = null
+	})
+
+	test('sets session ID on the Logger class', () => {
+		Logger.setSessionId('test-session-123')
+		expect(Logger._sessionId).toBe('test-session-123')
+	})
+
+	test('session ID is included in log metadata', async () => {
+		Logger.setSessionId('session-abc')
+		const { drain, calls } = createMockDrain()
+		const testLogger = new Logger({ level: 'trace', drain })
+
+		testLogger.info('with session')
+		await testLogger.flush()
+
+		expect(calls.length).toBe(1)
+		expect(calls[0].meta.sessionId).toBe('session-abc')
+	})
+
+	test('session ID defaults to null', () => {
+		expect(Logger._sessionId).toBeNull()
+	})
+
+	test('session ID can be overwritten', () => {
+		Logger.setSessionId('session-1')
+		expect(Logger._sessionId).toBe('session-1')
+
+		Logger.setSessionId('session-2')
+		expect(Logger._sessionId).toBe('session-2')
+	})
+})
+
+// ============================================================================
+// Exports Test
+// ============================================================================
+
 describe('Logger module exports', () => {
 	test('exports all expected items', async () => {
 		const loggerModule = await import('../../src/core/logger.js')
@@ -1992,9 +2031,6 @@ describe('Logger module exports', () => {
 		expect(typeof loggerModule.createMultiDrain).toBe('function')
 		expect(typeof loggerModule.createLevelFilteredDrain).toBe('function')
 		expect(typeof loggerModule.logger).toBe('function')
-		expect(typeof loggerModule.createFileDrain).toBe('function')
-		expect(typeof loggerModule.formatTimestamp).toBe('function')
-
 		// Constants
 		expect(typeof loggerModule.DEBUG_MODE).toBe('boolean')
 		expect(loggerModule.ANSI_REGEX).toBeInstanceOf(RegExp)

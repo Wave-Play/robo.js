@@ -15,7 +15,14 @@ if (env?.ROBO_SHARD_MODE) {
 	ModeLabel = color.bold(color.dim(modeColor(mode.padEnd(longestMode.length))))
 }
 
-export type LogDrain = (logger: Logger, level: string, ...data: unknown[]) => Promise<void>
+export interface LogMetadata {
+	source: string | null
+	timestamp: Date
+	sessionId: string | null
+	pid: number
+}
+
+export type LogDrain = (logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]) => Promise<void>
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
 
@@ -416,7 +423,30 @@ async function writeLog(stream: LogStream, ...data: unknown[]): Promise<void> {
  * In Node.js, this uses synchronous writes (like console.log) to ensure logs
  * appear immediately and in order, without delayed output on shutdown.
  */
-export function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
+export function consoleDrain(_logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]): Promise<void> {
+	// Format the message with level label, source prefix, and mode label
+	const formatted = [...data]
+	if (level !== 'other') {
+		const customLevels = (_logger as unknown as { _customLevels?: Record<string, CustomLevel> })._customLevels
+		const customLevel = customLevels?.[level]
+		const levelColor = (customLevel?.color ? colorMap[customLevel.color] : colorMap[level]) ?? ((s: string) => s)
+
+		let levelLabel =
+			(customLevel?.color
+				? levelColor(customLevel.label.padEnd(9))
+				: customLevel?.label ?? colorizedLogLevels[level] ?? level.padEnd(5)) + ' -'
+
+		if (meta.source) {
+			levelLabel = color.bold(levelColor(meta.source + ':')) + levelLabel
+		}
+
+		formatted.unshift(levelLabel)
+	}
+
+	if (ModeLabel !== undefined && formatted.length > 1) {
+		formatted.unshift(ModeLabel)
+	}
+
 	if (isBrowser()) {
 		let fmt = ''
 		const args: unknown[] = []
@@ -425,17 +455,15 @@ export function consoleDrain(_logger: Logger, level: string, ...data: unknown[])
 			if (fmt && !fmt.endsWith(' ')) fmt += ' '
 		}
 
-		for (const item of data) {
+		for (const item of formatted) {
 			if (typeof item === 'string') {
 				const { fmt: f, css } = ansiToBrowserFormat(item)
 				if (f) {
 					if (fmt) fmt += ' '
 					fmt += f
-					// Each %c in `f` consumes one CSS arg in order:
 					for (const c of css) args.push(c)
 				}
 			} else {
-				// Preserve objects/arrays/errors as interactive values:
 				addSpace()
 				fmt += '%o'
 				args.push(item)
@@ -444,7 +472,6 @@ export function consoleDrain(_logger: Logger, level: string, ...data: unknown[])
 
 		const fn = level === 'warn' || level === 'error' ? console.error : console.log
 
-		// If there were no string parts at all, just log the raw args
 		if (!fmt) {
 			fn(...args)
 		} else {
@@ -460,12 +487,12 @@ export function consoleDrain(_logger: Logger, level: string, ...data: unknown[])
 	// Use synchronous write if inspect is cached (99%+ of calls after module load)
 	const inspectFn = getInspectSync()
 	if (inspectFn) {
-		writeLogSync(stream, inspectFn, ...data)
+		writeLogSync(stream, inspectFn, ...formatted)
 		return Promise.resolve()
 	}
 
 	// Async fallback for the rare case where cache isn't warmed yet
-	return writeLog(stream, ...data)
+	return writeLog(stream, ...formatted)
 }
 
 /**
@@ -494,8 +521,8 @@ export function createMultiDrain(drains: LogDrain[]): LogDrain {
 		return drains[0]
 	}
 
-	return async (logger: Logger, level: string, ...data: unknown[]): Promise<void> => {
-		await Promise.all(drains.map((drain) => drain(logger, level, ...data).catch(() => {})))
+	return async (logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]): Promise<void> => {
+		await Promise.all(drains.map((drain) => drain(logger, level, meta, ...data).catch(() => {})))
 	}
 }
 
@@ -522,14 +549,14 @@ export function createMultiDrain(drains: LogDrain[]): LogDrain {
  * ```
  */
 export function createLevelFilteredDrain(drain: LogDrain, minLevel: LogLevel | string): LogDrain {
-	return async (logger: Logger, level: string, ...data: unknown[]): Promise<void> => {
+	return async (logger: Logger, level: string, meta: LogMetadata, ...data: unknown[]): Promise<void> => {
 		const levelValues = logger.getLevelValues()
 		const minLevelValue = levelValues[minLevel] ?? LogLevelValues[minLevel] ?? 0
 		const currentLevelValue = levelValues[level] ?? LogLevelValues[level] ?? 0
 
 		// Only pass through if current level >= minimum level
 		if (currentLevelValue >= minLevelValue) {
-			await drain(logger, level, ...data)
+			await drain(logger, level, meta, ...data)
 		}
 	}
 }
@@ -540,10 +567,12 @@ class LogEntry {
 	level: string
 	timestamp: Date
 	data: unknown[]
+	source: string | null
 
-	constructor(level: string, data: unknown[]) {
+	constructor(level: string, data: unknown[], source: string | null = null) {
 		this.level = level
 		this.data = data
+		this.source = source
 		this.timestamp = new Date()
 	}
 
@@ -591,6 +620,12 @@ class LogEntry {
  * [**Learn more:** Logger](https://robojs.dev/robojs/logger)
  */
 export class Logger {
+	static _sessionId: string | null = null
+
+	static setSessionId(id: string): void {
+		Logger._sessionId = id
+	}
+
 	protected _customLevels: Record<string, CustomLevel>
 	protected _enabled: boolean
 	protected _level: LogLevel | string
@@ -675,38 +710,22 @@ export class Logger {
 			return
 		}
 
-		// Format the message all pretty and stuff
-		if (level !== 'other') {
-			const customLevel = this._customLevels?.[level]
-			const levelColor = (customLevel?.color ? colorMap[customLevel.color] : colorMap[level]) ?? ((s: string) => s)
-
-			// Apply color to label if custom level has a color, otherwise use pre-colorized label
-			let levelLabel =
-				(customLevel?.color
-					? levelColor(customLevel.label.padEnd(9))
-					: customLevel?.label ?? colorizedLogLevels[level] ?? level.padEnd(5)) + ' -'
-
-			// Add the prefix if specified
-			if (prefix) {
-				levelLabel = color.bold(levelColor(prefix + ':')) + levelLabel
-			}
-
-			data.unshift(levelLabel)
-		}
-
-		// Add the mode label if one exists
-		if (ModeLabel !== undefined && data.length > 1) {
-			data.unshift(ModeLabel)
+		// Build metadata
+		const meta: LogMetadata = {
+			source: prefix,
+			timestamp: new Date(),
+			sessionId: Logger._sessionId,
+			pid: hasProcess ? process.pid : 0
 		}
 
 		// Persist the log entry in debug mode
 		if (DEBUG_MODE) {
-			this._logBuffer[this._currentIndex] = new LogEntry(level, data)
+			this._logBuffer[this._currentIndex] = new LogEntry(level, data, meta.source)
 			this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
 		}
 
-		// Drain the log entry
-		const promise = this._drain(this, level, ...data)
+		// Drain the log entry with raw, unformatted data
+		const promise = this._drain(this, level, meta, ...data)
 		pendingDrains.add(promise)
 		promise.finally(() => {
 			pendingDrains.delete(promise)

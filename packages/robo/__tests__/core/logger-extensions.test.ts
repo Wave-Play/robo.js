@@ -1,5 +1,5 @@
 import { createMultiDrain, createLevelFilteredDrain, Logger, logger } from '../../src/core/logger.js'
-import { createMockDrain, createDelayedMockDrain } from '../utils/logging-test-helpers.js'
+import { createMockDrain, createDelayedMockDrain, createTestMeta } from '../utils/logging-test-helpers.js'
 
 describe('createMultiDrain', () => {
 	test('calls all drains with same arguments', async () => {
@@ -10,7 +10,8 @@ describe('createMultiDrain', () => {
 		const multiDrain = createMultiDrain([drain1, drain2, drain3])
 		const testLogger = new Logger({ level: 'trace' })
 
-		await multiDrain(testLogger, 'info', 'test message', { key: 'value' })
+		const meta = createTestMeta()
+		await multiDrain(testLogger, 'info', meta, 'test message', { key: 'value' })
 
 		expect(calls1.length).toBe(1)
 		expect(calls2.length).toBe(1)
@@ -30,7 +31,7 @@ describe('createMultiDrain', () => {
 		const multiDrain = createMultiDrain([slowDrain, fastDrain])
 		const testLogger = new Logger({ level: 'trace' })
 
-		await multiDrain(testLogger, 'info', 'test')
+		await multiDrain(testLogger, 'info', createTestMeta(), 'test')
 
 		// Both should have been called by the time the promise resolves
 		expect(slowCalls.length).toBe(1)
@@ -42,7 +43,7 @@ describe('createMultiDrain', () => {
 		const testLogger = new Logger({ level: 'trace' })
 
 		// Should not throw
-		await expect(multiDrain(testLogger, 'info', 'test')).resolves.toBeUndefined()
+		await expect(multiDrain(testLogger, 'info', createTestMeta(), 'test')).resolves.toBeUndefined()
 	})
 
 	test('handles single drain', async () => {
@@ -50,7 +51,7 @@ describe('createMultiDrain', () => {
 		const multiDrain = createMultiDrain([drain])
 		const testLogger = new Logger({ level: 'trace' })
 
-		await multiDrain(testLogger, 'info', 'single drain test')
+		await multiDrain(testLogger, 'info', createTestMeta(), 'single drain test')
 
 		expect(calls.length).toBe(1)
 		expect(calls[0].data).toEqual(['single drain test'])
@@ -66,7 +67,7 @@ describe('createMultiDrain', () => {
 		const testLogger = new Logger({ level: 'trace' })
 
 		// Should not throw even though one drain throws
-		await expect(multiDrain(testLogger, 'info', 'test')).resolves.toBeUndefined()
+		await expect(multiDrain(testLogger, 'info', createTestMeta(), 'test')).resolves.toBeUndefined()
 
 		// The successful drain should still be called
 		expect(successCalls.length).toBe(1)
@@ -280,9 +281,9 @@ describe('createLevelFilteredDrain', () => {
 		const filteredDrain = createLevelFilteredDrain(drain, 'info')
 		const testLogger = new Logger({ level: 'trace' })
 
-		await filteredDrain(testLogger, 'info', 'info message')
-		await filteredDrain(testLogger, 'warn', 'warn message')
-		await filteredDrain(testLogger, 'error', 'error message')
+		await filteredDrain(testLogger, 'info', createTestMeta(), 'info message')
+		await filteredDrain(testLogger, 'warn', createTestMeta(), 'warn message')
+		await filteredDrain(testLogger, 'error', createTestMeta(), 'error message')
 
 		expect(calls.length).toBe(3)
 		expect(calls[0].level).toBe('info')
@@ -295,8 +296,8 @@ describe('createLevelFilteredDrain', () => {
 		const filteredDrain = createLevelFilteredDrain(drain, 'info')
 		const testLogger = new Logger({ level: 'trace' })
 
-		await filteredDrain(testLogger, 'debug', 'debug message')
-		await filteredDrain(testLogger, 'trace', 'trace message')
+		await filteredDrain(testLogger, 'debug', createTestMeta(), 'debug message')
+		await filteredDrain(testLogger, 'trace', createTestMeta(), 'trace message')
 
 		expect(calls.length).toBe(0)
 	})
@@ -306,9 +307,9 @@ describe('createLevelFilteredDrain', () => {
 		const filteredDrain = createLevelFilteredDrain(drain, 'debug')
 		const testLogger = new Logger({ level: 'trace' })
 
-		await filteredDrain(testLogger, 'trace', 'trace message')
-		await filteredDrain(testLogger, 'debug', 'debug message')
-		await filteredDrain(testLogger, 'info', 'info message')
+		await filteredDrain(testLogger, 'trace', createTestMeta(), 'trace message')
+		await filteredDrain(testLogger, 'debug', createTestMeta(), 'debug message')
+		await filteredDrain(testLogger, 'info', createTestMeta(), 'info message')
 
 		expect(calls.length).toBe(2)
 		expect(calls[0].level).toBe('debug')
@@ -320,10 +321,10 @@ describe('createLevelFilteredDrain', () => {
 		const filteredDrain = createLevelFilteredDrain(drain, 'warn')
 		const testLogger = new Logger({ level: 'trace' })
 
-		await filteredDrain(testLogger, 'debug', 'debug message')
-		await filteredDrain(testLogger, 'info', 'info message')
-		await filteredDrain(testLogger, 'warn', 'warn message')
-		await filteredDrain(testLogger, 'error', 'error message')
+		await filteredDrain(testLogger, 'debug', createTestMeta(), 'debug message')
+		await filteredDrain(testLogger, 'info', createTestMeta(), 'info message')
+		await filteredDrain(testLogger, 'warn', createTestMeta(), 'warn message')
+		await filteredDrain(testLogger, 'error', createTestMeta(), 'error message')
 
 		expect(calls.length).toBe(2)
 		expect(calls[0].level).toBe('warn')
@@ -341,8 +342,8 @@ describe('createLevelFilteredDrain', () => {
 		const multiDrain = createMultiDrain([filteredDrain1, filteredDrain2])
 		const testLogger = new Logger({ level: 'trace' })
 
-		await multiDrain(testLogger, 'debug', 'debug message')
-		await multiDrain(testLogger, 'info', 'info message')
+		await multiDrain(testLogger, 'debug', createTestMeta(), 'debug message')
+		await multiDrain(testLogger, 'info', createTestMeta(), 'info message')
 
 		// drain1 should only have info message
 		expect(calls1.length).toBe(1)
@@ -360,7 +361,7 @@ describe('createLevelFilteredDrain', () => {
 		const testLogger = new Logger({ level: 'trace' })
 
 		const testData = { key: 'value', nested: { foo: 'bar' } }
-		await filteredDrain(testLogger, 'info', 'message', testData, 123)
+		await filteredDrain(testLogger, 'info', createTestMeta(), 'message', testData, 123)
 
 		expect(calls.length).toBe(1)
 		expect(calls[0].data).toEqual(['message', testData, 123])
@@ -376,7 +377,7 @@ describe('createLevelFilteredDrain', () => {
 			}
 		})
 
-		await filteredDrain(testLogger, 'custom', 'custom level message')
+		await filteredDrain(testLogger, 'custom', createTestMeta(), 'custom level message')
 
 		// custom (priority 5) >= info (priority 2), so should pass
 		expect(calls.length).toBe(1)

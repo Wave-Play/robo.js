@@ -10,7 +10,7 @@ import {
 	type ColorMapEntry
 } from '../../src/core/file-drain.js'
 import { Logger } from '../../src/core/logger.js'
-import { cleanupTempDir, createTempLogDir, readLogFile, parseJsonLogLine, createLargeString } from '../utils/logging-test-helpers.js'
+import { cleanupTempDir, createTempLogDir, readLogFile, parseJsonLogLine, createLargeString, createTestMeta } from '../utils/logging-test-helpers.js'
 
 describe('createFileDrain', () => {
 	let tempDir: string
@@ -30,7 +30,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'nested', 'deep', 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'info', 'test message')
+			await drain(testLogger, 'info', createTestMeta(), 'test message')
 
 			expect(existsSync(logPath)).toBe(true)
 		})
@@ -39,7 +39,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'info', 'hello world')
+			await drain(testLogger, 'info', createTestMeta(), 'hello world')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('hello world')
@@ -49,9 +49,9 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'info', 'message 1')
-			await drain(testLogger, 'info', 'message 2')
-			await drain(testLogger, 'info', 'message 3')
+			await drain(testLogger, 'info', createTestMeta(), 'message 1')
+			await drain(testLogger, 'info', createTestMeta(), 'message 2')
+			await drain(testLogger, 'info', createTestMeta(), 'message 3')
 
 			const lines = readLogFile(logPath)
 			expect(lines.length).toBe(3)
@@ -64,7 +64,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'error', 'test error')
+			await drain(testLogger, 'error', createTestMeta(), 'test error')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('[ERROR]')
@@ -74,7 +74,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'info', 'specific test content 12345')
+			await drain(testLogger, 'info', createTestMeta(), 'specific test content 12345')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('specific test content 12345')
@@ -86,7 +86,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: 'iso' })
 
-			await drain(testLogger, 'info', 'test')
+			await drain(testLogger, 'info', createTestMeta(), 'test')
 
 			const content = readFileSync(logPath, 'utf-8')
 			// ISO format: 2025-01-15T10:30:00.123Z
@@ -97,7 +97,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: 'unix' })
 
-			await drain(testLogger, 'info', 'test')
+			await drain(testLogger, 'info', createTestMeta(), 'test')
 
 			const content = readFileSync(logPath, 'utf-8')
 			// Unix format: [1736937000123]
@@ -108,7 +108,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: 'short' })
 
-			await drain(testLogger, 'info', 'test')
+			await drain(testLogger, 'info', createTestMeta(), 'test')
 
 			const content = readFileSync(logPath, 'utf-8')
 			// Short format: [10:30:00.123]
@@ -119,7 +119,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: 'long' })
 
-			await drain(testLogger, 'info', 'test')
+			await drain(testLogger, 'info', createTestMeta(), 'test')
 
 			const content = readFileSync(logPath, 'utf-8')
 			// Long format: [2025-01-15 10:30:00.123]
@@ -130,7 +130,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: false })
 
-			await drain(testLogger, 'info', 'test message')
+			await drain(testLogger, 'info', createTestMeta(), 'test message')
 
 			const content = readFileSync(logPath, 'utf-8')
 			// Should start with [INFO] not a timestamp
@@ -144,7 +144,7 @@ describe('createFileDrain', () => {
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
 			// Simulate ANSI-colored message (red color)
-			await drain(testLogger, 'info', '\x1b[31mred text\x1b[0m')
+			await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred text\x1b[0m')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('red text')
@@ -156,7 +156,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, stripAnsi: false })
 
-			await drain(testLogger, 'info', '\x1b[31mred text\x1b[0m')
+			await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred text\x1b[0m')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('\x1b[31m')
@@ -168,11 +168,11 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'trace', 'trace msg')
-			await drain(testLogger, 'debug', 'debug msg')
-			await drain(testLogger, 'info', 'info msg')
-			await drain(testLogger, 'warn', 'warn msg')
-			await drain(testLogger, 'error', 'error msg')
+			await drain(testLogger, 'trace', createTestMeta(), 'trace msg')
+			await drain(testLogger, 'debug', createTestMeta(), 'debug msg')
+			await drain(testLogger, 'info', createTestMeta(), 'info msg')
+			await drain(testLogger, 'warn', createTestMeta(), 'warn msg')
+			await drain(testLogger, 'error', createTestMeta(), 'error msg')
 
 			const lines = readLogFile(logPath)
 			expect(lines.length).toBe(5)
@@ -182,11 +182,11 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, level: 'warn' })
 
-			await drain(testLogger, 'trace', 'trace msg')
-			await drain(testLogger, 'debug', 'debug msg')
-			await drain(testLogger, 'info', 'info msg')
-			await drain(testLogger, 'warn', 'warn msg')
-			await drain(testLogger, 'error', 'error msg')
+			await drain(testLogger, 'trace', createTestMeta(), 'trace msg')
+			await drain(testLogger, 'debug', createTestMeta(), 'debug msg')
+			await drain(testLogger, 'info', createTestMeta(), 'info msg')
+			await drain(testLogger, 'warn', createTestMeta(), 'warn msg')
+			await drain(testLogger, 'error', createTestMeta(), 'error msg')
 
 			const lines = readLogFile(logPath)
 			expect(lines.length).toBe(2) // Only warn and error
@@ -196,9 +196,9 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, level: 'info' })
 
-			await drain(testLogger, 'info', 'info msg')
-			await drain(testLogger, 'warn', 'warn msg')
-			await drain(testLogger, 'error', 'error msg')
+			await drain(testLogger, 'info', createTestMeta(), 'info msg')
+			await drain(testLogger, 'warn', createTestMeta(), 'warn msg')
+			await drain(testLogger, 'error', createTestMeta(), 'error msg')
 
 			const lines = readLogFile(logPath)
 			expect(lines.length).toBe(3)
@@ -213,7 +213,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'info', 'blocking message')
+			await drain(testLogger, 'info', createTestMeta(), 'blocking message')
 
 			// Should be readable immediately without any flush
 			const content = readFileSync(logPath, 'utf-8')
@@ -226,7 +226,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: 'iso', format: 'text' })
 
-			await drain(testLogger, 'info', 'test message')
+			await drain(testLogger, 'info', createTestMeta(), 'test message')
 
 			const content = readFileSync(logPath, 'utf-8').trim()
 			// Format: [TIMESTAMP] [LEVEL] - message
@@ -237,7 +237,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true, timestamp: 'iso', format: 'json' })
 
-			await drain(testLogger, 'info', 'json test')
+			await drain(testLogger, 'info', createTestMeta(), 'json test')
 
 			const lines = readLogFile(logPath)
 			const parsed = parseJsonLogLine(lines[0])
@@ -250,7 +250,7 @@ describe('createFileDrain', () => {
 			const logPath = join(tempDir, 'test.log')
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
-			await drain(testLogger, 'info', 'Object:', { key: 'value', nested: { a: 1 } })
+			await drain(testLogger, 'info', createTestMeta(), 'Object:', { key: 'value', nested: { a: 1 } })
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('key')
@@ -262,7 +262,7 @@ describe('createFileDrain', () => {
 			const drain = createFileDrain({ path: logPath, blocking: true })
 
 			const error = new Error('Test error')
-			await drain(testLogger, 'error', 'Error occurred:', error)
+			await drain(testLogger, 'error', createTestMeta(), 'Error occurred:', error)
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('Test error')
@@ -282,8 +282,8 @@ describe('createFileDrain', () => {
 
 			// Write enough to trigger rotation
 			const largeMessage = createLargeString(80)
-			await drain(testLogger, 'info', largeMessage)
-			await drain(testLogger, 'info', largeMessage) // This should trigger rotation
+			await drain(testLogger, 'info', createTestMeta(), largeMessage)
+			await drain(testLogger, 'info', createTestMeta(), largeMessage) // This should trigger rotation
 
 			// Check that rotated file exists
 			expect(existsSync(`${logPath}.1`)).toBe(true)
@@ -298,10 +298,10 @@ describe('createFileDrain', () => {
 				maxFiles: 3
 			})
 
-			await drain(testLogger, 'info', createLargeString(40))
+			await drain(testLogger, 'info', createTestMeta(), createLargeString(40))
 			const firstContent = readFileSync(logPath, 'utf-8')
 
-			await drain(testLogger, 'info', createLargeString(40)) // Triggers rotation
+			await drain(testLogger, 'info', createTestMeta(), createLargeString(40)) // Triggers rotation
 
 			// Original content should now be in .1
 			expect(existsSync(`${logPath}.1`)).toBe(true)
@@ -320,7 +320,7 @@ describe('createFileDrain', () => {
 
 			// Create 3 rotations
 			for (let i = 0; i < 4; i++) {
-				await drain(testLogger, 'info', createLargeString(40) + `_v${i}`)
+				await drain(testLogger, 'info', createTestMeta(), createLargeString(40) + `_v${i}`)
 			}
 
 			// Should have test.log, test.log.1, test.log.2, test.log.3
@@ -341,7 +341,7 @@ describe('createFileDrain', () => {
 
 			// Create enough rotations to exceed maxFiles
 			for (let i = 0; i < 4; i++) {
-				await drain(testLogger, 'info', createLargeString(40) + `_v${i}`)
+				await drain(testLogger, 'info', createTestMeta(), createLargeString(40) + `_v${i}`)
 			}
 
 			// Should only have test.log and test.log.1 (maxFiles=2 means current + 1 rotated)
@@ -361,7 +361,7 @@ describe('createFileDrain', () => {
 
 			// Create many rotations
 			for (let i = 0; i < 10; i++) {
-				await drain(testLogger, 'info', createLargeString(40) + `_v${i}`)
+				await drain(testLogger, 'info', createTestMeta(), createLargeString(40) + `_v${i}`)
 			}
 
 			// Count actual rotated files
@@ -780,7 +780,7 @@ describe('full colormap file integration', () => {
 		const logPath = join(tempDir, 'test.log')
 		const drain = createFileDrain({ path: logPath, blocking: true, colorMap: true })
 
-		await drain(testLogger, 'info', '\x1b[31mred message\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred message\x1b[0m')
 
 		expect(existsSync(`${logPath}.colormap`)).toBe(true)
 	})
@@ -789,7 +789,7 @@ describe('full colormap file integration', () => {
 		const logPath = join(tempDir, 'test.log')
 		const drain = createFileDrain({ path: logPath, blocking: true, colorMap: false })
 
-		await drain(testLogger, 'info', '\x1b[31mred message\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred message\x1b[0m')
 
 		expect(existsSync(`${logPath}.colormap`)).toBe(false)
 	})
@@ -798,7 +798,7 @@ describe('full colormap file integration', () => {
 		const logPath = join(tempDir, 'test.log')
 		const drain = createFileDrain({ path: logPath, blocking: true, colorMap: true, stripAnsi: false })
 
-		await drain(testLogger, 'info', '\x1b[31mred message\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred message\x1b[0m')
 
 		// colorMap only works when stripAnsi is true
 		expect(existsSync(`${logPath}.colormap`)).toBe(false)
@@ -808,7 +808,7 @@ describe('full colormap file integration', () => {
 		const logPath = join(tempDir, 'test.log')
 		const drain = createFileDrain({ path: logPath, blocking: true, colorMap: true })
 
-		await drain(testLogger, 'info', '\x1b[31mred\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred\x1b[0m')
 
 		const colorMapContent = readFileSync(`${logPath}.colormap`, 'utf-8')
 		const lines = colorMapContent.trim().split('\n')
@@ -826,7 +826,7 @@ describe('full colormap file integration', () => {
 		const drain = createFileDrain({ path: logPath, blocking: true, colorMap: true })
 
 		const originalMessage = '\x1b[32mSuccess:\x1b[0m Operation completed'
-		await drain(testLogger, 'info', originalMessage)
+		await drain(testLogger, 'info', createTestMeta(), originalMessage)
 
 		// Read the stripped log
 		const logContent = readFileSync(logPath, 'utf-8')
@@ -849,9 +849,9 @@ describe('full colormap file integration', () => {
 		const logPath = join(tempDir, 'test.log')
 		const drain = createFileDrain({ path: logPath, blocking: true, colorMap: true })
 
-		await drain(testLogger, 'info', '\x1b[31mError 1\x1b[0m')
-		await drain(testLogger, 'info', '\x1b[32mSuccess\x1b[0m')
-		await drain(testLogger, 'info', '\x1b[33mWarning\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[31mError 1\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[32mSuccess\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), '\x1b[33mWarning\x1b[0m')
 
 		const colorMapContent = readFileSync(`${logPath}.colormap`, 'utf-8')
 		const colorMap = parseColorMapFile(colorMapContent)
@@ -873,8 +873,8 @@ describe('full colormap file integration', () => {
 		})
 
 		// Write enough to trigger rotation
-		await drain(testLogger, 'info', createLargeString(80) + '\x1b[31mred\x1b[0m')
-		await drain(testLogger, 'info', createLargeString(80) + '\x1b[32mgreen\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), createLargeString(80) + '\x1b[31mred\x1b[0m')
+		await drain(testLogger, 'info', createTestMeta(), createLargeString(80) + '\x1b[32mgreen\x1b[0m')
 
 		// Both log and colormap should have rotated
 		expect(existsSync(`${logPath}.1`)).toBe(true)
@@ -892,10 +892,10 @@ describe('full colormap file integration', () => {
 		})
 
 		const originalMessage = '\x1b[34mBlue message\x1b[0m'
-		await drain(testLogger, 'info', originalMessage)
+		await drain(testLogger, 'info', createTestMeta(), originalMessage)
 
 		// Force rotation by writing more
-		await drain(testLogger, 'info', createLargeString(120))
+		await drain(testLogger, 'info', createTestMeta(), createLargeString(120))
 
 		// Read rotated log and colormap
 		const rotatedLogContent = readFileSync(`${logPath}.1`, 'utf-8')

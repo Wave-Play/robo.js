@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { createFileDrain, Logger, createMultiDrain } from '../../src/core/logger.js'
+import { Logger, createMultiDrain } from '../../src/core/logger.js'
+import { createFileDrain } from '../../src/core/drains.js'
 import { cleanupTempDir, createTempLogDir, readLogFile, createMockDrain } from '../utils/logging-test-helpers.js'
 
 describe('File Logging Integration', () => {

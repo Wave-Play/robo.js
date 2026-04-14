@@ -8,7 +8,8 @@ import {
 	createTempLogDir,
 	readLogFile,
 	shouldCreateAutoFileDrain,
-	getAutoLogPath
+	getAutoLogPath,
+	createTestMeta
 } from '../utils/logging-test-helpers.js'
 
 describe('Auto File Logging Configuration', () => {
@@ -172,8 +173,8 @@ describe('Auto File Logging Configuration', () => {
 			})
 
 			// Debug should be logged
-			await drain(testLogger, 'debug', 'debug message')
-			await drain(testLogger, 'info', 'info message')
+			await drain(testLogger, 'debug', createTestMeta(), 'debug message')
+			await drain(testLogger, 'info', createTestMeta(), 'info message')
 
 			const lines = readLogFile(logPath)
 			expect(lines.length).toBe(2)
@@ -190,7 +191,7 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'debug', 'production debug message')
+			await drain(testLogger, 'debug', createTestMeta(), 'production debug message')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('production debug message')
@@ -207,14 +208,14 @@ describe('Auto File Logging Configuration', () => {
 					blocking: true
 				})
 
-				await drain(testLogger, 'debug', `${mode} debug message`)
+				await drain(testLogger, 'debug', createTestMeta(), `${mode} debug message`)
 
 				const content = readFileSync(logPath, 'utf-8')
 				expect(content).toContain(`${mode} debug message`)
 			}
 		})
 
-		test('auto drain uses short timestamp format', async () => {
+		test('drain supports short timestamp format', async () => {
 			const logPath = join(tempDir, '.robo/logs/timestamp-test.log')
 			const drain = createFileDrain({
 				path: logPath,
@@ -223,7 +224,7 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'info', 'test message')
+			await drain(testLogger, 'info', createTestMeta(), 'test message')
 
 			const content = readFileSync(logPath, 'utf-8')
 			// Short format: [HH:mm:ss.SSS]
@@ -239,7 +240,7 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'info', '\x1b[31mred text\x1b[0m')
+			await drain(testLogger, 'info', createTestMeta(), '\x1b[31mred text\x1b[0m')
 
 			const content = readFileSync(logPath, 'utf-8')
 			expect(content).toContain('red text')
@@ -261,7 +262,7 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'info', 'Test message')
+			await drain(testLogger, 'info', createTestMeta(), 'Test message')
 
 			expect(existsSync(roboLogsDir)).toBe(true)
 			expect(existsSync(logPath)).toBe(true)
@@ -276,7 +277,7 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'info', 'Nested path test')
+			await drain(testLogger, 'info', createTestMeta(), 'Nested path test')
 
 			expect(existsSync(logPath)).toBe(true)
 			const content = readFileSync(logPath, 'utf-8')
@@ -291,9 +292,9 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'info', 'First message')
-			await drain(testLogger, 'info', 'Second message')
-			await drain(testLogger, 'info', 'Third message')
+			await drain(testLogger, 'info', createTestMeta(), 'First message')
+			await drain(testLogger, 'info', createTestMeta(), 'Second message')
+			await drain(testLogger, 'info', createTestMeta(), 'Third message')
 
 			const lines = readLogFile(logPath)
 			expect(lines.length).toBe(3)
@@ -312,11 +313,11 @@ describe('Auto File Logging Configuration', () => {
 				blocking: true
 			})
 
-			await drain(testLogger, 'trace', 'trace message')
-			await drain(testLogger, 'debug', 'debug message')
-			await drain(testLogger, 'info', 'info message')
-			await drain(testLogger, 'warn', 'warn message')
-			await drain(testLogger, 'error', 'error message')
+			await drain(testLogger, 'trace', createTestMeta(), 'trace message')
+			await drain(testLogger, 'debug', createTestMeta(), 'debug message')
+			await drain(testLogger, 'info', createTestMeta(), 'info message')
+			await drain(testLogger, 'warn', createTestMeta(), 'warn message')
+			await drain(testLogger, 'error', createTestMeta(), 'error message')
 
 			const lines = readLogFile(logPath)
 			// trace is below debug, so should not be logged
