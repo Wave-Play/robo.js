@@ -1,6 +1,7 @@
 name: Publish Next
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.changeset/**'
