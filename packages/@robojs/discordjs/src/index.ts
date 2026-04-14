@@ -102,13 +102,24 @@ export type {
 	MiddlewareEntry,
 	MiddlewareHandler,
 	MiddlewareNamespaceController,
-	MiddlewareResult
+	MiddlewareResult,
+	// Prefix commands
+	PrefixCommand,
+	PrefixCommandArg,
+	PrefixCommandArgs,
+	PrefixCommandConfig,
+	PrefixCommandController,
+	PrefixCommandHandler,
+	PrefixCommandResult,
+	PrefixCommandsNamespaceController,
+	PrefixConfig,
+	PrefixSageOptions
 } from './types/index.js'
 
 export { ContextType } from './types/index.js'
 
 // Export intent utilities
-export { checkIntents, inferIntents, getIntentNames, validateIntents, REQUIRED_INTENTS } from './core/intents.js'
+export { checkIntents, checkPrefixIntents, inferIntents, getIntentNames, validateIntents, REQUIRED_INTENTS } from './core/intents.js'
 
 // Export command utilities
 export {
@@ -156,6 +167,7 @@ export { executeCommandHandler } from './core/handlers/command.js'
 export { executeAutocompleteHandler } from './core/handlers/autocomplete.js'
 export { executeContextHandler } from './core/handlers/context.js'
 export { executeEventHandler } from './core/handlers/event.js'
+export { executePrefixCommandHandler } from './core/handlers/prefix-command.js'
 export { handleInteraction } from './core/interactions.js'
 
 // Export namespace controller factories
@@ -163,7 +175,8 @@ export {
 	createCommandsNamespaceController,
 	createContextNamespaceController,
 	createEventsNamespaceController,
-	createMiddlewareNamespaceController
+	createMiddlewareNamespaceController,
+	createPrefixCommandsNamespaceController
 } from './core/namespace-controllers.js'
 
 // Export pre-instantiated namespace controllers for convenience
@@ -171,7 +184,8 @@ import {
 	createCommandsNamespaceController,
 	createContextNamespaceController,
 	createEventsNamespaceController,
-	createMiddlewareNamespaceController
+	createMiddlewareNamespaceController,
+	createPrefixCommandsNamespaceController
 } from './core/namespace-controllers.js'
 
 /** Namespace controller for commands - access all commands, execute programmatically */
@@ -182,3 +196,5 @@ export const events = createEventsNamespaceController()
 export const context = createContextNamespaceController()
 /** Namespace controller for middleware - access middleware chain */
 export const middleware = createMiddlewareNamespaceController()
+/** Namespace controller for prefix commands - access all prefix commands, execute programmatically */
+export const prefixCommands = createPrefixCommandsNamespaceController()
