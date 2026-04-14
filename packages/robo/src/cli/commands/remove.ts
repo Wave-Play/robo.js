@@ -10,6 +10,7 @@ import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
 import { Spinner } from '../utils/spinner.js'
 import { existsSync } from 'node:fs'
+import readline from 'node:readline'
 import type { CliContext } from '../../types/cli.js'
 
 const require = createRequire(import.meta.url)
@@ -110,6 +111,46 @@ export async function removeAction(context: CliContext) {
 	)
 	spinner.stop(false, false)
 
+	// Check for associated AI coding skills to clean up
+	try {
+		const { getInstalledSkills, removeSkillsByPlugin } = await import('../utils/skills.js')
+		const installed = await getInstalledSkills()
+		const pluginsWithSkills = packages.filter((pkg) =>
+			Object.values(installed).some((record) => record.plugin === pkg)
+		)
+
+		if (pluginsWithSkills.length > 0) {
+			const skillNames = Object.entries(installed)
+				.filter(([, record]) => pluginsWithSkills.includes(record.plugin))
+				.map(([name]) => name)
+
+			logger.log(Indent, color.bold(`🧠 Associated AI coding skills found`))
+
+			for (const name of skillNames) {
+				logger.log(`${Indent}    - ${Highlight(name)}`)
+			}
+
+			logger.log('')
+
+			// Flush buffered log output so skills appear before the question
+			await logger.flush()
+			const response = await prompt(Indent + `    Remove these skills? ${color.dim('[Y/n]')}: `)
+			const answer = response.toLowerCase().trim()
+
+			if (answer === 'y' || answer === '') {
+				for (const pkg of pluginsWithSkills) {
+					await removeSkillsByPlugin(pkg)
+				}
+
+				logger.log('')
+			} else {
+				logger.log('')
+			}
+		}
+	} catch (error) {
+		logger.debug('Could not check for associated skills:', error)
+	}
+
 	// Ta-dah!
 	logger.log(Indent, `🗑️  Plugin${s} successfully removed.\n`)
 	logger.debug(`Finished in ${Date.now() - startTime}ms`)
@@ -143,4 +184,18 @@ async function removePluginConfig(pluginName: string) {
 	} catch (error) {
 		logger.error(`Failed to remove plugin config:`, error)
 	}
+}
+
+function prompt(question: string): Promise<string> {
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout
+	})
+
+	return new Promise((resolve) => {
+		rl.question(question, (input) => {
+			rl.close()
+			resolve(input)
+		})
+	})
 }

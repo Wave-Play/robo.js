@@ -28,6 +28,7 @@ const command = new Command('add')
 	.description('Adds a plugin to your Robo.')
 	.option('-f', '--force', 'forcefully install & register packages')
 	.option('-ns', '--no-seed', 'skip the seeding of files from the plugin')
+	.option('-nsk', '--no-skills', 'skip installing AI coding skills from plugins')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-t', '--trigger', 'setup hook trigger context (add or create)')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -39,6 +40,7 @@ export default command
 interface AddCommandOptions {
 	force?: boolean
 	'no-seed'?: boolean
+	'no-skills'?: boolean
 	silent?: boolean
 	sync?: boolean
 	trigger?: 'add' | 'create'
@@ -50,7 +52,7 @@ interface PluginResult {
 	plugin: string
 	status: 'success' | 'failed'
 	error?: string
-	stage?: 'install' | 'register' | 'seed' | 'env' | 'setup'
+	stage?: 'install' | 'register' | 'seed' | 'env' | 'setup' | 'skills'
 }
 
 interface AddCommandResults {
@@ -294,7 +296,8 @@ export async function addAction(context: CliContext) {
 			// Ensure preceding log entries render before the interactive prompt.
 			await logger.flush()
 			const response = await prompt(Indent + `    Would you like to include these files? ${color.dim('[Y/n]')}: `)
-			seedConsent = response.toLowerCase().trim() === 'y'
+			const seedAnswer = response.toLowerCase().trim()
+			seedConsent = seedAnswer === 'y' || seedAnswer === ''
 			logger.log('')
 		}
 
@@ -309,6 +312,84 @@ export async function addAction(context: CliContext) {
 					}
 				})
 			)
+		}
+	}
+
+	// Offer to install AI coding skills shipped by plugins
+	if (!options['no-skills']) {
+		const { scanPluginSkills, installSkills, getSkillTargets, promptForCodingTools, saveTargets, detectCodingTools } =
+			await import('../utils/skills.js')
+		const skillCandidates: { plugin: string; skills: import('../utils/skills.js').DiscoveredSkill[] }[] = []
+
+		for (const pkg of resolvedNames) {
+			try {
+				const skills = await scanPluginSkills(pkg)
+
+				if (skills.length > 0) {
+					skillCandidates.push({ plugin: pkg, skills })
+				}
+			} catch (error) {
+				logger.debug(`Could not scan skills for ${pkg}:`, error)
+			}
+		}
+
+		if (skillCandidates.length > 0) {
+			// Resolve targets — auto-detect or prompt
+			let targets = await getSkillTargets()
+			if (targets === null) {
+				const dirs = await promptForCodingTools()
+				targets = dirs.map((d) => path.join(process.cwd(), d))
+				await saveTargets(targets)
+			}
+
+			if (targets.length > 0) {
+				const { tools } = detectCodingTools()
+				if (tools.length > 0) {
+					logger.log(Indent, color.dim(`Detected: ${tools.join(', ')}`))
+				}
+
+				logger.log(Indent, color.bold(`🧠 AI coding skills detected`))
+
+				for (const { plugin, skills } of skillCandidates) {
+					for (const skill of skills) {
+						const desc = skill.description ? ' — ' + skill.description : ''
+						logger.log(`${Indent}    - ${Highlight(plugin)}: ${skill.name}${color.dim(desc)}`)
+					}
+				}
+
+				logger.log('')
+
+				let skillConsent = options.yes
+
+				if (!skillConsent) {
+					await logger.flush()
+					const response = await prompt(Indent + `    Install these skills? ${color.dim('[Y/n]')}: `)
+					const answer = response.toLowerCase().trim()
+					skillConsent = answer === 'y' || answer === ''
+					logger.log('')
+				}
+
+				if (skillConsent) {
+					for (const { plugin, skills } of skillCandidates) {
+						try {
+							// Resolve plugin version for manifest tracking
+							const pkgJsonPath = path.join(process.cwd(), 'node_modules', plugin, 'package.json')
+							let pluginVersion: string | undefined
+							try {
+								const pkgJson = JSON.parse(await fs.readFile(pkgJsonPath, 'utf-8'))
+								pluginVersion = pkgJson.version
+							} catch {
+								/* ignore */
+							}
+
+							await installSkills(skills, plugin, { pluginVersion, targets })
+						} catch (error) {
+							recordFailure(results, plugin, 'skills', error)
+							logger.error(`Failed to install skills for ${color.bold(plugin)}:`, error)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -344,7 +425,8 @@ export async function addAction(context: CliContext) {
 			const response = await prompt(
 				Indent + `    Add these variables to ${questionTarget}? ${color.dim('[Y/n]')}: `
 			)
-			envConsent = response.toLowerCase().trim() === 'y'
+			const envAnswer = response.toLowerCase().trim()
+			envConsent = envAnswer === 'y' || envAnswer === ''
 			logger.log('')
 		}
 
@@ -807,15 +889,6 @@ async function loadPluginManifest(pkg: string): Promise<ManifestRecord | null> {
 	}
 
 	return null
-}
-
-async function directoryExists(dirPath: string): Promise<boolean> {
-	try {
-		const stat = await fs.stat(dirPath)
-		return stat.isDirectory()
-	} catch {
-		return false
-	}
 }
 
 function getPluginBasePathCandidates(pkg: string): string[] {
