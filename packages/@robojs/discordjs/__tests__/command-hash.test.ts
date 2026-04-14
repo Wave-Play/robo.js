@@ -193,15 +193,15 @@ describe('computeCommandHash', () => {
 	})
 
 	describe('stability', () => {
-		it('should produce different hash when command array order changes', () => {
-			// Array order matters because commands are registered in order
+		it('should not change when command array order changes', () => {
+			// Entries are sorted by key before hashing so scanner order does not churn the cache
 			const commandA = createMockCommandEntry({ key: 'alpha' })
 			const commandB = createMockCommandEntry({ key: 'beta' })
 
 			const hash1 = computeCommandHash([commandA, commandB], [], undefined, 'client', 'token', undefined)
 			const hash2 = computeCommandHash([commandB, commandA], [], undefined, 'client', 'token', undefined)
 
-			expect(hash1).not.toBe(hash2)
+			expect(hash1).toBe(hash2)
 		})
 
 		it('should not change when metadata has same values in different order', () => {

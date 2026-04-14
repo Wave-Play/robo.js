@@ -149,6 +149,7 @@ export function createMockBuildContext(overrides: {
 	const store = new Map<string, any>()
 	store.set('discord:hasToken', hasToken)
 	store.set('discord:hasClientId', hasClientId)
+	const projectConfig = config?.plugins ? config : { plugins: [['@robojs/discordjs', config]] }
 
 	return {
 		entries: {
@@ -164,7 +165,7 @@ export function createMockBuildContext(overrides: {
 			delete: (key: string) => store.delete(key),
 			clear: () => store.clear()
 		},
-		config,
+		config: projectConfig,
 		registerMetadataAggregator: fn()
 	}
 }

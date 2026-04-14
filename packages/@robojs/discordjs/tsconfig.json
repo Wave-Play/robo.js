@@ -17,6 +17,6 @@
 		"isolatedModules": true,
 		"incremental": true
 	},
-	"include": ["**/*.ts"],
-	"exclude": ["node_modules"]
+	"include": ["src/**/*.ts", "config/**/*.ts"],
+	"exclude": ["node_modules", "__tests__", "__mocks__"]
 }

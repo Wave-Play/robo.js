@@ -214,13 +214,13 @@ describe('Command Registration Caching', () => {
 	})
 
 	describe('empty commands', () => {
-		it('should skip API call when no commands to register', async () => {
+		it('should send empty registration when no commands remain', async () => {
 			const context = createMockBuildContext({ commandEntries: [] })
 
 			await buildCompleteHook(context as any)
 
-			// API should not be called for empty commands
-			expect(restMock.put).not.toHaveBeenCalled()
+			// Empty registration clears stale commands from Discord
+			expect(restMock.put).toHaveBeenCalled()
 		})
 
 		it('should store hash even with no commands for cache consistency', async () => {
@@ -239,7 +239,7 @@ describe('Command Registration Caching', () => {
 			// Second build with same empty commands - should hit cache
 			await buildCompleteHook(context as any)
 
-			// API still shouldn't be called (empty commands)
+			// API shouldn't be called on cache hit
 			expect(restMock.put).not.toHaveBeenCalled()
 		})
 	})

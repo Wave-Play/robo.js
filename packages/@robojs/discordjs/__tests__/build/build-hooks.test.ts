@@ -621,10 +621,14 @@ function createMockBuildCompleteContext(overrides: Record<string, unknown> = {})
 	const storeMap = new Map<string, unknown>()
 	storeMap.set('discord:hasToken', true)
 	storeMap.set('discord:hasClientId', true)
+	const { config = {}, ...rest } = overrides
+	const projectConfig = (config as { plugins?: unknown[] })?.plugins
+		? config
+		: { plugins: [['@robojs/discordjs', config]] }
 
 	return {
 		mode: 'development',
-		config: {},
+		config: projectConfig,
 		store: {
 			get: fn((key: string) => storeMap.get(key)),
 			set: fn((key: string, value: unknown) => storeMap.set(key, value))
@@ -633,6 +637,6 @@ function createMockBuildCompleteContext(overrides: Record<string, unknown> = {})
 			get: fn().mockReturnValue([])
 		},
 		registerMetadataAggregator: fn(),
-		...overrides
+		...rest
 	}
 }
