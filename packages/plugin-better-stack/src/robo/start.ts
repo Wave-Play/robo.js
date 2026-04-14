@@ -1,8 +1,12 @@
 import { createLogtailDrain } from '../core/drain.js'
 import { logger } from 'robo.js'
-import type { Client } from 'discord.js'
+import type { StartContext } from 'robo.js'
 
-export let heartbeatIntervalId: NodeJS.Timeout | null = null
+let heartbeatIntervalId: NodeJS.Timeout | null = null
+
+export function getHeartbeatIntervalId() {
+	return heartbeatIntervalId
+}
 
 interface PluginConfig {
 	heartbeat?: {
@@ -14,7 +18,8 @@ interface PluginConfig {
 	sourceToken?: string
 }
 
-export default (_client: Client, config: PluginConfig) => {
+export default (context: StartContext<PluginConfig>) => {
+	const config = context.pluginConfig ?? {}
 	const ingestingHost = config.ingestingHost ?? process.env.BETTER_STACK_INGESTING_HOST
 	const sourceToken = config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN
 
@@ -38,7 +43,7 @@ export default (_client: Client, config: PluginConfig) => {
 				logger.debug('Sending heartbeat...', new Date().toISOString())
 			}
 
-			fetch(url).catch((error) => {
+			fetch(url).catch((error: unknown) => {
 				logger.debug('Heartbeat failed!', error)
 			})
 		}, interval)

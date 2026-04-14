@@ -32,9 +32,8 @@ npx robo add @robojs/better-stack
 
 **Source Files**:
 - `src/core/drain.ts` - LogDrain implementation with ANSI fixes and Logtail integration (79 lines)
-- `src/events/_start.ts` - Plugin lifecycle initialization (47 lines)
-- `src/events/_stop.ts` - Cleanup heartbeat interval (8 lines)
-- `src/events/_restart.ts` - Delegates to _stop.ts (3 lines)
+- `src/robo/start.ts` - Plugin lifecycle initialization (47 lines)
+- `src/robo/stop.ts` - Cleanup heartbeat interval (stop hook runs on restart automatically)
 - `src/index.ts` - Public exports (2 lines)
 - `config/robo.mjs` - Plugin configuration
 
@@ -42,7 +41,7 @@ npx robo add @robojs/better-stack
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. Plugin Initialization (_start.ts)                            │
+│ 1. Plugin Initialization (start.ts)                              │
 │    ├─ Read config from plugin config or environment variables   │
 │    ├─ If sourceToken exists: create Logtail drain               │
 │    ├─ Set drain on root logger via logger().setDrain()         │
@@ -62,7 +61,7 @@ npx robo add @robojs/better-stack
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. Heartbeat Monitoring (_start.ts)                             │
+│ 3. Heartbeat Monitoring (start.ts)                               │
 │    ├─ setInterval fires every interval ms (default 5000)       │
 │    ├─ Log debug message if debug enabled                       │
 │    ├─ fetch(heartbeat.url)                                     │
@@ -70,7 +69,7 @@ npx robo add @robojs/better-stack
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│ 4. Cleanup (_stop.ts, _restart.ts)                              │
+│ 4. Cleanup (stop.ts)                                             │
 │    ├─ Clear heartbeat interval                                 │
 │    └─ Prevent memory leaks                                     │
 └─────────────────────────────────────────────────────────────────┘
@@ -196,7 +195,7 @@ export default {
 }
 ```
 
-**Configuration Precedence** (`src/events/_start.ts` lines 18-19):
+**Configuration Precedence** (`src/robo/start.ts` lines 18-19):
 - Plugin config overrides environment variables
 - `config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN`
 - `config.ingestingHost ?? process.env.BETTER_STACK_INGESTING_HOST`
@@ -597,7 +596,7 @@ default:
 
 ### Configuration Structure
 
-**Type Definition** (`src/events/_start.ts` lines 7-15):
+**Type Definition** (`src/robo/start.ts` lines 7-15):
 ```typescript
 interface PluginConfig {
   heartbeat?: {
@@ -612,7 +611,7 @@ interface PluginConfig {
 
 ### Initialization Flow
 
-**Location**: `src/events/_start.ts` lines 29-45
+**Location**: `src/robo/start.ts` lines 29-45
 
 **Steps**:
 1. Destructure config: `{ debug, interval = 5_000, url } = config.heartbeat ?? {}`
@@ -698,7 +697,7 @@ fetch(url).catch((error) => {
 
 ### Cleanup
 
-**Location**: `src/events/_stop.ts` lines 3-7
+**Location**: `src/robo/stop.ts` lines 3-7
 
 **Code**:
 ```typescript
@@ -713,7 +712,7 @@ export default () => {
 - Checks if `heartbeatIntervalId` exists
 - Clears interval via `clearInterval(heartbeatIntervalId)`
 - Prevents memory leaks from lingering intervals
-- Also called on restart via `_restart.ts`
+- Stop hook runs on restart automatically
 
 ## 9. Environment Variables
 
@@ -727,7 +726,7 @@ export default () => {
 
 **Sensitive**: Yes, treat as secret credential
 
-**Usage**: Read in `src/events/_start.ts` line 19:
+**Usage**: Read in `src/robo/start.ts` line 19:
 ```typescript
 const sourceToken = config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN
 ```
@@ -750,7 +749,7 @@ const sourceToken = config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN
 
 **Sensitive**: No, just a hostname
 
-**Usage**: Read in `src/events/_start.ts` line 18:
+**Usage**: Read in `src/robo/start.ts` line 18:
 ```typescript
 const ingestingHost = config.ingestingHost ?? process.env.BETTER_STACK_INGESTING_HOST
 ```
@@ -797,7 +796,7 @@ BETTER_STACK_INGESTING_HOST="in-eu.logtail.com"
 
 ### Full Interface
 
-**Type Definition** (`src/events/_start.ts` lines 7-15):
+**Type Definition** (`src/robo/start.ts` lines 7-15):
 ```typescript
 interface PluginConfig {
   heartbeat?: {
@@ -879,7 +878,7 @@ export default {
 
 ### Logger Import
 
-**Location**: `src/events/_start.ts` line 2
+**Location**: `src/robo/start.ts` line 2
 
 **Code**:
 ```typescript
@@ -892,7 +891,7 @@ import { logger } from 'robo.js'
 
 ### Setting Drain
 
-**Location**: `src/events/_start.ts` lines 21-27
+**Location**: `src/robo/start.ts` lines 21-27
 
 **Code**:
 ```typescript
@@ -962,7 +961,7 @@ if (levelValues[logger.getLevel()] <= levelValues[level]) {
 
 ### Debug Logging
 
-**Location**: `src/events/_start.ts` lines 38, 42
+**Location**: `src/robo/start.ts` lines 38, 42
 
 **Code**:
 ```typescript
@@ -998,7 +997,7 @@ export default {
 
 **Pros**:
 - ✅ **Early Log Capture**: Captures logs during Robo initialization, before plugins load
-- ✅ **Plugin Initialization Logs**: Logs from other plugins' _start events captured
+- ✅ **Plugin Initialization Logs**: Logs from other plugins' start hooks captured
 - ✅ **Direct Control**: Full control over drain configuration
 - ✅ **Single Location**: Don't need separate plugin config file
 
@@ -1036,8 +1035,8 @@ export default {
 - ✅ **Environment Variables**: Can use env vars instead of config file
 
 **Cons**:
-- ❌ **Late Log Capture**: Misses logs before plugin _start event
-- ❌ **Plugin Initialization Logs**: Logs from this plugin's _start not captured
+- ❌ **Late Log Capture**: Misses logs before plugin start hook
+- ❌ **Plugin Initialization Logs**: Logs from this plugin's start hook not captured
 - ❌ **Two Locations**: Config file + env vars (if used)
 
 **When to Use**:
@@ -1095,7 +1094,7 @@ export default {
 
 ### 1. Fetch API Warning Suppression
 
-**Location**: `src/events/_start.ts` line 33
+**Location**: `src/robo/start.ts` line 33
 
 **Code**:
 ```typescript
@@ -1148,7 +1147,7 @@ case 'trace':
 
 ### 4. Configuration Precedence
 
-**Location**: `src/events/_start.ts` lines 18-19
+**Location**: `src/robo/start.ts` lines 18-19
 
 **Code**:
 ```typescript
@@ -1166,7 +1165,7 @@ const sourceToken = config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN
 
 **Direct Drain**: Set during Robo config load (earliest)
 
-**Plugin Config**: Set during _start event (after plugins load)
+**Plugin Config**: Set during start hook (after plugins load)
 
 **⚠️ GOTCHA**: Direct drain captures more logs
 
@@ -1233,7 +1232,7 @@ if (levelValues[logger.getLevel()] <= levelValues[level]) {
 
 **Pattern**: Plugin uses root logger directly
 
-**Code** (`src/events/_start.ts` line 2):
+**Code** (`src/robo/start.ts` line 2):
 ```typescript
 import { logger } from 'robo.js'
 ```
@@ -1248,7 +1247,7 @@ import { logger } from 'robo.js'
 
 ### 12. Heartbeat Cleanup
 
-**Location**: `src/events/_stop.ts` lines 3-7
+**Location**: `src/robo/stop.ts` lines 3-7
 
 **Code**:
 ```typescript
@@ -1261,7 +1260,7 @@ if (heartbeatIntervalId) {
 
 **Impact**: Memory leak from lingering intervals
 
-**Prevention**: _stop.ts clears interval
+**Prevention**: stop.ts clears interval
 
 ### 13. Promise.all Pattern
 
@@ -1292,7 +1291,7 @@ return Promise.all([consoleWrite, logtailSend]).then(() => {
 
 ### 15. Fetch Error Handling
 
-**Location**: `src/events/_start.ts` lines 41-43
+**Location**: `src/robo/start.ts` lines 41-43
 
 **Code**:
 ```typescript
@@ -1309,7 +1308,7 @@ fetch(url).catch((error) => {
 
 ### 16. Endpoint URL Construction
 
-**Location**: `src/events/_start.ts` line 24
+**Location**: `src/robo/start.ts` line 24
 
 **Code**:
 ```typescript
@@ -1382,12 +1381,10 @@ const stream = level === 'warn' || level === 'error' ? process.stderr : process.
 - `src/core/drain.ts` - LogDrain implementation with ANSI fixes (79 lines)
   - Function: `createLogtailDrain(sourceToken, options)`
   - Function: `fixAnsi(message)`
-- `src/events/_start.ts` - Plugin lifecycle initialization (47 lines)
+- `src/robo/start.ts` - Plugin lifecycle initialization (47 lines)
   - Event handler: Initialize drain and heartbeat
-- `src/events/_stop.ts` - Cleanup heartbeat interval (8 lines)
+- `src/robo/stop.ts` - Cleanup heartbeat interval (stop hook runs on restart automatically)
   - Event handler: Clear heartbeat interval
-- `src/events/_restart.ts` - Delegates to _stop.ts (3 lines)
-  - Event handler: Call _stop event
 
 ### Configuration
 
@@ -1419,7 +1416,7 @@ const stream = level === 'warn' || level === 'error' ? process.stderr : process.
 
 ### Logger Usage Pattern
 
-**Import** (`src/events/_start.ts` line 2):
+**Import** (`src/robo/start.ts` line 2):
 ```typescript
 import { logger } from 'robo.js'
 ```
@@ -1468,7 +1465,7 @@ logger.debug(`Failed to send heartbeat:`, error)
 
 **Implementation**:
 ```typescript
-// In src/events/_start.ts
+// In src/robo/start.ts
 import { logger } from 'robo.js'
 
 const betterStackLogger = logger.fork('better-stack')
@@ -1504,7 +1501,7 @@ export { createLogtailDrain }
 
 ### PluginConfig Interface
 
-**Location**: `src/events/_start.ts` lines 7-15
+**Location**: `src/robo/start.ts` lines 7-15
 
 **Definition**:
 ```typescript
