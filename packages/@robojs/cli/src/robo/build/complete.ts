@@ -120,4 +120,23 @@ command.parse()
 	}
 
 	logger.ready(`CLI entry point generated: .robo/build/cli.js`)
+
+	// Auto-set bin field if missing
+	const pkgPath = path.join(paths.root, 'package.json')
+	try {
+		const rawContent = await fs.readFile(pkgPath, 'utf-8')
+		const fullPkg = JSON.parse(rawContent)
+
+		if (!fullPkg.bin) {
+			// Detect indentation from the original file
+			const indentMatch = rawContent.match(/\n([ \t]+)/)
+			const indent = indentMatch?.[1] ?? '\t'
+
+			fullPkg.bin = { [cliName]: '.robo/build/cli.js' }
+			await fs.writeFile(pkgPath, JSON.stringify(fullPkg, null, indent) + '\n', 'utf-8')
+			logger.info(`Added "bin" field to package.json — run "npm link" or "/cli link" during dev to test with your CLI name`)
+		}
+	} catch {
+		// Non-critical — don't fail the build
+	}
 }

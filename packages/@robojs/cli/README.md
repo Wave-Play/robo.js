@@ -6,7 +6,7 @@
 
 Build standalone command-line applications with **file-based routing** powered by [Robo.js](https://robojs.dev). Create professional CLIs with minimal boilerplate, automatic help generation, and full TypeScript support.
 
-- [📚 **Documentation:** Getting started](https://robojs.dev/cli/overview)
+- [📚 **Documentation:** Getting started](https://robojs.dev/cli)
 - [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
 ## Features
@@ -15,7 +15,6 @@ Build standalone command-line applications with **file-based routing** powered b
 - **Automatic help generation** - Help text generated from your config
 - **Subcommand support** - Nested directories become subcommands
 - **Type-safe options** - Full TypeScript inference for command options
-- **Extensions** - Add before/after hooks and options to existing commands
 - **Zero config** - Works out of the box
 
 ## Installation
@@ -36,7 +35,7 @@ npx create-robo my-cli -p @robojs/cli
 
 ### 1. Create a command
 
-Create `src/robo/cli/commands/hello.ts`:
+Create `src/cli/hello.ts`:
 
 ```typescript
 import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
@@ -53,30 +52,52 @@ export default (ctx: CliContext<typeof config>) => {
 }
 ```
 
-### 2. Build your CLI
+### 2. Build and link
 
 ```bash
 npx robo build
+npm link
 ```
+
+The `bin` field is automatically added to `package.json` during build, and `npm link` makes your CLI available by name.
 
 ### 3. Run it
 
 ```bash
-node .robo/build/cli.js hello
+my-cli hello
 # Hello, World!
 
-node .robo/build/cli.js hello --name Robo
+my-cli hello --name Robo
 # Hello, Robo!
 ```
 
+## Development
+
+Use `robo dev` for watch mode — your CLI rebuilds automatically on every file change:
+
+```bash
+npx robo dev
+```
+
+The `bin` field is automatically added to `package.json` during build if it doesn't exist yet. To test with your actual CLI name, link your package:
+
+```bash
+npm link
+mycli hello --name Robo
+```
+
+During `robo dev`, the interactive terminal provides `/cli link` (runs the link command for you), `/cli list`, and `/cli run <command>` for quick testing.
+
+👉 [Full development guide](https://robojs.dev/cli/development)
+
 ## Creating Commands
 
-Commands are created by placing files in `src/robo/cli/commands/`. The file path determines the command name.
+Commands are created by placing files in `src/cli/`. The file path determines the command name.
 
 ### Basic Command
 
 ```typescript
-// src/robo/cli/commands/greet.ts
+// src/cli/greet.ts
 // Usage: mycli greet
 
 export const config = {
@@ -91,7 +112,7 @@ export default () => {
 ### Command with Options
 
 ```typescript
-// src/robo/cli/commands/build.ts
+// src/cli/build.ts
 // Usage: mycli build --watch --output ./dist
 
 import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
@@ -117,7 +138,7 @@ export default (ctx: CliContext<typeof config>) => {
 Create nested directories for subcommands:
 
 ```
-src/robo/cli/commands/
+src/cli/
 ├── db/
 │   ├── index.ts      # mycli db
 │   ├── migrate.ts    # mycli db migrate
@@ -130,7 +151,7 @@ src/robo/cli/commands/
 Example subcommand:
 
 ```typescript
-// src/robo/cli/commands/db/migrate.ts
+// src/cli/db/migrate.ts
 // Usage: mycli db migrate --target latest
 
 import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
@@ -156,7 +177,7 @@ export default (ctx: CliContext<typeof config>) => {
 Enable positional arguments to accept values without flags:
 
 ```typescript
-// src/robo/cli/commands/install.ts
+// src/cli/install.ts
 // Usage: mycli install lodash express react
 
 import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
@@ -220,72 +241,16 @@ The handler receives a context object with:
 | `cwd` | `string` | Current working directory |
 | `argv` | `string[]` | Raw arguments after command |
 
-## Command Extensions
-
-Extensions let you add options and hooks to existing commands. Place them in `src/robo/cli/extend/`.
-
-### Adding Options
-
-```typescript
-// src/robo/cli/extend/build.ts
-// Extends: mycli build
-
-export const config = {
-  description: 'Extension for build command',
-  options: [
-    { alias: '-m', name: '--minify', description: 'Minify output', type: 'boolean' }
-  ]
-}
-```
-
-### Before/After Hooks
-
-```typescript
-// src/robo/cli/extend/auth/login.ts
-// Extends: mycli auth login
-
-import type { CliContext } from 'robo.js'
-
-export const config = {
-  description: 'Extension for auth login command',
-  priority: 10
-}
-
-export async function before(ctx: CliContext) {
-  console.log('Running pre-login checks...')
-  // Return false to abort the command
-  return true
-}
-
-export async function after(ctx: CliContext) {
-  console.log('Login completed:', ctx.result)
-  // Send notification, update status, etc.
-}
-```
-
-### Extension File Naming
-
-The file path determines which command is extended:
-
-| File | Extends Command |
-|------|----------------|
-| `extend/build.ts` | `build` |
-| `extend/config/set.ts` | `config set` |
-| `extend/auth/login.ts` | `auth login` |
-
-Use nested folders to extend subcommands.
-
 ## Publishing Your CLI
 
 ### 1. Configure package.json
+
+The `bin` field is auto-added during build. Just make sure `files` includes the build output:
 
 ```json
 {
   "name": "my-awesome-cli",
   "version": "1.0.0",
-  "bin": {
-    "mycli": ".robo/build/cli.js"
-  },
   "files": [
     ".robo/build"
   ]
@@ -312,18 +277,13 @@ mycli hello
 ```
 my-cli/
 ├── src/
-│   └── robo/
-│       └── cli/
-│           ├── commands/      # CLI commands
-│           │   ├── hello.ts
-│           │   └── db/
-│           │       ├── index.ts
-│           │       └── migrate.ts
-│           └── extend/        # Command extensions
-│               └── auth/
-│                   └── login.ts
+│   └── cli/
+│       ├── hello.ts               # CLI commands
+│       ├── db/
+│       │   ├── index.ts
+│       │   └── migrate.ts
 ├── config/
-│   └── robo.ts               # Robo.js config
+│   └── robo.ts                    # Robo.js config
 ├── package.json
 └── tsconfig.json
 ```
@@ -342,9 +302,6 @@ import type {
   CliCommandConfig,     // Command configuration
   CliOptionConfig,      // Option configuration
   CliHandler,           // Handler function type
-  CliExtendConfig,      // Extension configuration
-  CliBeforeHook,        // Before hook type
-  CliAfterHook          // After hook type
 } from 'robo.js/cli.js'
 ```
 
@@ -376,4 +333,4 @@ Explore more about Robo.js:
 - [Discord Activities](https://robojs.dev/discord-activities)
 - [Plugins](https://robojs.dev/plugins/overview)
 
-> **Heads up!** This is the plugin documentation. For extending the internal Robo CLI (adding commands to `npx robo`), see the [CLI Extending Guide](https://robojs.dev/cli/extending).
+> **Heads up!** This is the plugin documentation. For extending the internal Robo CLI (adding commands to `npx robo`), see the [CLI Extending Guide](https://robojs.dev/robo-cli/extending).
