@@ -121,10 +121,10 @@ Backups are saved to `.robo/flashcore-backups/` with a timestamp.
 
 ### `/db legacy-migrate`
 
-Migrate all data from the legacy `.robo/data/` format to `.robo/flashcore/`. This is a one-time operation that reads every key from the old format and writes it to the new format.
+Show the current status of the lazy migration from legacy `.robo/data/` to `.robo/flashcore/`. Displays the migration mode, backup location, and when the last key was migrated.
 
 ```
 /db legacy-migrate
 ```
 
-See the [Migration Guide](/docs/framework/core/flashcore/migration-guide) for context on when to use this.
+Legacy keys are migrated automatically on read because `.robo/data/` filenames are one-way SHA-256 hashes that cannot be enumerated. See the [Migration Guide](/docs/framework/core/flashcore/migration-guide) for details on how the lazy migration works.

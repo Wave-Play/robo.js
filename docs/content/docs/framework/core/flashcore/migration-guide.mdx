@@ -162,17 +162,21 @@ You can start using models alongside KV at any time. Models and KV storage are i
 
 Models store data separately from KV keys. There is no collision risk.
 
-## Explicit Legacy Migration
+## Checking Migration Status
 
-For a full one-time migration of all legacy data, install `@robojs/flashcore-extras` and run the `/db legacy-migrate` terminal command:
+If you install `@robojs/flashcore-extras`, you can use the `/db legacy-migrate` terminal command to check the current state of the lazy migration:
 
 ```
 /db legacy-migrate
 ```
 
-This reads every key from `.robo/data/` and copies it to `.robo/flashcore/`, then disables the lazy read-through.
+This shows the migration mode, backup location, and the last time a key was lazily migrated. It does **not** perform a bulk migration — see the note below for why.
 
 See [CLI Commands](/docs/flashcore-extras/cli) for more database management commands.
+
+<Callout type="info">
+**Why is there no bulk migration?** The legacy adapter stored files as SHA-256 hashes of the key name, which is a one-way operation. Given only a hashed filename, the system cannot determine the original key. This means legacy keys are not enumerable and a full scan of `.robo/data/` is not possible. Instead, keys are migrated on-demand as your application reads them.
+</Callout>
 
 ## Step-by-Step Checklist
 
@@ -181,9 +185,9 @@ See [CLI Commands](/docs/flashcore-extras/cli) for more database management comm
 3. **Check `.robo/flashcore-backups/`** — A backup of your legacy data was created on first startup.
 4. **Add models** (optional) — Define models with `createModel` and `f` for any structured data you want to migrate from flat KV.
 5. **Install `@robojs/flashcore-extras`** (optional) — For migrations, transactions, integrity tools, and `/db` terminal commands.
-6. **Run `/db legacy-migrate`** (optional) — For a complete one-time migration of all legacy KV data.
-7. **Clean up** — Once you have verified everything works, you can optionally remove the `.robo/data/` directory.
+6. **Run `/db legacy-migrate`** (optional) — Check the current migration status and verify the lazy migration is progressing.
+7. **Clean up** — Once you are confident all actively used keys have been read at least once since upgrading, you can optionally remove the `.robo/data/` directory.
 
 <Callout type="warn">
-Do not delete `.robo/data/` until you have confirmed all keys have been migrated. The lazy migration only copies keys as they are read.
+Do not delete `.robo/data/` until you are confident all keys your application uses have been accessed at least once. The lazy migration only copies keys as they are read — keys that are never read remain only in the legacy directory.
 </Callout>
