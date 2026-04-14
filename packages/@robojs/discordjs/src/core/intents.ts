@@ -110,11 +110,11 @@ const intentBitToName = Object.fromEntries(
  * Logs warnings for any missing intents.
  *
  * @param client - Discord.js client instance
- * @param events - Map of event names to handler records
+ * @param events - Registered event names or a map of event names to handler records
  */
-export function checkIntents(client: Client, events: Record<string, unknown[]>): void {
+export function checkIntents(client: Client, events: string[] | Record<string, unknown[]>): void {
 	const missingIntents = new Set<GatewayIntentBits>()
-	const eventNames = Object.keys(events)
+	const eventNames = Array.isArray(events) ? events : Object.keys(events)
 	const intents = Number(client.options.intents.bitfield)
 
 	for (const eventName of eventNames) {
@@ -179,6 +179,34 @@ export function inferIntents(eventNames: string[]): Set<GatewayIntentBits> {
  */
 export function getIntentNames(intents: Set<GatewayIntentBits>): string[] {
 	return Array.from(intents).map((bit) => intentBitToName[bit] ?? `Unknown(${bit})`)
+}
+
+/**
+ * Check if the client has the required intents for prefix commands.
+ * Specifically validates that MessageContent intent is configured.
+ *
+ * @param client - Discord.js client instance
+ */
+export function checkPrefixIntents(client: Client, dmEnabled = true): void {
+	const intents = Number(client.options.intents.bitfield)
+	const missingIntents: string[] = []
+
+	if ((intents & GatewayIntentBits.GuildMessages) === 0) {
+		missingIntents.push('GuildMessages')
+	}
+	if (dmEnabled && (intents & GatewayIntentBits.DirectMessages) === 0) {
+		missingIntents.push('DirectMessages')
+	}
+	if ((intents & GatewayIntentBits.MessageContent) === 0) {
+		missingIntents.push('MessageContent')
+	}
+
+	if (missingIntents.length > 0) {
+		discordLogger.warn(
+			`Prefix commands require intents: ${missingIntents.map((i) => `\x1b[1m${i}\x1b[0m`).join(', ')}. ` +
+			`Add them to your clientOptions.intents configuration.`
+		)
+	}
 }
 
 /**

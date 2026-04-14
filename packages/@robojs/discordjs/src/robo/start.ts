@@ -9,10 +9,11 @@
  * The client instance is created in the prepare hook, allowing other plugins
  * to access it during their start hooks before the bot goes online.
  */
-import { color, portal } from 'robo.js'
+import { color, Manifest, Mode, Robo } from 'robo.js'
 import { getClient } from '../core/client.js'
-import { checkIntents } from '../core/intents.js'
+import { checkIntents, checkPrefixIntents } from '../core/intents.js'
 import { discordLogger } from '../core/logger.js'
+import { getRegisteredDiscordEventNames } from './event-topology.js'
 
 /**
  * Start hook - Logs the Discord client into Discord
@@ -39,6 +40,26 @@ export default async function startHook(): Promise<void> {
 	// Get the client (created in prepare hook)
 	const client = getClient()
 
+	// Register ready listener BEFORE login — clientReady fires during login(),
+	// so registering after await would miss the event
+	client.once('clientReady', async () => {
+		Robo.status.set('bot', `On standby as ${Mode.color(color.bold(client.user?.tag ?? 'Unknown'))}`, { priority: 1 })
+
+		// Check for missing intents based on registered event handlers
+		checkIntents(client, getRegisteredDiscordEventNames())
+
+		// Check prefix command intents if prefix commands exist
+		try {
+			const prefixSummaries = Manifest.routeSummariesSync('discordjs', 'prefixCommands')
+			if (prefixSummaries.length > 0) {
+				const dmEnabled = prefixSummaries.some((summary) => summary.metadata?.dmPermission !== false)
+				checkPrefixIntents(client, dmEnabled)
+			}
+		} catch {
+			// Route not in manifest — no prefix commands
+		}
+	})
+
 	// Login to Discord
 	discordLogger.debug('Logging in to Discord...')
 	await client.login(token)
@@ -51,15 +72,6 @@ export default async function startHook(): Promise<void> {
 		// Use force: false - mock mode doesn't need to delete existing commands
 		await registerCommandsAtRuntime({ force: false })
 	}
-
-	// Log ready message and check intents once the client is fully ready
-	client.once('clientReady', () => {
-		discordLogger.ready(`On standby as ${color.bold(client.user?.tag ?? 'Unknown')}`)
-
-		// Check for missing intents based on registered event handlers
-		const eventsData = portal.getByType('discordjs:events') as Record<string, unknown[]>
-		checkIntents(client, eventsData)
-	})
 }
 
 /**
@@ -76,6 +88,7 @@ async function waitForServerIfAvailable(): Promise<void> {
 
 	try {
 		// Dynamic import to avoid hard dependency on @robojs/server
+		// @ts-expect-error - @robojs/server is an optional peer dependency
 		const { ready } = await import('@robojs/server')
 		discordLogger.debug('Waiting for @robojs/server to be ready...')
 		await ready()
