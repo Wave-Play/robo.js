@@ -37,8 +37,7 @@
 	},
 	"files": [
 		".robo/",
-		"seed/",
-		"src/",
+		"skills/",
 		"LICENSE",
 		"README.md"
 	],
