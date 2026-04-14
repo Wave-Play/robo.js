@@ -194,7 +194,8 @@ export function PluginHero({ name, description, icon, github, npm, deprecated, p
 	]
 
 	const npmUrl = npm ?? `https://www.npmjs.com/package/${name}`
-	const installCmd = `npx robo add ${name}`
+	const channel = process.env.NEXT_PUBLIC_RELEASE_CHANNEL
+	const installCmd = channel ? `npx robo add ${name}@${channel}` : `npx robo add ${name}`
 	const previewCmd = `npx robo add https://pkg.pr.new/${name}@next`
 	const activeCmd = preview ? previewCmd : installCmd
 

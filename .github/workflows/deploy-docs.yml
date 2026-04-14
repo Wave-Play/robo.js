@@ -34,6 +34,8 @@ jobs:
 
       - name: Build docs
         working-directory: docs
+        env:
+          NEXT_PUBLIC_RELEASE_CHANNEL: ${{ github.ref_name == 'next' && 'next' || '' }}
         run: pnpm run build
 
       - name: Package build

@@ -1,5 +1,6 @@
 import { remarkInstall } from "fumadocs-docgen"
 import { defineCollections, defineConfig, defineDocs, frontmatterSchema } from "fumadocs-mdx/config"
+import remarkReleaseTag from "./src/lib/remark-release-tag"
 import { z } from "zod"
 
 export const docs = defineDocs({
@@ -43,6 +44,6 @@ export default defineConfig({
         light: "vitesse-light",
       },
     },
-    remarkPlugins: [[remarkInstall, { persist: { id: "pkg-add-persist" } }]],
+    remarkPlugins: [remarkReleaseTag, [remarkInstall, { persist: { id: "pkg-add-persist" } }]],
   },
 })
