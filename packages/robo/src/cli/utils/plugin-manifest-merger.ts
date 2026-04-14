@@ -144,7 +144,7 @@ export async function mergePluginManifests(
 
 	loggerInstance.debug(`Merging manifests from ${plugins.size} plugin(s) using mode: ${mode}...`)
 
-	for (const [pluginName, pluginData] of plugins) {
+	for (const [pluginName] of plugins) {
 		// Find the plugin's package path
 		const packagePath = await findPackagePath(pluginName, process.cwd())
 		if (!packagePath) {

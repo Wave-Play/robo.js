@@ -26,7 +26,7 @@ export interface GenerateManifestTypesOptions {
  * Generate .robo/types/manifest.d.ts with typed maps.
  */
 export async function generateManifestTypes(options: GenerateManifestTypesOptions): Promise<void> {
-	const { routes, routeEntries, hooks, plugins } = options
+	const { routes, hooks, plugins } = options
 
 	const lines: string[] = [
 		'// AUTO-GENERATED FILE - DO NOT EDIT',

@@ -30,6 +30,13 @@ let importCacheBuster = Date.now()
  */
 type NamespaceData = Map<string, Record<string, HandlerRecord | HandlerRecord[]>>
 
+interface RouteSnapshot {
+	namespace: string
+	route: string
+	handlers: Record<string, HandlerRecord | HandlerRecord[]>
+	controllerFactory?: ControllerFactory
+}
+
 /**
  * Implementation of the Portal API.
  */
@@ -43,6 +50,8 @@ class PortalImpl implements PortalAPI {
 	private _namespaceProxies: Map<string, unknown> = new Map()
 	private _mode: string = 'production'
 	private _initialized = false
+	private _routeLoads: Map<string, Promise<void>> = new Map()
+	private _initializedControllers: Set<string> = new Set()
 
 	get mode(): string {
 		return this._mode
@@ -244,6 +253,8 @@ class PortalImpl implements PortalAPI {
 	 * @param bustCache - Use cache-busting URL for HMR reloads
 	 */
 	async importHandler(namespace: string, route: string, key: string, bustCache = false): Promise<void> {
+		await this.ensureRoute(namespace, route)
+
 		const record = this.getRecord(namespace, route, key)
 		if (!record) {
 			throw new Error(`Handler not found: ${namespace}.${route}['${key}']`)
@@ -389,23 +400,39 @@ class PortalImpl implements PortalAPI {
 	 * No-op if already loaded.
 	 */
 	async ensureRoute(namespace: string, route: string): Promise<void> {
+		const routeKey = this.getRouteKey(namespace, route)
 		const namespaceData = this._namespaces.get(namespace)
 		if (namespaceData?.has(route)) {
 			return // Already loaded
 		}
 
-		// Load from manifest
-		const entries = await Manifest.load(namespace, route)
-		const routeDefs = Manifest.routeDefinitions()
-		const routeConfig = routeDefs[namespace]?.routes[route]
-
-		if (!routeConfig) {
-			logger.warn(`Route config not found for ${namespace}.${route}`)
-			return
+		const inFlight = this._routeLoads.get(routeKey)
+		if (inFlight) {
+			return inFlight
 		}
 
-		const handlers = this.createHandlerRecords(entries, namespace, route, routeConfig)
-		this.registerRoute(namespace, route, handlers)
+		const loadPromise = (async () => {
+			const entries = await Manifest.load(namespace, route)
+			const routeDefs = Manifest.routeDefinitions()
+			const routeConfig = routeDefs[namespace]?.routes[route]
+
+			if (!routeConfig) {
+				logger.warn(`Route config not found for ${namespace}.${route}`)
+				return
+			}
+
+			const handlers = this.createHandlerRecords(entries, namespace, route, routeConfig)
+			this.registerRoute(namespace, route, handlers)
+			await this.ensureControllerFactory(namespace, route, routeConfig)
+		})()
+
+		this._routeLoads.set(routeKey, loadPromise)
+
+		try {
+			await loadPromise
+		} finally {
+			this._routeLoads.delete(routeKey)
+		}
 	}
 
 	/**
@@ -538,25 +565,8 @@ class PortalImpl implements PortalAPI {
 	 * Reload all handlers in a route (for HMR).
 	 */
 	async reloadRoute(namespace: string, route: string): Promise<void> {
-		// Reload manifest first
-		await Manifest.reload(namespace, route)
-
-		// Invalidate all handlers in this route
-		const namespaceData = this._namespaces.get(namespace)
-		const routeData = namespaceData?.get(route)
-
-		if (routeData) {
-			for (const recordOrArray of Object.values(routeData)) {
-				const records = Array.isArray(recordOrArray) ? recordOrArray : [recordOrArray]
-				for (const record of records) {
-					if (record.handler !== null) {
-						const importPath = this.getImportPath(record)
-						this.bustImportCache(importPath)
-					}
-					record.handler = null
-				}
-			}
-		}
+		const snapshot = await this.buildRouteSnapshot(namespace, route)
+		this.swapRouteSnapshot(snapshot)
 
 		logger.debug(`Reloaded route: ${namespace}.${route}`)
 	}
@@ -566,16 +576,178 @@ class PortalImpl implements PortalAPI {
 	 */
 	clearCache(): void {
 		this._namespaces.clear()
+		this._namespaceRoutes.clear()
+		this._singularNames.clear()
 		this._controllers.clear()
 		this._pluginStates.clear()
 		this._modules.clear()
 		this._namespaceProxies.clear()
+		this._routeLoads.clear()
+		this._initializedControllers.clear()
 		this._initialized = false
 	}
 
 	// =========================================================================
 	// Private helpers
 	// =========================================================================
+
+	private getRouteKey(namespace: string, route: string): string {
+		return `${namespace}.${route}`
+	}
+
+	private async ensureControllerFactory(namespace: string, route: string, routeConfig: RouteDefinition): Promise<void> {
+		const routeKey = this.getRouteKey(namespace, route)
+		if (!routeConfig.controller?.factory || this._initializedControllers.has(routeKey)) {
+			return
+		}
+
+		let factory: ControllerFactory | undefined
+		try {
+			factory = await this.loadControllerFactory(namespace, route, routeConfig)
+		} catch {
+			return
+		}
+
+		if (!factory) {
+			return
+		}
+
+		this.registerController(namespace, route, factory)
+		this._initializedControllers.add(routeKey)
+		logger.debug(`Registered controller factory: ${namespace}.${route}`)
+	}
+
+	private async loadControllerFactory(
+		namespace: string,
+		route: string,
+		routeConfig: RouteDefinition
+	): Promise<ControllerFactory | undefined> {
+		try {
+			const [modulePath, exportName] = routeConfig.controller.factory.split('#')
+
+			if (!modulePath || !exportName) {
+				logger.warn(`Invalid controller factory path: ${routeConfig.controller.factory}`)
+				return undefined
+			}
+
+			let importPath = modulePath
+			if (modulePath.startsWith('./') || modulePath.startsWith('../')) {
+				const plugins = Manifest.plugins()
+				const plugin = plugins.find((item) => item.namespace === namespace)
+
+				let basePath: string
+				if (plugin) {
+					basePath = path.resolve(process.cwd(), plugin.path)
+					logger.debug(`Resolving controller factory from plugin: ${plugin.name} at ${basePath}`)
+				} else {
+					basePath = process.cwd()
+				}
+
+				importPath = pathToFileURL(path.resolve(basePath, modulePath)).toString()
+			}
+
+			const factoryModule = await import(importPath)
+			const factory = factoryModule[exportName]
+
+			if (typeof factory !== 'function') {
+				logger.warn(`Controller factory not found or not a function: ${routeConfig.controller.factory}`)
+				return undefined
+			}
+
+			return factory as ControllerFactory
+		} catch (error) {
+			logger.error(`Failed to load controller factory ${routeConfig.controller.factory}:`, error)
+			throw error
+		}
+	}
+
+	private async buildRouteSnapshot(namespace: string, route: string): Promise<RouteSnapshot> {
+		await Promise.all([
+			Manifest.reload(namespace, route),
+			Manifest.reloadRouteSummaries(namespace, route)
+		])
+
+		const entries = await Manifest.load(namespace, route)
+		const routeDefs = Manifest.routeDefinitions()
+		const routeConfig = routeDefs[namespace]?.routes[route]
+
+		if (!routeConfig) {
+			throw new Error(`Route config not found for ${namespace}.${route}`)
+		}
+
+		const handlers = this.createHandlerRecords(entries, namespace, route, routeConfig)
+		const controllerFactory = routeConfig.controller?.factory
+			? await this.loadControllerFactory(namespace, route, routeConfig)
+			: undefined
+
+		if (routeConfig.controller?.factory && !controllerFactory) {
+			throw new Error(`Controller factory could not be resolved for ${namespace}.${route}`)
+		}
+
+		return { namespace, route, handlers, controllerFactory }
+	}
+
+	private swapRouteSnapshot(snapshot: RouteSnapshot): void {
+		// Save old route data for rollback
+		const namespaceData = this._namespaces.get(snapshot.namespace)
+		const oldHandlers = namespaceData?.get(snapshot.route)
+		const oldController = this._controllers.get(snapshot.namespace)?.get(snapshot.route)
+		const routeKey = this.getRouteKey(snapshot.namespace, snapshot.route)
+		const hadInitializedController = this._initializedControllers.has(routeKey)
+
+		this.clearRoute(snapshot.namespace, snapshot.route)
+
+		try {
+			this.registerRoute(snapshot.namespace, snapshot.route, snapshot.handlers)
+
+			if (snapshot.controllerFactory) {
+				this.registerController(snapshot.namespace, snapshot.route, snapshot.controllerFactory)
+				this._initializedControllers.add(routeKey)
+			}
+		} catch (error) {
+			// Rollback: restore old route data
+			if (oldHandlers) {
+				this.registerRoute(snapshot.namespace, snapshot.route, oldHandlers)
+			}
+			if (oldController) {
+				this.registerController(snapshot.namespace, snapshot.route, oldController)
+			}
+			if (hadInitializedController) {
+				this._initializedControllers.add(routeKey)
+			}
+			throw error
+		}
+	}
+
+	private clearRoute(namespace: string, route: string): void {
+		const routeKey = this.getRouteKey(namespace, route)
+		const namespaceData = this._namespaces.get(namespace)
+		const routeData = namespaceData?.get(route)
+
+		if (routeData) {
+			for (const recordOrArray of Object.values(routeData)) {
+				const records = Array.isArray(recordOrArray) ? recordOrArray : [recordOrArray]
+				for (const record of records) {
+					if (record.handler !== null) {
+						this.bustImportCache(this.getImportPath(record))
+					}
+					record.handler = null
+				}
+			}
+
+			namespaceData.delete(route)
+			this._namespaceProxies.delete(namespace)
+		}
+
+		const singularMap = this._singularNames.get(namespace)
+		if (singularMap) {
+			singularMap.delete(route)
+		}
+
+		this._routeLoads.delete(routeKey)
+		this._initializedControllers.delete(routeKey)
+		this._controllers.get(namespace)?.delete(route)
+	}
 
 	/**
 	 * Get the import path for a handler record.

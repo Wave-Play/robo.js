@@ -14,6 +14,7 @@ import type {
 	AggregatedMetadata,
 	EnvMetadata,
 	HandlerEntry,
+	HandlerSummary,
 	HookEntry,
 	ManifestAPI,
 	ManifestOptions,
@@ -37,6 +38,7 @@ interface ManifestCache {
 	routeDefinitions?: RouteDefinitions
 	seedsIndex?: SeedsIndex
 	routes: Map<string, HandlerEntry[]>
+	routeSummaries: Map<string, HandlerSummary[]>
 	hooks: Map<string, HookEntry[]>
 	metadata: Map<string, AggregatedMetadata>
 	pluginConfigs: Map<string, Record<string, unknown>>
@@ -51,6 +53,7 @@ class ManifestLoader implements ManifestAPI {
 	private _initialized = false
 	private _cache: ManifestCache = {
 		routes: new Map(),
+		routeSummaries: new Map(),
 		hooks: new Map(),
 		metadata: new Map(),
 		pluginConfigs: new Map(),
@@ -111,6 +114,37 @@ class ManifestLoader implements ManifestAPI {
 		}
 
 		return cached
+	}
+
+	/**
+	 * Get lightweight route summaries.
+	 */
+	async routeSummaries(namespace: string, route: string): Promise<HandlerSummary[]> {
+		return this.loadRouteSummaries(namespace, route)
+	}
+
+	/**
+	 * Get lightweight route summaries synchronously.
+	 * Falls back to disk when not cached.
+	 */
+	routeSummariesSync(namespace: string, route: string): HandlerSummary[] {
+		const key = this.routeKey(namespace, route)
+		const cached = this._cache.routeSummaries.get(key)
+
+		if (cached) {
+			return cached
+		}
+
+		try {
+			const filePath = this.manifestPath(`summaries/${namespace}.${route}.json`)
+			const content = fsSync.readFileSync(filePath, 'utf-8')
+			const summaries = JSON.parse(content) as HandlerSummary[]
+			this._cache.routeSummaries.set(key, summaries)
+			return summaries
+		} catch {
+			this._cache.routeSummaries.set(key, [])
+			return []
+		}
 	}
 
 	/**
@@ -392,11 +426,21 @@ class ManifestLoader implements ManifestAPI {
 	}
 
 	/**
+	 * Reload a route summary manifest (for HMR).
+	 */
+	async reloadRouteSummaries(namespace: string, route: string): Promise<HandlerSummary[]> {
+		const key = this.routeKey(namespace, route)
+		this._cache.routeSummaries.delete(key)
+		return this.loadRouteSummaries(namespace, route)
+	}
+
+	/**
 	 * Unload a route manifest (free memory).
 	 */
 	unload(namespace: string, route: string): void {
 		const key = this.routeKey(namespace, route)
 		this._cache.routes.delete(key)
+		this._cache.routeSummaries.delete(key)
 	}
 
 	/**
@@ -405,6 +449,7 @@ class ManifestLoader implements ManifestAPI {
 	clearCache(): void {
 		this._cache = {
 			routes: new Map(),
+			routeSummaries: new Map(),
 			hooks: new Map(),
 			metadata: new Map(),
 			pluginConfigs: new Map(),
@@ -495,6 +540,26 @@ class ManifestLoader implements ManifestAPI {
 			return metadata
 		} catch {
 			return undefined
+		}
+	}
+
+	private async loadRouteSummaries(namespace: string, route: string): Promise<HandlerSummary[]> {
+		const key = this.routeKey(namespace, route)
+
+		if (this._cache.routeSummaries.has(key)) {
+			return this._cache.routeSummaries.get(key)!
+		}
+
+		const summaryFile = `summaries/${namespace}.${route}.json`
+		const summaryPath = this.manifestPath(summaryFile)
+		try {
+			const content = await fs.readFile(summaryPath, 'utf-8')
+			const summaries = JSON.parse(content) as HandlerSummary[]
+			this._cache.routeSummaries.set(key, summaries)
+			return summaries
+		} catch {
+			this._cache.routeSummaries.set(key, [])
+			return []
 		}
 	}
 }

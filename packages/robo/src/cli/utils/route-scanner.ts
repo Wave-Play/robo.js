@@ -13,7 +13,7 @@ import { logger } from '../../core/logger.js'
 import { ALLOWED_EXTENSIONS } from '../../core/constants.js'
 import { IS_BUN_RUNTIME } from './runtime-utils.js'
 import { hasProperties } from './utils.js'
-import type { DiscoveredRoute, ScannedEntry, KeyConfig, NestingConfig } from '../../types/routes.js'
+import type { DiscoveredRoute, ScannedEntry, KeyConfig } from '../../types/routes.js'
 
 /**
  * Options for scanning a route directory.
@@ -235,22 +235,29 @@ async function scanDirectoryRecursive(options: RecursiveScanOptions): Promise<Sc
 		throw error
 	}
 
-	// Separate files and directories
+	// Separate files and directories (stat in parallel, then sort for deterministic order)
+	const classified = await Promise.all(
+		directory.map(async (item) => {
+			const itemPath = path.join(currentPath, item)
+			const itemStat = await fs.stat(itemPath)
+
+			return { item, isFile: itemStat.isFile(), isDirectory: itemStat.isDirectory() }
+		})
+	)
+
 	const files: string[] = []
 	const directories: string[] = []
 
-	await Promise.all(
-		directory.map(async (item) => {
-			const itemPath = path.join(currentPath, item)
-			const stat = await fs.stat(itemPath)
+	for (const { item, isFile, isDirectory } of classified) {
+		if (isFile && ALLOWED_EXTENSIONS.includes(path.extname(item))) {
+			files.push(item)
+		} else if (isDirectory) {
+			directories.push(item)
+		}
+	}
 
-			if (stat.isFile() && ALLOWED_EXTENSIONS.includes(path.extname(item))) {
-				files.push(item)
-			} else if (stat.isDirectory()) {
-				directories.push(item)
-			}
-		})
-	)
+	files.sort()
+	directories.sort()
 
 	// Process files first (parent entries before children)
 	for (const file of files) {

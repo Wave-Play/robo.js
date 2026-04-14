@@ -20,6 +20,7 @@ import type { DiscoveredRoute, ProcessedEntry, RouteEntries } from '../../types/
 import type { PluginData } from '../../types/common.js'
 import type {
 	HandlerEntry,
+	HandlerSummary,
 	HookEntry,
 	HooksManifest,
 	MetadataAggregatorRegistry,
@@ -94,6 +95,7 @@ export class ManifestGenerator {
 			this.basePath,
 			path.join(this.basePath, 'config'),
 			path.join(this.basePath, 'routes'),
+			path.join(this.basePath, 'summaries'),
 			path.join(this.basePath, 'hooks'),
 			path.join(this.basePath, 'metadata'),
 			path.join(this.basePath, 'metadata', 'raw'),
@@ -139,8 +141,8 @@ export class ManifestGenerator {
 		const pkg = await this.readPackageJson()
 
 		const metadata: ProjectMetadata = {
-			name: pkg.name ?? 'unnamed-robo',
-			version: pkg.version ?? '0.0.0',
+			name: (pkg.name as string) ?? 'unnamed-robo',
+			version: (pkg.version as string) ?? '0.0.0',
 			language: isTypeScript ? 'typescript' : 'javascript',
 			roboVersion: packageJson.version,
 			mode: this.mode,
@@ -160,7 +162,7 @@ export class ManifestGenerator {
 		const writes: Promise<void>[] = []
 
 		// Generate core robo config (strip plugin options, keep just names)
-		const coreConfig = this.redactSensitiveConfig(this.config)
+		const coreConfig = this.redactSensitiveConfig(this.config as Record<string, unknown>)
 		if (coreConfig.plugins && Array.isArray(coreConfig.plugins)) {
 			// Replace plugin entries with just names for reference
 			coreConfig.plugins = coreConfig.plugins.map((plugin: unknown) => {
@@ -338,9 +340,11 @@ export class ManifestGenerator {
 
 			for (const [routeName, entries] of Object.entries(routes)) {
 				const handlerEntries = this.processEntriesToHandlers(entries, namespace)
+				const handlerSummaries = this.processEntriesToSummaries(entries, namespace)
 				const fileName = `${namespace}.${routeName}.json`
 
 				writes.push(this.writeJson(`routes/${fileName}`, handlerEntries))
+				writes.push(this.writeJson(`summaries/${fileName}`, handlerSummaries))
 			}
 		}
 
@@ -731,6 +735,37 @@ export class ManifestGenerator {
 			}
 
 			return handlerEntry
+		})
+	}
+
+	private processEntriesToSummaries(entries: ProcessedEntry[], namespace: string): HandlerSummary[] {
+		return entries.map((entry, index) => {
+			let isPlugin = entry.module?.startsWith('@') || entry.module?.startsWith('robo-plugin-')
+			let plugin = isPlugin ? entry.module : null
+
+			if (this.buildType === 'plugin' && this.pluginName) {
+				isPlugin = true
+				plugin = this.pluginName
+			}
+
+			const hasDuplicates = entries.filter((e) => e.key === entry.key).length > 1
+
+			return {
+				key: entry.key,
+				path: entry.path,
+				exports: {
+					default: entry.exports.default,
+					config: entry.exports.config,
+					named: entry.exports.named ?? []
+				},
+				metadata: entry.metadata ?? {},
+				plugin,
+				pluginVersion: plugin ? this.plugins.get(plugin)?.version : undefined,
+				module: entry.module,
+				auto: entry.auto,
+				extra: entry.extra as Record<string, unknown> | undefined,
+				index: hasDuplicates ? index : undefined
+			}
 		})
 	}
 
