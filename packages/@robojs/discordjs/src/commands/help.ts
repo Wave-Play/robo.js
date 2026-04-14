@@ -19,8 +19,9 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction
 } from 'discord.js'
-import type { CommandConfig, CommandOption } from '../types/index.js'
+import type { CommandConfig, CommandOption, DiscordConfig } from '../types/index.js'
 import type { HandlerEntry } from 'robo.js'
+import { getPluginConfig } from '../core/client.js'
 
 const COMMANDS_PER_PAGE = 20
 const NAMESPACE = '__robojs_discordjs_helpmenu'
@@ -46,48 +47,19 @@ export const config: CommandConfig = {
 }
 
 export default async (interaction: ChatInputCommandInteraction) => {
-	let commandEntries: HandlerEntry[]
-	try {
-		commandEntries = Manifest.routesSync('discordjs', 'commands')
-	} catch {
+	const commandEntries = await loadCommandEntries()
+	if (!commandEntries) {
 		return { content: 'Commands not available.' }
 	}
 
-	const commands = getCommandsWithMeta(commandEntries)
+	const prefixEntries = await loadPrefixCommandEntries()
+	const commands = [
+		...getCommandsWithMeta(commandEntries),
+		...getPrefixCommandsWithMeta(prefixEntries ?? [])
+	]
 
 	const serverId = interaction.guildId
-	const filteredByAvailability = commands.filter((cmd) => {
-		// Check if command controller exists and is enabled
-		try {
-			const controller = portal.getController('discordjs', 'commands', cmd.key)
-			if (controller && typeof (controller as { isEnabled?: () => boolean }).isEnabled === 'function') {
-				if (!(controller as { isEnabled: () => boolean }).isEnabled()) return false
-			}
-		} catch {
-			// Controller not found, continue
-		}
-
-		// Check module enabled state
-		if (cmd.module && portal.module(cmd.module)) {
-			if (!portal.module(cmd.module).isEnabled()) return false
-		}
-
-		// Check server restrictions
-		if (serverId) {
-			try {
-				const controller = portal.getController('discordjs', 'commands', cmd.key) as {
-					isEnabledForServer?: (serverId: string) => boolean
-				}
-				if (controller?.isEnabledForServer && !controller.isEnabledForServer(serverId)) {
-					return false
-				}
-			} catch {
-				// No controller, continue
-			}
-		}
-
-		return true
-	})
+	const filteredByAvailability = filterByAvailability(commands, serverId)
 
 	const query = interaction.options.get('command')?.value as string
 	const category = interaction.options.get('category')?.value as string
@@ -115,49 +87,20 @@ export default async (interaction: ChatInputCommandInteraction) => {
 	}
 }
 
-export const autocomplete = (interaction: AutocompleteInteraction) => {
+export const autocomplete = async (interaction: AutocompleteInteraction) => {
 	const focusedOption = interaction.options.getFocused(true)
-	let commandEntries: HandlerEntry[]
-	try {
-		commandEntries = Manifest.routesSync('discordjs', 'commands')
-	} catch {
+	const commandEntries = await loadCommandEntries()
+	if (!commandEntries) {
 		return []
 	}
 
-	const commands = getCommandsWithMeta(commandEntries)
+	const prefixEntries = await loadPrefixCommandEntries()
+	const commands = [
+		...getCommandsWithMeta(commandEntries),
+		...getPrefixCommandsWithMeta(prefixEntries ?? [])
+	]
 	const serverId = interaction.guildId
-	const filteredByAvailability = commands.filter((cmd) => {
-		// Check if command controller exists and is enabled
-		try {
-			const controller = portal.getController('discordjs', 'commands', cmd.key)
-			if (controller && typeof (controller as { isEnabled?: () => boolean }).isEnabled === 'function') {
-				if (!(controller as { isEnabled: () => boolean }).isEnabled()) return false
-			}
-		} catch {
-			// Controller not found, continue
-		}
-
-		// Check module enabled state
-		if (cmd.module && portal.module(cmd.module)) {
-			if (!portal.module(cmd.module).isEnabled()) return false
-		}
-
-		// Check server restrictions
-		if (serverId) {
-			try {
-				const controller = portal.getController('discordjs', 'commands', cmd.key) as {
-					isEnabledForServer?: (serverId: string) => boolean
-				}
-				if (controller?.isEnabledForServer && !controller.isEnabledForServer(serverId)) {
-					return false
-				}
-			} catch {
-				// No controller, continue
-			}
-		}
-
-		return true
-	})
+	const filteredByAvailability = filterByAvailability(commands, serverId)
 
 	if (focusedOption.name === 'category') {
 		const query = (focusedOption.value || '').toLowerCase().trim()
@@ -170,12 +113,17 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 			return results.map((cat) => ({ name: cat, value: cat })).slice(0, 24)
 		}
 	} else {
-		const query = ((focusedOption.value as string) ?? '').replace('/', '').toLowerCase().trim()
+		const query = ((focusedOption.value as string) ?? '').replace(/^[/!]/, '').toLowerCase().trim()
 		if (!query) {
-			return filteredByAvailability.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0, 24)
+			return filteredByAvailability.map((cmd) => ({ name: `${getCommandPrefix(cmd)}${cmd.key}`, value: cmd.key })).slice(0, 24)
 		} else {
-			const results = filteredByAvailability.filter((cmd) => cmd.key.toLowerCase().includes(query))
-			return results.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0, 24)
+			const results = filteredByAvailability.filter((cmd) => {
+				if (cmd.key.toLowerCase().includes(query)) return true
+				// Also match aliases for prefix commands
+				if (cmd.type === 'prefix' && cmd.aliases?.some((a) => a.toLowerCase().includes(query))) return true
+				return false
+			})
+			return results.map((cmd) => ({ name: `${getCommandPrefix(cmd)}${cmd.key}`, value: cmd.key })).slice(0, 24)
 		}
 	}
 }
@@ -186,6 +134,8 @@ interface CommandWithMeta {
 	options?: CommandOption[]
 	module?: string
 	category?: string
+	type?: 'slash' | 'prefix'
+	aliases?: string[]
 }
 
 /**
@@ -203,8 +153,69 @@ function getCommandsWithMeta(entries: HandlerEntry[]): CommandWithMeta[] {
 			description: entry.metadata?.description as string | undefined,
 			options: entry.metadata?.options as CommandOption[] | undefined,
 			module: entry.module,
-			category
+			category,
+			type: 'slash' as const
 		}
+	})
+}
+
+/**
+ * Convert prefix command HandlerEntry[] to CommandWithMeta[] for display.
+ */
+function getPrefixCommandsWithMeta(entries: HandlerEntry[]): CommandWithMeta[] {
+	return entries.map((entry) => {
+		const pathParts = entry.key.split(' ')
+		const category = pathParts.length > 1 ? pathParts[0] : 'General'
+
+		return {
+			key: entry.key,
+			description: entry.metadata?.description as string | undefined,
+			module: entry.module,
+			category,
+			type: 'prefix' as const,
+			aliases: entry.metadata?.aliases as string[] | undefined
+		}
+	})
+}
+
+/**
+ * Filter commands by availability (enabled, module, server restrictions).
+ */
+function filterByAvailability(commands: CommandWithMeta[], serverId: string | null): CommandWithMeta[] {
+	return commands.filter((cmd) => {
+		// Determine the correct route for controller lookup
+		const route = cmd.type === 'prefix' ? 'prefixCommands' : 'commands'
+
+		// Check if command controller exists and is enabled
+		try {
+			const controller = portal.getController('discordjs', route, cmd.key)
+			if (controller && typeof (controller as { isEnabled?: () => boolean }).isEnabled === 'function') {
+				if (!(controller as { isEnabled: () => boolean }).isEnabled()) return false
+			}
+		} catch {
+			// Controller not found, continue
+		}
+
+		// Check module enabled state
+		if (cmd.module && portal.module(cmd.module)) {
+			if (!portal.module(cmd.module).isEnabled()) return false
+		}
+
+		// Check server restrictions
+		if (serverId) {
+			try {
+				const controller = portal.getController('discordjs', route, cmd.key) as {
+					isEnabledForServer?: (serverId: string) => boolean
+				}
+				if (controller?.isEnabledForServer && !controller.isEnabledForServer(serverId)) {
+					return false
+				}
+			} catch {
+				// No controller, continue
+			}
+		}
+
+		return true
 	})
 }
 
@@ -232,14 +243,31 @@ function getCategoryList(commands: CommandWithMeta[]) {
 	return Array.from(categories).sort()
 }
 
+function getCommandPrefix(cmd: CommandWithMeta): string {
+	if (cmd.type === 'prefix') {
+		const config = getPluginConfig()
+		const prefixValue = config?.prefix?.value
+		return typeof prefixValue === 'string' ? prefixValue : '!'
+	}
+	return '/'
+}
+
 function createCommandEmbed(cmd: CommandWithMeta) {
 	const poweredBy = process.env.ROBOPLAY_HOST
 		? 'Powered by [**RoboPlay** ✨](https://roboplay.dev)'
 		: 'Powered by [**Robo.js**](https://robojs.dev)'
+	const prefix = getCommandPrefix(cmd)
+	let description = cmd.description || 'No description provided.'
+
+	// Show aliases for prefix commands
+	if (cmd.type === 'prefix' && cmd.aliases?.length) {
+		description += `\n\n**Aliases:** ${cmd.aliases.map((a) => `\`${prefix}${a}\``).join(', ')}`
+	}
+
 	const embed = new EmbedBuilder()
-		.setTitle(`/${cmd.key}`)
+		.setTitle(`${prefix}${cmd.key}`)
 		.setColor(Colors.Blurple)
-		.setDescription(`${cmd.description || 'No description provided.'}\n\n> ${poweredBy}`)
+		.setDescription(`${description}\n\n> ${poweredBy}`)
 
 	if (cmd.options && cmd.options.length > 0) {
 		const optionsDescription = cmd.options
@@ -280,7 +308,7 @@ function createEmbed(commands: CommandWithMeta[], page: number, totalPages: numb
 		.setColor(Colors.Blurple)
 		.addFields(
 			...pageCommands.map((cmd) => ({
-				name: `/${cmd.key}`,
+				name: `${getCommandPrefix(cmd)}${cmd.key}`,
 				value: cmd.description || 'No description provided.',
 				inline: false
 			})),
@@ -293,23 +321,28 @@ function createEmbed(commands: CommandWithMeta[], page: number, totalPages: numb
 					}
 				: null
 		)
-}
+	}
 
-function createCategoryMenu(categories: string[], selectedCategory: string | undefined, userId: string) {
-	return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-		new StringSelectMenuBuilder()
-			.setCustomId(`${NAMESPACE}@category@${selectedCategory || 'all'}@${userId}`)
+	function createCategoryMenu(categories: string[], selectedCategory: string | undefined, userId: string) {
+		const visibleCategories =
+			selectedCategory && !categories.slice(0, 24).includes(selectedCategory)
+				? [selectedCategory, ...categories.filter((category) => category !== selectedCategory).slice(0, 23)]
+				: categories.slice(0, 24)
+
+		return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(`${NAMESPACE}@category@${selectedCategory || 'all'}@${userId}`)
 			.setPlaceholder('Select a category')
 			.addOptions([
 				{
 					label: 'All Commands',
-					value: 'all',
-					default: !selectedCategory
-				},
-				...categories.map((category) => ({
-					label: category,
-					value: category,
-					default: category === selectedCategory
+						value: 'all',
+						default: !selectedCategory
+					},
+					...visibleCategories.map((category) => ({
+						label: category,
+						value: category,
+						default: category === selectedCategory
 				}))
 			])
 	)
@@ -358,13 +391,16 @@ export async function handleHelpMenuInteraction(interaction: ButtonInteraction |
 		)
 	}
 
-	let commandEntries: HandlerEntry[]
-	try {
-		commandEntries = Manifest.routesSync('discordjs', 'commands')
-	} catch {
+	const commandEntries = await loadCommandEntries()
+	if (!commandEntries) {
 		return
 	}
-	const commands = getCommandsWithMeta(commandEntries)
+	const prefixEntries = await loadPrefixCommandEntries()
+	const allCommands = [
+		...getCommandsWithMeta(commandEntries),
+		...getPrefixCommandsWithMeta(prefixEntries ?? [])
+	]
+	const commands = filterByAvailability(allCommands, interaction.guildId)
 
 	if (interaction.isStringSelectMenu()) {
 		const selectedCategory = interaction.values[0]
@@ -421,6 +457,24 @@ export async function handleHelpMenuInteraction(interaction: ButtonInteraction |
 				createPaginationButtons(page, totalPages, category, interaction.user.id)
 			]
 		})
+	}
+}
+
+async function loadCommandEntries(): Promise<HandlerEntry[] | null> {
+	try {
+		await portal.ensureRoute('discordjs', 'commands')
+		return Manifest.routesSync('discordjs', 'commands')
+	} catch {
+		return null
+	}
+}
+
+async function loadPrefixCommandEntries(): Promise<HandlerEntry[] | null> {
+	try {
+		await portal.ensureRoute('discordjs', 'prefixCommands')
+		return Manifest.routesSync('discordjs', 'prefixCommands')
+	} catch {
+		return null
 	}
 }
 
