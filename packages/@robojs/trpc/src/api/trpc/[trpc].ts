@@ -1,5 +1,6 @@
 import { initTRPC } from '@trpc/server'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
+import { Robo } from 'robo.js'
 import { serverPrefix } from '../../robo/start.js'
 import { trpcLogger } from '../../core/loggers.js'
 import type { RoboReply, RoboRequest } from '@robojs/server'
@@ -24,7 +25,7 @@ export const init = {
 		const t = initTRPC.create()
 		const originalRouter = t.router
 		t.router = createWrapper(originalRouter) as typeof t.router
-		trpcLogger.ready('tRPC router registered successfully')
+		Robo.status.set('trpc', 'tRPC router registered')
 
 		return t
 	}

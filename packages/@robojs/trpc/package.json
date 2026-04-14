@@ -19,7 +19,6 @@
 	"files": [
 		".robo/",
 		"seed/",
-		"src/",
 		"client.d.ts",
 		"client.js",
 		"LICENSE",
