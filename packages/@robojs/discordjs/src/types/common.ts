@@ -38,10 +38,6 @@ export interface SageOptions {
 	deferBuffer?: number
 	/** Whether deferred/replied messages should be ephemeral */
 	ephemeral?: boolean
-	/** Channel ID to send error messages to */
-	errorChannelId?: string
-	/** Custom error message to show users */
-	errorMessage?: string
 	/** Whether to show error replies to users */
 	errorReplies?: boolean
 }
@@ -85,12 +81,28 @@ export interface DiscordConfig {
 	clientOptions?: ClientOptions
 	/** Default configuration for commands and context menus */
 	defaults?: CommandDefaults
+	/** Prefix command configuration */
+	prefix?: PrefixConfig
 	/** Sage (auto-defer/reply) configuration. Set to false to disable. */
 	sage?: false | SageOptions
 	/** Server IDs to use as test servers for command registration */
 	testServers?: string[]
 	/** Timeout configuration for various operations */
 	timeouts?: TimeoutConfig
+}
+
+/**
+ * Prefix command configuration.
+ */
+export interface PrefixConfig {
+	/** Prefix string or async function returning prefix per guild (default: '!') */
+	value?: string | ((guildId: string | null) => string | Promise<string>)
+	/** Whether command matching is case-sensitive (default: false) */
+	caseSensitive?: boolean
+	/** Whether to ignore messages from bots (default: true) */
+	ignoreBots?: boolean
+	/** Whether bot mentions can be used as prefix (default: false) */
+	mentionAsPrefix?: boolean
 }
 
 /**

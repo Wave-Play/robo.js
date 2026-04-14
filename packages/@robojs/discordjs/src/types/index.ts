@@ -3,7 +3,7 @@
  */
 
 // Common types
-export type { BaseConfig, CommandDefaults, DiscordConfig, PluginState, SageOptions, TimeoutConfig } from './common.js'
+export type { BaseConfig, CommandDefaults, DiscordConfig, PrefixConfig, PluginState, SageOptions, TimeoutConfig } from './common.js'
 
 // Command types
 export type {
@@ -79,6 +79,19 @@ export type {
 export type { DiscordPortalNamespace } from './portal.js'
 // Side-effect import to ensure module augmentation is applied
 import './portal.js'
+
+// Prefix command types
+export type {
+	PrefixCommand,
+	PrefixCommandArg,
+	PrefixCommandArgs,
+	PrefixCommandConfig,
+	PrefixCommandController,
+	PrefixCommandHandler,
+	PrefixCommandResult,
+	PrefixCommandsNamespaceController,
+	PrefixSageOptions
+} from './prefix-commands.js'
 
 // Manifest metadata types
 export type { DiscordjsAggregatedMetadata } from './manifest.js'

@@ -25,6 +25,11 @@ import type {
 	MiddlewareHandler,
 	MiddlewareNamespaceController
 } from './middleware.js'
+import type {
+	PrefixCommandController,
+	PrefixCommandHandler,
+	PrefixCommandsNamespaceController
+} from './prefix-commands.js'
 
 /**
  * Discord namespace on the portal.
@@ -39,6 +44,8 @@ export interface DiscordPortalNamespace {
 	context: Record<string, HandlerRecord<ContextHandler>>
 	/** Access middleware data (Record of handler records) */
 	middleware: Record<string, HandlerRecord<MiddlewareHandler>>
+	/** Access prefix command data (Record of handler records) */
+	prefixCommands: Record<string, HandlerRecord<PrefixCommandHandler>>
 
 	/** Get controller for a specific command */
 	command(name: string): CommandController
@@ -48,6 +55,8 @@ export interface DiscordPortalNamespace {
 	contextMenu(name: string): ContextController
 	/** Get controller for a specific middleware */
 	middlewareItem(name: string): MiddlewareController
+	/** Get controller for a specific prefix command */
+	prefixCommand(name: string): PrefixCommandController
 }
 
 /**
@@ -67,5 +76,6 @@ export type {
 	CommandsNamespaceController,
 	ContextNamespaceController,
 	EventsNamespaceController,
-	MiddlewareNamespaceController
+	MiddlewareNamespaceController,
+	PrefixCommandsNamespaceController
 }
