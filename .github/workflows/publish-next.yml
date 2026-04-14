@@ -1,0 +1,59 @@
+name: Publish Next
+
+on:
+  push:
+    paths:
+      - '.changeset/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+    branches:
+      - next
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.6.11
+
+      - name: Install required Node.js version
+        uses: actions/setup-node@v4
+        with:
+          cache: 'pnpm'
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      # https://github.com/pnpm/pnpm/issues/1801
+      - name: PNPM Stubs
+        run: mkdir -p ./packages/plugin-api/node_modules/.bin/ && echo "#! /usr/bin/env node" > ./packages/plugin-api/node_modules/.bin/robo
+
+      - name: PNPM install
+        run: pnpm install
+
+      - name: Build Robo
+        run: pnpm turbo run build --filter=robo.js
+
+      - name: PNPM install 2
+        run: pnpm install
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          commit: 'chore(release): next prerelease versioning'
+          createGithubReleases: false
+          publish: pnpm run publish:next
+          title: 'Changesets: Next Prerelease'
+          version: pnpm exec changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
