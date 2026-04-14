@@ -1,7 +1,7 @@
 // imports
 import { FLASHCORE_KEY } from '../core/config.js'
-import { type CommandConfig } from '@roboplay/robo.js'
-import { PermissionFlagsBits, type Channel, type CommandInteraction } from 'discord.js'
+import type { CommandConfig } from '@robojs/discordjs'
+import { PermissionFlagsBits, type Channel, type ChatInputCommandInteraction } from 'discord.js'
 import { setState, getState } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
@@ -16,7 +16,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction) => {
+export default async (interaction: ChatInputCommandInteraction) => {
 	const channel = interaction.options.get('channel')?.channel as Channel
 
 	// info about current channel

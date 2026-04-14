@@ -1,7 +1,7 @@
 // imports
 import { FLASHCORE_KEY } from '../core/config.js'
-import { type CommandConfig } from '@roboplay/robo.js'
-import { EmbedBuilder, type CommandInteraction, type TextChannel } from 'discord.js'
+import type { CommandConfig } from '@robojs/discordjs'
+import { EmbedBuilder, type ChatInputCommandInteraction, type TextChannel } from 'discord.js'
 import badwordsFilter from 'bad-words'
 import { getState } from '@roboplay/robo.js'
 
@@ -37,7 +37,7 @@ function parseConfession(text: string): string {
 	return text
 }
 
-export default async (interaction: CommandInteraction) => {
+export default async (interaction: ChatInputCommandInteraction) => {
 	await interaction.deferReply({
 		ephemeral: true
 	})
