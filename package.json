@@ -50,7 +50,7 @@
 		"lint:eslint": "eslint . --max-warnings=0",
 		"lint:style": "prettier --write .",
 		"publish:canary": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag canary",
-		"publish:next": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag next",
+		"publish:next": "pnpm lint && pnpm build:robo && pnpm build && changeset publish",
 		"publish:release": "pnpm lint && pnpm build:robo && pnpm build && changeset publish",
 		"test": "turbo run test"
 	},
