@@ -21,20 +21,24 @@ Templates use two placeholders:
 Set a default template for all guilds in your plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/roadmap.ts"
-    export default {
-      threadTitleTemplate: '[{id}] {title}'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/roadmap.js"
-    export default {
-      threadTitleTemplate: '[{id}] {title}'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/roadmap.ts"
+  export default {
+    threadTitleTemplate: '[{id}] {title}'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/roadmap.js"
+  export default {
+    threadTitleTemplate: '[{id}] {title}'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Per-guild override
@@ -42,24 +46,28 @@ Set a default template for all guilds in your plugin config:
 Override the global default for a specific guild:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { updateSettings } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    updateSettings(guildId, {
-      threadTitleTemplate: '{id} - {title}'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { updateSettings } from '@robojs/roadmap'
+  ```ts
+  import { updateSettings } from '@robojs/roadmap'
 
-    updateSettings(guildId, {
-      threadTitleTemplate: '{id} - {title}'
-    })
-    ```
-  </Tab>
+  updateSettings(guildId, {
+    threadTitleTemplate: '{id} - {title}'
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { updateSettings } from '@robojs/roadmap'
+
+  updateSettings(guildId, {
+    threadTitleTemplate: '{id} - {title}'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Guild settings take precedence over the global plugin default.

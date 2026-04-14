@@ -57,26 +57,30 @@ npm install @robojs/patch
 The Vite plugin injects the patch before Vite's HMR client loads, ensuring the earliest possible patching. It also tracks URL mappings from `@discord/embedded-app-sdk` to avoid double-patching.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import { defineConfig } from 'vite'
+<Tab value="TypeScript">
 
-    export default defineConfig({
-    	plugins: [DiscordProxy.Vite()]
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import { defineConfig } from 'vite'
+  ```ts title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import { defineConfig } from 'vite'
 
-    export default defineConfig({
-    	plugins: [DiscordProxy.Vite()]
-    })
-    ```
-  </Tab>
+  export default defineConfig({
+  	plugins: [DiscordProxy.Vite()]
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import { defineConfig } from 'vite'
+
+  export default defineConfig({
+  	plugins: [DiscordProxy.Vite()]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -90,20 +94,24 @@ The Vite plugin uses `enforce: 'pre'` to run before other plugins. It injects a 
 For non-Vite projects, call the patch function at the top of your entry file, before any other imports that use `fetch` or `WebSocket`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { DiscordProxy } from '@robojs/patch'
+<Tab value="TypeScript">
 
-    DiscordProxy.patch()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { DiscordProxy } from '@robojs/patch'
+  ```ts
+  import { DiscordProxy } from '@robojs/patch'
 
-    DiscordProxy.patch()
-    ```
-  </Tab>
+  DiscordProxy.patch()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { DiscordProxy } from '@robojs/patch'
+
+  DiscordProxy.patch()
+  ```
+
+</Tab>
 </Tabs>
 
 This method does not track SDK URL mappings. If you're also using `@discord/embedded-app-sdk`, the Vite plugin method is preferred.
@@ -129,24 +137,28 @@ URLs that already start with `/.proxy` or with a prefix mapped by the Discord SD
 The patched `fetch` accepts an optional `prefix` property in the request options to override the default `/.proxy` prefix.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Default prefix (/.proxy)
-    await fetch('/api/data')
+<Tab value="TypeScript">
 
-    // Custom prefix
-    await fetch('/api/data', { prefix: '/.custom-proxy' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Default prefix (/.proxy)
-    await fetch('/api/data')
+  ```ts
+  // Default prefix (/.proxy)
+  await fetch('/api/data')
 
-    // Custom prefix
-    await fetch('/api/data', { prefix: '/.custom-proxy' })
-    ```
-  </Tab>
+  // Custom prefix
+  await fetch('/api/data', { prefix: '/.custom-proxy' })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Default prefix (/.proxy)
+  await fetch('/api/data')
+
+  // Custom prefix
+  await fetch('/api/data', { prefix: '/.custom-proxy' })
+  ```
+
+</Tab>
 </Tabs>
 
 The `prefix` property is stripped from the options before passing to the native `fetch`, so it never reaches the browser's implementation.
@@ -217,24 +229,28 @@ To remove `@robojs/patch` from your project:
 		Remove the import and plugin entry from your Vite config:
 
 		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-		  <Tab value="TypeScript">
-		    ```ts title="config/vite.mjs"
-		    				import { defineConfig } from 'vite'
+<Tab value="TypeScript">
 
-		    				export default defineConfig({
-		    					plugins: []
-		    				})
-		    ```
-		  </Tab>
-		  <Tab value="JavaScript">
-		    ```js title="config/vite.mjs"
-		    				import { defineConfig } from 'vite'
+  ```ts title="config/vite.mjs"
+  				import { defineConfig } from 'vite'
 
-		    				export default defineConfig({
-		    					plugins: []
-		    				})
-		    ```
-		  </Tab>
+  				export default defineConfig({
+  					plugins: []
+  				})
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/vite.mjs"
+  				import { defineConfig } from 'vite'
+
+  				export default defineConfig({
+  					plugins: []
+  				})
+  ```
+
+</Tab>
 		</Tabs>
 	</Step>
 	<Step>

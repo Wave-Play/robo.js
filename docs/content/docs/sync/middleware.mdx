@@ -31,35 +31,39 @@ Middleware files export `before` and/or `after` functions.
 Runs before handler processing. Can reject the operation.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/middleware.ts"
-    import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
-    	// Rate limiting example
-    	if (isRateLimited(ctx.client.id)) {
-    		return { reject: true, reason: 'rate_limited' }
-    	}
+  ```ts title="src/sync/game/middleware.ts"
+  import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
 
-    	console.log(`[Sync] ${ctx.messageType} on "${ctx.cleanKey}" by ${ctx.client.id}`)
-    	return { continue: true }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/middleware.js"
+  export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
+  	// Rate limiting example
+  	if (isRateLimited(ctx.client.id)) {
+  		return { reject: true, reason: 'rate_limited' }
+  	}
 
-    export function before(ctx) {
-    	// Rate limiting example
-    	if (isRateLimited(ctx.client.id)) {
-    		return { reject: true, reason: 'rate_limited' }
-    	}
+  	console.log(`[Sync] ${ctx.messageType} on "${ctx.cleanKey}" by ${ctx.client.id}`)
+  	return { continue: true }
+  }
+  ```
 
-    	console.log(`[Sync] ${ctx.messageType} on "${ctx.cleanKey}" by ${ctx.client.id}`)
-    	return { continue: true }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/middleware.js"
+
+  export function before(ctx) {
+  	// Rate limiting example
+  	if (isRateLimited(ctx.client.id)) {
+  		return { reject: true, reason: 'rate_limited' }
+  	}
+
+  	console.log(`[Sync] ${ctx.messageType} on "${ctx.cleanKey}" by ${ctx.client.id}`)
+  	return { continue: true }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### after
@@ -67,41 +71,49 @@ Runs before handler processing. Can reject the operation.
 Runs after successful state broadcast. Can't reject -- the update already happened.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/middleware.ts"
-    import type { SyncMiddlewareContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function after(ctx: SyncMiddlewareContext): void {
-    	console.log(`[Sync] Completed ${ctx.messageType} on "${ctx.cleanKey}"`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/middleware.js"
+  ```ts title="src/sync/game/middleware.ts"
+  import type { SyncMiddlewareContext } from '@robojs/sync/server'
 
-    export function after(ctx) {
-    	console.log(`[Sync] Completed ${ctx.messageType} on "${ctx.cleanKey}"`)
-    }
-    ```
-  </Tab>
+  export function after(ctx: SyncMiddlewareContext): void {
+  	console.log(`[Sync] Completed ${ctx.messageType} on "${ctx.cleanKey}"`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/middleware.js"
+
+  export function after(ctx) {
+  	console.log(`[Sync] Completed ${ctx.messageType} on "${ctx.cleanKey}"`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## MiddlewareResult type
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type MiddlewareResult =
-    	| { continue: true }                     // Allow operation
-    	| { reject: true; reason?: string }      // Block operation
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    	| { continue: true }                     // Allow operation
-    	| { reject: true; reason?: string }      // Block operation
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  type MiddlewareResult =
+  	| { continue: true }                     // Allow operation
+  	| { reject: true; reason?: string }      // Block operation
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  	| { continue: true }                     // Allow operation
+  	| { reject: true; reason?: string }      // Block operation
+  ```
+
+</Tab>
 </Tabs>
 
 ## SyncMiddlewareContext
@@ -126,103 +138,115 @@ Runs after successful state broadcast. Can't reject -- the update already happen
 ### Authentication
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/middleware.ts"
-    import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
-    	if (!ctx.client.data?.authenticated) {
-    		return { reject: true, reason: 'not_authenticated' }
-    	}
-    	return { continue: true }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/middleware.js"
+  ```ts title="src/sync/middleware.ts"
+  import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
 
-    export function before(ctx) {
-    	if (!ctx.client.data?.authenticated) {
-    		return { reject: true, reason: 'not_authenticated' }
-    	}
-    	return { continue: true }
-    }
-    ```
-  </Tab>
+  export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
+  	if (!ctx.client.data?.authenticated) {
+  		return { reject: true, reason: 'not_authenticated' }
+  	}
+  	return { continue: true }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/middleware.js"
+
+  export function before(ctx) {
+  	if (!ctx.client.data?.authenticated) {
+  		return { reject: true, reason: 'not_authenticated' }
+  	}
+  	return { continue: true }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Logging
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/middleware.ts"
-    import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
-    	console.log(`[${ctx.messageType}] ${ctx.cleanKey} by ${ctx.client.id}`)
-    	return { continue: true }
-    }
+  ```ts title="src/sync/middleware.ts"
+  import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
 
-    export function after(ctx: SyncMiddlewareContext): void {
-    	console.log(`[${ctx.messageType}] ${ctx.cleanKey} completed`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/middleware.js"
+  export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
+  	console.log(`[${ctx.messageType}] ${ctx.cleanKey} by ${ctx.client.id}`)
+  	return { continue: true }
+  }
 
-    export function before(ctx) {
-    	console.log(`[${ctx.messageType}] ${ctx.cleanKey} by ${ctx.client.id}`)
-    	return { continue: true }
-    }
+  export function after(ctx: SyncMiddlewareContext): void {
+  	console.log(`[${ctx.messageType}] ${ctx.cleanKey} completed`)
+  }
+  ```
 
-    export function after(ctx) {
-    	console.log(`[${ctx.messageType}] ${ctx.cleanKey} completed`)
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/middleware.js"
+
+  export function before(ctx) {
+  	console.log(`[${ctx.messageType}] ${ctx.cleanKey} by ${ctx.client.id}`)
+  	return { continue: true }
+  }
+
+  export function after(ctx) {
+  	console.log(`[${ctx.messageType}] ${ctx.cleanKey} completed`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Rate limiting
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/middleware.ts"
-    import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    const lastUpdate = new Map<string, number>()
+  ```ts title="src/sync/game/middleware.ts"
+  import type { SyncMiddlewareContext, MiddlewareResult } from '@robojs/sync/server'
 
-    export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
-    	const now = Date.now()
-    	const last = lastUpdate.get(ctx.client.id) ?? 0
+  const lastUpdate = new Map<string, number>()
 
-    	if (now - last < 50) {
-    		return { reject: true, reason: 'too_fast' }
-    	}
+  export function before(ctx: SyncMiddlewareContext): MiddlewareResult {
+  	const now = Date.now()
+  	const last = lastUpdate.get(ctx.client.id) ?? 0
 
-    	lastUpdate.set(ctx.client.id, now)
-    	return { continue: true }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/middleware.js"
+  	if (now - last < 50) {
+  		return { reject: true, reason: 'too_fast' }
+  	}
 
-    const lastUpdate = new Map()
+  	lastUpdate.set(ctx.client.id, now)
+  	return { continue: true }
+  }
+  ```
 
-    export function before(ctx) {
-    	const now = Date.now()
-    	const last = lastUpdate.get(ctx.client.id) ?? 0
+</Tab>
+<Tab value="JavaScript">
 
-    	if (now - last < 50) {
-    		return { reject: true, reason: 'too_fast' }
-    	}
+  ```js title="src/sync/game/middleware.js"
 
-    	lastUpdate.set(ctx.client.id, now)
-    	return { continue: true }
-    }
-    ```
-  </Tab>
+  const lastUpdate = new Map()
+
+  export function before(ctx) {
+  	const now = Date.now()
+  	const last = lastUpdate.get(ctx.client.id) ?? 0
+
+  	if (now - last < 50) {
+  		return { reject: true, reason: 'too_fast' }
+  	}
+
+  	lastUpdate.set(ctx.client.id, now)
+  	return { continue: true }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

@@ -31,22 +31,26 @@ Create files in `src/middleware/`. Middleware runs in alphabetical order by file
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/01-logger.ts"
-    import type { MiddlewareData } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default (data: MiddlewareData) => {
-    	console.log(`Executing: ${data.record.key}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/01-logger.js"
-    export default (data) => {
-    	console.log(`Executing: ${data.record.key}`)
-    }
-    ```
-  </Tab>
+  ```ts title="src/middleware/01-logger.ts"
+  import type { MiddlewareData } from '@robojs/discordjs'
+
+  export default (data: MiddlewareData) => {
+  	console.log(`Executing: ${data.record.key}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/middleware/01-logger.js"
+  export default (data) => {
+  	console.log(`Executing: ${data.record.key}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## MiddlewareData
@@ -65,26 +69,30 @@ The `data` parameter passed to each middleware function contains information abo
 Return a **MiddlewareResult** with a modified `payload` array to change the arguments passed to the handler.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/add-timestamp.ts"
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default (data: MiddlewareData): MiddlewareResult => {
-    	// Add a timestamp to the payload
-    	data.payload.push(Date.now())
-    	return { payload: data.payload }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/add-timestamp.js"
-    export default (data) => {
-    	// Add a timestamp to the payload
-    	data.payload.push(Date.now())
-    	return { payload: data.payload }
-    }
-    ```
-  </Tab>
+  ```ts title="src/middleware/add-timestamp.ts"
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+
+  export default (data: MiddlewareData): MiddlewareResult => {
+  	// Add a timestamp to the payload
+  	data.payload.push(Date.now())
+  	return { payload: data.payload }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/middleware/add-timestamp.js"
+  export default (data) => {
+  	// Add a timestamp to the payload
+  	data.payload.push(Date.now())
+  	return { payload: data.payload }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Aborting Execution
@@ -92,33 +100,37 @@ Return a **MiddlewareResult** with a modified `payload` array to change the argu
 Return `{ abort: true }` to prevent the handler from running. This is useful for access control or conditional logic.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/require-member.ts"
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (data: MiddlewareData): MiddlewareResult => {
-    	const interaction = data.payload[0] as ChatInputCommandInteraction
-    	const member = interaction.member
+  ```ts title="src/middleware/require-member.ts"
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	if (!member) {
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/require-member.js"
-    export default (data) => {
-    	const interaction = data.payload[0]
-    	const member = interaction.member
+  export default (data: MiddlewareData): MiddlewareResult => {
+  	const interaction = data.payload[0] as ChatInputCommandInteraction
+  	const member = interaction.member
 
-    	if (!member) {
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
+  	if (!member) {
+  		return { abort: true }
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/middleware/require-member.js"
+  export default (data) => {
+  	const interaction = data.payload[0]
+  	const member = interaction.member
+
+  	if (!member) {
+  		return { abort: true }
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Error Handling
@@ -132,59 +144,63 @@ Errors thrown in middleware halt execution of the associated handler. Implement 
 Prevent users from spamming commands by tracking the last execution time per user.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/01-cooldown.ts"
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    const cooldowns = new Map<string, number>()
-    const COOLDOWN_MS = 5000
+  ```ts title="src/middleware/01-cooldown.ts"
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    export default (data: MiddlewareData): MiddlewareResult => {
-    	if (data.record.type !== 'commands') return
+  const cooldowns = new Map<string, number>()
+  const COOLDOWN_MS = 5000
 
-    	const interaction = data.payload[0] as ChatInputCommandInteraction
-    	const key = `${interaction.user.id}:${data.record.key}`
-    	const lastUsed = cooldowns.get(key) ?? 0
-    	const remaining = COOLDOWN_MS - (Date.now() - lastUsed)
+  export default (data: MiddlewareData): MiddlewareResult => {
+  	if (data.record.type !== 'commands') return
 
-    	if (remaining > 0) {
-    		interaction.reply({
-    			content: `Please wait ${Math.ceil(remaining / 1000)}s before using this again.`,
-    			ephemeral: true
-    		})
-    		return { abort: true }
-    	}
+  	const interaction = data.payload[0] as ChatInputCommandInteraction
+  	const key = `${interaction.user.id}:${data.record.key}`
+  	const lastUsed = cooldowns.get(key) ?? 0
+  	const remaining = COOLDOWN_MS - (Date.now() - lastUsed)
 
-    	cooldowns.set(key, Date.now())
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/01-cooldown.js"
-    const cooldowns = new Map()
-    const COOLDOWN_MS = 5000
+  	if (remaining > 0) {
+  		interaction.reply({
+  			content: `Please wait ${Math.ceil(remaining / 1000)}s before using this again.`,
+  			ephemeral: true
+  		})
+  		return { abort: true }
+  	}
 
-    export default (data) => {
-    	if (data.record.type !== 'commands') return
+  	cooldowns.set(key, Date.now())
+  }
+  ```
 
-    	const interaction = data.payload[0]
-    	const key = `${interaction.user.id}:${data.record.key}`
-    	const lastUsed = cooldowns.get(key) ?? 0
-    	const remaining = COOLDOWN_MS - (Date.now() - lastUsed)
+</Tab>
+<Tab value="JavaScript">
 
-    	if (remaining > 0) {
-    		interaction.reply({
-    			content: `Please wait ${Math.ceil(remaining / 1000)}s before using this again.`,
-    			ephemeral: true
-    		})
-    		return { abort: true }
-    	}
+  ```js title="src/middleware/01-cooldown.js"
+  const cooldowns = new Map()
+  const COOLDOWN_MS = 5000
 
-    	cooldowns.set(key, Date.now())
-    }
-    ```
-  </Tab>
+  export default (data) => {
+  	if (data.record.type !== 'commands') return
+
+  	const interaction = data.payload[0]
+  	const key = `${interaction.user.id}:${data.record.key}`
+  	const lastUsed = cooldowns.get(key) ?? 0
+  	const remaining = COOLDOWN_MS - (Date.now() - lastUsed)
+
+  	if (remaining > 0) {
+  		interaction.reply({
+  			content: `Please wait ${Math.ceil(remaining / 1000)}s before using this again.`,
+  			ephemeral: true
+  		})
+  		return { abort: true }
+  	}
+
+  	cooldowns.set(key, Date.now())
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -200,35 +216,39 @@ Prevent users from spamming commands by tracking the last execution time per use
 Measure how long each command takes by logging before and after execution.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/01-timing.ts"
-    import { logger } from 'robo.js/logger.js'
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default (data: MiddlewareData): MiddlewareResult => {
-    	const start = Date.now()
-    	logger.info(`[start] ${data.record.key}`)
+  ```ts title="src/middleware/01-timing.ts"
+  import { logger } from 'robo.js/logger.js'
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
 
-    	// Attach timing data to the payload for the handler to access if needed
-    	data.payload.push({ __middlewareStart: start })
-    	return { payload: data.payload }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/01-timing.js"
-    import { logger } from 'robo.js/logger.js'
+  export default (data: MiddlewareData): MiddlewareResult => {
+  	const start = Date.now()
+  	logger.info(`[start] ${data.record.key}`)
 
-    export default (data) => {
-    	const start = Date.now()
-    	logger.info(`[start] ${data.record.key}`)
+  	// Attach timing data to the payload for the handler to access if needed
+  	data.payload.push({ __middlewareStart: start })
+  	return { payload: data.payload }
+  }
+  ```
 
-    	// Attach timing data to the payload for the handler to access if needed
-    	data.payload.push({ __middlewareStart: start })
-    	return { payload: data.payload }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/middleware/01-timing.js"
+  import { logger } from 'robo.js/logger.js'
+
+  export default (data) => {
+  	const start = Date.now()
+  	logger.info(`[start] ${data.record.key}`)
+
+  	// Attach timing data to the payload for the handler to access if needed
+  	data.payload.push({ __middlewareStart: start })
+  	return { payload: data.payload }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Since middleware only runs **before** the handler, end-to-end timing must be measured within the handler itself. Read the attached `__middlewareStart` timestamp from the payload and log the elapsed time at the end of your handler logic.
@@ -238,43 +258,47 @@ Since middleware only runs **before** the handler, end-to-end timing must be mea
 Check a feature flag before allowing a command to run. This is useful for rolling out new commands gradually or disabling commands without removing files.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/02-feature-flag.ts"
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    const disabledCommands = new Set(['experimental', 'beta-feature'])
+  ```ts title="src/middleware/02-feature-flag.ts"
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    export default (data: MiddlewareData): MiddlewareResult => {
-    	if (data.record.type !== 'commands') return
+  const disabledCommands = new Set(['experimental', 'beta-feature'])
 
-    	const commandName = data.record.key.replace('commands/', '')
+  export default (data: MiddlewareData): MiddlewareResult => {
+  	if (data.record.type !== 'commands') return
 
-    	if (disabledCommands.has(commandName)) {
-    		const interaction = data.payload[0] as ChatInputCommandInteraction
-    		interaction.reply({ content: 'This command is currently disabled.', ephemeral: true })
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/02-feature-flag.js"
-    const disabledCommands = new Set(['experimental', 'beta-feature'])
+  	const commandName = data.record.key.replace('commands/', '')
 
-    export default (data) => {
-    	if (data.record.type !== 'commands') return
+  	if (disabledCommands.has(commandName)) {
+  		const interaction = data.payload[0] as ChatInputCommandInteraction
+  		interaction.reply({ content: 'This command is currently disabled.', ephemeral: true })
+  		return { abort: true }
+  	}
+  }
+  ```
 
-    	const commandName = data.record.key.replace('commands/', '')
+</Tab>
+<Tab value="JavaScript">
 
-    	if (disabledCommands.has(commandName)) {
-    		const interaction = data.payload[0]
-    		interaction.reply({ content: 'This command is currently disabled.', ephemeral: true })
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
+  ```js title="src/middleware/02-feature-flag.js"
+  const disabledCommands = new Set(['experimental', 'beta-feature'])
+
+  export default (data) => {
+  	if (data.record.type !== 'commands') return
+
+  	const commandName = data.record.key.replace('commands/', '')
+
+  	if (disabledCommands.has(commandName)) {
+  		const interaction = data.payload[0]
+  		interaction.reply({ content: 'This command is currently disabled.', ephemeral: true })
+  		return { abort: true }
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

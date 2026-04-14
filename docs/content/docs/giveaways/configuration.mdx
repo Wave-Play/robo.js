@@ -78,16 +78,20 @@ All settings commands that modify data require **Manage Server** permission.
 The plugin exports two functions for programmatic access:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+  ```
+
+</Tab>
 </Tabs>
 
 ### `getGuildSettings(guildId)`
@@ -95,20 +99,24 @@ The plugin exports two functions for programmatic access:
 Returns the current settings for a guild. If no custom settings exist, returns the built-in defaults.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const settings = await getGuildSettings('123456789012345678')
-    console.log(settings.defaults.winners) // 1
-    console.log(settings.limits.maxWinners) // 20
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const settings = await getGuildSettings('123456789012345678')
-    console.log(settings.defaults.winners) // 1
-    console.log(settings.limits.maxWinners) // 20
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const settings = await getGuildSettings('123456789012345678')
+  console.log(settings.defaults.winners) // 1
+  console.log(settings.limits.maxWinners) // 20
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const settings = await getGuildSettings('123456789012345678')
+  console.log(settings.defaults.winners) // 1
+  console.log(settings.limits.maxWinners) // 20
+  ```
+
+</Tab>
 </Tabs>
 
 ### `setGuildSettings(guildId, settings)`
@@ -116,48 +124,52 @@ Returns the current settings for a guild. If no custom settings exist, returns t
 Persists a complete settings object for the guild. This is a full overwrite, not a merge. Read first, modify, then write:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+<Tab value="TypeScript">
 
-    const guildId = '123456789012345678'
-    const current = await getGuildSettings(guildId)
+  ```ts
+  import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
 
-    await setGuildSettings(guildId, {
-      ...current,
-      defaults: {
-        ...current.defaults,
-        winners: 3,
-        buttonLabel: 'Join the Raffle'
-      },
-      limits: {
-        ...current.limits,
-        maxWinners: 50
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+  const guildId = '123456789012345678'
+  const current = await getGuildSettings(guildId)
 
-    const guildId = '123456789012345678'
-    const current = await getGuildSettings(guildId)
+  await setGuildSettings(guildId, {
+    ...current,
+    defaults: {
+      ...current.defaults,
+      winners: 3,
+      buttonLabel: 'Join the Raffle'
+    },
+    limits: {
+      ...current.limits,
+      maxWinners: 50
+    }
+  })
+  ```
 
-    await setGuildSettings(guildId, {
-      ...current,
-      defaults: {
-        ...current.defaults,
-        winners: 3,
-        buttonLabel: 'Join the Raffle'
-      },
-      limits: {
-        ...current.limits,
-        maxWinners: 50
-      }
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
+
+  const guildId = '123456789012345678'
+  const current = await getGuildSettings(guildId)
+
+  await setGuildSettings(guildId, {
+    ...current,
+    defaults: {
+      ...current.defaults,
+      winners: 3,
+      buttonLabel: 'Join the Raffle'
+    },
+    limits: {
+      ...current.limits,
+      maxWinners: 50
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -169,49 +181,57 @@ Persists a complete settings object for the guild. This is a full overwrite, not
 Import types from either the main entry point or the `./types` subpath:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { GuildSettings } from '@robojs/giveaways'
-    // or
-    import type { GuildSettings } from '@robojs/giveaways/types'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // or
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import type { GuildSettings } from '@robojs/giveaways'
+  // or
+  import type { GuildSettings } from '@robojs/giveaways/types'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // or
+  ```
+
+</Tab>
 </Tabs>
 
 The full `GuildSettings` interface:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface GuildSettings {
-      defaults: {
-        winners: number
-        duration: string
-        buttonLabel: string
-        dmWinners: boolean
-      }
-      limits: {
-        maxWinners: number
-        maxDurationDays: number
-      }
-      restrictions: {
-        allowRoleIds: string[]
-        denyRoleIds: string[]
-        minAccountAgeDays: number | null
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  interface GuildSettings {
+    defaults: {
+      winners: number
+      duration: string
+      buttonLabel: string
+      dmWinners: boolean
+    }
+    limits: {
+      maxWinners: number
+      maxDurationDays: number
+    }
+    restrictions: {
+      allowRoleIds: string[]
+      denyRoleIds: string[]
+      minAccountAgeDays: number | null
+    }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ## Validation rules

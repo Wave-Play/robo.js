@@ -88,28 +88,32 @@ Both `DISCORD_CLIENT_ID` and `VITE_DISCORD_CLIENT_ID` must be set to the same va
 Open `src/app/Activity.tsx` and modify the content:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/Activity.tsx"
-    export function Activity() {
-      return (
-        <div>
-          <h1>Hello, Discord!</h1>
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/Activity.jsx"
-    export function Activity() {
-      return (
-        <div>
-          <h1>Hello, Discord!</h1>
-        </div>
-      )
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx title="src/app/Activity.tsx"
+  export function Activity() {
+    return (
+      <div>
+        <h1>Hello, Discord!</h1>
+      </div>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx title="src/app/Activity.jsx"
+  export function Activity() {
+    return (
+      <div>
+        <h1>Hello, Discord!</h1>
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Save the file. The dev server picks up changes automatically via hot reload.

@@ -22,76 +22,80 @@ These defaults work immediately. No configuration needed to start syncing.
 Override the defaults by configuring `columnConfig` in your provider options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/roadmap.ts"
-    import { JiraProvider } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    export default {
-      provider: new JiraProvider({
-        type: 'jira',
-        options: {
-          url: process.env.JIRA_URL,
-          email: process.env.JIRA_EMAIL,
-          apiToken: process.env.JIRA_API_TOKEN,
-          projectKey: process.env.JIRA_PROJECT_KEY,
-          columnConfig: {
-            columns: [
-              { id: 'planning', name: 'Planning', order: 0 },
-              { id: 'development', name: 'Development', order: 1 },
-              { id: 'review', name: 'Review', order: 2 },
-              { id: 'done', name: 'Done', order: 3, archived: true }
-            ],
-            statusMapping: {
-              'Backlog': 'Planning',
-              'To Do': 'Planning',
-              'In Progress': 'Development',
-              'Code Review': 'Review',
-              'QA': 'Review',
-              'Done': 'Done',
-              'Closed': null,
-              "Won't Do": null
-            }
+  ```ts title="config/plugins/robojs/roadmap.ts"
+  import { JiraProvider } from '@robojs/roadmap'
+
+  export default {
+    provider: new JiraProvider({
+      type: 'jira',
+      options: {
+        url: process.env.JIRA_URL,
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_API_TOKEN,
+        projectKey: process.env.JIRA_PROJECT_KEY,
+        columnConfig: {
+          columns: [
+            { id: 'planning', name: 'Planning', order: 0 },
+            { id: 'development', name: 'Development', order: 1 },
+            { id: 'review', name: 'Review', order: 2 },
+            { id: 'done', name: 'Done', order: 3, archived: true }
+          ],
+          statusMapping: {
+            'Backlog': 'Planning',
+            'To Do': 'Planning',
+            'In Progress': 'Development',
+            'Code Review': 'Review',
+            'QA': 'Review',
+            'Done': 'Done',
+            'Closed': null,
+            "Won't Do": null
           }
         }
-      })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/roadmap.js"
-    import { JiraProvider } from '@robojs/roadmap'
+      }
+    })
+  }
+  ```
 
-    export default {
-      provider: new JiraProvider({
-        type: 'jira',
-        options: {
-          url: process.env.JIRA_URL,
-          email: process.env.JIRA_EMAIL,
-          apiToken: process.env.JIRA_API_TOKEN,
-          projectKey: process.env.JIRA_PROJECT_KEY,
-          columnConfig: {
-            columns: [
-              { id: 'planning', name: 'Planning', order: 0 },
-              { id: 'development', name: 'Development', order: 1 },
-              { id: 'review', name: 'Review', order: 2 },
-              { id: 'done', name: 'Done', order: 3, archived: true }
-            ],
-            statusMapping: {
-              'Backlog': 'Planning',
-              'To Do': 'Planning',
-              'In Progress': 'Development',
-              'Code Review': 'Review',
-              'QA': 'Review',
-              'Done': 'Done',
-              'Closed': null,
-              "Won't Do": null
-            }
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/roadmap.js"
+  import { JiraProvider } from '@robojs/roadmap'
+
+  export default {
+    provider: new JiraProvider({
+      type: 'jira',
+      options: {
+        url: process.env.JIRA_URL,
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_API_TOKEN,
+        projectKey: process.env.JIRA_PROJECT_KEY,
+        columnConfig: {
+          columns: [
+            { id: 'planning', name: 'Planning', order: 0 },
+            { id: 'development', name: 'Development', order: 1 },
+            { id: 'review', name: 'Review', order: 2 },
+            { id: 'done', name: 'Done', order: 3, archived: true }
+          ],
+          statusMapping: {
+            'Backlog': 'Planning',
+            'To Do': 'Planning',
+            'In Progress': 'Development',
+            'Code Review': 'Review',
+            'QA': 'Review',
+            'Done': 'Done',
+            'Closed': null,
+            "Won't Do": null
           }
         }
-      })
-    }
-    ```
-  </Tab>
+      }
+    })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Column properties
@@ -111,30 +115,34 @@ Override the defaults by configuring `columnConfig` in your provider options:
 Multiple statuses can map to the same column. This is useful when your workflow has more statuses than you want Discord columns:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    statusMapping: {
-      'Backlog': 'Planning',
-      'To Do': 'Planning',        // Both map to Planning
-      'In Progress': 'Active',
-      'Code Review': 'Active',    // Both map to Active
-      'QA': 'Active',             // All three in the same forum
-      'Done': 'Done'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    statusMapping: {
-      'Backlog': 'Planning',
-      'To Do': 'Planning',        // Both map to Planning
-      'In Progress': 'Active',
-      'Code Review': 'Active',    // Both map to Active
-      'QA': 'Active',             // All three in the same forum
-      'Done': 'Done'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  statusMapping: {
+    'Backlog': 'Planning',
+    'To Do': 'Planning',        // Both map to Planning
+    'In Progress': 'Active',
+    'Code Review': 'Active',    // Both map to Active
+    'QA': 'Active',             // All three in the same forum
+    'Done': 'Done'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  statusMapping: {
+    'Backlog': 'Planning',
+    'To Do': 'Planning',        // Both map to Planning
+    'In Progress': 'Active',
+    'Code Review': 'Active',    // Both map to Active
+    'QA': 'Active',             // All three in the same forum
+    'Done': 'Done'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Track-only mappings
@@ -142,24 +150,28 @@ Multiple statuses can map to the same column. This is useful when your workflow 
 Map a status to `null` to track it without creating a forum thread. This is useful for statuses you want to monitor programmatically (e.g., for changelogs) without cluttering Discord:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    statusMapping: {
-      'Done': 'Done',
-      'Closed': null,      // Tracked but no forum thread
-      "Won't Do": null     // Tracked but no forum thread
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    statusMapping: {
-      'Done': 'Done',
-      'Closed': null,      // Tracked but no forum thread
-      "Won't Do": null     // Tracked but no forum thread
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  statusMapping: {
+    'Done': 'Done',
+    'Closed': null,      // Tracked but no forum thread
+    "Won't Do": null     // Tracked but no forum thread
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  statusMapping: {
+    'Done': 'Done',
+    'Closed': null,      // Tracked but no forum thread
+    "Won't Do": null     // Tracked but no forum thread
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Cards with track-only mappings have `metadata.trackOnly: true` and preserve their original status in `metadata.originalStatus`.
@@ -169,40 +181,44 @@ Cards with track-only mappings have `metadata.trackOnly: true` and preserve thei
 Override column mappings per-guild using the `/roadmap setup` panel or the settings API. Guild-level overrides take precedence over provider-level mappings.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { setColumnMapping, getColumnMapping, removeColumnMapping } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    // Map QA status to Development column for this guild
-    setColumnMapping(guildId, 'QA', 'Development')
+  ```ts
+  import { setColumnMapping, getColumnMapping, removeColumnMapping } from '@robojs/roadmap'
 
-    // Track Blocked status without creating a forum thread
-    setColumnMapping(guildId, 'Blocked', null)
+  // Map QA status to Development column for this guild
+  setColumnMapping(guildId, 'QA', 'Development')
 
-    // View current mappings
-    const mapping = getColumnMapping(guildId)
+  // Track Blocked status without creating a forum thread
+  setColumnMapping(guildId, 'Blocked', null)
 
-    // Remove a guild override (falls back to provider mapping)
-    removeColumnMapping(guildId, 'QA')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { setColumnMapping, getColumnMapping, removeColumnMapping } from '@robojs/roadmap'
+  // View current mappings
+  const mapping = getColumnMapping(guildId)
 
-    // Map QA status to Development column for this guild
-    setColumnMapping(guildId, 'QA', 'Development')
+  // Remove a guild override (falls back to provider mapping)
+  removeColumnMapping(guildId, 'QA')
+  ```
 
-    // Track Blocked status without creating a forum thread
-    setColumnMapping(guildId, 'Blocked', null)
+</Tab>
+<Tab value="JavaScript">
 
-    // View current mappings
-    const mapping = getColumnMapping(guildId)
+  ```js
+  import { setColumnMapping, getColumnMapping, removeColumnMapping } from '@robojs/roadmap'
 
-    // Remove a guild override (falls back to provider mapping)
-    removeColumnMapping(guildId, 'QA')
-    ```
-  </Tab>
+  // Map QA status to Development column for this guild
+  setColumnMapping(guildId, 'QA', 'Development')
+
+  // Track Blocked status without creating a forum thread
+  setColumnMapping(guildId, 'Blocked', null)
+
+  // View current mappings
+  const mapping = getColumnMapping(guildId)
+
+  // Remove a guild override (falls back to provider mapping)
+  removeColumnMapping(guildId, 'QA')
+  ```
+
+</Tab>
 </Tabs>
 
 ### Custom columns per guild
@@ -210,32 +226,36 @@ Override column mappings per-guild using the `/roadmap setup` panel or the setti
 Define custom column definitions for a specific guild:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { setCustomColumns, getCustomColumns } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    setCustomColumns(guildId, [
-      { id: 'backlog', name: 'Backlog', order: 0 },
-      { id: 'active', name: 'Active', order: 1 },
-      { id: 'done', name: 'Done', order: 2, archived: true }
-    ])
+  ```ts
+  import { setCustomColumns, getCustomColumns } from '@robojs/roadmap'
 
-    const columns = getCustomColumns(guildId)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { setCustomColumns, getCustomColumns } from '@robojs/roadmap'
+  setCustomColumns(guildId, [
+    { id: 'backlog', name: 'Backlog', order: 0 },
+    { id: 'active', name: 'Active', order: 1 },
+    { id: 'done', name: 'Done', order: 2, archived: true }
+  ])
 
-    setCustomColumns(guildId, [
-      { id: 'backlog', name: 'Backlog', order: 0 },
-      { id: 'active', name: 'Active', order: 1 },
-      { id: 'done', name: 'Done', order: 2, archived: true }
-    ])
+  const columns = getCustomColumns(guildId)
+  ```
 
-    const columns = getCustomColumns(guildId)
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { setCustomColumns, getCustomColumns } from '@robojs/roadmap'
+
+  setCustomColumns(guildId, [
+    { id: 'backlog', name: 'Backlog', order: 0 },
+    { id: 'active', name: 'Active', order: 1 },
+    { id: 'done', name: 'Done', order: 2, archived: true }
+  ])
+
+  const columns = getCustomColumns(guildId)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Resolution order

@@ -16,70 +16,82 @@ Return a value from your command handler instead of calling `interaction.reply()
 A string return sends a plain text reply.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    export default () => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default () => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/ping.ts"
+  export default () => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default () => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 An object return supports full `InteractionReplyOptions`, including ephemeral messages.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    export default () => {
-    	return { content: 'Pong!', ephemeral: true }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default () => {
-    	return { content: 'Pong!', ephemeral: true }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/ping.ts"
+  export default () => {
+  	return { content: 'Pong!', ephemeral: true }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default () => {
+  	return { content: 'Pong!', ephemeral: true }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 You can also return embeds and other Discord.js structures.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import { EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Pong!')
-    		.setDescription('Response time: 42ms')
+  ```ts title="src/commands/ping.ts"
+  import { EmbedBuilder } from 'discord.js'
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default () => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Pong!')
+  		.setDescription('Response time: 42ms')
 
-    export default () => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Pong!')
-    		.setDescription('Response time: 42ms')
+  	return { embeds: [embed] }
+  }
+  ```
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default () => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Pong!')
+  		.setDescription('Response time: 42ms')
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 If you call `interaction.reply()` yourself, Sage steps aside and does not send a duplicate reply.
@@ -99,47 +111,55 @@ When a command takes longer than 250ms to respond, Sage automatically defers the
 Without Sage, you must manually defer and edit the reply.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/slow.ts"
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: ChatInputCommandInteraction) => {
-    	await interaction.deferReply()
-    	const data = await fetchSlowData()
-    	await interaction.editReply(`Result: ${data}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/slow.js"
-    export default async (interaction) => {
-    	await interaction.deferReply()
-    	const data = await fetchSlowData()
-    	await interaction.editReply(`Result: ${data}`)
-    }
-    ```
-  </Tab>
+  ```ts title="src/commands/slow.ts"
+  import type { ChatInputCommandInteraction } from 'discord.js'
+
+  export default async (interaction: ChatInputCommandInteraction) => {
+  	await interaction.deferReply()
+  	const data = await fetchSlowData()
+  	await interaction.editReply(`Result: ${data}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/slow.js"
+  export default async (interaction) => {
+  	await interaction.deferReply()
+  	const data = await fetchSlowData()
+  	await interaction.editReply(`Result: ${data}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 With Sage, return the result and deferral is handled for you.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/slow.ts"
-    export default async () => {
-    	const data = await fetchSlowData()
-    	return `Result: ${data}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/slow.js"
-    export default async () => {
-    	const data = await fetchSlowData()
-    	return `Result: ${data}`
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/slow.ts"
+  export default async () => {
+  	const data = await fetchSlowData()
+  	return `Result: ${data}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/slow.js"
+  export default async () => {
+  	const data = await fetchSlowData()
+  	return `Result: ${data}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Sage only defers when needed. Commands that respond within the buffer period skip deferral entirely, avoiding the "thinking..." indicator for fast responses.
@@ -190,30 +210,34 @@ Sage options can be set globally for all commands or per-command.
 Set Sage options for your entire bot in the Discord plugin config file.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	sage: {
-    		defer: true,
-    		deferBuffer: 500,
-    		ephemeral: false
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	sage: {
-    		defer: true,
-    		deferBuffer: 500,
-    		ephemeral: false
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	sage: {
+  		defer: true,
+  		deferBuffer: 500,
+  		ephemeral: false
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	sage: {
+  		defer: true,
+  		deferBuffer: 500,
+  		ephemeral: false
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Per-Command Configuration
@@ -221,32 +245,36 @@ Set Sage options for your entire bot in the Discord plugin config file.
 Override global settings for individual commands through the command's `config` export.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/slow.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'A slow command',
-    	sage: {
-    		defer: true,
-    		deferBuffer: 1000
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/slow.js"
-    import { createCommandConfig } from '@robojs/discordjs'
+  ```ts title="src/commands/slow.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
 
-    export const config = createCommandConfig({
-    	description: 'A slow command',
-    	sage: {
-    		defer: true,
-    		deferBuffer: 1000
-    	}
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'A slow command',
+  	sage: {
+  		defer: true,
+  		deferBuffer: 1000
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/slow.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+
+  export const config = createCommandConfig({
+  	description: 'A slow command',
+  	sage: {
+  		defer: true,
+  		deferBuffer: 1000
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

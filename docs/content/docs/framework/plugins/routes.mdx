@@ -40,50 +40,54 @@ Each route definition file can export the following:
 The `config` export defines how files in the source directory are discovered and processed.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/routes/tasks.ts"
-		import type { RouteConfig } from 'robo.js'
+<Tab value="TypeScript">
 
-		export const config: RouteConfig = {
-			key: {
-				style: 'filepath',
-				separator: '/',
-			},
-			nesting: {
-				maxDepth: 10,
-				allowIndex: true,
-			},
-			exports: {
-				default: 'required',
-				config: 'optional',
-				named: ['GET', 'POST'],
-			},
-			multiple: false,
-			description: 'Scheduled task handlers',
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/routes/tasks.js"
-		export const config = {
-			key: {
-				style: 'filepath',
-				separator: '/',
-			},
-			nesting: {
-				maxDepth: 10,
-				allowIndex: true,
-			},
-			exports: {
-				default: 'required',
-				config: 'optional',
-				named: ['GET', 'POST'],
-			},
-			multiple: false,
-			description: 'Scheduled task handlers',
-		}
-		```
-	</Tab>
+	```ts title="src/robo/routes/tasks.ts"
+	import type { RouteConfig } from 'robo.js'
+
+	export const config: RouteConfig = {
+		key: {
+			style: 'filepath',
+			separator: '/',
+		},
+		nesting: {
+			maxDepth: 10,
+			allowIndex: true,
+		},
+		exports: {
+			default: 'required',
+			config: 'optional',
+			named: ['GET', 'POST'],
+		},
+		multiple: false,
+		description: 'Scheduled task handlers',
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/routes/tasks.js"
+	export const config = {
+		key: {
+			style: 'filepath',
+			separator: '/',
+		},
+		nesting: {
+			maxDepth: 10,
+			allowIndex: true,
+		},
+		exports: {
+			default: 'required',
+			config: 'optional',
+			named: ['GET', 'POST'],
+		},
+		multiple: false,
+		description: 'Scheduled task handlers',
+	}
+	```
+
+</Tab>
 </Tabs>
 
 ### Config fields
@@ -153,52 +157,56 @@ src/commands/admin/ban.ts → "admin ban"
 The default export transforms scanned entries into processed entries. Each file discovered in the scanned directory is passed through this function before being added to the manifest.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/routes/tasks.ts"
-		import type { ScannedEntry, ProcessedEntry } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default function (entry: ScannedEntry): ProcessedEntry {
-			const handlerConfig = entry.exports.config as { schedule?: string } | undefined
+	```ts title="src/robo/routes/tasks.ts"
+	import type { ScannedEntry, ProcessedEntry } from 'robo.js'
 
-			return {
-				key: entry.key,
-				path: entry.filePath.replace(/\.ts$/, '.js'),
-				exports: {
-					default: 'default' in entry.exports,
-					config: 'config' in entry.exports,
-					named: Object.keys(entry.exports).filter(
-						(k) => !['default', 'config'].includes(k)
-					),
-				},
-				metadata: {
-					schedule: handlerConfig?.schedule,
-				},
-			}
+	export default function (entry: ScannedEntry): ProcessedEntry {
+		const handlerConfig = entry.exports.config as { schedule?: string } | undefined
+
+		return {
+			key: entry.key,
+			path: entry.filePath.replace(/\.ts$/, '.js'),
+			exports: {
+				default: 'default' in entry.exports,
+				config: 'config' in entry.exports,
+				named: Object.keys(entry.exports).filter(
+					(k) => !['default', 'config'].includes(k)
+				),
+			},
+			metadata: {
+				schedule: handlerConfig?.schedule,
+			},
 		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/routes/tasks.js"
-		export default function (entry) {
-			const handlerConfig = entry.exports.config
+	}
+	```
 
-			return {
-				key: entry.key,
-				path: entry.filePath.replace(/\.ts$/, '.js'),
-				exports: {
-					default: 'default' in entry.exports,
-					config: 'config' in entry.exports,
-					named: Object.keys(entry.exports).filter(
-						(k) => !['default', 'config'].includes(k)
-					),
-				},
-				metadata: {
-					schedule: handlerConfig?.schedule,
-				},
-			}
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/routes/tasks.js"
+	export default function (entry) {
+		const handlerConfig = entry.exports.config
+
+		return {
+			key: entry.key,
+			path: entry.filePath.replace(/\.ts$/, '.js'),
+			exports: {
+				default: 'default' in entry.exports,
+				config: 'config' in entry.exports,
+				named: Object.keys(entry.exports).filter(
+					(k) => !['default', 'config'].includes(k)
+				),
+			},
+			metadata: {
+				schedule: handlerConfig?.schedule,
+			},
 		}
-		```
-	</Tab>
+	}
+	```
+
+</Tab>
 </Tabs>
 
 ### ScannedEntry
@@ -233,47 +241,51 @@ The output of the processor. Written to the manifest for runtime use.
 The `controller` export creates runtime handler controllers. These manage how handlers are invoked at runtime and are used by the Portal system for typed access.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/routes/tasks.ts"
-		import type { HandlerRecord } from 'robo.js'
+<Tab value="TypeScript">
 
-		export interface TaskController {
-			key: string
-			execute: () => Promise<unknown>
-		}
+	```ts title="src/robo/routes/tasks.ts"
+	import type { HandlerRecord } from 'robo.js'
 
-		export function controller(
-			key: string,
-			record: HandlerRecord,
-			_pluginState: unknown
-		): TaskController {
-			return {
-				key,
-				async execute() {
-					const handler = record.handler as { default?: () => unknown }
-					if (handler?.default) {
-						return handler.default()
-					}
-				},
-			}
+	export interface TaskController {
+		key: string
+		execute: () => Promise<unknown>
+	}
+
+	export function controller(
+		key: string,
+		record: HandlerRecord,
+		_pluginState: unknown
+	): TaskController {
+		return {
+			key,
+			async execute() {
+				const handler = record.handler as { default?: () => unknown }
+				if (handler?.default) {
+					return handler.default()
+				}
+			},
 		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/routes/tasks.js"
-		export function controller(key, record, _pluginState) {
-			return {
-				key,
-				async execute() {
-					const handler = record.handler
-					if (handler?.default) {
-						return handler.default()
-					}
-				},
-			}
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/routes/tasks.js"
+	export function controller(key, record, _pluginState) {
+		return {
+			key,
+			async execute() {
+				const handler = record.handler
+				if (handler?.default) {
+					return handler.default()
+				}
+			},
 		}
-		```
-	</Tab>
+	}
+	```
+
+</Tab>
 </Tabs>
 
 ## Type Exports
@@ -281,20 +293,24 @@ The `controller` export creates runtime handler controllers. These manage how ha
 Route files can export `Handler` and `Controller` types for Portal codegen. These types are used when generating the Portal's typed accessors, giving users type-safe access to route handlers.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/routes/tasks.ts"
-		import type { TaskData } from '../types.js'
+<Tab value="TypeScript">
 
-		export type Handler = (data: TaskData) => void | Promise<void>
-		export type Controller = TaskController
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/routes/tasks.js"
-		// Type exports are TypeScript-only.
-		// JavaScript route definitions still work, but without Portal type generation.
-		```
-	</Tab>
+	```ts title="src/robo/routes/tasks.ts"
+	import type { TaskData } from '../types.js'
+
+	export type Handler = (data: TaskData) => void | Promise<void>
+	export type Controller = TaskController
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/routes/tasks.js"
+	// Type exports are TypeScript-only.
+	// JavaScript route definitions still work, but without Portal type generation.
+	```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -337,77 +353,81 @@ This walkthrough creates a custom `tasks` route type that scans `src/tasks/` for
 ### 2. Define the route
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/routes/tasks.ts"
-		import type { RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
+<Tab value="TypeScript">
 
-		interface TaskConfig {
-			schedule?: string
-			description?: string
-		}
+	```ts title="src/robo/routes/tasks.ts"
+	import type { RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
 
-		export const config: RouteConfig = {
-			key: {
-				style: 'filename',
-			},
+	interface TaskConfig {
+		schedule?: string
+		description?: string
+	}
+
+	export const config: RouteConfig = {
+		key: {
+			style: 'filename',
+		},
+		exports: {
+			default: 'required',
+			config: 'optional',
+		},
+		description: 'Scheduled task handlers',
+	}
+
+	export default function (entry: ScannedEntry): ProcessedEntry {
+		const handlerConfig = entry.exports.config as TaskConfig | undefined
+
+		return {
+			key: entry.key,
+			path: entry.filePath.replace(/\.ts$/, '.js'),
 			exports: {
-				default: 'required',
-				config: 'optional',
+				default: 'default' in entry.exports,
+				config: 'config' in entry.exports,
+				named: [],
 			},
-			description: 'Scheduled task handlers',
-		}
-
-		export default function (entry: ScannedEntry): ProcessedEntry {
-			const handlerConfig = entry.exports.config as TaskConfig | undefined
-
-			return {
-				key: entry.key,
-				path: entry.filePath.replace(/\.ts$/, '.js'),
-				exports: {
-					default: 'default' in entry.exports,
-					config: 'config' in entry.exports,
-					named: [],
-				},
-				metadata: {
-					schedule: handlerConfig?.schedule,
-					description: handlerConfig?.description,
-				},
-			}
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/routes/tasks.js"
-		export const config = {
-			key: {
-				style: 'filename',
+			metadata: {
+				schedule: handlerConfig?.schedule,
+				description: handlerConfig?.description,
 			},
+		}
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/routes/tasks.js"
+	export const config = {
+		key: {
+			style: 'filename',
+		},
+		exports: {
+			default: 'required',
+			config: 'optional',
+		},
+		description: 'Scheduled task handlers',
+	}
+
+	export default function (entry) {
+		const handlerConfig = entry.exports.config
+
+		return {
+			key: entry.key,
+			path: entry.filePath.replace(/\.ts$/, '.js'),
 			exports: {
-				default: 'required',
-				config: 'optional',
+				default: 'default' in entry.exports,
+				config: 'config' in entry.exports,
+				named: [],
 			},
-			description: 'Scheduled task handlers',
+			metadata: {
+				schedule: handlerConfig?.schedule,
+				description: handlerConfig?.description,
+			},
 		}
+	}
+	```
 
-		export default function (entry) {
-			const handlerConfig = entry.exports.config
-
-			return {
-				key: entry.key,
-				path: entry.filePath.replace(/\.ts$/, '.js'),
-				exports: {
-					default: 'default' in entry.exports,
-					config: 'config' in entry.exports,
-					named: [],
-				},
-				metadata: {
-					schedule: handlerConfig?.schedule,
-					description: handlerConfig?.description,
-				},
-			}
-		}
-		```
-	</Tab>
+</Tab>
 </Tabs>
 
 ### 3. Create task handlers
@@ -415,32 +435,36 @@ This walkthrough creates a custom `tasks` route type that scans `src/tasks/` for
 Users (or the plugin itself) can now create files in `src/tasks/` and they will be automatically discovered and processed during build.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/tasks/cleanup.ts"
-		export const config = {
-			schedule: '0 0 * * *',
-			description: 'Clean up expired sessions',
-		}
+<Tab value="TypeScript">
 
-		export default async function () {
-			// Task logic here
-			console.log('Running cleanup task...')
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/tasks/cleanup.js"
-		export const config = {
-			schedule: '0 0 * * *',
-			description: 'Clean up expired sessions',
-		}
+	```ts title="src/tasks/cleanup.ts"
+	export const config = {
+		schedule: '0 0 * * *',
+		description: 'Clean up expired sessions',
+	}
 
-		export default async function () {
-			// Task logic here
-			console.log('Running cleanup task...')
-		}
-		```
-	</Tab>
+	export default async function () {
+		// Task logic here
+		console.log('Running cleanup task...')
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/tasks/cleanup.js"
+	export const config = {
+		schedule: '0 0 * * *',
+		description: 'Clean up expired sessions',
+	}
+
+	export default async function () {
+		// Task logic here
+		console.log('Running cleanup task...')
+	}
+	```
+
+</Tab>
 </Tabs>
 
 When `robo build` runs, Robo.js will scan `src/tasks/`, pass each file through the processor, and add the results to the manifest. The plugin can then read these entries at runtime to schedule and execute tasks.
@@ -450,48 +474,52 @@ When `robo build` runs, Robo.js will scan `src/tasks/`, pass each file through t
 Route files can also export a `NamespaceController` factory. This provides a higher-level API for accessing all handlers of a route type through the Portal system.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/routes/tasks.ts"
-		import { Manifest } from 'robo.js'
-		import type { PortalAPI } from 'robo.js'
+<Tab value="TypeScript">
 
-		export interface TasksNamespaceController {
-			list(): string[]
-			get(name: string): Promise<unknown>
-		}
+	```ts title="src/robo/routes/tasks.ts"
+	import { Manifest } from 'robo.js'
+	import type { PortalAPI } from 'robo.js'
 
-		export const NamespaceController = (portal: PortalAPI): TasksNamespaceController => ({
-			list(): string[] {
-				return Manifest.routeSummariesSync('my-plugin', 'tasks').map(
-					(summary) => summary.key
-				)
-			},
+	export interface TasksNamespaceController {
+		list(): string[]
+		get(name: string): Promise<unknown>
+	}
 
-			async get(name: string): Promise<unknown> {
-				const handler = await portal.getHandler('my-plugin', 'tasks', name)
-				return handler?.default ?? null
-			},
-		})
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/routes/tasks.js"
-		import { Manifest } from 'robo.js'
+	export const NamespaceController = (portal: PortalAPI): TasksNamespaceController => ({
+		list(): string[] {
+			return Manifest.routeSummariesSync('my-plugin', 'tasks').map(
+				(summary) => summary.key
+			)
+		},
 
-		export const NamespaceController = (portal) => ({
-			list() {
-				return Manifest.routeSummariesSync('my-plugin', 'tasks').map(
-					(summary) => summary.key
-				)
-			},
+		async get(name: string): Promise<unknown> {
+			const handler = await portal.getHandler('my-plugin', 'tasks', name)
+			return handler?.default ?? null
+		},
+	})
+	```
 
-			async get(name) {
-				const handler = await portal.getHandler('my-plugin', 'tasks', name)
-				return handler?.default ?? null
-			},
-		})
-		```
-	</Tab>
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/routes/tasks.js"
+	import { Manifest } from 'robo.js'
+
+	export const NamespaceController = (portal) => ({
+		list() {
+			return Manifest.routeSummariesSync('my-plugin', 'tasks').map(
+				(summary) => summary.key
+			)
+		},
+
+		async get(name) {
+			const handler = await portal.getHandler('my-plugin', 'tasks', name)
+			return handler?.default ?? null
+		},
+	})
+	```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

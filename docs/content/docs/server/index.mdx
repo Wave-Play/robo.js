@@ -56,33 +56,37 @@ Create a file in `/src/api` and export HTTP method handlers:
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/hello.ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export function GET() {
-    	return { message: 'Hello, world.' }
-    }
+  ```ts title="src/api/hello.ts"
+  import type { RoboRequest } from '@robojs/server'
 
-    export async function POST(request: RoboRequest) {
-    	const body = await request.json()
-    	return { received: body }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/hello.js"
+  export function GET() {
+  	return { message: 'Hello, world.' }
+  }
 
-    export function GET() {
-    	return { message: 'Hello, world.' }
-    }
+  export async function POST(request: RoboRequest) {
+  	const body = await request.json()
+  	return { received: body }
+  }
+  ```
 
-    export async function POST(request) {
-    	const body = await request.json()
-    	return { received: body }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/hello.js"
+
+  export function GET() {
+  	return { message: 'Hello, world.' }
+  }
+
+  export async function POST(request) {
+  	const body = await request.json()
+  	return { received: body }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Run your Robo and visit `http://localhost:3000/api/hello`. The `GET` handler returns a JSON response. Send a POST request to the same URL with a JSON body to see it echoed back.

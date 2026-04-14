@@ -12,71 +12,79 @@ Two ways to register hooks.
 ### Via plugin config
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	hooks: {
-    		chat: async (ctx) => {
-    			// Preprocess messages
-    		},
-    		reply: (ctx) => {
-    			// Postprocess response
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	hooks: {
-    		chat: async (ctx) => {
-    			// Preprocess messages
-    		},
-    		reply: (ctx) => {
-    			// Postprocess response
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	hooks: {
+  		chat: async (ctx) => {
+  			// Preprocess messages
+  		},
+  		reply: (ctx) => {
+  			// Postprocess response
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	hooks: {
+  		chat: async (ctx) => {
+  			// Preprocess messages
+  		},
+  		reply: (ctx) => {
+  			// Postprocess response
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Via engine instance
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+<Tab value="TypeScript">
 
-    const engine = new OpenAiEngine({ /* ... */ })
+  ```ts title="config/plugins/robojs/ai.ts"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
 
-    engine.on('chat', async (ctx) => {
-    	// Preprocess messages
-    })
-    engine.on('reply', (ctx) => {
-    	// Postprocess response
-    })
+  const engine = new OpenAiEngine({ /* ... */ })
 
-    export default { engine }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+  engine.on('chat', async (ctx) => {
+  	// Preprocess messages
+  })
+  engine.on('reply', (ctx) => {
+  	// Postprocess response
+  })
 
-    const engine = new OpenAiEngine({ /* ... */ })
+  export default { engine }
+  ```
 
-    engine.on('chat', async (ctx) => {
-    	// Preprocess messages
-    })
-    engine.on('reply', (ctx) => {
-    	// Postprocess response
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    export default { engine }
-    ```
-  </Tab>
+  ```js title="config/plugins/robojs/ai.js"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+  const engine = new OpenAiEngine({ /* ... */ })
+
+  engine.on('chat', async (ctx) => {
+  	// Preprocess messages
+  })
+  engine.on('reply', (ctx) => {
+  	// Postprocess response
+  })
+
+  export default { engine }
+  ```
+
+</Tab>
 </Tabs>
 
 Unregister a hook with `engine.off('chat', handler)` or `engine.off('reply', handler)`.
@@ -103,38 +111,42 @@ You can either mutate `ctx.messages` in place or return a new `ChatMessage[]` ar
 ### Example -- content filtering
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	hooks: {
-    		chat: async (ctx) => {
-    			ctx.messages = ctx.messages.filter((m) => {
-    				if (typeof m.content === 'string') {
-    					return !m.content.includes('BLOCKED_WORD')
-    				}
-    				return true
-    			})
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	hooks: {
-    		chat: async (ctx) => {
-    			ctx.messages = ctx.messages.filter((m) => {
-    				if (typeof m.content === 'string') {
-    					return !m.content.includes('BLOCKED_WORD')
-    				}
-    				return true
-    			})
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	hooks: {
+  		chat: async (ctx) => {
+  			ctx.messages = ctx.messages.filter((m) => {
+  				if (typeof m.content === 'string') {
+  					return !m.content.includes('BLOCKED_WORD')
+  				}
+  				return true
+  			})
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	hooks: {
+  		chat: async (ctx) => {
+  			ctx.messages = ctx.messages.filter((m) => {
+  				if (typeof m.content === 'string') {
+  					return !m.content.includes('BLOCKED_WORD')
+  				}
+  				return true
+  			})
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Reply hook
@@ -173,71 +185,79 @@ Return a `ChatReply` to override the response. Return nothing to keep the defaul
 ### Example -- append footer
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    import type { ReplyHookContext, ChatReply } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export default {
-    	hooks: {
-    		reply: (ctx: ReplyHookContext): ChatReply | void => {
-    			const content = ctx.response.message?.content
-    			if (typeof content === 'string') {
-    				return { text: content + '\n\n*Powered by Sage*' }
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	hooks: {
-    		reply: (ctx) => {
-    			const content = ctx.response.message?.content
-    			if (typeof content === 'string') {
-    				return { text: content + '\n\n*Powered by Sage*' }
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/ai.ts"
+  import type { ReplyHookContext, ChatReply } from '@robojs/ai'
+
+  export default {
+  	hooks: {
+  		reply: (ctx: ReplyHookContext): ChatReply | void => {
+  			const content = ctx.response.message?.content
+  			if (typeof content === 'string') {
+  				return { text: content + '\n\n*Powered by Sage*' }
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	hooks: {
+  		reply: (ctx) => {
+  			const content = ctx.response.message?.content
+  			if (typeof content === 'string') {
+  				return { text: content + '\n\n*Powered by Sage*' }
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Example -- MCP degradation handling
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	hooks: {
-    		reply: (ctx) => {
-    			if (ctx.degradedMcpServers?.length) {
-    				console.warn('Degraded MCP servers:', ctx.degradedMcpServers)
-    				const text = ctx.response.message?.content ?? ''
-    				return { text: text + '\n\nSome external tools were temporarily unavailable.' }
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	hooks: {
-    		reply: (ctx) => {
-    			if (ctx.degradedMcpServers?.length) {
-    				console.warn('Degraded MCP servers:', ctx.degradedMcpServers)
-    				const text = ctx.response.message?.content ?? ''
-    				return { text: text + '\n\nSome external tools were temporarily unavailable.' }
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	hooks: {
+  		reply: (ctx) => {
+  			if (ctx.degradedMcpServers?.length) {
+  				console.warn('Degraded MCP servers:', ctx.degradedMcpServers)
+  				const text = ctx.response.message?.content ?? ''
+  				return { text: text + '\n\nSome external tools were temporarily unavailable.' }
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	hooks: {
+  		reply: (ctx) => {
+  			if (ctx.degradedMcpServers?.length) {
+  				console.warn('Degraded MCP servers:', ctx.degradedMcpServers)
+  				const text = ctx.response.message?.content ?? ''
+  				return { text: text + '\n\nSome external tools were temporarily unavailable.' }
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Execution order

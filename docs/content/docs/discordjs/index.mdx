@@ -73,22 +73,26 @@ Create a file at `src/commands/ping.ts` and export a default function:
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default (interaction) => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
+  ```ts title="src/commands/ping.ts"
+  import type { ChatInputCommandInteraction } from 'discord.js'
+
+  export default (interaction: ChatInputCommandInteraction) => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default (interaction) => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Run `npx robo dev` and type `/ping` in Discord. That's it -- Robo handles registration, deferral, and replies automatically.

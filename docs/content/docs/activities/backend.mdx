@@ -32,20 +32,24 @@ Each file in `src/api/` maps to an endpoint. The file name determines the route 
 Return a string or object from the default export:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/hello.ts"
-    export default () => {
-      return { message: 'Hello, world!' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/hello.js"
-    export default () => {
-      return { message: 'Hello, world!' }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/api/hello.ts"
+  export default () => {
+    return { message: 'Hello, world!' }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/hello.js"
+  export default () => {
+    return { message: 'Hello, world!' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Request and Response
@@ -53,24 +57,28 @@ Return a string or object from the default export:
 Use `RoboRequest` to read query parameters, body, and headers. Return an object for JSON responses, or use `RoboResponse` for custom status codes and headers:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/data.ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export default async (req: RoboRequest) => {
-      const body = await req.json()
-      return { received: body }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/data.js"
-    export default async (req) => {
-      const body = await req.json()
-      return { received: body }
-    }
-    ```
-  </Tab>
+  ```ts title="src/api/data.ts"
+  import type { RoboRequest } from '@robojs/server'
+
+  export default async (req: RoboRequest) => {
+    const body = await req.json()
+    return { received: body }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/data.js"
+  export default async (req) => {
+    const body = await req.json()
+    return { received: body }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Access query parameters through `req.query` and URL parameters through `req.params`.
@@ -92,24 +100,28 @@ Create subdirectories for nested route paths. Dynamic segments use `[param]` syn
 Access dynamic parameters through `req.params`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/users/[id].ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export default (req: RoboRequest) => {
-      const { id } = req.params
-      return { userId: id }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/users/[id].js"
-    export default (req) => {
-      const { id } = req.params
-      return { userId: id }
-    }
-    ```
-  </Tab>
+  ```ts title="src/api/users/[id].ts"
+  import type { RoboRequest } from '@robojs/server'
+
+  export default (req: RoboRequest) => {
+    const { id } = req.params
+    return { userId: id }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/users/[id].js"
+  export default (req) => {
+    const { id } = req.params
+    return { userId: id }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -125,32 +137,36 @@ Access dynamic parameters through `req.params`:
 The default export handles all HTTP methods. Use named exports for method-specific handlers:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/users.ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export const GET = () => {
-      return { users: [] }
-    }
+  ```ts title="src/api/users.ts"
+  import type { RoboRequest } from '@robojs/server'
 
-    export const POST = async (req: RoboRequest) => {
-      const body = await req.json()
-      return { created: body }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/users.js"
-    export const GET = () => {
-      return { users: [] }
-    }
+  export const GET = () => {
+    return { users: [] }
+  }
 
-    export const POST = async (req) => {
-      const body = await req.json()
-      return { created: body }
-    }
-    ```
-  </Tab>
+  export const POST = async (req: RoboRequest) => {
+    const body = await req.json()
+    return { created: body }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/users.js"
+  export const GET = () => {
+    return { users: [] }
+  }
+
+  export const POST = async (req) => {
+    const body = await req.json()
+    return { created: body }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Supported named exports: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`.
@@ -160,22 +176,26 @@ Supported named exports: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HE
 Configure the server plugin in `config/plugins/robojs/server.ts`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.ts"
-    export default {
-      port: 3000,
-      cors: true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.js"
-    export default {
-      port: 3000,
-      cors: true
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.ts"
+  export default {
+    port: 3000,
+    cors: true
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.js"
+  export default {
+    port: 3000,
+    cors: true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Option | Type | Default | Description |

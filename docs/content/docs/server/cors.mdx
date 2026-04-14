@@ -10,20 +10,24 @@ Cross-Origin Resource Sharing (CORS) controls which domains can access your API.
 Enable permissive CORS (all origins allowed):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	cors: true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	cors: true
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	cors: true
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	cors: true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 This sets `Access-Control-Allow-Origin: *` and handles `OPTIONS` preflight requests with a 204 response.
@@ -33,24 +37,28 @@ This sets `Access-Control-Allow-Origin: *` and handles `OPTIONS` preflight reque
 Restrict access to specific origins:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	cors: {
-    		origins: ['https://myapp.com', 'http://localhost:5173']
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	cors: {
-    		origins: ['https://myapp.com', 'http://localhost:5173']
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	cors: {
+  		origins: ['https://myapp.com', 'http://localhost:5173']
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	cors: {
+  		origins: ['https://myapp.com', 'http://localhost:5173']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The server checks the `Origin` header against the allowlist. If it matches, the origin is echoed back in `Access-Control-Allow-Origin`. Non-matching origins receive no CORS headers.
@@ -60,26 +68,30 @@ The server checks the `Origin` header against the allowlist. If it matches, the 
 Enable cookies and authorization headers:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	cors: {
-    		origins: ['https://myapp.com'],
-    		credentials: true
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	cors: {
-    		origins: ['https://myapp.com'],
-    		credentials: true
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	cors: {
+  		origins: ['https://myapp.com'],
+  		credentials: true
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	cors: {
+  		origins: ['https://myapp.com'],
+  		credentials: true
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

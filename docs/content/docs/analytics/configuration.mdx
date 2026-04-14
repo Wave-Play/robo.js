@@ -36,20 +36,24 @@ PLAUSIBLE_DOMAIN="example.com"
 Create a config file for advanced setup. The only option is `engine`, which overrides auto-detection entirely.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    export default {
-    	engine: undefined // Optional: custom BaseEngine instance
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    export default {
-    	engine: undefined // Optional: custom BaseEngine instance
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/analytics.mjs"
+  export default {
+  	engine: undefined // Optional: custom BaseEngine instance
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/analytics.mjs"
+  export default {
+  	engine: undefined // Optional: custom BaseEngine instance
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -63,82 +67,94 @@ Create a config file for advanced setup. The only option is `engine`, which over
 **Use Google Analytics with explicit credentials:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new GoogleAnalytics({
-    		measureId: 'G-XXXXXXXXX',
-    		token: 'your-api-secret'
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics } from '@robojs/analytics'
+  ```ts title="config/plugins/robojs/analytics.mjs"
+  import { GoogleAnalytics } from '@robojs/analytics'
 
-    export default {
-    	engine: new GoogleAnalytics({
-    		measureId: 'G-XXXXXXXXX',
-    		token: 'your-api-secret'
-    	})
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new GoogleAnalytics({
+  		measureId: 'G-XXXXXXXXX',
+  		token: 'your-api-secret'
+  	})
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/analytics.mjs"
+  import { GoogleAnalytics } from '@robojs/analytics'
+
+  export default {
+  	engine: new GoogleAnalytics({
+  		measureId: 'G-XXXXXXXXX',
+  		token: 'your-api-secret'
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 **Use Plausible with explicit domain:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { PlausibleAnalytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new PlausibleAnalytics('example.com')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { PlausibleAnalytics } from '@robojs/analytics'
+  ```ts title="config/plugins/robojs/analytics.mjs"
+  import { PlausibleAnalytics } from '@robojs/analytics'
 
-    export default {
-    	engine: new PlausibleAnalytics('example.com')
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new PlausibleAnalytics('example.com')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/analytics.mjs"
+  import { PlausibleAnalytics } from '@robojs/analytics'
+
+  export default {
+  	engine: new PlausibleAnalytics('example.com')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 **Use multiple services:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics, PlausibleAnalytics, ManyEngines } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new ManyEngines(
-    		new GoogleAnalytics(),
-    		new PlausibleAnalytics()
-    	)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics, PlausibleAnalytics, ManyEngines } from '@robojs/analytics'
+  ```ts title="config/plugins/robojs/analytics.mjs"
+  import { GoogleAnalytics, PlausibleAnalytics, ManyEngines } from '@robojs/analytics'
 
-    export default {
-    	engine: new ManyEngines(
-    		new GoogleAnalytics(),
-    		new PlausibleAnalytics()
-    	)
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new ManyEngines(
+  		new GoogleAnalytics(),
+  		new PlausibleAnalytics()
+  	)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/analytics.mjs"
+  import { GoogleAnalytics, PlausibleAnalytics, ManyEngines } from '@robojs/analytics'
+
+  export default {
+  	engine: new ManyEngines(
+  		new GoogleAnalytics(),
+  		new PlausibleAnalytics()
+  	)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 When using `ManyEngines` in the config file, engine constructors still fall back to environment variables for their credentials.
@@ -213,48 +229,52 @@ When installed with `npx robo add @robojs/analytics`, the plugin seeds three fil
 The seeded middleware intercepts all slash commands and sends an event:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/track-commands.ts"
-    import { Analytics } from '@robojs/analytics'
-    import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { MiddlewareData } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default async (data: MiddlewareData) => {
-    	const { payload, record } = data
+  ```ts title="src/middleware/track-commands.ts"
+  import { Analytics } from '@robojs/analytics'
+  import type { ChatInputCommandInteraction } from 'discord.js'
+  import type { MiddlewareData } from '@robojs/discordjs'
 
-    	if (record.type === 'command') {
-    		const interaction = payload[0] as ChatInputCommandInteraction
-    		const name = record.key.replaceAll('/', '_').replaceAll('-', '_')
+  export default async (data: MiddlewareData) => {
+  	const { payload, record } = data
 
-    		Analytics.event(name, {
-    			data: { type: 'slash_command' },
-    			sessionId: interaction.channelId ?? interaction.guildId,
-    			userId: interaction.user?.id
-    		})
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/track-commands.js"
-    import { Analytics } from '@robojs/analytics'
+  	if (record.type === 'command') {
+  		const interaction = payload[0] as ChatInputCommandInteraction
+  		const name = record.key.replaceAll('/', '_').replaceAll('-', '_')
 
-    export default async (data) => {
-    	const { payload, record } = data
+  		Analytics.event(name, {
+  			data: { type: 'slash_command' },
+  			sessionId: interaction.channelId ?? interaction.guildId,
+  			userId: interaction.user?.id
+  		})
+  	}
+  }
+  ```
 
-    	if (record.type === 'command') {
-    		const interaction = payload[0]
-    		const name = record.key.replaceAll('/', '_').replaceAll('-', '_')
+</Tab>
+<Tab value="JavaScript">
 
-    		Analytics.event(name, {
-    			data: { type: 'slash_command' },
-    			sessionId: interaction.channelId ?? interaction.guildId,
-    			userId: interaction.user?.id
-    		})
-    	}
-    }
-    ```
-  </Tab>
+  ```js title="src/middleware/track-commands.js"
+  import { Analytics } from '@robojs/analytics'
+
+  export default async (data) => {
+  	const { payload, record } = data
+
+  	if (record.type === 'command') {
+  		const interaction = payload[0]
+  		const name = record.key.replaceAll('/', '_').replaceAll('-', '_')
+
+  		Analytics.event(name, {
+  			data: { type: 'slash_command' },
+  			sessionId: interaction.channelId ?? interaction.guildId,
+  			userId: interaction.user?.id
+  		})
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Command names are normalized: `/moderation/ban` becomes `moderation_ban`. This fires for every slash command without requiring per-command tracking code.
@@ -264,54 +284,62 @@ Command names are normalized: `/moderation/ban` becomes `moderation_ban`. This f
 The seeded event handler requires the `Guilds` intent:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/guildCreate.ts"
-    import { Analytics } from '@robojs/analytics'
-    import type { Guild } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (guild: Guild) => {
-    	Analytics.event('server_join', {
-    		data: { name: guild.name, type: 'event' },
-    		sessionId: guild.id
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/guildCreate.js"
-    import { Analytics } from '@robojs/analytics'
+  ```ts title="src/events/guildCreate.ts"
+  import { Analytics } from '@robojs/analytics'
+  import type { Guild } from 'discord.js'
 
-    export default (guild) => {
-    	Analytics.event('server_join', {
-    		data: { name: guild.name, type: 'event' },
-    		sessionId: guild.id
-    	})
-    }
-    ```
-  </Tab>
+  export default (guild: Guild) => {
+  	Analytics.event('server_join', {
+  		data: { name: guild.name, type: 'event' },
+  		sessionId: guild.id
+  	})
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/guildCreate.js"
+  import { Analytics } from '@robojs/analytics'
+
+  export default (guild) => {
+  	Analytics.event('server_join', {
+  		data: { name: guild.name, type: 'event' },
+  		sessionId: guild.id
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Enable the intent in your Discord plugin config if you want this tracking:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds']
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds']
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds']
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

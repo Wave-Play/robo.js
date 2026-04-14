@@ -14,22 +14,26 @@ For plugin-specific troubleshooting including common errors, registration issues
 Set `DISCORD_GUILD_ID` in your environment variables to scope command registration to a single server during development. Guild-scoped commands update instantly, while global commands can take up to an hour to propagate.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	testServers: [process.env.DISCORD_GUILD_ID]
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	testServers: [process.env.DISCORD_GUILD_ID]
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	testServers: [process.env.DISCORD_GUILD_ID]
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	testServers: [process.env.DISCORD_GUILD_ID]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 This keeps development commands out of production servers and provides immediate feedback when iterating on command changes.
@@ -55,28 +59,32 @@ The `/dev` command only appears when running in development mode (`npx robo dev`
 Use the `logger` from `robo.js/logger.js` for structured log output. Log levels control verbosity and can be configured per environment.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/example.ts"
-    import { logger } from 'robo.js/logger.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	logger.info('Command executed')
-    	logger.debug('Processing data...')
-    	return 'Done!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/example.js"
-    import { logger } from 'robo.js/logger.js'
+  ```ts title="src/commands/example.ts"
+  import { logger } from 'robo.js/logger.js'
 
-    export default () => {
-    	logger.info('Command executed')
-    	logger.debug('Processing data...')
-    	return 'Done!'
-    }
-    ```
-  </Tab>
+  export default () => {
+  	logger.info('Command executed')
+  	logger.debug('Processing data...')
+  	return 'Done!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/example.js"
+  import { logger } from 'robo.js/logger.js'
+
+  export default () => {
+  	logger.info('Command executed')
+  	logger.debug('Processing data...')
+  	return 'Done!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Level | Method | Description |
@@ -92,24 +100,28 @@ Use the `logger` from `robo.js/logger.js` for structured log output. Log levels 
 Create named logger instances with `logger.fork()`. This adds a prefix to all log output, making it easier to filter logs by source. Forked loggers are useful for both plugin authors and large bots where different parts of the application need to stand out in logs (e.g., `logger.fork('payments')`, `logger.fork('auth')`).
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/core/logger.ts"
-    import { logger } from 'robo.js/logger.js'
+<Tab value="TypeScript">
 
-    export const paymentLogger = logger.fork('payments')
-    paymentLogger.info('Processing refund')
-    // Output: [payments] Processing refund
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/core/logger.js"
-    import { logger } from 'robo.js/logger.js'
+  ```ts title="src/core/logger.ts"
+  import { logger } from 'robo.js/logger.js'
 
-    export const paymentLogger = logger.fork('payments')
-    paymentLogger.info('Processing refund')
-    // Output: [payments] Processing refund
-    ```
-  </Tab>
+  export const paymentLogger = logger.fork('payments')
+  paymentLogger.info('Processing refund')
+  // Output: [payments] Processing refund
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/core/logger.js"
+  import { logger } from 'robo.js/logger.js'
+
+  export const paymentLogger = logger.fork('payments')
+  paymentLogger.info('Processing refund')
+  // Output: [payments] Processing refund
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -125,36 +137,40 @@ Create named logger instances with `logger.fork()`. This adds a prefix to all lo
 Always use `try/catch` with async operations inside handlers. Unhandled errors in event handlers can cause unexpected behavior or crash your bot.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/fetch.ts"
-    import { logger } from 'robo.js/logger.js'
+<Tab value="TypeScript">
 
-    export default async () => {
-    	try {
-    		const data = await fetchExternalApi()
-    		return `Result: ${data}`
-    	} catch (error) {
-    		logger.error('API call failed:', error)
-    		return 'Something went wrong.'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/fetch.js"
-    import { logger } from 'robo.js/logger.js'
+  ```ts title="src/commands/fetch.ts"
+  import { logger } from 'robo.js/logger.js'
 
-    export default async () => {
-    	try {
-    		const data = await fetchExternalApi()
-    		return `Result: ${data}`
-    	} catch (error) {
-    		logger.error('API call failed:', error)
-    		return 'Something went wrong.'
-    	}
-    }
-    ```
-  </Tab>
+  export default async () => {
+  	try {
+  		const data = await fetchExternalApi()
+  		return `Result: ${data}`
+  	} catch (error) {
+  		logger.error('API call failed:', error)
+  		return 'Something went wrong.'
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/fetch.js"
+  import { logger } from 'robo.js/logger.js'
+
+  export default async () => {
+  	try {
+  		const data = await fetchExternalApi()
+  		return `Result: ${data}`
+  	} catch (error) {
+  		logger.error('API call failed:', error)
+  		return 'Something went wrong.'
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

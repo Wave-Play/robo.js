@@ -53,36 +53,40 @@ npx create-robo my-cli -p @robojs/cli
 		</Files>
 
 		<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-			<Tab value="TypeScript">
-				```ts title="src/cli/hello.ts"
-				import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-				export const config = createCliCommandConfig({
-					description: 'Say hello to someone',
-					options: [
-						{ alias: '-n', name: '--name', description: 'Name to greet', type: 'string', default: 'World' }
-					]
-				} as const)
+	```ts title="src/cli/hello.ts"
+	import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-				export default (ctx: CliContext<typeof config>) => {
-					console.log(`Hello, ${ctx.options.name}!`)
-				}
-				```
-			</Tab>
-			<Tab value="JavaScript">
-				```js title="src/cli/hello.js"
-				export const config = {
-					description: 'Say hello to someone',
-					options: [
-						{ alias: '-n', name: '--name', description: 'Name to greet', type: 'string', default: 'World' }
-					]
-				}
+	export const config = createCliCommandConfig({
+		description: 'Say hello to someone',
+		options: [
+			{ alias: '-n', name: '--name', description: 'Name to greet', type: 'string', default: 'World' }
+		]
+	} as const)
 
-				export default (ctx) => {
-					console.log(`Hello, ${ctx.options.name}!`)
-				}
-				```
-			</Tab>
+	export default (ctx: CliContext<typeof config>) => {
+		console.log(`Hello, ${ctx.options.name}!`)
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/cli/hello.js"
+	export const config = {
+		description: 'Say hello to someone',
+		options: [
+			{ alias: '-n', name: '--name', description: 'Name to greet', type: 'string', default: 'World' }
+		]
+	}
+
+	export default (ctx) => {
+		console.log(`Hello, ${ctx.options.name}!`)
+	}
+	```
+
+</Tab>
 		</Tabs>
 	</Step>
 	<Step>

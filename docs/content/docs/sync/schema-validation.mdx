@@ -10,29 +10,33 @@ Schema validation ensures state updates conform to an expected structure before 
 Define schemas as a record of field definitions. No external dependencies required.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { BuiltInSchema } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export const schema: BuiltInSchema = {
-    	score: { type: 'number', min: 0 },
-    	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] },
-    	winner: { type: 'string', nullable: true, optional: true },
-    	players: { type: 'object' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { BuiltInSchema } from '@robojs/sync/server'
 
-    export const schema = {
-    	score: { type: 'number', min: 0 },
-    	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] },
-    	winner: { type: 'string', nullable: true, optional: true },
-    	players: { type: 'object' }
-    }
-    ```
-  </Tab>
+  export const schema: BuiltInSchema = {
+  	score: { type: 'number', min: 0 },
+  	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] },
+  	winner: { type: 'string', nullable: true, optional: true },
+  	players: { type: 'object' }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export const schema = {
+  	score: { type: 'number', min: 0 },
+  	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] },
+  	winner: { type: 'string', nullable: true, optional: true },
+  	players: { type: 'object' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## SchemaField reference
@@ -56,61 +60,65 @@ Define schemas as a record of field definitions. No external dependencies requir
 Nested validation with arrays and objects.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { BuiltInSchema } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export const schema: BuiltInSchema = {
-    	name: { type: 'string', minLength: 1, maxLength: 50 },
-    	health: { type: 'number', min: 0, max: 100 },
-    	inventory: {
-    		type: 'array',
-    		maxLength: 20,
-    		items: {
-    			type: 'object',
-    			properties: {
-    				id: { type: 'string' },
-    				quantity: { type: 'number', min: 1 }
-    			}
-    		}
-    	},
-    	position: {
-    		type: 'object',
-    		properties: {
-    			x: { type: 'number', min: 0, max: 1000 },
-    			y: { type: 'number', min: 0, max: 1000 }
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { BuiltInSchema } from '@robojs/sync/server'
 
-    export const schema = {
-    	name: { type: 'string', minLength: 1, maxLength: 50 },
-    	health: { type: 'number', min: 0, max: 100 },
-    	inventory: {
-    		type: 'array',
-    		maxLength: 20,
-    		items: {
-    			type: 'object',
-    			properties: {
-    				id: { type: 'string' },
-    				quantity: { type: 'number', min: 1 }
-    			}
-    		}
-    	},
-    	position: {
-    		type: 'object',
-    		properties: {
-    			x: { type: 'number', min: 0, max: 1000 },
-    			y: { type: 'number', min: 0, max: 1000 }
-    		}
-    	}
-    }
-    ```
-  </Tab>
+  export const schema: BuiltInSchema = {
+  	name: { type: 'string', minLength: 1, maxLength: 50 },
+  	health: { type: 'number', min: 0, max: 100 },
+  	inventory: {
+  		type: 'array',
+  		maxLength: 20,
+  		items: {
+  			type: 'object',
+  			properties: {
+  				id: { type: 'string' },
+  				quantity: { type: 'number', min: 1 }
+  			}
+  		}
+  	},
+  	position: {
+  		type: 'object',
+  		properties: {
+  			x: { type: 'number', min: 0, max: 1000 },
+  			y: { type: 'number', min: 0, max: 1000 }
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export const schema = {
+  	name: { type: 'string', minLength: 1, maxLength: 50 },
+  	health: { type: 'number', min: 0, max: 100 },
+  	inventory: {
+  		type: 'array',
+  		maxLength: 20,
+  		items: {
+  			type: 'object',
+  			properties: {
+  				id: { type: 'string' },
+  				quantity: { type: 'number', min: 1 }
+  			}
+  		}
+  	},
+  	position: {
+  		type: 'object',
+  		properties: {
+  			x: { type: 'number', min: 0, max: 1000 },
+  			y: { type: 'number', min: 0, max: 1000 }
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Zod schemas
@@ -118,36 +126,40 @@ Nested validation with arrays and objects.
 If you prefer Zod, export a Zod schema instead. The validation system detects Zod schemas automatically via the `.safeParse` method.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import { z } from 'zod'
+<Tab value="TypeScript">
 
-    export const schema = z.object({
-    	score: z.number().min(0),
-    	phase: z.enum(['lobby', 'playing', 'ended']),
-    	winner: z.string().nullable().optional(),
-    	players: z.record(z.object({
-    		name: z.string(),
-    		ready: z.boolean()
-    	}))
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
-    import { z } from 'zod'
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import { z } from 'zod'
 
-    export const schema = z.object({
-    	score: z.number().min(0),
-    	phase: z.enum(['lobby', 'playing', 'ended']),
-    	winner: z.string().nullable().optional(),
-    	players: z.record(z.object({
-    		name: z.string(),
-    		ready: z.boolean()
-    	}))
-    })
-    ```
-  </Tab>
+  export const schema = z.object({
+  	score: z.number().min(0),
+  	phase: z.enum(['lobby', 'playing', 'ended']),
+  	winner: z.string().nullable().optional(),
+  	players: z.record(z.object({
+  		name: z.string(),
+  		ready: z.boolean()
+  	}))
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+  import { z } from 'zod'
+
+  export const schema = z.object({
+  	score: z.number().min(0),
+  	phase: z.enum(['lobby', 'playing', 'ended']),
+  	winner: z.string().nullable().optional(),
+  	players: z.record(z.object({
+  		name: z.string(),
+  		ready: z.boolean()
+  	}))
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -159,22 +171,26 @@ Zod is not included as a dependency. Install it separately if you want to use Zo
 When validation fails, the update is rejected. For direct state updates, the client receives a `validation_error` message. For RPC calls, the error is returned in the `CallResult`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const result = await call('action', payload)
-    if (!result.success) {
-    	console.log('Validation failed:', result.error) // 'schema_validation_failed'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const result = await call('action', payload)
-    if (!result.success) {
-    	console.log('Validation failed:', result.error) // 'schema_validation_failed'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  const result = await call('action', payload)
+  if (!result.success) {
+  	console.log('Validation failed:', result.error) // 'schema_validation_failed'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const result = await call('action', payload)
+  if (!result.success) {
+  	console.log('Validation failed:', result.error) // 'schema_validation_failed'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Combining with validate
@@ -182,41 +198,45 @@ When validation fails, the update is rejected. For direct state updates, the cli
 Schema validation runs before the custom `validate` function. Both must pass for the update to be accepted.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { BuiltInSchema, SyncUpdateContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export const schema: BuiltInSchema = {
-    	score: { type: 'number', min: 0 }
-    }
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { BuiltInSchema, SyncUpdateContext } from '@robojs/sync/server'
 
-    export function validate(ctx: SyncUpdateContext): boolean | string {
-    	// Schema already ensured score is a non-negative number
-    	// Additional business logic here
-    	if (ctx.newState.score > ctx.oldState?.score + 10) {
-    		return 'score_increase_too_large'
-    	}
-    	return true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  export const schema: BuiltInSchema = {
+  	score: { type: 'number', min: 0 }
+  }
 
-    export const schema = {
-    	score: { type: 'number', min: 0 }
-    }
+  export function validate(ctx: SyncUpdateContext): boolean | string {
+  	// Schema already ensured score is a non-negative number
+  	// Additional business logic here
+  	if (ctx.newState.score > ctx.oldState?.score + 10) {
+  		return 'score_increase_too_large'
+  	}
+  	return true
+  }
+  ```
 
-    export function validate(ctx) {
-    	// Schema already ensured score is a non-negative number
-    	// Additional business logic here
-    	if (ctx.newState.score > ctx.oldState?.score + 10) {
-    		return 'score_increase_too_large'
-    	}
-    	return true
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export const schema = {
+  	score: { type: 'number', min: 0 }
+  }
+
+  export function validate(ctx) {
+  	// Schema already ensured score is a non-negative number
+  	// Additional business logic here
+  	if (ctx.newState.score > ctx.oldState?.score + 10) {
+  		return 'score_increase_too_large'
+  	}
+  	return true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

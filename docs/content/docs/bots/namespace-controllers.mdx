@@ -16,18 +16,22 @@ For per-handler controllers that enable/disable individual commands at runtime, 
 Import the controllers directly from the plugin package.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Any file in your project
-    import { commands, events, context, middleware } from '@robojs/discordjs'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Any file in your project
-    import { commands, events, context, middleware } from '@robojs/discordjs'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  // Any file in your project
+  import { commands, events, context, middleware } from '@robojs/discordjs'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Any file in your project
+  import { commands, events, context, middleware } from '@robojs/discordjs'
+  ```
+
+</Tab>
 </Tabs>
 
 Each controller exposes methods for listing, retrieving, and executing handlers that Robo.js has registered from your file system.
@@ -41,26 +45,30 @@ Each controller exposes methods for listing, retrieving, and executing handlers 
 | `commands.execute(name, interaction)` | `Promise<void>` | Execute a command programmatically |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { commands } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    const allCommands = commands.list()
-    console.log('Available commands:', allCommands)
+  ```ts
+  import { commands } from '@robojs/discordjs'
 
-    await commands.execute('ping', interaction)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { commands } from '@robojs/discordjs'
+  const allCommands = commands.list()
+  console.log('Available commands:', allCommands)
 
-    const allCommands = commands.list()
-    console.log('Available commands:', allCommands)
+  await commands.execute('ping', interaction)
+  ```
 
-    await commands.execute('ping', interaction)
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { commands } from '@robojs/discordjs'
+
+  const allCommands = commands.list()
+  console.log('Available commands:', allCommands)
+
+  await commands.execute('ping', interaction)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Events Controller
@@ -72,26 +80,30 @@ Each controller exposes methods for listing, retrieving, and executing handlers 
 | `events.emit(name, ...args)` | `Promise<void>` | Emit an event programmatically |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { events } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    const registeredEvents = events.list()
-    console.log('Registered events:', registeredEvents)
+  ```ts
+  import { events } from '@robojs/discordjs'
 
-    await events.emit('messageCreate', message)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { events } from '@robojs/discordjs'
+  const registeredEvents = events.list()
+  console.log('Registered events:', registeredEvents)
 
-    const registeredEvents = events.list()
-    console.log('Registered events:', registeredEvents)
+  await events.emit('messageCreate', message)
+  ```
 
-    await events.emit('messageCreate', message)
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { events } from '@robojs/discordjs'
+
+  const registeredEvents = events.list()
+  console.log('Registered events:', registeredEvents)
+
+  await events.emit('messageCreate', message)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Context Controller
@@ -102,22 +114,26 @@ Each controller exposes methods for listing, retrieving, and executing handlers 
 | `context.get(name)` | `Promise<ContextHandler \| null>` | Get a context menu handler by name |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { context } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    const menus = context.list()
-    console.log('Context menus:', menus)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { context } from '@robojs/discordjs'
+  ```ts
+  import { context } from '@robojs/discordjs'
 
-    const menus = context.list()
-    console.log('Context menus:', menus)
-    ```
-  </Tab>
+  const menus = context.list()
+  console.log('Context menus:', menus)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { context } from '@robojs/discordjs'
+
+  const menus = context.list()
+  console.log('Context menus:', menus)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Middleware Controller
@@ -137,22 +153,26 @@ Each `MiddlewareChainEntry` contains the following fields.
 | `enabled` | `boolean` | Whether the middleware is active |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { middleware } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    const chain = await middleware.chain()
-    console.log('Middleware chain:', chain.map((m) => m.key))
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { middleware } from '@robojs/discordjs'
+  ```ts
+  import { middleware } from '@robojs/discordjs'
 
-    const chain = await middleware.chain()
-    console.log('Middleware chain:', chain.map((m) => m.key))
-    ```
-  </Tab>
+  const chain = await middleware.chain()
+  console.log('Middleware chain:', chain.map((m) => m.key))
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { middleware } from '@robojs/discordjs'
+
+  const chain = await middleware.chain()
+  console.log('Middleware chain:', chain.map((m) => m.key))
+  ```
+
+</Tab>
 </Tabs>
 
 ## Use Cases
@@ -162,29 +182,33 @@ Each `MiddlewareChainEntry` contains the following fields.
 - **Custom help commands**: List all registered commands dynamically.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/help.ts"
-    import { commands } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const allCommands = commands.list()
-    	const commandList = allCommands.map((cmd) => `\`/${cmd}\``).join(', ')
-    	return `Available commands: ${commandList}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/help.js"
-    import { commands } from '@robojs/discordjs'
+  ```ts title="src/commands/help.ts"
+  import { commands } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    export default (interaction) => {
-    	const allCommands = commands.list()
-    	const commandList = allCommands.map((cmd) => `\`/${cmd}\``).join(', ')
-    	return `Available commands: ${commandList}`
-    }
-    ```
-  </Tab>
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const allCommands = commands.list()
+  	const commandList = allCommands.map((cmd) => `\`/${cmd}\``).join(', ')
+  	return `Available commands: ${commandList}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/help.js"
+  import { commands } from '@robojs/discordjs'
+
+  export default (interaction) => {
+  	const allCommands = commands.list()
+  	const commandList = allCommands.map((cmd) => `\`/${cmd}\``).join(', ')
+  	return `Available commands: ${commandList}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder

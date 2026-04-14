@@ -16,20 +16,24 @@ The AI plugin is configured through a file at `config/plugins/robojs/ai.mjs` (or
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	instructions: 'You are Sage, a helpful community assistant.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	instructions: 'You are Sage, a helpful community assistant.'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	instructions: 'You are Sage, a helpful community assistant.'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	instructions: 'You are Sage, a helpful community assistant.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Plugin options
@@ -60,22 +64,26 @@ The AI plugin is configured through a file at `config/plugins/robojs/ai.mjs` (or
 - If both are set, `restrict` wins. The bot only responds in restricted channels, and whitelisted channels outside the restrict list are ignored.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	restrict: { channelIds: ['345678901234567890'] },
-    	whitelist: { channelIds: ['456789012345678901', '567890123456789012'] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	restrict: { channelIds: ['345678901234567890'] },
-    	whitelist: { channelIds: ['456789012345678901', '567890123456789012'] }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	restrict: { channelIds: ['345678901234567890'] },
+  	whitelist: { channelIds: ['456789012345678901', '567890123456789012'] }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	restrict: { channelIds: ['345678901234567890'] },
+  	whitelist: { channelIds: ['456789012345678901', '567890123456789012'] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Command tools
@@ -83,22 +91,26 @@ The AI plugin is configured through a file at `config/plugins/robojs/ai.mjs` (or
 The `commands` option controls which of your registered slash commands the AI can invoke via natural language.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	// Only allow these commands to be called by the AI
-    	commands: ['ban', 'kick', 'ai log']
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	// Only allow these commands to be called by the AI
-    	commands: ['ban', 'kick', 'ai log']
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	// Only allow these commands to be called by the AI
+  	commands: ['ban', 'kick', 'ai log']
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	// Only allow these commands to be called by the AI
+  	commands: ['ban', 'kick', 'ai log']
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Set to `false` to disable command execution entirely. Omit or set to `true` to expose all commands.
@@ -108,26 +120,30 @@ Set to `false` to disable command execution entirely. Omit or set to `true` to e
 When someone mentions the bot in a busy channel, the plugin fetches surrounding messages to give the AI conversational context. Control this with the `context` option.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	context: {
-    		enabled: true,
-    		depth: 12
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	context: {
-    		enabled: true,
-    		depth: 12
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	context: {
+  		enabled: true,
+  		depth: 12
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	context: {
+  		enabled: true,
+  		depth: 12
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Set `enabled: false` to disable context fetching. The `depth` value controls how many surrounding messages are included.
@@ -141,28 +157,32 @@ The default `OpenAiEngine` accepts these constructor options.
 Pass-through to the OpenAI SDK. Use this for API key overrides, custom base URLs, or fetch configuration.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    new OpenAiEngine({
-    	clientOptions: {
-    		apiKey: process.env.OPENAI_API_KEY,
-    		baseURL: 'https://custom-proxy.example.com/v1',
-    		organization: process.env.OPENAI_ORG_ID
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    new OpenAiEngine({
-    	clientOptions: {
-    		apiKey: process.env.OPENAI_API_KEY,
-    		baseURL: 'https://custom-proxy.example.com/v1',
-    		organization: process.env.OPENAI_ORG_ID
-    	}
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  new OpenAiEngine({
+  	clientOptions: {
+  		apiKey: process.env.OPENAI_API_KEY,
+  		baseURL: 'https://custom-proxy.example.com/v1',
+  		organization: process.env.OPENAI_ORG_ID
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  new OpenAiEngine({
+  	clientOptions: {
+  		apiKey: process.env.OPENAI_API_KEY,
+  		baseURL: 'https://custom-proxy.example.com/v1',
+  		organization: process.env.OPENAI_ORG_ID
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### `chat`
@@ -206,124 +226,128 @@ Engine-level MCP error handling. Same structure as the plugin-level `mcp` option
 ## Complete config example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+<Tab value="TypeScript">
 
-    export default {
-    	instructions: 'You are Sage, a concise community mentor. Answer questions directly.',
-    	commands: ['ban', 'kick', 'warn'],
-    	insight: true,
-    	restrict: { channelIds: ['345678901234567890'] },
-    	whitelist: { channelIds: ['456789012345678901'] },
-    	context: {
-    		enabled: true,
-    		depth: 10
-    	},
-    	engine: new OpenAiEngine({
-    		clientOptions: {
-    			apiKey: process.env.OPENAI_API_KEY,
-    			organization: process.env.OPENAI_ORG_ID
-    		},
-    		chat: {
-    			model: 'gpt-4.1',
-    			temperature: 0.5,
-    			maxOutputTokens: 1000
-    		},
-    		voice: {
-    			model: 'gpt-realtime',
-    			transcription: {
-    				model: 'gpt-4o-transcribe-latest',
-    				language: 'en'
-    			}
-    		},
-    		webSearch: true
-    	}),
-    	voice: {
-    		endpointing: 'server-vad',
-    		maxConcurrentChannels: 3,
-    		playbackVoice: 'alloy',
-    		instructions: 'Keep spoken replies under 10 seconds.',
-    		capture: {
-    			sampleRate: 24000,
-    			silenceDurationMs: 300,
-    			vadThreshold: 0.01
-    		},
-    		transcript: {
-    			enabled: true,
-    			targetChannelId: '987654321098765432'
-    		}
-    	},
-    	usage: {
-    		limits: {
-    			perModel: {
-    				'gpt-4o': { window: 'month', maxTokens: 500_000, mode: 'block' },
-    				'gpt-4.1-mini': { window: 'month', maxTokens: 800_000, mode: 'block' }
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+  ```ts title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
 
-    export default {
-    	instructions: 'You are Sage, a concise community mentor. Answer questions directly.',
-    	commands: ['ban', 'kick', 'warn'],
-    	insight: true,
-    	restrict: { channelIds: ['345678901234567890'] },
-    	whitelist: { channelIds: ['456789012345678901'] },
-    	context: {
-    		enabled: true,
-    		depth: 10
-    	},
-    	engine: new OpenAiEngine({
-    		clientOptions: {
-    			apiKey: process.env.OPENAI_API_KEY,
-    			organization: process.env.OPENAI_ORG_ID
-    		},
-    		chat: {
-    			model: 'gpt-4.1',
-    			temperature: 0.5,
-    			maxOutputTokens: 1000
-    		},
-    		voice: {
-    			model: 'gpt-realtime',
-    			transcription: {
-    				model: 'gpt-4o-transcribe-latest',
-    				language: 'en'
-    			}
-    		},
-    		webSearch: true
-    	}),
-    	voice: {
-    		endpointing: 'server-vad',
-    		maxConcurrentChannels: 3,
-    		playbackVoice: 'alloy',
-    		instructions: 'Keep spoken replies under 10 seconds.',
-    		capture: {
-    			sampleRate: 24000,
-    			silenceDurationMs: 300,
-    			vadThreshold: 0.01
-    		},
-    		transcript: {
-    			enabled: true,
-    			targetChannelId: '987654321098765432'
-    		}
-    	},
-    	usage: {
-    		limits: {
-    			perModel: {
-    				'gpt-4o': { window: 'month', maxTokens: 500_000, mode: 'block' },
-    				'gpt-4.1-mini': { window: 'month', maxTokens: 800_000, mode: 'block' }
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	instructions: 'You are Sage, a concise community mentor. Answer questions directly.',
+  	commands: ['ban', 'kick', 'warn'],
+  	insight: true,
+  	restrict: { channelIds: ['345678901234567890'] },
+  	whitelist: { channelIds: ['456789012345678901'] },
+  	context: {
+  		enabled: true,
+  		depth: 10
+  	},
+  	engine: new OpenAiEngine({
+  		clientOptions: {
+  			apiKey: process.env.OPENAI_API_KEY,
+  			organization: process.env.OPENAI_ORG_ID
+  		},
+  		chat: {
+  			model: 'gpt-4.1',
+  			temperature: 0.5,
+  			maxOutputTokens: 1000
+  		},
+  		voice: {
+  			model: 'gpt-realtime',
+  			transcription: {
+  				model: 'gpt-4o-transcribe-latest',
+  				language: 'en'
+  			}
+  		},
+  		webSearch: true
+  	}),
+  	voice: {
+  		endpointing: 'server-vad',
+  		maxConcurrentChannels: 3,
+  		playbackVoice: 'alloy',
+  		instructions: 'Keep spoken replies under 10 seconds.',
+  		capture: {
+  			sampleRate: 24000,
+  			silenceDurationMs: 300,
+  			vadThreshold: 0.01
+  		},
+  		transcript: {
+  			enabled: true,
+  			targetChannelId: '987654321098765432'
+  		}
+  	},
+  	usage: {
+  		limits: {
+  			perModel: {
+  				'gpt-4o': { window: 'month', maxTokens: 500_000, mode: 'block' },
+  				'gpt-4.1-mini': { window: 'month', maxTokens: 800_000, mode: 'block' }
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+  export default {
+  	instructions: 'You are Sage, a concise community mentor. Answer questions directly.',
+  	commands: ['ban', 'kick', 'warn'],
+  	insight: true,
+  	restrict: { channelIds: ['345678901234567890'] },
+  	whitelist: { channelIds: ['456789012345678901'] },
+  	context: {
+  		enabled: true,
+  		depth: 10
+  	},
+  	engine: new OpenAiEngine({
+  		clientOptions: {
+  			apiKey: process.env.OPENAI_API_KEY,
+  			organization: process.env.OPENAI_ORG_ID
+  		},
+  		chat: {
+  			model: 'gpt-4.1',
+  			temperature: 0.5,
+  			maxOutputTokens: 1000
+  		},
+  		voice: {
+  			model: 'gpt-realtime',
+  			transcription: {
+  				model: 'gpt-4o-transcribe-latest',
+  				language: 'en'
+  			}
+  		},
+  		webSearch: true
+  	}),
+  	voice: {
+  		endpointing: 'server-vad',
+  		maxConcurrentChannels: 3,
+  		playbackVoice: 'alloy',
+  		instructions: 'Keep spoken replies under 10 seconds.',
+  		capture: {
+  			sampleRate: 24000,
+  			silenceDurationMs: 300,
+  			vadThreshold: 0.01
+  		},
+  		transcript: {
+  			enabled: true,
+  			targetChannelId: '987654321098765432'
+  		}
+  	},
+  	usage: {
+  		limits: {
+  			perModel: {
+  				'gpt-4o': { window: 'month', maxTokens: 500_000, mode: 'block' },
+  				'gpt-4.1-mini': { window: 'month', maxTokens: 800_000, mode: 'block' }
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Environment variables

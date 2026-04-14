@@ -10,24 +10,28 @@ The XP plugin supports multiple isolated data stores so you can run parallel pro
 The default store (`'default'`) is used automatically when no `storeId` is specified. All built-in commands (`/rank`, `/leaderboard`, `/xp`) operate on the default store.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { XP } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    // These are equivalent
-    await XP.addXP(guildId, userId, 100)
-    await XP.addXP(guildId, userId, 100, { storeId: 'default' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { XP } from '@robojs/xp'
+  ```ts
+  import { XP } from '@robojs/xp'
 
-    // These are equivalent
-    await XP.addXP(guildId, userId, 100)
-    await XP.addXP(guildId, userId, 100, { storeId: 'default' })
-    ```
-  </Tab>
+  // These are equivalent
+  await XP.addXP(guildId, userId, 100)
+  await XP.addXP(guildId, userId, 100, { storeId: 'default' })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { XP } from '@robojs/xp'
+
+  // These are equivalent
+  await XP.addXP(guildId, userId, 100)
+  await XP.addXP(guildId, userId, 100, { storeId: 'default' })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Custom stores
@@ -35,44 +39,48 @@ The default store (`'default'`) is used automatically when no `storeId` is speci
 Access custom stores by passing `{ storeId }` in the options parameter.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { XP, leaderboard, config } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    // Reputation store
-    await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
-    const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+  ```ts
+  import { XP, leaderboard, config } from '@robojs/xp'
 
-    // Credits store
-    await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
-    const credits = await XP.getXP(guildId, userId, { storeId: 'credits' })
+  // Reputation store
+  await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+  const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
 
-    // Per-store leaderboard
-    const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+  // Credits store
+  await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
+  const credits = await XP.getXP(guildId, userId, { storeId: 'credits' })
 
-    // Per-store config
-    await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { XP, leaderboard, config } from '@robojs/xp'
+  // Per-store leaderboard
+  const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
 
-    // Reputation store
-    await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
-    const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+  // Per-store config
+  await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+  ```
 
-    // Credits store
-    await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
-    const credits = await XP.getXP(guildId, userId, { storeId: 'credits' })
+</Tab>
+<Tab value="JavaScript">
 
-    // Per-store leaderboard
-    const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+  ```js
+  import { XP, leaderboard, config } from '@robojs/xp'
 
-    // Per-store config
-    await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
-    ```
-  </Tab>
+  // Reputation store
+  await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+  const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+
+  // Credits store
+  await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
+  const credits = await XP.getXP(guildId, userId, { storeId: 'credits' })
+
+  // Per-store leaderboard
+  const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+
+  // Per-store config
+  await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+  ```
+
+</Tab>
 </Tabs>
 
 Stores are created implicitly on first use. No registration or setup required.
@@ -88,79 +96,87 @@ Stores are created implicitly on first use. No registration or setup required.
 ### Multi-currency economy
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { XP } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    // Award to multiple stores simultaneously
-    await XP.addXP(guildId, userId, 20, { reason: 'message' })
-    await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+  ```ts
+  import { XP } from '@robojs/xp'
 
-    if (member.roles.cache.has(premiumRoleId)) {
-    	await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { XP } from '@robojs/xp'
+  // Award to multiple stores simultaneously
+  await XP.addXP(guildId, userId, 20, { reason: 'message' })
+  await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
 
-    // Award to multiple stores simultaneously
-    await XP.addXP(guildId, userId, 20, { reason: 'message' })
-    await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+  if (member.roles.cache.has(premiumRoleId)) {
+  	await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
+  }
+  ```
 
-    if (member.roles.cache.has(premiumRoleId)) {
-    	await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { XP } from '@robojs/xp'
+
+  // Award to multiple stores simultaneously
+  await XP.addXP(guildId, userId, 20, { reason: 'message' })
+  await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+  if (member.roles.cache.has(premiumRoleId)) {
+  	await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Seasonal battle pass
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { XP, config } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    const CURRENT_SEASON = 'season3'
+  ```ts
+  import { XP, config } from '@robojs/xp'
 
-    // Award seasonal XP
-    await XP.addXP(guildId, userId, amount, {
-    	reason: 'seasonal_activity',
-    	storeId: CURRENT_SEASON
-    })
+  const CURRENT_SEASON = 'season3'
 
-    // Configure seasonal progression (lookup curve with 50 levels)
-    await config.set(guildId, {
-    	levels: {
-    		type: 'lookup',
-    		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] }
-    	}
-    }, { storeId: CURRENT_SEASON })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { XP, config } from '@robojs/xp'
+  // Award seasonal XP
+  await XP.addXP(guildId, userId, amount, {
+  	reason: 'seasonal_activity',
+  	storeId: CURRENT_SEASON
+  })
 
-    const CURRENT_SEASON = 'season3'
+  // Configure seasonal progression (lookup curve with 50 levels)
+  await config.set(guildId, {
+  	levels: {
+  		type: 'lookup',
+  		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] }
+  	}
+  }, { storeId: CURRENT_SEASON })
+  ```
 
-    // Award seasonal XP
-    await XP.addXP(guildId, userId, amount, {
-    	reason: 'seasonal_activity',
-    	storeId: CURRENT_SEASON
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    // Configure seasonal progression (lookup curve with 50 levels)
-    await config.set(guildId, {
-    	levels: {
-    		type: 'lookup',
-    		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] }
-    	}
-    }, { storeId: CURRENT_SEASON })
-    ```
-  </Tab>
+  ```js
+  import { XP, config } from '@robojs/xp'
+
+  const CURRENT_SEASON = 'season3'
+
+  // Award seasonal XP
+  await XP.addXP(guildId, userId, amount, {
+  	reason: 'seasonal_activity',
+  	storeId: CURRENT_SEASON
+  })
+
+  // Configure seasonal progression (lookup curve with 50 levels)
+  await config.set(guildId, {
+  	levels: {
+  		type: 'lookup',
+  		params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] }
+  	}
+  }, { storeId: CURRENT_SEASON })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Store isolation
@@ -180,32 +196,36 @@ Changing one store's config doesn't affect others. Leaderboard invalidation in o
 All events include a `storeId` field. Filter events to respond only to specific stores.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { events } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    events.onLevelUp(({ userId, newLevel, storeId }) => {
-    	if (storeId === 'reputation') {
-    		console.log(`Reputation level up: ${newLevel}`)
-    	} else if (storeId === 'default') {
-    		console.log(`XP level up: ${newLevel}`)
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { events } from '@robojs/xp'
+  ```ts
+  import { events } from '@robojs/xp'
 
-    events.onLevelUp(({ userId, newLevel, storeId }) => {
-    	if (storeId === 'reputation') {
-    		console.log(`Reputation level up: ${newLevel}`)
-    	} else if (storeId === 'default') {
-    		console.log(`XP level up: ${newLevel}`)
-    	}
-    })
-    ```
-  </Tab>
+  events.onLevelUp(({ userId, newLevel, storeId }) => {
+  	if (storeId === 'reputation') {
+  		console.log(`Reputation level up: ${newLevel}`)
+  	} else if (storeId === 'default') {
+  		console.log(`XP level up: ${newLevel}`)
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { events } from '@robojs/xp'
+
+  events.onLevelUp(({ userId, newLevel, storeId }) => {
+  	if (storeId === 'reputation') {
+  		console.log(`Reputation level up: ${newLevel}`)
+  	} else if (storeId === 'default') {
+  		console.log(`XP level up: ${newLevel}`)
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Constraints

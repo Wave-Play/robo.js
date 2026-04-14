@@ -16,32 +16,36 @@ npx robo add @robojs/sync
 Wrap your app in `SyncContextProvider`. This requires `@robojs/server`, which is already included in scaffolded activity projects.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/App.tsx"
-    import { SyncContextProvider } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    export function App() {
-      return (
-        <SyncContextProvider>
-          <Activity />
-        </SyncContextProvider>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/App.jsx"
-    import { SyncContextProvider } from '@robojs/sync'
+  ```tsx title="src/app/App.tsx"
+  import { SyncContextProvider } from '@robojs/sync'
 
-    export function App() {
-      return (
-        <SyncContextProvider>
-          <Activity />
-        </SyncContextProvider>
-      )
-    }
-    ```
-  </Tab>
+  export function App() {
+    return (
+      <SyncContextProvider>
+        <Activity />
+      </SyncContextProvider>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx title="src/app/App.jsx"
+  import { SyncContextProvider } from '@robojs/sync'
+
+  export function App() {
+    return (
+      <SyncContextProvider>
+        <Activity />
+      </SyncContextProvider>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Shared State
@@ -49,36 +53,40 @@ Wrap your app in `SyncContextProvider`. This requires `@robojs/server`, which is
 `useSyncState` works like React's `useState` but syncs across all connected clients. Think of keys like channel names — components using the same key share the same state.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/Counter.tsx"
-    import { useSyncState } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function Counter() {
-      const [count, setCount] = useSyncState(0, ['counter'])
+  ```tsx title="src/app/Counter.tsx"
+  import { useSyncState } from '@robojs/sync'
 
-      return (
-        <button onClick={() => setCount((prev) => prev + 1)}>
-          Count: {count}
-        </button>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/Counter.jsx"
-    import { useSyncState } from '@robojs/sync'
+  function Counter() {
+    const [count, setCount] = useSyncState(0, ['counter'])
 
-    function Counter() {
-      const [count, setCount] = useSyncState(0, ['counter'])
+    return (
+      <button onClick={() => setCount((prev) => prev + 1)}>
+        Count: {count}
+      </button>
+    )
+  }
+  ```
 
-      return (
-        <button onClick={() => setCount((prev) => prev + 1)}>
-          Count: {count}
-        </button>
-      )
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx title="src/app/Counter.jsx"
+  import { useSyncState } from '@robojs/sync'
+
+  function Counter() {
+    const [count, setCount] = useSyncState(0, ['counter'])
+
+    return (
+      <button onClick={() => setCount((prev) => prev + 1)}>
+        Count: {count}
+      </button>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -104,33 +112,41 @@ Keys determine which clients share state. Different key structures create differ
 Use updater functions for concurrent safety:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/Counter.tsx"
-    setCount((prev) => prev + 1)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/Counter.jsx"
-    setCount((prev) => prev + 1)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/app/Counter.tsx"
+  setCount((prev) => prev + 1)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/Counter.jsx"
+  setCount((prev) => prev + 1)
+  ```
+
+</Tab>
 </Tabs>
 
 Partial updates merge with existing state for objects. For example, updating only the `x` field leaves `y` unchanged:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/Game.tsx"
-    const [position, setPosition] = useSyncState({ x: 0, y: 0 }, ['position'])
-    setPosition({ x: 100 }) // y remains 0
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/Game.jsx"
-    const [position, setPosition] = useSyncState({ x: 0, y: 0 }, ['position'])
-    setPosition({ x: 100 }) // y remains 0
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/app/Game.tsx"
+  const [position, setPosition] = useSyncState({ x: 0, y: 0 }, ['position'])
+  setPosition({ x: 100 }) // y remains 0
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/Game.jsx"
+  const [position, setPosition] = useSyncState({ x: 0, y: 0 }, ['position'])
+  setPosition({ x: 100 }) // y remains 0
+  ```
+
+</Tab>
 </Tabs>
 
 ## Client Awareness
@@ -138,16 +154,20 @@ Partial updates merge with existing state for objects. For example, updating onl
 The third return value from `useSyncState` is a context object with information about connected clients.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/Activity.tsx"
-    const [state, setState, context] = useSyncState(initialState, ['room'])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/Activity.jsx"
-    const [state, setState, context] = useSyncState(initialState, ['room'])
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/app/Activity.tsx"
+  const [state, setState, context] = useSyncState(initialState, ['room'])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/Activity.jsx"
+  const [state, setState, context] = useSyncState(initialState, ['room'])
+  ```
+
+</Tab>
 </Tabs>
 
 | Field | Type | Description |

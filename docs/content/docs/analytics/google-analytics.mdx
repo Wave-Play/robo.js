@@ -29,26 +29,30 @@ The plugin uses the [Google Analytics Measurement Protocol v4](https://developer
     ### Start tracking
 
     <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-      <Tab value="TypeScript">
-        ```ts
-            import { Analytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-            Analytics.event('command_used', {
-            	sessionId: interaction.channelId,
-            	userId: interaction.user.id
-            })
-        ```
-      </Tab>
-      <Tab value="JavaScript">
-        ```js
-            import { Analytics } from '@robojs/analytics'
+  ```ts
+      import { Analytics } from '@robojs/analytics'
 
-            Analytics.event('command_used', {
-            	sessionId: interaction.channelId,
-            	userId: interaction.user.id
-            })
-        ```
-      </Tab>
+      Analytics.event('command_used', {
+      	sessionId: interaction.channelId,
+      	userId: interaction.user.id
+      })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+      import { Analytics } from '@robojs/analytics'
+
+      Analytics.event('command_used', {
+      	sessionId: interaction.channelId,
+      	userId: interaction.user.id
+      })
+  ```
+
+</Tab>
     </Tabs>
   </Step>
 </Steps>
@@ -79,18 +83,22 @@ Fields like `domain`, `url`, `referrer`, `action`, `actionType`, `label`, and `t
 `Analytics.view()` sends a `page_view` event with the page name mapped to `page_title`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.view('Dashboard')
-    // Sends: { name: "page_view", params: { page_title: "Dashboard" } }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.view('Dashboard')
-    // Sends: { name: "page_view", params: { page_title: "Dashboard" } }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.view('Dashboard')
+  // Sends: { name: "page_view", params: { page_title: "Dashboard" } }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.view('Dashboard')
+  // Sends: { name: "page_view", params: { page_title: "Dashboard" } }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Session tracking
@@ -100,24 +108,28 @@ When you omit `sessionId`, the plugin generates a random 30-character alphanumer
 For accurate session tracking, always pass a consistent `sessionId`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Use channel ID or guild ID as session identifier
-    Analytics.event('button_click', {
-    	sessionId: interaction.channelId ?? interaction.guildId,
-    	userId: interaction.user.id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Use channel ID or guild ID identifier
-    Analytics.event('button_click', {
-    	sessionId: interaction.channelId ?? interaction.guildId,
-    	userId: interaction.user.id
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  // Use channel ID or guild ID as session identifier
+  Analytics.event('button_click', {
+  	sessionId: interaction.channelId ?? interaction.guildId,
+  	userId: interaction.user.id
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Use channel ID or guild ID identifier
+  Analytics.event('button_click', {
+  	sessionId: interaction.channelId ?? interaction.guildId,
+  	userId: interaction.user.id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Revenue tracking
@@ -125,26 +137,30 @@ For accurate session tracking, always pass a consistent `sessionId`:
 Track revenue by including the `revenue` field. The `currency` and `amount` values are merged into the event parameters:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.event('purchase', {
-    	sessionId: interaction.guildId,
-    	userId: interaction.user.id,
-    	revenue: { currency: 'USD', amount: 4.99 },
-    	data: { item: 'premium_role' }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.event('purchase', {
-    	sessionId: interaction.guildId,
-    	userId: interaction.user.id,
-    	revenue: { currency: 'USD', amount: 4.99 },
-    	data: { item: 'premium_role' }
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.event('purchase', {
+  	sessionId: interaction.guildId,
+  	userId: interaction.user.id,
+  	revenue: { currency: 'USD', amount: 4.99 },
+  	data: { item: 'premium_role' }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.event('purchase', {
+  	sessionId: interaction.guildId,
+  	userId: interaction.user.id,
+  	revenue: { currency: 'USD', amount: 4.99 },
+  	data: { item: 'premium_role' }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Custom event data
@@ -152,32 +168,36 @@ Track revenue by including the `revenue` field. The `currency` and `amount` valu
 The `data` field passes through as GA event `params`. Use it for any custom dimensions:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.event('level_up', {
-    	sessionId: interaction.guildId,
-    	userId: interaction.user.id,
-    	data: {
-    		level: 10,
-    		xp_earned: 500,
-    		time_played: '2h30m'
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.event('level_up', {
-    	sessionId: interaction.guildId,
-    	userId: interaction.user.id,
-    	data: {
-    		level: 10,
-    		xp_earned: 500,
-    		time_played: '2h30m'
-    	}
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.event('level_up', {
+  	sessionId: interaction.guildId,
+  	userId: interaction.user.id,
+  	data: {
+  		level: 10,
+  		xp_earned: 500,
+  		time_played: '2h30m'
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.event('level_up', {
+  	sessionId: interaction.guildId,
+  	userId: interaction.user.id,
+  	data: {
+  		level: 10,
+  		xp_earned: 500,
+  		time_played: '2h30m'
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Programmatic configuration
@@ -185,30 +205,34 @@ The `data` field passes through as GA event `params`. Use it for any custom dime
 Instead of environment variables, pass credentials directly to the constructor:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new GoogleAnalytics({
-    		measureId: 'G-XXXXXXXXX',
-    		token: 'your-api-secret'
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { GoogleAnalytics } from '@robojs/analytics'
+  ```ts title="config/plugins/robojs/analytics.mjs"
+  import { GoogleAnalytics } from '@robojs/analytics'
 
-    export default {
-    	engine: new GoogleAnalytics({
-    		measureId: 'G-XXXXXXXXX',
-    		token: 'your-api-secret'
-    	})
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new GoogleAnalytics({
+  		measureId: 'G-XXXXXXXXX',
+  		token: 'your-api-secret'
+  	})
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/analytics.mjs"
+  import { GoogleAnalytics } from '@robojs/analytics'
+
+  export default {
+  	engine: new GoogleAnalytics({
+  		measureId: 'G-XXXXXXXXX',
+  		token: 'your-api-secret'
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Constructor options take priority over environment variables.

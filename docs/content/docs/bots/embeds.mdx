@@ -14,34 +14,38 @@ For the complete embed reference including all builder methods, embed limits, in
 Return an object with an `embeds` array from a command handler to send rich embeds.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/info.ts"
-    import { EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Server Info')
-    		.setDescription('Welcome to our server!')
-    		.setColor(0x5865f2) // Discord's blurple color
+  ```ts title="src/commands/info.ts"
+  import { EmbedBuilder } from 'discord.js'
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/info.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default () => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Server Info')
+  		.setDescription('Welcome to our server!')
+  		.setColor(0x5865f2) // Discord's blurple color
 
-    export default () => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Server Info')
-    		.setDescription('Welcome to our server!')
-    		.setColor(0x5865f2) // Discord's blurple color
+  	return { embeds: [embed] }
+  }
+  ```
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/info.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default () => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Server Info')
+  		.setDescription('Welcome to our server!')
+  		.setColor(0x5865f2) // Discord's blurple color
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -74,47 +78,51 @@ Return an object with an `embeds` array from a command handler to send rich embe
 | `setURL(url)` | Clickable title link |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/profile.ts"
-    import { EmbedBuilder } from 'discord.js'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('User Profile')
-    		.setDescription(`Information about ${interaction.user.username}`)
-    		.setColor(0x5865f2) // Discord's blurple color
-    		.setThumbnail(interaction.user.displayAvatarURL())
-    		.addFields(
-    			{ name: 'Joined Discord', value: interaction.user.createdAt.toDateString(), inline: true },
-    			{ name: 'ID', value: interaction.user.id, inline: true }
-    		)
-    		.setTimestamp()
+  ```ts title="src/commands/profile.ts"
+  import { EmbedBuilder } from 'discord.js'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/profile.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('User Profile')
+  		.setDescription(`Information about ${interaction.user.username}`)
+  		.setColor(0x5865f2) // Discord's blurple color
+  		.setThumbnail(interaction.user.displayAvatarURL())
+  		.addFields(
+  			{ name: 'Joined Discord', value: interaction.user.createdAt.toDateString(), inline: true },
+  			{ name: 'ID', value: interaction.user.id, inline: true }
+  		)
+  		.setTimestamp()
 
-    export default (interaction) => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('User Profile')
-    		.setDescription(`Information about ${interaction.user.username}`)
-    		.setColor(0x5865f2) // Discord's blurple color
-    		.setThumbnail(interaction.user.displayAvatarURL())
-    		.addFields(
-    			{ name: 'Joined Discord', value: interaction.user.createdAt.toDateString(), inline: true },
-    			{ name: 'ID', value: interaction.user.id, inline: true }
-    		)
-    		.setTimestamp()
+  	return { embeds: [embed] }
+  }
+  ```
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/profile.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default (interaction) => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('User Profile')
+  		.setDescription(`Information about ${interaction.user.username}`)
+  		.setColor(0x5865f2) // Discord's blurple color
+  		.setThumbnail(interaction.user.displayAvatarURL())
+  		.addFields(
+  			{ name: 'Joined Discord', value: interaction.user.createdAt.toDateString(), inline: true },
+  			{ name: 'ID', value: interaction.user.id, inline: true }
+  		)
+  		.setTimestamp()
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -130,34 +138,38 @@ Return an object with an `embeds` array from a command handler to send rich embe
 A single message can contain up to 10 embeds.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/multi.ts"
-    import { EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const embeds = [
-    		new EmbedBuilder().setTitle('First').setDescription('First embed').setColor(0xff0000),
-    		new EmbedBuilder().setTitle('Second').setDescription('Second embed').setColor(0x00ff00)
-    	]
+  ```ts title="src/commands/multi.ts"
+  import { EmbedBuilder } from 'discord.js'
 
-    	return { embeds }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/multi.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default () => {
+  	const embeds = [
+  		new EmbedBuilder().setTitle('First').setDescription('First embed').setColor(0xff0000),
+  		new EmbedBuilder().setTitle('Second').setDescription('Second embed').setColor(0x00ff00)
+  	]
 
-    export default () => {
-    	const embeds = [
-    		new EmbedBuilder().setTitle('First').setDescription('First embed').setColor(0xff0000),
-    		new EmbedBuilder().setTitle('Second').setDescription('Second embed').setColor(0x00ff00)
-    	]
+  	return { embeds }
+  }
+  ```
 
-    	return { embeds }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/multi.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default () => {
+  	const embeds = [
+  		new EmbedBuilder().setTitle('First').setDescription('First embed').setColor(0xff0000),
+  		new EmbedBuilder().setTitle('Second').setDescription('Second embed').setColor(0x00ff00)
+  	]
+
+  	return { embeds }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Dynamic Embeds
@@ -165,63 +177,67 @@ A single message can contain up to 10 embeds.
 Build embeds from data by mapping values to fields.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/leaderboard.ts"
-    import { EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    interface Player {
-    	name: string
-    	score: number
-    }
+  ```ts title="src/commands/leaderboard.ts"
+  import { EmbedBuilder } from 'discord.js'
 
-    export default () => {
-    	const players: Player[] = [
-    		{ name: 'Alice', score: 1500 },
-    		{ name: 'Bob', score: 1200 },
-    		{ name: 'Charlie', score: 900 }
-    	]
+  interface Player {
+  	name: string
+  	score: number
+  }
 
-    	const embed = new EmbedBuilder()
-    		.setTitle('Leaderboard')
-    		.setColor(0xffd700)
-    		.addFields(
-    			players.map((p, i) => ({
-    				name: `#${i + 1} ${p.name}`,
-    				value: `${p.score} points`,
-    				inline: true
-    			}))
-    		)
+  export default () => {
+  	const players: Player[] = [
+  		{ name: 'Alice', score: 1500 },
+  		{ name: 'Bob', score: 1200 },
+  		{ name: 'Charlie', score: 900 }
+  	]
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/leaderboard.js"
-    import { EmbedBuilder } from 'discord.js'
+  	const embed = new EmbedBuilder()
+  		.setTitle('Leaderboard')
+  		.setColor(0xffd700)
+  		.addFields(
+  			players.map((p, i) => ({
+  				name: `#${i + 1} ${p.name}`,
+  				value: `${p.score} points`,
+  				inline: true
+  			}))
+  		)
 
-    export default () => {
-    	const players = [
-    		{ name: 'Alice', score: 1500 },
-    		{ name: 'Bob', score: 1200 },
-    		{ name: 'Charlie', score: 900 }
-    	]
+  	return { embeds: [embed] }
+  }
+  ```
 
-    	const embed = new EmbedBuilder()
-    		.setTitle('Leaderboard')
-    		.setColor(0xffd700)
-    		.addFields(
-    			players.map((p, i) => ({
-    				name: `#${i + 1} ${p.name}`,
-    				value: `${p.score} points`,
-    				inline: true
-    			}))
-    		)
+</Tab>
+<Tab value="JavaScript">
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/leaderboard.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default () => {
+  	const players = [
+  		{ name: 'Alice', score: 1500 },
+  		{ name: 'Bob', score: 1200 },
+  		{ name: 'Charlie', score: 900 }
+  	]
+
+  	const embed = new EmbedBuilder()
+  		.setTitle('Leaderboard')
+  		.setColor(0xffd700)
+  		.addFields(
+  			players.map((p, i) => ({
+  				name: `#${i + 1} ${p.name}`,
+  				value: `${p.score} points`,
+  				inline: true
+  			}))
+  		)
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder

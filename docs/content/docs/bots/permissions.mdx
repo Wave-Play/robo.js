@@ -14,28 +14,32 @@ For additional utilities including guild-specific overrides (`setGuildPermission
 Use `defaultMemberPermissions` in your command config to restrict access based on Discord permission flags. Only members with the specified permissions will see the command.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ban.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Ban a user',
-    	defaultMemberPermissions: PermissionFlagsBits.BanMembers
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ban.js"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+  ```ts title="src/commands/ban.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
 
-    export const config = createCommandConfig({
-    	description: 'Ban a user',
-    	defaultMemberPermissions: PermissionFlagsBits.BanMembers
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'Ban a user',
+  	defaultMemberPermissions: PermissionFlagsBits.BanMembers
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ban.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
+
+  export const config = createCommandConfig({
+  	description: 'Ban a user',
+  	defaultMemberPermissions: PermissionFlagsBits.BanMembers
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -53,28 +57,32 @@ Server administrators can override default permissions for their server.
 Combine multiple permissions with the `|` operator.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/settings.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Manage server settings',
-    	defaultMemberPermissions: PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/settings.js"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+  ```ts title="src/commands/settings.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
 
-    export const config = createCommandConfig({
-    	description: 'Manage server settings',
-    	defaultMemberPermissions: PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'Manage server settings',
+  	defaultMemberPermissions: PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/settings.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
+
+  export const config = createCommandConfig({
+  	description: 'Manage server settings',
+  	defaultMemberPermissions: PermissionFlagsBits.ManageGuild | PermissionFlagsBits.ManageRoles
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Permission Aggregation
@@ -86,32 +94,36 @@ The plugin aggregates `defaultMemberPermissions` from all registered commands to
 The plugin exports utility functions for working with permission bitfields programmatically.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-    	aggregateCommandPermissions,
-    	getPermissionNames,
-    	hasRequiredPermissions,
-    	getMissingPermissions,
-    	combinePermissions,
-    	getEffectivePermissions,
-    	PERMISSION_FLAGS
-    } from '@robojs/discordjs'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-    	aggregateCommandPermissions,
-    	getPermissionNames,
-    	hasRequiredPermissions,
-    	getMissingPermissions,
-    	combinePermissions,
-    	getEffectivePermissions,
-    	PERMISSION_FLAGS
-    } from '@robojs/discordjs'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import {
+  	aggregateCommandPermissions,
+  	getPermissionNames,
+  	hasRequiredPermissions,
+  	getMissingPermissions,
+  	combinePermissions,
+  	getEffectivePermissions,
+  	PERMISSION_FLAGS
+  } from '@robojs/discordjs'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import {
+  	aggregateCommandPermissions,
+  	getPermissionNames,
+  	hasRequiredPermissions,
+  	getMissingPermissions,
+  	combinePermissions,
+  	getEffectivePermissions,
+  	PERMISSION_FLAGS
+  } from '@robojs/discordjs'
+  ```
+
+</Tab>
 </Tabs>
 
 | Function | Parameters | Returns | Description |
@@ -129,41 +141,45 @@ The plugin exports utility functions for working with permission bitfields progr
 For access control beyond Discord's built-in permissions, use middleware. This example restricts commands to members with a specific role.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/admin-only.ts"
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
+<Tab value="TypeScript">
 
-    const ADMIN_ROLE_ID = '123456789012345678'
+  ```ts title="src/middleware/admin-only.ts"
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
 
-    export default (data: MiddlewareData): MiddlewareResult => {
-    	if (data.record.type !== 'commands') return
+  const ADMIN_ROLE_ID = '123456789012345678'
 
-    	const interaction = data.payload[0] as ChatInputCommandInteraction
-    	const member = interaction.member as GuildMember
+  export default (data: MiddlewareData): MiddlewareResult => {
+  	if (data.record.type !== 'commands') return
 
-    	if (!member?.roles.cache.has(ADMIN_ROLE_ID)) {
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/admin-only.js"
-    const ADMIN_ROLE_ID = '123456789012345678'
+  	const interaction = data.payload[0] as ChatInputCommandInteraction
+  	const member = interaction.member as GuildMember
 
-    export default (data) => {
-    	if (data.record.type !== 'commands') return
+  	if (!member?.roles.cache.has(ADMIN_ROLE_ID)) {
+  		return { abort: true }
+  	}
+  }
+  ```
 
-    	const interaction = data.payload[0]
-    	const member = interaction.member
+</Tab>
+<Tab value="JavaScript">
 
-    	if (!member?.roles.cache.has(ADMIN_ROLE_ID)) {
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
+  ```js title="src/middleware/admin-only.js"
+  const ADMIN_ROLE_ID = '123456789012345678'
+
+  export default (data) => {
+  	if (data.record.type !== 'commands') return
+
+  	const interaction = data.payload[0]
+  	const member = interaction.member
+
+  	if (!member?.roles.cache.has(ADMIN_ROLE_ID)) {
+  		return { abort: true }
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -177,41 +193,45 @@ For access control beyond Discord's built-in permissions, use middleware. This e
 You can also check permissions programmatically within a command handler.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/check-perms.ts"
-    import { hasRequiredPermissions, getMissingPermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const member = interaction.member as GuildMember
-    	const required = PERMISSION_FLAGS.ManageGuild | PERMISSION_FLAGS.ManageRoles
+  ```ts title="src/commands/check-perms.ts"
+  import { hasRequiredPermissions, getMissingPermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
 
-    	if (!hasRequiredPermissions(member.permissions.bitfield, required)) {
-    		const missing = getMissingPermissions(member.permissions.bitfield, required)
-    		return `You are missing permissions: ${missing.join(', ')}`
-    	}
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const member = interaction.member as GuildMember
+  	const required = PERMISSION_FLAGS.ManageGuild | PERMISSION_FLAGS.ManageRoles
 
-    	return 'You have the required permissions.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/check-perms.js"
-    import { hasRequiredPermissions, getMissingPermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
+  	if (!hasRequiredPermissions(member.permissions.bitfield, required)) {
+  		const missing = getMissingPermissions(member.permissions.bitfield, required)
+  		return `You are missing permissions: ${missing.join(', ')}`
+  	}
 
-    export default (interaction) => {
-    	const member = interaction.member
-    	const required = PERMISSION_FLAGS.ManageGuild | PERMISSION_FLAGS.ManageRoles
+  	return 'You have the required permissions.'
+  }
+  ```
 
-    	if (!hasRequiredPermissions(member.permissions.bitfield, required)) {
-    		const missing = getMissingPermissions(member.permissions.bitfield, required)
-    		return `You are missing permissions: ${missing.join(', ')}`
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	return 'You have the required permissions.'
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/check-perms.js"
+  import { hasRequiredPermissions, getMissingPermissions, PERMISSION_FLAGS } from '@robojs/discordjs'
+
+  export default (interaction) => {
+  	const member = interaction.member
+  	const required = PERMISSION_FLAGS.ManageGuild | PERMISSION_FLAGS.ManageRoles
+
+  	if (!hasRequiredPermissions(member.permissions.bitfield, required)) {
+  		const missing = getMissingPermissions(member.permissions.bitfield, required)
+  		return `You are missing permissions: ${missing.join(', ')}`
+  	}
+
+  	return 'You have the required permissions.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Permission Reference

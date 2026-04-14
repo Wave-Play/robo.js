@@ -49,26 +49,30 @@ The `npx robo invite` command reads your project's build metadata to determine w
 To declare permissions for a command, use `createCommandConfig`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/clean.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-      defaultMemberPermissions: PermissionFlagsBits.ManageMessages
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/clean.js"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+  ```ts title="src/commands/clean.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
 
-    export const config = createCommandConfig({
-      defaultMemberPermissions: PermissionFlagsBits.ManageMessages
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+    defaultMemberPermissions: PermissionFlagsBits.ManageMessages
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/clean.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
+
+  export const config = createCommandConfig({
+    defaultMemberPermissions: PermissionFlagsBits.ManageMessages
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 If you need to customize the invite URL beyond what the CLI generates, use the Developer Portal method described above.

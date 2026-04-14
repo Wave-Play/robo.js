@@ -48,22 +48,26 @@ npx create-robo my-project -p @robojs/i18n
 The plugin scans your `/locales` directory and generates TypeScript types automatically. Keys, parameters, and return types are all inferred from your locale files.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { t } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    t('en-US', 'app:hello', { name: 'Robo' })  // "Hello Robo!"
-    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { t } from '@robojs/i18n'
+  ```ts
+  import { t } from '@robojs/i18n'
 
-    t('en-US', 'app:hello', { name: 'Robo' })  // "Hello Robo!"
-    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
-    ```
-  </Tab>
+  t('en-US', 'app:hello', { name: 'Robo' })  // "Hello Robo!"
+  t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { t } from '@robojs/i18n'
+
+  t('en-US', 'app:hello', { name: 'Robo' })  // "Hello Robo!"
+  t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+  ```
+
+</Tab>
 </Tabs>
 
 ## MessageFormat 2
@@ -71,26 +75,30 @@ The plugin scans your `/locales` directory and generates TypeScript types automa
 Full support for MF2 syntax including plurals, numbers, dates, and times. Parameter types are inferred from annotations like `:number`, `:date`, and `:time`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Pluralization
-    t('en-US', 'app:pets.count', { count: 1 }) // "You have 1 pet"
-    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+<Tab value="TypeScript">
 
-    // Date formatting
-    t('en-US', 'app:event', { date: new Date() })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Pluralization
-    t('en-US', 'app:pets.count', { count: 1 }) // "You have 1 pet"
-    t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+  ```ts
+  // Pluralization
+  t('en-US', 'app:pets.count', { count: 1 }) // "You have 1 pet"
+  t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
 
-    // Date formatting
-    t('en-US', 'app:event', { date: new Date() })
-    ```
-  </Tab>
+  // Date formatting
+  t('en-US', 'app:event', { date: new Date() })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Pluralization
+  t('en-US', 'app:pets.count', { count: 1 }) // "You have 1 pet"
+  t('en-US', 'app:pets.count', { count: 3 }) // "You have 3 pets"
+
+  // Date formatting
+  t('en-US', 'app:event', { date: new Date() })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Discord command localization
@@ -98,40 +106,44 @@ Full support for MF2 syntax including plurals, numbers, dates, and times. Parame
 Localize slash command names, descriptions, and options for all your supported locales using `createCommandConfig()`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { createCommandConfig } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	descriptionKey: 'commands:ping.desc',
-    	options: [
-    		{
-    			type: 'string',
-    			name: 'text',
-    			nameKey: 'commands:ping.arg.name',
-    			descriptionKey: 'commands:ping.arg.desc'
-    		}
-    	]
-    } as const)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { createCommandConfig } from '@robojs/i18n'
+  ```ts
+  import { createCommandConfig } from '@robojs/i18n'
 
-    export const config = createCommandConfig({
-    	descriptionKey: 'commands:ping.desc',
-    	options: [
-    		{
-    			type: 'string',
-    			name: 'text',
-    			nameKey: 'commands:ping.arg.name',
-    			descriptionKey: 'commands:ping.arg.desc'
-    		}
-    	]
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	descriptionKey: 'commands:ping.desc',
+  	options: [
+  		{
+  			type: 'string',
+  			name: 'text',
+  			nameKey: 'commands:ping.arg.name',
+  			descriptionKey: 'commands:ping.arg.desc'
+  		}
+  	]
+  } as const)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { createCommandConfig } from '@robojs/i18n'
+
+  export const config = createCommandConfig({
+  	descriptionKey: 'commands:ping.desc',
+  	options: [
+  		{
+  			type: 'string',
+  			name: 'text',
+  			nameKey: 'commands:ping.arg.name',
+  			descriptionKey: 'commands:ping.arg.desc'
+  		}
+  	]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Strict mode
@@ -139,22 +151,26 @@ Localize slash command names, descriptions, and options for all your supported l
 Use `tr()` when you want compile-time enforcement that all parameters are provided. No accidental omissions.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { tr } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    tr('en-US', 'app:hello', { name: 'Robo' }) // OK
-    // tr('en-US', 'app:hello')                // compile error
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { tr } from '@robojs/i18n'
+  ```ts
+  import { tr } from '@robojs/i18n'
 
-    tr('en-US', 'app:hello', { name: 'Robo' }) // OK
-    // tr('en-US', 'app:hello')                // compile error
-    ```
-  </Tab>
+  tr('en-US', 'app:hello', { name: 'Robo' }) // OK
+  // tr('en-US', 'app:hello')                // compile error
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { tr } from '@robojs/i18n'
+
+  tr('en-US', 'app:hello', { name: 'Robo' }) // OK
+  // tr('en-US', 'app:hello')                // compile error
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

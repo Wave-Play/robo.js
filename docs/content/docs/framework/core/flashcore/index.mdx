@@ -15,48 +15,56 @@ Both modes work side by side. Start with key-value for simple data and graduate 
 Store and retrieve data with `Flashcore.get` and `Flashcore.set`. All operations are asynchronous.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/update-score.ts"
-    import { Flashcore } from 'robo.js'
-    import type { CommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: CommandInteraction) => {
-    	const userId = interaction.user.id
-    	const score = interaction.options.get('score')?.value as number
+  ```ts title="src/commands/update-score.ts"
+  import { Flashcore } from 'robo.js'
+  import type { CommandInteraction } from 'discord.js'
 
-    	await Flashcore.set(userId, score)
-    	return `New high score of ${score} saved.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/update-score.js"
-    import { Flashcore } from 'robo.js'
+  export default async (interaction: CommandInteraction) => {
+  	const userId = interaction.user.id
+  	const score = interaction.options.get('score')?.value as number
 
-    export default async (interaction) => {
-    	const userId = interaction.user.id
-    	const score = interaction.options.get('score')?.value
+  	await Flashcore.set(userId, score)
+  	return `New high score of ${score} saved.`
+  }
+  ```
 
-    	await Flashcore.set(userId, score)
-    	return `New high score of ${score} saved.`
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/update-score.js"
+  import { Flashcore } from 'robo.js'
+
+  export default async (interaction) => {
+  	const userId = interaction.user.id
+  	const score = interaction.options.get('score')?.value
+
+  	await Flashcore.set(userId, score)
+  	return `New high score of ${score} saved.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Retrieve it later:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const score = await Flashcore.get<number>(userId)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const score = await Flashcore.get(userId)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const score = await Flashcore.get<number>(userId)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const score = await Flashcore.get(userId)
+  ```
+
+</Tab>
 </Tabs>
 
 Delete a key with `Flashcore.delete(key)`.
@@ -70,84 +78,92 @@ Always `await` Flashcore calls. They return promises because the underlying stor
 For structured data, define a model with `createModel` and the `f` field builder:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/models/Warning.ts"
-    import { createModel, f } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    export const Warning = createModel('Warning', {
-    	id: f.id(),
-    	guildId: f.string(),
-    	userId: f.string(),
-    	reason: f.string(),
-    	moderatorId: f.string(),
-    	createdAt: f.date().default(() => new Date())
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/models/Warning.js"
-    import { createModel, f } from 'robo.js/flashcore'
+  ```ts title="src/models/Warning.ts"
+  import { createModel, f } from 'robo.js/flashcore'
 
-    export const Warning = createModel('Warning', {
-    	id: f.id(),
-    	guildId: f.string(),
-    	userId: f.string(),
-    	reason: f.string(),
-    	moderatorId: f.string(),
-    	createdAt: f.date().default(() => new Date())
-    })
-    ```
-  </Tab>
+  export const Warning = createModel('Warning', {
+  	id: f.id(),
+  	guildId: f.string(),
+  	userId: f.string(),
+  	reason: f.string(),
+  	moderatorId: f.string(),
+  	createdAt: f.date().default(() => new Date())
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/models/Warning.js"
+  import { createModel, f } from 'robo.js/flashcore'
+
+  export const Warning = createModel('Warning', {
+  	id: f.id(),
+  	guildId: f.string(),
+  	userId: f.string(),
+  	reason: f.string(),
+  	moderatorId: f.string(),
+  	createdAt: f.date().default(() => new Date())
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Then use it with familiar CRUD methods:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/warn.ts"
-    import { Warning } from '../models/Warning.js'
-    import type { CommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: CommandInteraction) => {
-    	const user = interaction.options.getUser('user', true)
+  ```ts title="src/commands/warn.ts"
+  import { Warning } from '../models/Warning.js'
+  import type { CommandInteraction } from 'discord.js'
 
-    	const warning = await Warning.create({
-    		guildId: interaction.guildId!,
-    		userId: user.id,
-    		reason: interaction.options.getString('reason') ?? 'No reason provided',
-    		moderatorId: interaction.user.id
-    	})
+  export default async (interaction: CommandInteraction) => {
+  	const user = interaction.options.getUser('user', true)
 
-    	const count = await Warning.count({
-    		where: { guildId: interaction.guildId!, userId: user.id }
-    	})
+  	const warning = await Warning.create({
+  		guildId: interaction.guildId!,
+  		userId: user.id,
+  		reason: interaction.options.getString('reason') ?? 'No reason provided',
+  		moderatorId: interaction.user.id
+  	})
 
-    	return `Warning issued to ${user.username}. They now have ${count} warning(s).`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/warn.js"
-    import { Warning } from '../models/Warning.js'
+  	const count = await Warning.count({
+  		where: { guildId: interaction.guildId!, userId: user.id }
+  	})
 
-    export default async (interaction) => {
-    	const user = interaction.options.getUser('user', true)
+  	return `Warning issued to ${user.username}. They now have ${count} warning(s).`
+  }
+  ```
 
-    	const warning = await Warning.create({
-    		guildId: interaction.guildId,
-    		userId: user.id,
-    		reason: interaction.options.getString('reason') ?? 'No reason provided',
-    		moderatorId: interaction.user.id
-    	})
+</Tab>
+<Tab value="JavaScript">
 
-    	const count = await Warning.count({
-    		where: { guildId: interaction.guildId, userId: user.id }
-    	})
+  ```js title="src/commands/warn.js"
+  import { Warning } from '../models/Warning.js'
 
-    	return `Warning issued to ${user.username}. They now have ${count} warning(s).`
-    }
-    ```
-  </Tab>
+  export default async (interaction) => {
+  	const user = interaction.options.getUser('user', true)
+
+  	const warning = await Warning.create({
+  		guildId: interaction.guildId,
+  		userId: user.id,
+  		reason: interaction.options.getString('reason') ?? 'No reason provided',
+  		moderatorId: interaction.user.id
+  	})
+
+  	const count = await Warning.count({
+  		where: { guildId: interaction.guildId, userId: user.id }
+  	})
+
+  	return `Warning issued to ${user.username}. They now have ${count} warning(s).`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Data Types
@@ -155,47 +171,55 @@ Then use it with familiar CRUD methods:
 Flashcore supports any serializable data type for key-value storage. Primitives and plain objects work, but functions and class instances do not.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await Flashcore.set('banned', true)
-    await Flashcore.set('score', 40)
-    await Flashcore.set('top-name', 'Robo')
-    await Flashcore.set('top-user', {
-    	name: 'Robo',
-    	score: 40
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await Flashcore.set('banned', true)
-    await Flashcore.set('score', 40)
-    await Flashcore.set('top-name', 'Robo')
-    await Flashcore.set('top-user', {
-    	name: 'Robo',
-    	score: 40
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  await Flashcore.set('banned', true)
+  await Flashcore.set('score', 40)
+  await Flashcore.set('top-name', 'Robo')
+  await Flashcore.set('top-user', {
+  	name: 'Robo',
+  	score: 40
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await Flashcore.set('banned', true)
+  await Flashcore.set('score', 40)
+  await Flashcore.set('top-name', 'Robo')
+  await Flashcore.set('top-user', {
+  	name: 'Robo',
+  	score: 40
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 When retrieved, data retains its original type:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const isBanned = await Flashcore.get<boolean>('banned')
-    const score = await Flashcore.get<number>('score')
-    const topName = await Flashcore.get<string>('top-name')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const isBanned = await Flashcore.get('banned')
-    const score = await Flashcore.get('score')
-    const topName = await Flashcore.get('top-name')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const isBanned = await Flashcore.get<boolean>('banned')
+  const score = await Flashcore.get<number>('score')
+  const topName = await Flashcore.get<string>('top-name')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const isBanned = await Flashcore.get('banned')
+  const score = await Flashcore.get('score')
+  const topName = await Flashcore.get('top-name')
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -207,20 +231,24 @@ Generics only inform TypeScript of the expected return type. They do not validat
 The `on()` function lets you observe changes to a key's value:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Flashcore.on(userId, (oldScore, newScore) => {
-    	console.log(`Score updated: ${oldScore} → ${newScore}`)
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Flashcore.on(userId, (oldScore, newScore) => {
-    	console.log(`Score updated: ${oldScore} → ${newScore}`)
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Flashcore.on(userId, (oldScore, newScore) => {
+  	console.log(`Score updated: ${oldScore} → ${newScore}`)
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Flashcore.on(userId, (oldScore, newScore) => {
+  	console.log(`Score updated: ${oldScore} → ${newScore}`)
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Remove a watcher with `Flashcore.off(key)`.
@@ -230,32 +258,36 @@ Remove a watcher with `Flashcore.off(key)`.
 Namespaces prevent key collisions by categorizing data into separate groups. This is useful when managing data across multiple servers.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Store per-server settings using guild ID as namespace
-    await Flashcore.set('prefix', '!', {
-    	namespace: interaction.guildId
-    })
+<Tab value="TypeScript">
 
-    // Retrieve with the same namespace
-    const prefix = await Flashcore.get<string>('prefix', {
-    	namespace: interaction.guildId
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Store per-server settings using guild ID as namespace
-    await Flashcore.set('prefix', '!', {
-    	namespace: interaction.guildId
-    })
+  ```ts
+  // Store per-server settings using guild ID as namespace
+  await Flashcore.set('prefix', '!', {
+  	namespace: interaction.guildId
+  })
 
-    // Retrieve with the same namespace
-    const prefix = await Flashcore.get('prefix', {
-    	namespace: interaction.guildId
-    })
-    ```
-  </Tab>
+  // Retrieve with the same namespace
+  const prefix = await Flashcore.get<string>('prefix', {
+  	namespace: interaction.guildId
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Store per-server settings using guild ID as namespace
+  await Flashcore.set('prefix', '!', {
+  	namespace: interaction.guildId
+  })
+
+  // Retrieve with the same namespace
+  const prefix = await Flashcore.get('prefix', {
+  	namespace: interaction.guildId
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Each namespace acts as an isolated group, so the same key in different namespaces stores independent values.

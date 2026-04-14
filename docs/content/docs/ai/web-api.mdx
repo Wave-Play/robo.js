@@ -27,32 +27,36 @@ The endpoint validates that at least one message is present. If no system messag
 ## Usage example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const response = await fetch('/api/ai/chat', {
-    	method: 'POST',
-    	headers: { 'Content-Type': 'application/json' },
-    	body: JSON.stringify({
-    		messages: [{ role: 'user', content: 'What is Robo.js?' }]
-    	})
-    })
-    const data = await response.json()
-    console.log(data.message)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const response = await fetch('/api/ai/chat', {
-    	method: 'POST',
-    	headers: { 'Content-Type': 'application/json' },
-    	body: JSON.stringify({
-    		messages: [{ role: 'user', content: 'What is Robo.js?' }]
-    	})
-    })
-    const data = await response.json()
-    console.log(data.message)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const response = await fetch('/api/ai/chat', {
+  	method: 'POST',
+  	headers: { 'Content-Type': 'application/json' },
+  	body: JSON.stringify({
+  		messages: [{ role: 'user', content: 'What is Robo.js?' }]
+  	})
+  })
+  const data = await response.json()
+  console.log(data.message)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const response = await fetch('/api/ai/chat', {
+  	method: 'POST',
+  	headers: { 'Content-Type': 'application/json' },
+  	body: JSON.stringify({
+  		messages: [{ role: 'user', content: 'What is Robo.js?' }]
+  	})
+  })
+  const data = await response.json()
+  console.log(data.message)
+  ```
+
+</Tab>
 </Tabs>
 
 The response resolves with the first reply chunk from the engine.
@@ -70,35 +74,39 @@ You can build custom API routes using the `AI` singleton for more control over t
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/my-chat.ts"
-    import { AI } from '@robojs/ai'
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export default async (req: RoboRequest) => {
-    	const { prompt } = await req.json<{ prompt: string }>()
-    	const reply = await AI.chatSync(
-    		[{ role: 'user', content: prompt }],
-    		{}
-    	)
-    	return { answer: reply.text ?? '' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/my-chat.js"
-    import { AI } from '@robojs/ai'
+  ```ts title="src/api/my-chat.ts"
+  import { AI } from '@robojs/ai'
+  import type { RoboRequest } from '@robojs/server'
 
-    export default async (req) => {
-    	const { prompt } = await req.json()
-    	const reply = await AI.chatSync(
-    		[{ role: 'user', content: prompt }],
-    		{}
-    	)
-    	return { answer: reply.text ?? '' }
-    }
-    ```
-  </Tab>
+  export default async (req: RoboRequest) => {
+  	const { prompt } = await req.json<{ prompt: string }>()
+  	const reply = await AI.chatSync(
+  		[{ role: 'user', content: prompt }],
+  		{}
+  	)
+  	return { answer: reply.text ?? '' }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/my-chat.js"
+  import { AI } from '@robojs/ai'
+
+  export default async (req) => {
+  	const { prompt } = await req.json()
+  	const reply = await AI.chatSync(
+  		[{ role: 'user', content: prompt }],
+  		{}
+  	)
+  	return { answer: reply.text ?? '' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 `AI.chatSync` returns a promise that resolves with the first reply. Use `AI.chat` instead when you need the streaming callback pattern with `onReply`.

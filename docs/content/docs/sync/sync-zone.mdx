@@ -17,38 +17,42 @@ description: Hierarchical key prefixing and host control for organized state nam
 ## Basic usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { SyncZone, SyncBox } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function Game({ roomId }: { roomId: string }) {
-      return (
-        <SyncZone id={['game', roomId]}>
-          <SyncBox id={['player']} initialState={{ x: 0, y: 0 }}>
-            {(state) => <div>Position: {state?.x}, {state?.y}</div>}
-          </SyncBox>
-          {/* SyncBox key becomes 'game.[roomId].player' */}
-        </SyncZone>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { SyncZone, SyncBox } from '@robojs/sync'
+  ```tsx
+  import { SyncZone, SyncBox } from '@robojs/sync'
 
-    function Game({ roomId }) {
-      return (
-        <SyncZone id={['game', roomId]}>
-          <SyncBox id={['player']} initialState={{ x: 0, y: 0 }}>
-            {(state) => <div>Position: {state?.x}, {state?.y}</div>}
-          </SyncBox>
-          {/* SyncBox key becomes 'game.[roomId].player' */}
-        </SyncZone>
-      )
-    }
-    ```
-  </Tab>
+  function Game({ roomId }: { roomId: string }) {
+    return (
+      <SyncZone id={['game', roomId]}>
+        <SyncBox id={['player']} initialState={{ x: 0, y: 0 }}>
+          {(state) => <div>Position: {state?.x}, {state?.y}</div>}
+        </SyncBox>
+        {/* SyncBox key becomes 'game.[roomId].player' */}
+      </SyncZone>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { SyncZone, SyncBox } from '@robojs/sync'
+
+  function Game({ roomId }) {
+    return (
+      <SyncZone id={['game', roomId]}>
+        <SyncBox id={['player']} initialState={{ x: 0, y: 0 }}>
+          {(state) => <div>Position: {state?.x}, {state?.y}</div>}
+        </SyncBox>
+        {/* SyncBox key becomes 'game.[roomId].player' */}
+      </SyncZone>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Nested zones
@@ -56,34 +60,38 @@ description: Hierarchical key prefixing and host control for organized state nam
 Prefixes accumulate. Each nested `SyncZone` appends its `id` to the parent's prefix, so you can organize state into logical groups without manually building key paths.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    <SyncZone id={['game']}>
-      <SyncZone id={['board']}>
-        <SyncBox id={['piece']} initialState={{ x: 0 }} />
-        {/* key: 'game.board.piece' */}
-      </SyncZone>
-      <SyncZone id={['chat']}>
-        <SyncBox id={['messages']} initialState={[]} />
-        {/* key: 'game.chat.messages' */}
-      </SyncZone>
+<Tab value="TypeScript">
+
+  ```tsx
+  <SyncZone id={['game']}>
+    <SyncZone id={['board']}>
+      <SyncBox id={['piece']} initialState={{ x: 0 }} />
+      {/* key: 'game.board.piece' */}
     </SyncZone>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    <SyncZone id={['game']}>
-      <SyncZone id={['board']}>
-        <SyncBox id={['piece']} initialState={{ x: 0 }} />
-        {/* key: 'game.board.piece' */}
-      </SyncZone>
-      <SyncZone id={['chat']}>
-        <SyncBox id={['messages']} initialState={[]} />
-        {/* key: 'game.chat.messages' */}
-      </SyncZone>
+    <SyncZone id={['chat']}>
+      <SyncBox id={['messages']} initialState={[]} />
+      {/* key: 'game.chat.messages' */}
     </SyncZone>
-    ```
-  </Tab>
+  </SyncZone>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  <SyncZone id={['game']}>
+    <SyncZone id={['board']}>
+      <SyncBox id={['piece']} initialState={{ x: 0 }} />
+      {/* key: 'game.board.piece' */}
+    </SyncZone>
+    <SyncZone id={['chat']}>
+      <SyncBox id={['messages']} initialState={[]} />
+      {/* key: 'game.chat.messages' */}
+    </SyncZone>
+  </SyncZone>
+  ```
+
+</Tab>
 </Tabs>
 
 ## Host rules
@@ -93,20 +101,24 @@ Prefixes accumulate. Each nested `SyncZone` appends its `id` to the parent's pre
 The first client to subscribe to the zone key becomes host. If that client disconnects, the next one takes over. This is server-managed.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    <SyncZone id={['match']} hostRules="first">
-      <GameBoard />
-    </SyncZone>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    <SyncZone id={['match']} hostRules="first">
-      <GameBoard />
-    </SyncZone>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  <SyncZone id={['match']} hostRules="first">
+    <GameBoard />
+  </SyncZone>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  <SyncZone id={['match']} hostRules="first">
+    <GameBoard />
+  </SyncZone>
+  ```
+
+</Tab>
 </Tabs>
 
 ### Explicit host
@@ -114,20 +126,24 @@ The first client to subscribe to the zone key becomes host. If that client disco
 Set the host manually. Useful for admin-controlled scenarios or server-assigned roles.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    <SyncZone id={['match']} hostRules="explicit" host={adminClientId}>
-      <GameBoard />
-    </SyncZone>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    <SyncZone id={['match']} hostRules="explicit" host={adminClientId}>
-      <GameBoard />
-    </SyncZone>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  <SyncZone id={['match']} hostRules="explicit" host={adminClientId}>
+    <GameBoard />
+  </SyncZone>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  <SyncZone id={['match']} hostRules="explicit" host={adminClientId}>
+    <GameBoard />
+  </SyncZone>
+  ```
+
+</Tab>
 </Tabs>
 
 ## useZoneContext
@@ -135,42 +151,46 @@ Set the host manually. Useful for admin-controlled scenarios or server-assigned 
 Access the current zone's context from any child component.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useZoneContext } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function GameStatus() {
-      const zone = useZoneContext()
-      if (!zone) return null
+  ```tsx
+  import { useZoneContext } from '@robojs/sync'
 
-      return (
-        <div>
-          <p>{zone.isHost ? 'You are the host' : `Host: ${zone.hostId}`}</p>
-          <p>Players: {zone.clients.length}</p>
-          <p>Status: {zone.connectionStatus}</p>
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useZoneContext } from '@robojs/sync'
+  function GameStatus() {
+    const zone = useZoneContext()
+    if (!zone) return null
 
-    function GameStatus() {
-      const zone = useZoneContext()
-      if (!zone) return null
+    return (
+      <div>
+        <p>{zone.isHost ? 'You are the host' : `Host: ${zone.hostId}`}</p>
+        <p>Players: {zone.clients.length}</p>
+        <p>Status: {zone.connectionStatus}</p>
+      </div>
+    )
+  }
+  ```
 
-      return (
-        <div>
-          <p>{zone.isHost ? 'You are the host' : `Host: ${zone.hostId}`}</p>
-          <p>Players: {zone.clients.length}</p>
-          <p>Status: {zone.connectionStatus}</p>
-        </div>
-      )
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { useZoneContext } from '@robojs/sync'
+
+  function GameStatus() {
+    const zone = useZoneContext()
+    if (!zone) return null
+
+    return (
+      <div>
+        <p>{zone.isHost ? 'You are the host' : `Host: ${zone.hostId}`}</p>
+        <p>Players: {zone.clients.length}</p>
+        <p>Status: {zone.connectionStatus}</p>
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### ZoneContextValue
@@ -190,32 +210,36 @@ Access the current zone's context from any child component.
 Compute the full key by combining the zone prefix with a local id. Useful when you need to pass the full key to hooks directly rather than relying on `SyncBox`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useZoneKey, useSyncState } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function PlayerMarker({ playerId }: { playerId: string }) {
-      const fullKey = useZoneKey(['player', playerId])
-      // In <SyncZone id={['game']}>, fullKey = ['game', 'player', playerId]
-      const [position, setPosition] = useSyncState({ x: 0, y: 0 }, fullKey)
+  ```tsx
+  import { useZoneKey, useSyncState } from '@robojs/sync'
 
-      return <div style={{ left: position.x, top: position.y }}>Player</div>
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useZoneKey, useSyncState } from '@robojs/sync'
+  function PlayerMarker({ playerId }: { playerId: string }) {
+    const fullKey = useZoneKey(['player', playerId])
+    // In <SyncZone id={['game']}>, fullKey = ['game', 'player', playerId]
+    const [position, setPosition] = useSyncState({ x: 0, y: 0 }, fullKey)
 
-    function PlayerMarker({ playerId }) {
-      const fullKey = useZoneKey(['player', playerId])
-      // In <SyncZone id={['game']}>, fullKey = ['game', 'player', playerId]
-      const [position, setPosition] = useSyncState({ x: 0, y: 0 }, fullKey)
+    return <div style={{ left: position.x, top: position.y }}>Player</div>
+  }
+  ```
 
-      return <div style={{ left: position.x, top: position.y }}>Player</div>
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { useZoneKey, useSyncState } from '@robojs/sync'
+
+  function PlayerMarker({ playerId }) {
+    const fullKey = useZoneKey(['player', playerId])
+    // In <SyncZone id={['game']}>, fullKey = ['game', 'player', playerId]
+    const [position, setPosition] = useSyncState({ x: 0, y: 0 }, fullKey)
+
+    return <div style={{ left: position.x, top: position.y }}>Player</div>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

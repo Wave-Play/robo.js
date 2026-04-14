@@ -52,36 +52,40 @@ These extensions are only loaded when `@robojs/flashcore-extras` is installed. T
 Add caching and compression to any adapter:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
-    import { FileAdapter } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    const adapter = new AdapterBuilder(new FileAdapter())
-    	.withCompression({ threshold: 512 })
-    	.withCache({ maxSize: 1000 })
-    	.build()
+  ```ts title="config/robo.mjs"
+  import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
+  import { FileAdapter } from 'robo.js/flashcore'
 
-    export default {
-    	flashcore: { adapter }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
-    import { FileAdapter } from 'robo.js/flashcore'
+  const adapter = new AdapterBuilder(new FileAdapter())
+  	.withCompression({ threshold: 512 })
+  	.withCache({ maxSize: 1000 })
+  	.build()
 
-    const adapter = new AdapterBuilder(new FileAdapter())
-    	.withCompression({ threshold: 512 })
-    	.withCache({ maxSize: 1000 })
-    	.build()
+  export default {
+  	flashcore: { adapter }
+  }
+  ```
 
-    export default {
-    	flashcore: { adapter }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  import { AdapterBuilder } from '@robojs/flashcore-extras/adapters'
+  import { FileAdapter } from 'robo.js/flashcore'
+
+  const adapter = new AdapterBuilder(new FileAdapter())
+  	.withCompression({ threshold: 512 })
+  	.withCache({ maxSize: 1000 })
+  	.build()
+
+  export default {
+  	flashcore: { adapter }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

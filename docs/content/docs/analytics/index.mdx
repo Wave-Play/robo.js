@@ -53,46 +53,54 @@ npx create-robo my-project -p @robojs/analytics
 The plugin detects which analytics service to use based on environment variables in your `.env` file.
 
 <Tabs items={["Google Analytics", "Plausible"]}>
-  <Tab value="Google Analytics">
-    Add your Measurement ID and API Secret:
+<Tab value="Google Analytics">
 
-    ```bash title=".env"
-    GOOGLE_ANALYTICS_MEASURE_ID="G-123456789"
-    GOOGLE_ANALYTICS_SECRET="your-api-secret"
-    ```
+  Add your Measurement ID and API Secret:
 
-    Find these values in your [Google Analytics Admin](https://analytics.google.com) under **Data Streams > Measurement Protocol API secrets**.
-  </Tab>
-  <Tab value="Plausible">
-    Add your site domain:
+  ```bash title=".env"
+  GOOGLE_ANALYTICS_MEASURE_ID="G-123456789"
+  GOOGLE_ANALYTICS_SECRET="your-api-secret"
+  ```
 
-    ```bash title=".env"
-    PLAUSIBLE_DOMAIN="example.com"
-    ```
+  Find these values in your [Google Analytics Admin](https://analytics.google.com) under **Data Streams > Measurement Protocol API secrets**.
 
-    [Plausible](https://plausible.io) is a privacy-focused alternative that does not use cookies and is GDPR-compliant by default.
-  </Tab>
+</Tab>
+<Tab value="Plausible">
+
+  Add your site domain:
+
+  ```bash title=".env"
+  PLAUSIBLE_DOMAIN="example.com"
+  ```
+
+  [Plausible](https://plausible.io) is a privacy-focused alternative that does not use cookies and is GDPR-compliant by default.
+
+</Tab>
 </Tabs>
 
 Start tracking events anywhere in your project:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Analytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-    Analytics.event('button_click')
-    Analytics.view('Dashboard')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Analytics } from '@robojs/analytics'
+  ```ts
+  import { Analytics } from '@robojs/analytics'
 
-    Analytics.event('button_click')
-    Analytics.view('Dashboard')
-    ```
-  </Tab>
+  Analytics.event('button_click')
+  Analytics.view('Dashboard')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Analytics } from '@robojs/analytics'
+
+  Analytics.event('button_click')
+  Analytics.view('Dashboard')
+  ```
+
+</Tab>
 </Tabs>
 
 That's it. The plugin handles initialization, service detection, and API calls automatically.
@@ -123,83 +131,95 @@ Set both to send events to multiple services automatically. No config file neede
 Use `Analytics.event()` to track any action. Include `sessionId` and `userId` when possible for better accuracy.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Analytics } from '@robojs/analytics'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const sessionId = interaction.channelId ?? interaction.guildId
+  ```ts
+  import { Analytics } from '@robojs/analytics'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	// Track with session and user context
-    	Analytics.event('feature_used', {
-    		sessionId,
-    		userId: interaction.user.id,
-    		data: { feature: 'leaderboard' }
-    	})
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const sessionId = interaction.channelId ?? interaction.guildId
 
-    	return 'Tracked.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Analytics } from '@robojs/analytics'
+  	// Track with session and user context
+  	Analytics.event('feature_used', {
+  		sessionId,
+  		userId: interaction.user.id,
+  		data: { feature: 'leaderboard' }
+  	})
 
-    export default (interaction) => {
-    	const sessionId = interaction.channelId ?? interaction.guildId
+  	return 'Tracked.'
+  }
+  ```
 
-    	// Track with session and user context
-    	Analytics.event('feature_used', {
-    		sessionId,
-    		userId: interaction.user.id,
-    		data: { feature: 'leaderboard' }
-    	})
+</Tab>
+<Tab value="JavaScript">
 
-    	return 'Tracked.'
-    }
-    ```
-  </Tab>
+  ```js
+  import { Analytics } from '@robojs/analytics'
+
+  export default (interaction) => {
+  	const sessionId = interaction.channelId ?? interaction.guildId
+
+  	// Track with session and user context
+  	Analytics.event('feature_used', {
+  		sessionId,
+  		userId: interaction.user.id,
+  		data: { feature: 'leaderboard' }
+  	})
+
+  	return 'Tracked.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Use `Analytics.view()` for page or screen views:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.view('Settings Page', {
-    	sessionId: interaction.channelId,
-    	userId: interaction.user.id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.view('Settings Page', {
-    	sessionId: interaction.channelId,
-    	userId: interaction.user.id
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.view('Settings Page', {
+  	sessionId: interaction.channelId,
+  	userId: interaction.user.id
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.view('Settings Page', {
+  	sessionId: interaction.channelId,
+  	userId: interaction.user.id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Check if the plugin has been initialized before calling:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    if (Analytics.isReady()) {
-    	Analytics.event('safe_event')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    if (Analytics.isReady()) {
-    	Analytics.event('safe_event')
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  if (Analytics.isReady()) {
+  	Analytics.event('safe_event')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  if (Analytics.isReady()) {
+  	Analytics.event('safe_event')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Seed files

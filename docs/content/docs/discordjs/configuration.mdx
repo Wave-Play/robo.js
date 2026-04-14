@@ -16,28 +16,32 @@ The Discord plugin is configured through a file at `config/plugins/robojs/discor
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	sage: {
-    		defer: true,
-    		ephemeral: false
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	sage: {
-    		defer: true,
-    		ephemeral: false
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	sage: {
+  		defer: true,
+  		ephemeral: false
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	sage: {
+  		defer: true,
+  		ephemeral: false
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Plugin options
@@ -59,37 +63,41 @@ The Discord plugin is configured through a file at `config/plugins/robojs/discor
 Configure the Discord.js `Client` constructor. The most common use is setting gateway intents:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import { GatewayIntentBits } from 'discord.js'
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	clientOptions: {
-    		intents: [
-    			GatewayIntentBits.Guilds,
-    			GatewayIntentBits.GuildMessages,
-    			GatewayIntentBits.MessageContent
-    		]
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    import { GatewayIntentBits } from 'discord.js'
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import { GatewayIntentBits } from 'discord.js'
+  import type { DiscordConfig } from '@robojs/discordjs'
 
-    export default {
-    	clientOptions: {
-    		intents: [
-    			GatewayIntentBits.Guilds,
-    			GatewayIntentBits.GuildMessages,
-    			GatewayIntentBits.MessageContent
-    		]
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	clientOptions: {
+  		intents: [
+  			GatewayIntentBits.Guilds,
+  			GatewayIntentBits.GuildMessages,
+  			GatewayIntentBits.MessageContent
+  		]
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  import { GatewayIntentBits } from 'discord.js'
+
+  export default {
+  	clientOptions: {
+  		intents: [
+  			GatewayIntentBits.Guilds,
+  			GatewayIntentBits.GuildMessages,
+  			GatewayIntentBits.MessageContent
+  		]
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout>
@@ -155,83 +163,87 @@ DISCORD_CLIENT_ID="your-client-id"
 ## Complete config example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import { GatewayIntentBits } from 'discord.js'
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	autoRegisterCommands: true,
-    	clientOptions: {
-    		intents: [
-    			GatewayIntentBits.Guilds,
-    			GatewayIntentBits.GuildMessages,
-    			GatewayIntentBits.GuildMembers,
-    			GatewayIntentBits.MessageContent
-    		]
-    	},
-    	defaults: {
-    		contexts: ['Guild', 'BotDM'],
-    		integrationTypes: ['GuildInstall'],
-    		defaultMemberPermissions: undefined
-    	},
-    	prefix: {
-    		value: '!',
-    		caseSensitive: false
-    	},
-    	sage: {
-    		defer: true,
-    		deferBuffer: 250,
-    		ephemeral: false,
-    		errorReplies: true
-    	},
-    	testServers: ['123456789012345678'],
-    	timeouts: {
-    		autocomplete: 3000,
-    		commandDeferral: 250,
-    		commandRegistration: 30000
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    import { GatewayIntentBits } from 'discord.js'
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import { GatewayIntentBits } from 'discord.js'
+  import type { DiscordConfig } from '@robojs/discordjs'
 
-    export default {
-    	autoRegisterCommands: true,
-    	clientOptions: {
-    		intents: [
-    			GatewayIntentBits.Guilds,
-    			GatewayIntentBits.GuildMessages,
-    			GatewayIntentBits.GuildMembers,
-    			GatewayIntentBits.MessageContent
-    		]
-    	},
-    	defaults: {
-    		contexts: ['Guild', 'BotDM'],
-    		integrationTypes: ['GuildInstall'],
-    		defaultMemberPermissions: undefined
-    	},
-    	prefix: {
-    		value: '!',
-    		caseSensitive: false
-    	},
-    	sage: {
-    		defer: true,
-    		deferBuffer: 250,
-    		ephemeral: false,
-    		errorReplies: true
-    	},
-    	testServers: ['123456789012345678'],
-    	timeouts: {
-    		autocomplete: 3000,
-    		commandDeferral: 250,
-    		commandRegistration: 30000
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	autoRegisterCommands: true,
+  	clientOptions: {
+  		intents: [
+  			GatewayIntentBits.Guilds,
+  			GatewayIntentBits.GuildMessages,
+  			GatewayIntentBits.GuildMembers,
+  			GatewayIntentBits.MessageContent
+  		]
+  	},
+  	defaults: {
+  		contexts: ['Guild', 'BotDM'],
+  		integrationTypes: ['GuildInstall'],
+  		defaultMemberPermissions: undefined
+  	},
+  	prefix: {
+  		value: '!',
+  		caseSensitive: false
+  	},
+  	sage: {
+  		defer: true,
+  		deferBuffer: 250,
+  		ephemeral: false,
+  		errorReplies: true
+  	},
+  	testServers: ['123456789012345678'],
+  	timeouts: {
+  		autocomplete: 3000,
+  		commandDeferral: 250,
+  		commandRegistration: 30000
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  import { GatewayIntentBits } from 'discord.js'
+
+  export default {
+  	autoRegisterCommands: true,
+  	clientOptions: {
+  		intents: [
+  			GatewayIntentBits.Guilds,
+  			GatewayIntentBits.GuildMessages,
+  			GatewayIntentBits.GuildMembers,
+  			GatewayIntentBits.MessageContent
+  		]
+  	},
+  	defaults: {
+  		contexts: ['Guild', 'BotDM'],
+  		integrationTypes: ['GuildInstall'],
+  		defaultMemberPermissions: undefined
+  	},
+  	prefix: {
+  		value: '!',
+  		caseSensitive: false
+  	},
+  	sage: {
+  		defer: true,
+  		deferBuffer: 250,
+  		ephemeral: false,
+  		errorReplies: true
+  	},
+  	testServers: ['123456789012345678'],
+  	timeouts: {
+  		autocomplete: 3000,
+  		commandDeferral: 250,
+  		commandRegistration: 30000
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Client access

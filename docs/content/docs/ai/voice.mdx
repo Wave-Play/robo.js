@@ -24,46 +24,50 @@ npm install @discordjs/voice prism-media opusscript ws
 Add voice settings to your plugin config alongside an engine that supports realtime audio:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new OpenAiEngine({
-    		voice: {
-    			model: 'gpt-realtime',
-    			transcription: { language: 'en', model: 'gpt-4o-transcribe' }
-    		}
-    	}),
-    	voice: {
-    		playbackVoice: 'alloy',
-    		endpointing: 'server-vad',
-    		instructions: 'Keep spoken replies concise and under 10 seconds.',
-    		transcript: { enabled: true }
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+  ```ts title="config/plugins/robojs/ai.ts"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
 
-    export default {
-    	engine: new OpenAiEngine({
-    		voice: {
-    			model: 'gpt-realtime',
-    			transcription: { language: 'en', model: 'gpt-4o-transcribe' }
-    		}
-    	}),
-    	voice: {
-    		playbackVoice: 'alloy',
-    		endpointing: 'server-vad',
-    		instructions: 'Keep spoken replies concise and under 10 seconds.',
-    		transcript: { enabled: true }
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new OpenAiEngine({
+  		voice: {
+  			model: 'gpt-realtime',
+  			transcription: { language: 'en', model: 'gpt-4o-transcribe' }
+  		}
+  	}),
+  	voice: {
+  		playbackVoice: 'alloy',
+  		endpointing: 'server-vad',
+  		instructions: 'Keep spoken replies concise and under 10 seconds.',
+  		transcript: { enabled: true }
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+  export default {
+  	engine: new OpenAiEngine({
+  		voice: {
+  			model: 'gpt-realtime',
+  			transcription: { language: 'en', model: 'gpt-4o-transcribe' }
+  		}
+  	}),
+  	voice: {
+  		playbackVoice: 'alloy',
+  		endpointing: 'server-vad',
+  		instructions: 'Keep spoken replies concise and under 10 seconds.',
+  		transcript: { enabled: true }
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The `engine.voice` block configures the realtime model and transcription. The top-level `voice` block controls Discord-side behavior like playback voice, endpointing strategy, and transcript output.
@@ -174,36 +178,40 @@ Nested under `transcript`. Controls transcript embed output.
 Override any voice setting for specific guilds using the `perGuild` map:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	voice: {
-    		playbackVoice: 'alloy',
-    		perGuild: {
-    			'123456789012345678': {
-    				playbackVoice: 'verse',
-    				maxConcurrentChannels: 1
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	voice: {
-    		playbackVoice: 'alloy',
-    		perGuild: {
-    			'123456789012345678': {
-    				playbackVoice: 'verse',
-    				maxConcurrentChannels: 1
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	voice: {
+  		playbackVoice: 'alloy',
+  		perGuild: {
+  			'123456789012345678': {
+  				playbackVoice: 'verse',
+  				maxConcurrentChannels: 1
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	voice: {
+  		playbackVoice: 'alloy',
+  		perGuild: {
+  			'123456789012345678': {
+  				playbackVoice: 'verse',
+  				maxConcurrentChannels: 1
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Per-guild values are merged on top of the base voice config. Any option not specified in the guild override inherits the base value.
@@ -215,16 +223,20 @@ The `endpointing` option determines how the system detects when a user has finis
 ### Server VAD (recommended)
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    endpointing: 'server-vad'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    endpointing: 'server-vad'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  endpointing: 'server-vad'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  endpointing: 'server-vad'
+  ```
+
+</Tab>
 </Tabs>
 
 Server-managed voice activity detection. Audio subscriptions remain active and the engine determines turn boundaries automatically. This produces the most natural conversation flow -- users speak freely and the bot responds when it detects a pause.
@@ -234,16 +246,20 @@ The `capture.silenceDurationMs` and `capture.vadThreshold` settings fine-tune se
 ### Manual
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    endpointing: 'manual'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    endpointing: 'manual'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  endpointing: 'manual'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  endpointing: 'manual'
+  ```
+
+</Tab>
 </Tabs>
 
 Explicit speech end markers. Requires a `commit()` call to signal that the user has finished speaking and trigger a response. Suited for push-to-talk style interactions where you want precise control over turn boundaries.
@@ -255,28 +271,32 @@ The `AI` class exposes methods for managing voice sessions at runtime.
 ### Joining and leaving
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    // Join a voice channel
-    await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
+  ```ts
+  import { AI } from '@robojs/ai'
 
-    // Leave the voice channel
-    await AI.stopVoice({ guildId: guild.id })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { AI } from '@robojs/ai'
+  // Join a voice channel
+  await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
 
-    // Join a voice channel
-    await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
+  // Leave the voice channel
+  await AI.stopVoice({ guildId: guild.id })
+  ```
 
-    // Leave the voice channel
-    await AI.stopVoice({ guildId: guild.id })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { AI } from '@robojs/ai'
+
+  // Join a voice channel
+  await AI.startVoice({ guildId: guild.id, channelId: voiceChannel.id })
+
+  // Leave the voice channel
+  await AI.stopVoice({ guildId: guild.id })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Runtime config changes
@@ -284,59 +304,67 @@ The `AI` class exposes methods for managing voice sessions at runtime.
 Patch voice settings without restarting:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    // Change the playback voice globally
-    await AI.setVoiceConfig({
-    	patch: { playbackVoice: 'echo' }
-    })
+  ```ts
+  import { AI } from '@robojs/ai'
 
-    // Change settings for a specific guild
-    await AI.setVoiceConfig({
-    	guildId: '123456789012345678',
-    	patch: { maxConcurrentChannels: 1 }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { AI } from '@robojs/ai'
+  // Change the playback voice globally
+  await AI.setVoiceConfig({
+  	patch: { playbackVoice: 'echo' }
+  })
 
-    // Change the playback voice globally
-    await AI.setVoiceConfig({
-    	patch: { playbackVoice: 'echo' }
-    })
+  // Change settings for a specific guild
+  await AI.setVoiceConfig({
+  	guildId: '123456789012345678',
+  	patch: { maxConcurrentChannels: 1 }
+  })
+  ```
 
-    // Change settings for a specific guild
-    await AI.setVoiceConfig({
-    	guildId: '123456789012345678',
-    	patch: { maxConcurrentChannels: 1 }
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { AI } from '@robojs/ai'
+
+  // Change the playback voice globally
+  await AI.setVoiceConfig({
+  	patch: { playbackVoice: 'echo' }
+  })
+
+  // Change settings for a specific guild
+  await AI.setVoiceConfig({
+  	guildId: '123456789012345678',
+  	patch: { maxConcurrentChannels: 1 }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Status and metrics
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    const status = await AI.getVoiceStatus()
-    const metrics = AI.getVoiceMetrics()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { AI } from '@robojs/ai'
+  ```ts
+  import { AI } from '@robojs/ai'
 
-    const status = await AI.getVoiceStatus()
-    const metrics = AI.getVoiceMetrics()
-    ```
-  </Tab>
+  const status = await AI.getVoiceStatus()
+  const metrics = AI.getVoiceMetrics()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { AI } from '@robojs/ai'
+
+  const status = await AI.getVoiceStatus()
+  const metrics = AI.getVoiceMetrics()
+  ```
+
+</Tab>
 </Tabs>
 
 ## Voice events
@@ -344,52 +372,56 @@ Patch voice settings without restarting:
 Subscribe to voice lifecycle events for logging, analytics, or custom behavior:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export default () => {
-    	AI.onVoiceEvent('session:start', (status) => {
-    		// Voice session started
-    	})
+  ```ts title="src/robo/start.ts"
+  import { AI } from '@robojs/ai'
 
-    	AI.onVoiceEvent('session:stop', (payload) => {
-    		// payload.reason contains the disconnect reason
-    	})
+  export default () => {
+  	AI.onVoiceEvent('session:start', (status) => {
+  		// Voice session started
+  	})
 
-    	AI.onVoiceEvent('config:change', (payload) => {
-    		// payload.config contains the updated voice config
-    	})
+  	AI.onVoiceEvent('session:stop', (payload) => {
+  		// payload.reason contains the disconnect reason
+  	})
 
-    	AI.onVoiceEvent('transcript:segment', (payload) => {
-    		// payload.segment.text contains the transcribed text
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { AI } from '@robojs/ai'
+  	AI.onVoiceEvent('config:change', (payload) => {
+  		// payload.config contains the updated voice config
+  	})
 
-    export default () => {
-    	AI.onVoiceEvent('session:start', (status) => {
-    		// Voice session started
-    	})
+  	AI.onVoiceEvent('transcript:segment', (payload) => {
+  		// payload.segment.text contains the transcribed text
+  	})
+  }
+  ```
 
-    	AI.onVoiceEvent('session:stop', (payload) => {
-    		// payload.reason contains the disconnect reason
-    	})
+</Tab>
+<Tab value="JavaScript">
 
-    	AI.onVoiceEvent('config:change', (payload) => {
-    		// payload.config contains the updated voice config
-    	})
+  ```js title="src/robo/start.js"
+  import { AI } from '@robojs/ai'
 
-    	AI.onVoiceEvent('transcript:segment', (payload) => {
-    		// payload.segment.text contains the transcribed text
-    	})
-    }
-    ```
-  </Tab>
+  export default () => {
+  	AI.onVoiceEvent('session:start', (status) => {
+  		// Voice session started
+  	})
+
+  	AI.onVoiceEvent('session:stop', (payload) => {
+  		// payload.reason contains the disconnect reason
+  	})
+
+  	AI.onVoiceEvent('config:change', (payload) => {
+  		// payload.config contains the updated voice config
+  	})
+
+  	AI.onVoiceEvent('transcript:segment', (payload) => {
+  		// payload.segment.text contains the transcribed text
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Unsubscribe with `AI.offVoiceEvent()` using the same event name and handler reference.

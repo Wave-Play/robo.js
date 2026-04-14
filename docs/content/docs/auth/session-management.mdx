@@ -23,28 +23,32 @@ The plugin provides two session strategies that determine how session data is st
 - Expired sessions pruned on read
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    export default <AuthPluginOptions>{
-      session: {
-        strategy: 'database',  // or 'jwt'
-        maxAge: 60 * 60 * 24 * 30,  // 30 days
-        updateAge: 60 * 60 * 24     // refresh every 24 hours
-      }
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/auth.ts"
+  export default <AuthPluginOptions>{
+    session: {
+      strategy: 'database',  // or 'jwt'
+      maxAge: 60 * 60 * 24 * 30,  // 30 days
+      updateAge: 60 * 60 * 24     // refresh every 24 hours
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    export default {
-      session: {
-        strategy: 'database',  // or 'jwt'
-        maxAge: 60 * 60 * 24 * 30,  // 30 days
-        updateAge: 60 * 60 * 24     // refresh every 24 hours
-      }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  export default {
+    session: {
+      strategy: 'database',  // or 'jwt'
+      maxAge: 60 * 60 * 24 * 30,  // 30 days
+      updateAge: 60 * 60 * 24     // refresh every 24 hours
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Strategy auto-detects: `'database'` when an adapter is present, `'jwt'` otherwise. Override explicitly if needed.
@@ -54,30 +58,34 @@ Strategy auto-detects: `'database'` when an adapter is present, `'jwt'` otherwis
 Use `getServerSession` to validate sessions in API routes or server-side handlers. Accepts `Request`, `Headers`, or a plain header record.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getServerSession } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    // From a Robo API route
-    export default async (request: RoboRequest) => {
-      const session = await getServerSession(request)
-      if (!session) return new Response('Unauthorized', { status: 401 })
-      return { user: session.user }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getServerSession } from '@robojs/auth'
+  ```ts
+  import { getServerSession } from '@robojs/auth'
 
-    // From a Robo API route
-    export default async (request) => {
-      const session = await getServerSession(request)
-      if (!session) return new Response('Unauthorized', { status: 401 })
-      return { user: session.user }
-    }
-    ```
-  </Tab>
+  // From a Robo API route
+  export default async (request: RoboRequest) => {
+    const session = await getServerSession(request)
+    if (!session) return new Response('Unauthorized', { status: 401 })
+    return { user: session.user }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getServerSession } from '@robojs/auth'
+
+  // From a Robo API route
+  export default async (request) => {
+    const session = await getServerSession(request)
+    if (!session) return new Response('Unauthorized', { status: 401 })
+    return { user: session.user }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Returns `Session | null`. The session object includes `user`, `expires`, and `emailVerified` status.
@@ -85,28 +93,32 @@ Returns `Session | null`. The session object includes `user`, `expires`, and `em
 **Extract tokens:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getToken } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    // Get decoded JWT payload
-    const token = await getToken(request)
+  ```ts
+  import { getToken } from '@robojs/auth'
 
-    // Get raw cookie value
-    const raw = await getToken(request, { raw: true })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getToken } from '@robojs/auth'
+  // Get decoded JWT payload
+  const token = await getToken(request)
 
-    // Get decoded JWT payload
-    const token = await getToken(request)
+  // Get raw cookie value
+  const raw = await getToken(request, { raw: true })
+  ```
 
-    // Get raw cookie value
-    const raw = await getToken(request, { raw: true })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getToken } from '@robojs/auth'
+
+  // Get decoded JWT payload
+  const token = await getToken(request)
+
+  // Get raw cookie value
+  const raw = await getToken(request, { raw: true })
+  ```
+
+</Tab>
 </Tabs>
 
 For JWT strategy, decodes the token locally. For database strategy, delegates to `getServerSession` or returns the raw cookie value with `{ raw: true }`.
@@ -116,38 +128,42 @@ For JWT strategy, decodes the token locally. For database strategy, delegates to
 The plugin composes a wrapper around Auth.js `session` callback to inject `emailVerified` status automatically. User-provided callbacks run first, then the plugin's enhancement executes.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    export default <AuthPluginOptions>{
-      callbacks: {
-    async session({ session, token, user }) {
-      // emailVerified is automatically available
-      console.log(session.emailVerified)
+<Tab value="TypeScript">
 
-      // Add custom data
-      if (token?.sub) session.user.id = token.sub
-      return session
-    }
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    export default {
-      callbacks: {
-    async session({ session, token, user }) {
-      // emailVerified is automatically available
-      console.log(session.emailVerified)
+  ```ts title="config/plugins/robojs/auth.ts"
+  export default <AuthPluginOptions>{
+    callbacks: {
+  async session({ session, token, user }) {
+    // emailVerified is automatically available
+    console.log(session.emailVerified)
 
-      // Add custom data
-      if (token?.sub) session.user.id = token.sub
-      return session
+    // Add custom data
+    if (token?.sub) session.user.id = token.sub
+    return session
+  }
     }
-      }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  export default {
+    callbacks: {
+  async session({ session, token, user }) {
+    // emailVerified is automatically available
+    console.log(session.emailVerified)
+
+    // Add custom data
+    if (token?.sub) session.user.id = token.sub
+    return session
+  }
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The composed callback ensures `emailVerified` is always present in the session object, sourced from the adapter's user record.
@@ -179,24 +195,28 @@ The plugin supports up to 5 simultaneous sessions per device. Users can sign int
 **Client helpers:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getSessions, switchSession, removeSession, clearSessions } from '@robojs/auth/client'
+<Tab value="TypeScript">
 
-    // List all sessions on this device
-    const sessions = await getSessions()
-    // Returns: DeviceSession[]
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getSessions, switchSession, removeSession, clearSessions } from '@robojs/auth/client'
+  ```ts
+  import { getSessions, switchSession, removeSession, clearSessions } from '@robojs/auth/client'
 
-    // List all sessions on this device
-    const sessions = await getSessions()
-    // Returns: DeviceSession[]
-    ```
-  </Tab>
+  // List all sessions on this device
+  const sessions = await getSessions()
+  // Returns: DeviceSession[]
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getSessions, switchSession, removeSession, clearSessions } from '@robojs/auth/client'
+
+  // List all sessions on this device
+  const sessions = await getSessions()
+  // Returns: DeviceSession[]
+  ```
+
+</Tab>
 </Tabs>
 
 `DeviceSession` type:
@@ -211,57 +231,65 @@ The plugin supports up to 5 simultaneous sessions per device. Users can sign int
 | `isExpired` | `boolean` | Whether the session has expired |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Switch to a different account
-    const result = await switchSession('user-id-123')
-    // Returns: SwitchSessionResult
+<Tab value="TypeScript">
 
-    if (result.ok) {
-      console.log('Switched to:', result.session?.user)
-    } else {
-      console.log('Failed:', result.error)
-      // error: 'session_expired' | 'not_found' | 'forbidden'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Switch to a different account
-    const result = await switchSession('user-id-123')
-    // Returns: SwitchSessionResult
+  ```ts
+  // Switch to a different account
+  const result = await switchSession('user-id-123')
+  // Returns: SwitchSessionResult
 
-    if (result.ok) {
-      console.log('Switched to:', result.session?.user)
-    } else {
-      console.log('Failed:', result.error)
-      // error: 'session_expired' | 'not_found' | 'forbidden'
-    }
-    ```
-  </Tab>
+  if (result.ok) {
+    console.log('Switched to:', result.session?.user)
+  } else {
+    console.log('Failed:', result.error)
+    // error: 'session_expired' | 'not_found' | 'forbidden'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Switch to a different account
+  const result = await switchSession('user-id-123')
+  // Returns: SwitchSessionResult
+
+  if (result.ok) {
+    console.log('Switched to:', result.session?.user)
+  } else {
+    console.log('Failed:', result.error)
+    // error: 'session_expired' | 'not_found' | 'forbidden'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Remove a specific session
-    await removeSession('user-id-456')
-    // If the active session is removed, auto-switches to the most recent valid session
+<Tab value="TypeScript">
 
-    // Sign out of all accounts
-    await clearSessions()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Remove a specific session
-    await removeSession('user-id-456')
-    // If the active session is removed, auto-switches to the most recent valid session
+  ```ts
+  // Remove a specific session
+  await removeSession('user-id-456')
+  // If the active session is removed, auto-switches to the most recent valid session
 
-    // Sign out of all accounts
-    await clearSessions()
-    ```
-  </Tab>
+  // Sign out of all accounts
+  await clearSessions()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Remove a specific session
+  await removeSession('user-id-456')
+  // If the active session is removed, auto-switches to the most recent valid session
+
+  // Sign out of all accounts
+  await clearSessions()
+  ```
+
+</Tab>
 </Tabs>
 
 **Self-healing behavior:**

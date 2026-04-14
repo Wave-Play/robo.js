@@ -38,18 +38,22 @@ When set to a string array, commands are only registered when the current mode m
 Register commands as guild commands for faster development. Guild commands update instantly, while global commands can take up to an hour.
 
 <Tabs items={["Config file", "Environment variable"]} groupId="test-server" persist>
-  <Tab value="Config file">
-    ```ts title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	testServers: ['123456789012345678']
-    }
-    ```
-  </Tab>
-  <Tab value="Environment variable">
-    ```bash title=".env"
-    DISCORD_GUILD_ID="123456789012345678"
-    ```
-  </Tab>
+<Tab value="Config file">
+
+  ```ts title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	testServers: ['123456789012345678']
+  }
+  ```
+
+</Tab>
+<Tab value="Environment variable">
+
+  ```bash title=".env"
+  DISCORD_GUILD_ID="123456789012345678"
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout>

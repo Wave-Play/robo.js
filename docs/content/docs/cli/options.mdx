@@ -12,46 +12,50 @@ Options let users pass flags and values to your commands. Use `createCliCommandC
 Each option in the `options` array describes a flag your command accepts.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/serve.ts"
-    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = createCliCommandConfig({
-      description: 'Start a development server',
-      options: [
-        { alias: '-p', name: '--port', description: 'Port number', type: 'number', default: 3000 },
-        { alias: '-H', name: '--host', description: 'Host address', type: 'string' },
-        { alias: '-o', name: '--open', description: 'Open in browser', type: 'boolean' }
-      ]
-    } as const)
+  ```ts title="src/cli/serve.ts"
+  import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-    export default (ctx: CliContext<typeof config>) => {
-      console.log(`Starting server on ${ctx.options.host ?? 'localhost'}:${ctx.options.port}`)
-      if (ctx.options.open) {
-        console.log('Opening browser...')
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/serve.js"
-    export const config = {
-      description: 'Start a development server',
-      options: [
-        { alias: '-p', name: '--port', description: 'Port number', type: 'number', default: 3000 },
-        { alias: '-H', name: '--host', description: 'Host address', type: 'string' },
-        { alias: '-o', name: '--open', description: 'Open in browser', type: 'boolean' }
-      ]
-    }
+  export const config = createCliCommandConfig({
+    description: 'Start a development server',
+    options: [
+      { alias: '-p', name: '--port', description: 'Port number', type: 'number', default: 3000 },
+      { alias: '-H', name: '--host', description: 'Host address', type: 'string' },
+      { alias: '-o', name: '--open', description: 'Open in browser', type: 'boolean' }
+    ]
+  } as const)
 
-    export default (ctx) => {
-      console.log(`Starting server on ${ctx.options.host ?? 'localhost'}:${ctx.options.port}`)
-      if (ctx.options.open) {
-        console.log('Opening browser...')
-      }
+  export default (ctx: CliContext<typeof config>) => {
+    console.log(`Starting server on ${ctx.options.host ?? 'localhost'}:${ctx.options.port}`)
+    if (ctx.options.open) {
+      console.log('Opening browser...')
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/serve.js"
+  export const config = {
+    description: 'Start a development server',
+    options: [
+      { alias: '-p', name: '--port', description: 'Port number', type: 'number', default: 3000 },
+      { alias: '-H', name: '--host', description: 'Host address', type: 'string' },
+      { alias: '-o', name: '--open', description: 'Open in browser', type: 'boolean' }
+    ]
+  }
+
+  export default (ctx) => {
+    console.log(`Starting server on ${ctx.options.host ?? 'localhost'}:${ctx.options.port}`)
+    if (ctx.options.open) {
+      console.log('Opening browser...')
+    }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Option properties
@@ -99,34 +103,38 @@ The `as const` assertion is required for type inference to work. Without it, Typ
 Enable `positionalArgs` to accept values without flags. Positional arguments are available via `ctx.args`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/install.ts"
-    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = createCliCommandConfig({
-      description: 'Install packages',
-      positionalArgs: true
-    } as const)
+  ```ts title="src/cli/install.ts"
+  import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-    export default (ctx: CliContext<typeof config>) => {
-      const packages = ctx.args
-      console.log(`Installing: ${packages.join(', ')}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/install.js"
-    export const config = {
-      description: 'Install packages',
-      positionalArgs: true
-    }
+  export const config = createCliCommandConfig({
+    description: 'Install packages',
+    positionalArgs: true
+  } as const)
 
-    export default (ctx) => {
-      const packages = ctx.args
-      console.log(`Installing: ${packages.join(', ')}`)
-    }
-    ```
-  </Tab>
+  export default (ctx: CliContext<typeof config>) => {
+    const packages = ctx.args
+    console.log(`Installing: ${packages.join(', ')}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/install.js"
+  export const config = {
+    description: 'Install packages',
+    positionalArgs: true
+  }
+
+  export default (ctx) => {
+    const packages = ctx.args
+    console.log(`Installing: ${packages.join(', ')}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ```bash
@@ -139,42 +147,46 @@ mycli install lodash express react
 Options and positional arguments work together. Named flags are parsed as options, and remaining values become positional args.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/add.ts"
-    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = createCliCommandConfig({
-      description: 'Add items to the project',
-      positionalArgs: true,
-      options: [
-        { alias: '-D', name: '--dev', description: 'Add as dev dependency', type: 'boolean' }
-      ]
-    } as const)
+  ```ts title="src/cli/add.ts"
+  import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-    export default (ctx: CliContext<typeof config>) => {
-      const items = ctx.args
-      const prefix = ctx.options.dev ? '(dev) ' : ''
-      items.forEach((item) => console.log(`${prefix}Adding ${item}`))
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/add.js"
-    export const config = {
-      description: 'Add items to the project',
-      positionalArgs: true,
-      options: [
-        { alias: '-D', name: '--dev', description: 'Add as dev dependency', type: 'boolean' }
-      ]
-    }
+  export const config = createCliCommandConfig({
+    description: 'Add items to the project',
+    positionalArgs: true,
+    options: [
+      { alias: '-D', name: '--dev', description: 'Add as dev dependency', type: 'boolean' }
+    ]
+  } as const)
 
-    export default (ctx) => {
-      const items = ctx.args
-      const prefix = ctx.options.dev ? '(dev) ' : ''
-      items.forEach((item) => console.log(`${prefix}Adding ${item}`))
-    }
-    ```
-  </Tab>
+  export default (ctx: CliContext<typeof config>) => {
+    const items = ctx.args
+    const prefix = ctx.options.dev ? '(dev) ' : ''
+    items.forEach((item) => console.log(`${prefix}Adding ${item}`))
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/add.js"
+  export const config = {
+    description: 'Add items to the project',
+    positionalArgs: true,
+    options: [
+      { alias: '-D', name: '--dev', description: 'Add as dev dependency', type: 'boolean' }
+    ]
+  }
+
+  export default (ctx) => {
+    const items = ctx.args
+    const prefix = ctx.options.dev ? '(dev) ' : ''
+    items.forEach((item) => console.log(`${prefix}Adding ${item}`))
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ```bash

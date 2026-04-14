@@ -19,22 +19,26 @@ Middleware runs before every command, context menu, and event handler. Use it fo
 The default export receives a `MiddlewareData` object and can return a `MiddlewareResult` to abort or modify execution:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/logger.ts"
-    import type { MiddlewareData } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default (data: MiddlewareData) => {
-    	console.log(`Handler: ${data.record.key} (${data.record.type})`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/logger.js"
-    export default (data) => {
-    	console.log(`Handler: ${data.record.key} (${data.record.type})`)
-    }
-    ```
-  </Tab>
+  ```ts title="src/middleware/logger.ts"
+  import type { MiddlewareData } from '@robojs/discordjs'
+
+  export default (data: MiddlewareData) => {
+  	console.log(`Handler: ${data.record.key} (${data.record.type})`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/middleware/logger.js"
+  export default (data) => {
+  	console.log(`Handler: ${data.record.key} (${data.record.type})`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### MiddlewareData
@@ -59,33 +63,37 @@ Return `{ abort: true }` to prevent the handler from running:
 > **Error behavior:** If any middleware throws an error, the entire handler execution is aborted. Ensure middleware functions handle their own errors gracefully if you want execution to continue.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/middleware/admin-only.ts"
-    import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (data: MiddlewareData): MiddlewareResult | void => {
-    	const interaction = data.payload[0] as ChatInputCommandInteraction
+  ```ts title="src/middleware/admin-only.ts"
+  import type { MiddlewareData, MiddlewareResult } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	if (interaction?.user && interaction.user.id !== 'YOUR_ADMIN_ID') {
-    		interaction.reply({ content: 'Admin only!', ephemeral: true })
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/middleware/admin-only.js"
-    export default (data) => {
-    	const interaction = data.payload[0]
+  export default (data: MiddlewareData): MiddlewareResult | void => {
+  	const interaction = data.payload[0] as ChatInputCommandInteraction
 
-    	if (interaction?.user && interaction.user.id !== 'YOUR_ADMIN_ID') {
-    		interaction.reply({ content: 'Admin only!', ephemeral: true })
-    		return { abort: true }
-    	}
-    }
-    ```
-  </Tab>
+  	if (interaction?.user && interaction.user.id !== 'YOUR_ADMIN_ID') {
+  		interaction.reply({ content: 'Admin only!', ephemeral: true })
+  		return { abort: true }
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/middleware/admin-only.js"
+  export default (data) => {
+  	const interaction = data.payload[0]
+
+  	if (interaction?.user && interaction.user.id !== 'YOUR_ADMIN_ID') {
+  		interaction.reply({ content: 'Admin only!', ephemeral: true })
+  		return { abort: true }
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Middleware config

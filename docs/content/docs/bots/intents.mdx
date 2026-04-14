@@ -18,26 +18,30 @@ Discord uses intents to filter which events are sent to your bot over the gatewa
 Set intents in your plugin configuration under `clientOptions.intents` using PascalCase strings.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages', 'MessageContent']
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages', 'MessageContent']
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages', 'MessageContent']
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages', 'MessageContent']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -53,16 +57,20 @@ Set intents in your plugin configuration under `clientOptions.intents` using Pas
 The plugin analyzes your registered event handlers at build time and infers which intents are needed. At startup, it logs warnings for any missing intents. You can still override by explicitly setting intents in your configuration.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { inferIntents, validateIntents, getIntentNames } from '@robojs/discordjs'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { inferIntents, validateIntents, getIntentNames } from '@robojs/discordjs'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { inferIntents, validateIntents, getIntentNames } from '@robojs/discordjs'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { inferIntents, validateIntents, getIntentNames } from '@robojs/discordjs'
+  ```
+
+</Tab>
 </Tabs>
 
 The `inferIntents` function returns the set of intents required by your event handlers. The `validateIntents` function checks your configured intents against the inferred set and reports gaps.

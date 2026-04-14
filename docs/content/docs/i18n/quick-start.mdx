@@ -63,26 +63,30 @@ Values must be strings or arrays of strings. Non-JSON files are ignored. The plu
 The `t()` function formats a message by key. Parameter types are inferred from the message syntax.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { t } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    t('en-US', 'app:hello', { name: 'Robo' })     // "Hello Robo!"
-    t('en-US', 'app:ping')                         // "Pong!"
-    t('en-US', 'app:pets.count', { count: 3 })     // "You have 3 pets"
-    t('es-ES', 'app:pets.count', { count: 1 })     // "Tienes 1 mascota"
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { t } from '@robojs/i18n'
+  ```ts
+  import { t } from '@robojs/i18n'
 
-    t('en-US', 'app:hello', { name: 'Robo' })     // "Hello Robo!"
-    t('en-US', 'app:ping')                         // "Pong!"
-    t('en-US', 'app:pets.count', { count: 3 })     // "You have 3 pets"
-    t('es-ES', 'app:pets.count', { count: 1 })     // "Tienes 1 mascota"
-    ```
-  </Tab>
+  t('en-US', 'app:hello', { name: 'Robo' })     // "Hello Robo!"
+  t('en-US', 'app:ping')                         // "Pong!"
+  t('en-US', 'app:pets.count', { count: 3 })     // "You have 3 pets"
+  t('es-ES', 'app:pets.count', { count: 1 })     // "Tienes 1 mascota"
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { t } from '@robojs/i18n'
+
+  t('en-US', 'app:hello', { name: 'Robo' })     // "Hello Robo!"
+  t('en-US', 'app:ping')                         // "Pong!"
+  t('en-US', 'app:pets.count', { count: 3 })     // "You have 3 pets"
+  t('es-ES', 'app:pets.count', { count: 1 })     // "Tienes 1 mascota"
+  ```
+
+</Tab>
 </Tabs>
 
 The first argument accepts multiple formats:
@@ -99,26 +103,30 @@ The first argument accepts multiple formats:
 Use `tr()` when you want compile-time enforcement that all parameters are provided.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { tr } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    tr('en-US', 'app:hello', { name: 'Robo' })  // OK — params required
-    // tr('en-US', 'app:hello')                  // compile error — missing params
+  ```ts
+  import { tr } from '@robojs/i18n'
 
-    tr('en-US', 'app:ping')                      // OK — no params needed
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { tr } from '@robojs/i18n'
+  tr('en-US', 'app:hello', { name: 'Robo' })  // OK — params required
+  // tr('en-US', 'app:hello')                  // compile error — missing params
 
-    tr('en-US', 'app:hello', { name: 'Robo' })  // OK — params required
-    // tr('en-US', 'app:hello')                  // compile error — missing params
+  tr('en-US', 'app:ping')                      // OK — no params needed
+  ```
 
-    tr('en-US', 'app:ping')                      // OK — no params needed
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { tr } from '@robojs/i18n'
+
+  tr('en-US', 'app:hello', { name: 'Robo' })  // OK — params required
+  // tr('en-US', 'app:hello')                  // compile error — missing params
+
+  tr('en-US', 'app:ping')                      // OK — no params needed
+  ```
+
+</Tab>
 </Tabs>
 
 If a key has parameters, they're required and non-undefined. If a key has no parameters, no params argument is accepted.
@@ -128,52 +136,60 @@ If a key has parameters, they're required and non-undefined. If a key has no par
 Avoid passing the locale to every call by creating a curried translator.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { withLocale } from '@robojs/i18n'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const t$ = withLocale(interaction)
+  ```ts
+  import { withLocale } from '@robojs/i18n'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	const greeting = t$('app:hello', { name: 'Robo' })
-    	const status = t$('app:ping')
-    	return `${greeting} — ${status}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { withLocale } from '@robojs/i18n'
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const t$ = withLocale(interaction)
 
-    export default (interaction) => {
-    	const t$ = withLocale(interaction)
+  	const greeting = t$('app:hello', { name: 'Robo' })
+  	const status = t$('app:ping')
+  	return `${greeting} — ${status}`
+  }
+  ```
 
-    	const greeting = t$('app:hello', { name: 'Robo' })
-    	const status = t$('app:ping')
-    	return `${greeting} — ${status}`
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { withLocale } from '@robojs/i18n'
+
+  export default (interaction) => {
+  	const t$ = withLocale(interaction)
+
+  	const greeting = t$('app:hello', { name: 'Robo' })
+  	const status = t$('app:ping')
+  	return `${greeting} — ${status}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Pass `{ strict: true }` for strict mode:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const tr$ = withLocale('en-US', { strict: true })
-    tr$('app:hello', { name: 'Robo' })  // OK — params required
-    // tr$('app:hello')                  // compile error
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const tr$ = withLocale('en-US', { strict: true })
-    tr$('app:hello', { name: 'Robo' })  // OK — params required
-    // tr$('app:hello')                  // compile error
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const tr$ = withLocale('en-US', { strict: true })
+  tr$('app:hello', { name: 'Robo' })  // OK — params required
+  // tr$('app:hello')                  // compile error
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const tr$ = withLocale('en-US', { strict: true })
+  tr$('app:hello', { name: 'Robo' })  // OK — params required
+  // tr$('app:hello')                  // compile error
+  ```
+
+</Tab>
 </Tabs>
 
 ## Nested keys
@@ -191,16 +207,20 @@ Structure your locale JSON with nested objects instead of flat dotted keys.
 The key becomes `app:greetings.hello`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    t('en-US', 'app:greetings.hello', { name: 'Robo' })  // "Hello Robo!"
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    t('en-US', 'app:greetings.hello', { name: 'Robo' })  // "Hello Robo!"
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  t('en-US', 'app:greetings.hello', { name: 'Robo' })  // "Hello Robo!"
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  t('en-US', 'app:greetings.hello', { name: 'Robo' })  // "Hello Robo!"
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -218,24 +238,28 @@ MF2 placeholders use dotted names like `{$user.name}`, but you can pass nested o
 ```
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    t('en-US', 'app:profile', {
-    	user: { name: 'Robo' },
-    	stats: { count: 42 }
-    })
-    // "Hi Robo! You have 42 points."
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    t('en-US', 'app:profile', {
-    	user: { name: 'Robo' },
-    	stats: { count: 42 }
-    })
-    // "Hi Robo! You have 42 points."
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  t('en-US', 'app:profile', {
+  	user: { name: 'Robo' },
+  	stats: { count: 42 }
+  })
+  // "Hi Robo! You have 42 points."
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  t('en-US', 'app:profile', {
+  	user: { name: 'Robo' },
+  	stats: { count: 42 }
+  })
+  // "Hi Robo! You have 42 points."
+  ```
+
+</Tab>
 </Tabs>
 
 Dotted param keys like `{ 'user.name': 'Robo' }` also work.
@@ -251,18 +275,22 @@ Locale values can be arrays of strings. Each element is formatted with MF2, and 
 ```
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    t('en-US', 'app:tips', { topic: 'i18n' })
-    // ["Tip one: i18n", "Tip two"]
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    t('en-US', 'app:tips', { topic: 'i18n' })
-    // ["Tip one: i18n", "Tip two"]
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  t('en-US', 'app:tips', { topic: 'i18n' })
+  // ["Tip one: i18n", "Tip two"]
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  t('en-US', 'app:tips', { topic: 'i18n' })
+  // ["Tip one: i18n", "Tip two"]
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout>

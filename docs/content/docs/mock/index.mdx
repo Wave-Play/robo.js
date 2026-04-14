@@ -70,44 +70,48 @@ Mock Server is designed for testing [Discord bots](/bots) and [Discord activitie
 Here is a quick taste of what an automated test looks like:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/ping.test.ts"
-    import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+<Tab value="TypeScript">
 
-    const session = await createTestSession(__filename)
+  ```ts title="__tests__/ping.test.ts"
+  import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-    await dispatchInteraction(session.id, {
-      type: 2,                        // APPLICATION_COMMAND
-      data: { name: 'ping', type: 1 },  // CHAT_INPUT
-      channel_id: session.channels[0].id
-    })
+  const session = await createTestSession(__filename)
 
-    await expectAction(session.id, {
-      description: 'Bot should reply with pong',
-      type: 'interaction_response',
-      expected: { response_data: { content: expect.stringContaining('Pong') } }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/ping.test.js"
-    import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+  await dispatchInteraction(session.id, {
+    type: 2,                        // APPLICATION_COMMAND
+    data: { name: 'ping', type: 1 },  // CHAT_INPUT
+    channel_id: session.channels[0].id
+  })
 
-    const session = await createTestSession(__filename)
+  await expectAction(session.id, {
+    description: 'Bot should reply with pong',
+    type: 'interaction_response',
+    expected: { response_data: { content: expect.stringContaining('Pong') } }
+  })
+  ```
 
-    await dispatchInteraction(session.id, {
-      type: 2,                        // APPLICATION_COMMAND
-      data: { name: 'ping', type: 1 },  // CHAT_INPUT
-      channel_id: session.channels[0].id
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    await expectAction(session.id, {
-      description: 'Bot should reply with pong',
-      type: 'interaction_response',
-      expected: { response_data: { content: expect.stringContaining('Pong') } }
-    })
-    ```
-  </Tab>
+  ```js title="__tests__/ping.test.js"
+  import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+  const session = await createTestSession(__filename)
+
+  await dispatchInteraction(session.id, {
+    type: 2,                        // APPLICATION_COMMAND
+    data: { name: 'ping', type: 1 },  // CHAT_INPUT
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot should reply with pong',
+    type: 'interaction_response',
+    expected: { response_data: { content: expect.stringContaining('Pong') } }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Run your tests:

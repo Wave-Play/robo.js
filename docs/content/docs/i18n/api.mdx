@@ -6,17 +6,21 @@ description: Complete reference for all exported functions and types from @roboj
 All exports are available from the main package entry point.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { t, tr, withLocale, createCommandConfig, loadLocales, clearFormatterCache } from '@robojs/i18n'
-    import type { Locale, LocaleKey, ParamsFor, LocaleLike, PluginConfig } from '@robojs/i18n'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { t, tr, withLocale, createCommandConfig, loadLocales, clearFormatterCache } from '@robojs/i18n'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { t, tr, withLocale, createCommandConfig, loadLocales, clearFormatterCache } from '@robojs/i18n'
+  import type { Locale, LocaleKey, ParamsFor, LocaleLike, PluginConfig } from '@robojs/i18n'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { t, tr, withLocale, createCommandConfig, loadLocales, clearFormatterCache } from '@robojs/i18n'
+  ```
+
+</Tab>
 </Tabs>
 
 ## Functions
@@ -26,24 +30,28 @@ All exports are available from the main package entry point.
 Formats a localized message by key. Parameters are optional and their types are inferred from the MF2 message syntax.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function t<K extends LocaleKey>(
-    	locale: LocaleLike,
-    	key: K,
-    	params?: ParamsFor<K>
-    ): ReturnOf<K>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function t(
-    	locale: LocaleLike,
-    	key: K,
-    	params?: ParamsFor<K>
-    ): ReturnOf<K>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function t<K extends LocaleKey>(
+  	locale: LocaleLike,
+  	key: K,
+  	params?: ParamsFor<K>
+  ): ReturnOf<K>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function t(
+  	locale: LocaleLike,
+  	key: K,
+  	params?: ParamsFor<K>
+  ): ReturnOf<K>
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -57,20 +65,24 @@ Formats a localized message by key. Parameters are optional and their types are 
 Returns `string` for scalar keys, `string[]` for array keys.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    t('en-US', 'app:hello', { name: 'Robo' })           // "Hello Robo!"
-    t('en-US', 'app:pets.count', { count: 3 })           // "You have 3 pets"
-    t(interaction, 'app:hello', { name: 'Robo' })        // uses interaction.locale
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    t('en-US', 'app:hello', { name: 'Robo' })           // "Hello Robo!"
-    t('en-US', 'app:pets.count', { count: 3 })           // "You have 3 pets"
-    t(interaction, 'app:hello', { name: 'Robo' })        // uses interaction.locale
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  t('en-US', 'app:hello', { name: 'Robo' })           // "Hello Robo!"
+  t('en-US', 'app:pets.count', { count: 3 })           // "You have 3 pets"
+  t(interaction, 'app:hello', { name: 'Robo' })        // uses interaction.locale
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  t('en-US', 'app:hello', { name: 'Robo' })           // "Hello Robo!"
+  t('en-US', 'app:pets.count', { count: 3 })           // "You have 3 pets"
+  t(interaction, 'app:hello', { name: 'Robo' })        // uses interaction.locale
+  ```
+
+</Tab>
 </Tabs>
 
 Throws if locales aren't loaded, the locale doesn't exist, or the key is missing. See [error reference](./configuration.mdx#error-reference) for details.
@@ -80,24 +92,28 @@ Throws if locales aren't loaded, the locale doesn't exist, or the key is missing
 Strict variant of `t()`. When a key has parameters, all are required and non-undefined.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function tr<K extends LocaleKey>(
-    	locale: LocaleLike,
-    	key: K,
-    	...args: MaybeArgs<K>
-    ): ReturnOf<K>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function tr(
-    	locale: LocaleLike,
-    	key: K,
-    	...args: MaybeArgs<K>
-    ): ReturnOf<K>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function tr<K extends LocaleKey>(
+  	locale: LocaleLike,
+  	key: K,
+  	...args: MaybeArgs<K>
+  ): ReturnOf<K>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function tr(
+  	locale: LocaleLike,
+  	key: K,
+  	...args: MaybeArgs<K>
+  ): ReturnOf<K>
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -109,20 +125,24 @@ Strict variant of `t()`. When a key has parameters, all are required and non-und
 />
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    tr('en-US', 'app:hello', { name: 'Robo' })  // OK
-    // tr('en-US', 'app:hello')                  // compile error
-    tr('en-US', 'app:ping')                      // OK — no params needed
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    tr('en-US', 'app:hello', { name: 'Robo' })  // OK
-    // tr('en-US', 'app:hello')                  // compile error
-    tr('en-US', 'app:ping')                      // OK — no params needed
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  tr('en-US', 'app:hello', { name: 'Robo' })  // OK
+  // tr('en-US', 'app:hello')                  // compile error
+  tr('en-US', 'app:ping')                      // OK — no params needed
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  tr('en-US', 'app:hello', { name: 'Robo' })  // OK
+  // tr('en-US', 'app:hello')                  // compile error
+  tr('en-US', 'app:ping')                      // OK — no params needed
+  ```
+
+</Tab>
 </Tabs>
 
 ### `withLocale()`
@@ -130,36 +150,40 @@ Strict variant of `t()`. When a key has parameters, all are required and non-und
 Creates a curried translator bound to a specific locale. Supports loose and strict modes.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Loose mode (default)
-    function withLocale(locale: LocaleLike): <K extends LocaleKey>(
-    	key: K,
-    	params?: ParamsFor<K>
-    ) => ReturnOf<K>
+<Tab value="TypeScript">
 
-    // Strict mode
-    function withLocale(locale: LocaleLike, opts: { strict: true }): <K extends LocaleKey>(
-    	key: K,
-    	...args: MaybeArgs<K>
-    ) => ReturnOf<K>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Loose mode (default)
-    function withLocale(locale): <K extends LocaleKey>(
-    	key: K,
-    	params?: ParamsFor<K>
-    ) => ReturnOf<K>
+  ```ts
+  // Loose mode (default)
+  function withLocale(locale: LocaleLike): <K extends LocaleKey>(
+  	key: K,
+  	params?: ParamsFor<K>
+  ) => ReturnOf<K>
 
-    // Strict mode
-    function withLocale(locale, opts): <K extends LocaleKey>(
-    	key: K,
-    	...args: MaybeArgs<K>
-    ) => ReturnOf<K>
-    ```
-  </Tab>
+  // Strict mode
+  function withLocale(locale: LocaleLike, opts: { strict: true }): <K extends LocaleKey>(
+  	key: K,
+  	...args: MaybeArgs<K>
+  ) => ReturnOf<K>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Loose mode (default)
+  function withLocale(locale): <K extends LocaleKey>(
+  	key: K,
+  	params?: ParamsFor<K>
+  ) => ReturnOf<K>
+
+  // Strict mode
+  function withLocale(locale, opts): <K extends LocaleKey>(
+  	key: K,
+  	...args: MaybeArgs<K>
+  ) => ReturnOf<K>
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -170,24 +194,28 @@ Creates a curried translator bound to a specific locale. Supports loose and stri
 />
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const t$ = withLocale(interaction)
-    t$('app:hello', { name: 'Robo' })
+<Tab value="TypeScript">
 
-    const tr$ = withLocale('en-US', { strict: true })
-    tr$('app:hello', { name: 'Robo' })  // params required
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const t$ = withLocale(interaction)
-    t$('app:hello', { name: 'Robo' })
+  ```ts
+  const t$ = withLocale(interaction)
+  t$('app:hello', { name: 'Robo' })
 
-    const tr$ = withLocale('en-US', { strict: true })
-    tr$('app:hello', { name: 'Robo' })  // params required
-    ```
-  </Tab>
+  const tr$ = withLocale('en-US', { strict: true })
+  tr$('app:hello', { name: 'Robo' })  // params required
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const t$ = withLocale(interaction)
+  t$('app:hello', { name: 'Robo' })
+
+  const tr$ = withLocale('en-US', { strict: true })
+  tr$('app:hello', { name: 'Robo' })  // params required
+  ```
+
+</Tab>
 </Tabs>
 
 ### `createCommandConfig()`
@@ -195,20 +223,24 @@ Creates a curried translator bound to a specific locale. Supports loose and stri
 Creates a localized Robo.js command configuration. Drop-in replacement for the `robo.js` version with i18n key support.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function createCommandConfig<const C extends LocaleCommandConfig>(
-    	config: ValidatedCommandConfig<C>
-    ): SmartCommandConfig<BaseFromLocale<C>>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function createCommandConfig(
-    	config: ValidatedCommandConfig<C>
-    ): SmartCommandConfig<BaseFromLocale<C>>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function createCommandConfig<const C extends LocaleCommandConfig>(
+  	config: ValidatedCommandConfig<C>
+  ): SmartCommandConfig<BaseFromLocale<C>>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function createCommandConfig(
+  	config: ValidatedCommandConfig<C>
+  ): SmartCommandConfig<BaseFromLocale<C>>
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -224,37 +256,45 @@ See [Discord commands](./discord-commands.mdx) for usage details and examples.
 Scans `/locales/**/*.json`, builds namespaced keys, stores data in Robo.js State, and generates TypeScript types. Returns elapsed time in milliseconds.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function loadLocales(): number
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function loadLocales(): number
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function loadLocales(): number
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function loadLocales(): number
+  ```
+
+</Tab>
 </Tabs>
 
 This runs automatically via the `start` lifecycle hook (`src/robo/start.ts`). Call it manually for testing or non-Robo environments.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { loadLocales } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    const ms = loadLocales()
-    console.log(`Loaded in ${ms}ms`)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { loadLocales } from '@robojs/i18n'
+  ```ts
+  import { loadLocales } from '@robojs/i18n'
 
-    const ms = loadLocales()
-    console.log(`Loaded in ${ms}ms`)
-    ```
-  </Tab>
+  const ms = loadLocales()
+  console.log(`Loaded in ${ms}ms`)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { loadLocales } from '@robojs/i18n'
+
+  const ms = loadLocales()
+  console.log(`Loaded in ${ms}ms`)
+  ```
+
+</Tab>
 </Tabs>
 
 ### `clearFormatterCache()`
@@ -262,39 +302,47 @@ This runs automatically via the `start` lifecycle hook (`src/robo/start.ts`). Ca
 Clears the in-memory cache of compiled `MessageFormat` instances.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function clearFormatterCache(): void
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function clearFormatterCache(): void
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function clearFormatterCache(): void
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function clearFormatterCache(): void
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { clearFormatterCache } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    // In test setup
-    beforeEach(() => {
-    	clearFormatterCache()
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { clearFormatterCache } from '@robojs/i18n'
+  ```ts
+  import { clearFormatterCache } from '@robojs/i18n'
 
-    // In test setup
-    beforeEach(() => {
-    	clearFormatterCache()
-    })
-    ```
-  </Tab>
+  // In test setup
+  beforeEach(() => {
+  	clearFormatterCache()
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { clearFormatterCache } from '@robojs/i18n'
+
+  // In test setup
+  beforeEach(() => {
+  	clearFormatterCache()
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Types
@@ -304,16 +352,20 @@ Clears the in-memory cache of compiled `MessageFormat` instances.
 Union of all discovered locale strings. Generated from `/locales` directory names.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type Locale = 'en-US' | 'es-ES' | ...
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  type Locale = 'en-US' | 'es-ES' | ...
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ### `LocaleKey`
@@ -321,16 +373,20 @@ Union of all discovered locale strings. Generated from `/locales` directory name
 Union of all namespaced translation keys. Generated from locale file paths and JSON structure.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared/common:greet' | ...
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared/common:greet' | ...
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ### `ParamsFor<K>`
@@ -338,27 +394,31 @@ Union of all namespaced translation keys. Generated from locale file paths and J
 Maps a `LocaleKey` to its parameter type object. All fields are optional.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type ParamsFor<K extends LocaleKey> = LocaleParamsMap[K]
+<Tab value="TypeScript">
 
-    // Example resolved types:
-    ParamsFor<'app:hello'>        // { name?: string }
-    ParamsFor<'app:pets.count'>   // { count?: number }
-    ParamsFor<'app:event'>        // { ts?: Date | number }
-    ParamsFor<'app:profile'>      // { user?: { name?: string }, stats?: { count?: number } }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  ```ts
+  type ParamsFor<K extends LocaleKey> = LocaleParamsMap[K]
 
-    // Example resolved types:
-    ParamsFor<'app:hello'>        // { name?: string }
-    ParamsFor<'app:pets.count'>   // { count?: number }
-    ParamsFor<'app:event'>        // { ts?: Date | number }
-    ParamsFor<'app:profile'>      // { user?: { name?: string }, stats?: { count?: number } }
-    ```
-  </Tab>
+  // Example resolved types:
+  ParamsFor<'app:hello'>        // { name?: string }
+  ParamsFor<'app:pets.count'>   // { count?: number }
+  ParamsFor<'app:event'>        // { ts?: Date | number }
+  ParamsFor<'app:profile'>      // { user?: { name?: string }, stats?: { count?: number } }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  // Example resolved types:
+  ParamsFor<'app:hello'>        // { name?: string }
+  ParamsFor<'app:pets.count'>   // { count?: number }
+  ParamsFor<'app:event'>        // { ts?: Date | number }
+  ParamsFor<'app:profile'>      // { user?: { name?: string }, stats?: { count?: number } }
+  ```
+
+</Tab>
 </Tabs>
 
 ### `ReturnOf<K>`
@@ -366,16 +426,20 @@ Maps a `LocaleKey` to its parameter type object. All fields are optional.
 Resolves to `string` for scalar keys, `string[]` for array keys.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type ReturnOf<K extends LocaleKey> = LocaleIsArrayMap[K] extends true ? string[] : string
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  type ReturnOf<K extends LocaleKey> = LocaleIsArrayMap[K] extends true ? string[] : string
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ### `LocaleLike`
@@ -383,21 +447,25 @@ Resolves to `string` for scalar keys, `string[]` for array keys.
 Accepted locale inputs for `t()`, `tr()`, and `withLocale()`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type LocaleLike =
-    	| Locale
-    	| { locale: string }
-    	| { guildLocale: string }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    	| Locale
-    	| { locale: string }
-    	| { guildLocale: string }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  type LocaleLike =
+  	| Locale
+  	| { locale: string }
+  	| { guildLocale: string }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  	| Locale
+  	| { locale: string }
+  	| { guildLocale: string }
+  ```
+
+</Tab>
 </Tabs>
 
 Accepts raw locale strings, objects with a `locale` property (like Discord Interactions), or objects with a `guildLocale` property.
@@ -407,18 +475,22 @@ Accepts raw locale strings, objects with a `locale` property (like Discord Inter
 Plugin configuration interface.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface PluginConfig {
-    	defaultLocale?: string  // default: 'en-US'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  interface PluginConfig {
+  	defaultLocale?: string  // default: 'en-US'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ### `StrictParamsFor<K>`
@@ -426,23 +498,27 @@ Plugin configuration interface.
 Deep-required version of `ParamsFor<K>`. All fields become required and non-nullable, recursively. Used internally by `tr()`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type StrictParamsFor<K extends LocaleKey> = DeepRequired<ParamsFor<K>>
+<Tab value="TypeScript">
 
-    // Example:
-    StrictParamsFor<'app:hello'>   // { name: string }
-    StrictParamsFor<'app:profile'> // { user: { name: string }, stats: { count: number } }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  ```ts
+  type StrictParamsFor<K extends LocaleKey> = DeepRequired<ParamsFor<K>>
 
-    // Example:
-    StrictParamsFor<'app:hello'>   // { name: string }
-    StrictParamsFor<'app:profile'> // { user: { name: string }, stats: { count: number } }
-    ```
-  </Tab>
+  // Example:
+  StrictParamsFor<'app:hello'>   // { name: string }
+  StrictParamsFor<'app:profile'> // { user: { name: string }, stats: { count: number } }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  // Example:
+  StrictParamsFor<'app:hello'>   // { name: string }
+  StrictParamsFor<'app:profile'> // { user: { name: string }, stats: { count: number } }
+  ```
+
+</Tab>
 </Tabs>
 
 ### `MaybeArgs<K>`
@@ -450,19 +526,23 @@ Deep-required version of `ParamsFor<K>`. All fields become required and non-null
 Conditional tuple type used by `tr()`. Resolves to `[StrictParamsFor<K>]` when the key has parameters, or `[]` when it doesn't.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    type MaybeArgs<K extends LocaleKey> = keyof ParamsFor<K> extends never
-    	? []
-    	: [StrictParamsFor<K>]
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    	? []
-    	: [StrictParamsFor<K>]
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  type MaybeArgs<K extends LocaleKey> = keyof ParamsFor<K> extends never
+  	? []
+  	: [StrictParamsFor<K>]
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  	? []
+  	: [StrictParamsFor<K>]
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

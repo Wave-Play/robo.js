@@ -14,37 +14,41 @@ Emails only send when `emails.mailer` is configured. Without it, all email notif
 The plugin ships a first-party Resend integration:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    import { createResendMailer } from '@robojs/auth/emails'
-    import type { AuthPluginOptions } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    export default <AuthPluginOptions>{
-    	secret: process.env.AUTH_SECRET,
-    	emails: {
-    		from: { name: 'My App', address: 'noreply@myapp.com' },
-    		mailer: createResendMailer({
-    			apiKey: process.env.RESEND_API_KEY!
-    		})
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    import { createResendMailer } from '@robojs/auth/emails'
+  ```ts title="config/plugins/robojs/auth.ts"
+  import { createResendMailer } from '@robojs/auth/emails'
+  import type { AuthPluginOptions } from '@robojs/auth'
 
-    export default {
-    	secret: process.env.AUTH_SECRET,
-    	emails: {
-    		from: { name: 'My App', address: 'noreply@myapp.com' },
-    		mailer: createResendMailer({
-    			apiKey: process.env.RESEND_API_KEY!
-    		})
-    	}
-    }
-    ```
-  </Tab>
+  export default <AuthPluginOptions>{
+  	secret: process.env.AUTH_SECRET,
+  	emails: {
+  		from: { name: 'My App', address: 'noreply@myapp.com' },
+  		mailer: createResendMailer({
+  			apiKey: process.env.RESEND_API_KEY!
+  		})
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  import { createResendMailer } from '@robojs/auth/emails'
+
+  export default {
+  	secret: process.env.AUTH_SECRET,
+  	emails: {
+  		from: { name: 'My App', address: 'noreply@myapp.com' },
+  		mailer: createResendMailer({
+  			apiKey: process.env.RESEND_API_KEY!
+  		})
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Requires the `resend` npm package installed in your project.
@@ -56,68 +60,80 @@ Three ways to provide a mailer.
 **Direct instance:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { createResendMailer } from '@robojs/auth/emails'
+<Tab value="TypeScript">
 
-    emails: {
-    	mailer: createResendMailer({ apiKey: '...' })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { createResendMailer } from '@robojs/auth/emails'
+  ```ts
+  import { createResendMailer } from '@robojs/auth/emails'
 
-    emails: {
-    	mailer: createResendMailer({ apiKey: '...' })
-    }
-    ```
-  </Tab>
+  emails: {
+  	mailer: createResendMailer({ apiKey: '...' })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { createResendMailer } from '@robojs/auth/emails'
+
+  emails: {
+  	mailer: createResendMailer({ apiKey: '...' })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 **Lazy factory:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    emails: {
-    	mailer: async () => {
-    		const { createResendMailer } = await import('@robojs/auth/emails')
-    		return createResendMailer({ apiKey: process.env.RESEND_API_KEY! })
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    emails: {
-    	mailer: async () => {
-    		const { createResendMailer } = await import('@robojs/auth/emails')
-    		return createResendMailer({ apiKey: process.env.RESEND_API_KEY! })
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  emails: {
+  	mailer: async () => {
+  		const { createResendMailer } = await import('@robojs/auth/emails')
+  		return createResendMailer({ apiKey: process.env.RESEND_API_KEY! })
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  emails: {
+  	mailer: async () => {
+  		const { createResendMailer } = await import('@robojs/auth/emails')
+  		return createResendMailer({ apiKey: process.env.RESEND_API_KEY! })
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 **Module spec (auto-imported at runtime):**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    emails: {
-    	mailer: { module: 'resend', export: 'Resend' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    emails: {
-    	mailer: { module: 'resend', export: 'Resend' }
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  emails: {
+  	mailer: { module: 'resend', export: 'Resend' }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  emails: {
+  	mailer: { module: 'resend', export: 'Resend' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 If the mailer implements `verify()`, it's called during startup to validate the connection.
@@ -127,47 +143,51 @@ If the mailer implements `verify()`, it's called during startup to validate the 
 Implement the `AuthMailer` interface:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { AuthMailer, MailMessage } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const customMailer: AuthMailer = {
-    	async send(message: MailMessage) {
-    		await myEmailService.send({
-    			to: typeof message.to === 'string' ? message.to : message.to.address,
-    			from: message.from,
-    			subject: message.subject,
-    			html: message.html,
-    			text: message.text
-    		})
-    	}
-    }
+  ```ts
+  import type { AuthMailer, MailMessage } from '@robojs/auth'
 
-    export default <AuthPluginOptions>{
-    	emails: { mailer: customMailer }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  const customMailer: AuthMailer = {
+  	async send(message: MailMessage) {
+  		await myEmailService.send({
+  			to: typeof message.to === 'string' ? message.to : message.to.address,
+  			from: message.from,
+  			subject: message.subject,
+  			html: message.html,
+  			text: message.text
+  		})
+  	}
+  }
 
-    const customMailer = {
-    	async send(message) {
-    		await myEmailService.send({
-    			to: typeof message.to === 'string' ? message.to : message.to.address,
-    			from: message.from,
-    			subject: message.subject,
-    			html: message.html,
-    			text: message.text
-    		})
-    	}
-    }
+  export default <AuthPluginOptions>{
+  	emails: { mailer: customMailer }
+  }
+  ```
 
-    export default {
-    	emails: { mailer: customMailer }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  const customMailer = {
+  	async send(message) {
+  		await myEmailService.send({
+  			to: typeof message.to === 'string' ? message.to : message.to.address,
+  			from: message.from,
+  			subject: message.subject,
+  			html: message.html,
+  			text: message.text
+  		})
+  	}
+  }
+
+  export default {
+  	emails: { mailer: customMailer }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Email events
@@ -188,36 +208,40 @@ Six events trigger emails automatically:
 Override templates per event:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    emails: {
-    	templates: {
-    		'user:created': {
-    			subject: (ctx) => `Welcome to ${ctx.appName}`,
-    			text: (ctx) => `Hi ${ctx.user.name ?? 'there'}, thanks for signing up.`,
-    			html: (ctx) => `<h1>Welcome</h1><p>Hi ${ctx.user.name ?? 'there'}</p>`
-    		},
-    		'session:created': false,  // disable login alerts
-    		'email:verified': false     // disable verification confirmation
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    emails: {
-    	templates: {
-    		'user:created': {
-    			subject: (ctx) => `Welcome to ${ctx.appName}`,
-    			text: (ctx) => `Hi ${ctx.user.name ?? 'there'}, thanks for signing up.`,
-    			html: (ctx) => `<h1>Welcome</h1><p>Hi ${ctx.user.name ?? 'there'}</p>`
-    		},
-    		'session:created': false,  // disable login alerts
-    		'email:verified': false     // disable verification confirmation
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/auth.ts"
+  emails: {
+  	templates: {
+  		'user:created': {
+  			subject: (ctx) => `Welcome to ${ctx.appName}`,
+  			text: (ctx) => `Hi ${ctx.user.name ?? 'there'}, thanks for signing up.`,
+  			html: (ctx) => `<h1>Welcome</h1><p>Hi ${ctx.user.name ?? 'there'}</p>`
+  		},
+  		'session:created': false,  // disable login alerts
+  		'email:verified': false     // disable verification confirmation
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  emails: {
+  	templates: {
+  		'user:created': {
+  			subject: (ctx) => `Welcome to ${ctx.appName}`,
+  			text: (ctx) => `Hi ${ctx.user.name ?? 'there'}, thanks for signing up.`,
+  			html: (ctx) => `<h1>Welcome</h1><p>Hi ${ctx.user.name ?? 'there'}</p>`
+  		},
+  		'session:created': false,  // disable login alerts
+  		'email:verified': false     // disable verification confirmation
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Set a template to `false` to suppress that event.
@@ -246,54 +270,58 @@ Every template and trigger receives an `EmailContext`:
 Triggers are builder functions that run for specific events:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    emails: {
-    	triggers: {
-    		'password:reset-requested': async (ctx) => ({
-    			to: ctx.user.email!,
-    			subject: 'Password Reset',
-    			html: `<p>Reset your password: <a href="${ctx.links?.resetPassword}">Click here</a></p>`
-    		}),
-    		'user:created': [
-    			async (ctx) => {
-    				await trackSignup(ctx.user.id)
-    				return null  // returning null skips sending from this builder
-    			},
-    			(ctx) => ({
-    				to: ctx.user.email!,
-    				subject: 'Welcome',
-    				html: '<p>Welcome aboard.</p>'
-    			})
-    		]
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    emails: {
-    	triggers: {
-    		'password:reset-requested': async (ctx) => ({
-    			to: ctx.user.email!,
-    			subject: 'Password Reset',
-    			html: `<p>Reset your password: <a href="${ctx.links?.resetPassword}">Click here</a></p>`
-    		}),
-    		'user:created': [
-    			async (ctx) => {
-    				await trackSignup(ctx.user.id)
-    				return null  // returning null skips sending from this builder
-    			},
-    			(ctx) => ({
-    				to: ctx.user.email!,
-    				subject: 'Welcome',
-    				html: '<p>Welcome aboard.</p>'
-    			})
-    		]
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  emails: {
+  	triggers: {
+  		'password:reset-requested': async (ctx) => ({
+  			to: ctx.user.email!,
+  			subject: 'Password Reset',
+  			html: `<p>Reset your password: <a href="${ctx.links?.resetPassword}">Click here</a></p>`
+  		}),
+  		'user:created': [
+  			async (ctx) => {
+  				await trackSignup(ctx.user.id)
+  				return null  // returning null skips sending from this builder
+  			},
+  			(ctx) => ({
+  				to: ctx.user.email!,
+  				subject: 'Welcome',
+  				html: '<p>Welcome aboard.</p>'
+  			})
+  		]
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  emails: {
+  	triggers: {
+  		'password:reset-requested': async (ctx) => ({
+  			to: ctx.user.email!,
+  			subject: 'Password Reset',
+  			html: `<p>Reset your password: <a href="${ctx.links?.resetPassword}">Click here</a></p>`
+  		}),
+  		'user:created': [
+  			async (ctx) => {
+  				await trackSignup(ctx.user.id)
+  				return null  // returning null skips sending from this builder
+  			},
+  			(ctx) => ({
+  				to: ctx.user.email!,
+  				subject: 'Welcome',
+  				html: '<p>Welcome aboard.</p>'
+  			})
+  		]
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Triggers can be arrays. Each builder runs sequentially. Return `null` to skip sending. If both a trigger and a template exist for an event, triggers run first, then the template.
@@ -303,39 +331,43 @@ Triggers can be arrays. Each builder runs sequentially. Return `null` to skip se
 Use React components for rich templates:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { AuthPluginOptions } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    export default <AuthPluginOptions>{
-    	emails: {
-    		mailer: createResendMailer({ apiKey: '...' }),
-    		templates: {
-    			'password:reset-requested': {
-    				subject: (ctx) => `Reset your ${ctx.appName} password`,
-    				react: (ctx) => <ResetEmail link={ctx.links?.resetPassword} user={ctx.user} />
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  ```ts
+  import type { AuthPluginOptions } from '@robojs/auth'
 
-    export default {
-    	emails: {
-    		mailer: createResendMailer({ apiKey: '...' }),
-    		templates: {
-    			'password:reset-requested': {
-    				subject: (ctx) => `Reset your ${ctx.appName} password`,
-    				react: (ctx) => <ResetEmail link={ctx.links?.resetPassword} user={ctx.user} />
-    			}
-    		}
-    	}
-    }
-    ```
-  </Tab>
+  export default <AuthPluginOptions>{
+  	emails: {
+  		mailer: createResendMailer({ apiKey: '...' }),
+  		templates: {
+  			'password:reset-requested': {
+  				subject: (ctx) => `Reset your ${ctx.appName} password`,
+  				react: (ctx) => <ResetEmail link={ctx.links?.resetPassword} user={ctx.user} />
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  export default {
+  	emails: {
+  		mailer: createResendMailer({ apiKey: '...' }),
+  		templates: {
+  			'password:reset-requested': {
+  				subject: (ctx) => `Reset your ${ctx.appName} password`,
+  				react: (ctx) => <ResetEmail link={ctx.links?.resetPassword} user={ctx.user} />
+  			}
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Requires `@react-email/components` peer dependency. Templates render via `react-dom/server`.
@@ -345,32 +377,36 @@ Requires `@react-email/components` peer dependency. Templates render via `react-
 Use provider-driven templates (e.g., Resend template IDs):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    templates: {
-    	'user:created': {
-    		templateId: 'tmpl_welcome_123',
-    		variables: (ctx) => ({
-    			name: ctx.user.name,
-    			verifyLink: ctx.links?.verifyEmail
-    		})
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    templates: {
-    	'user:created': {
-    		templateId: 'tmpl_welcome_123',
-    		variables: (ctx) => ({
-    			name: ctx.user.name,
-    			verifyLink: ctx.links?.verifyEmail
-    		})
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  templates: {
+  	'user:created': {
+  		templateId: 'tmpl_welcome_123',
+  		variables: (ctx) => ({
+  			name: ctx.user.name,
+  			verifyLink: ctx.links?.verifyEmail
+  		})
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  templates: {
+  	'user:created': {
+  		templateId: 'tmpl_welcome_123',
+  		variables: (ctx) => ({
+  			name: ctx.user.name,
+  			verifyLink: ctx.links?.verifyEmail
+  		})
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

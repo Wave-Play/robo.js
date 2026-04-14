@@ -10,16 +10,20 @@ The `@robojs/server/testing` module provides utilities for testing API endpoints
 Import testing utilities from the dedicated subpath:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { createTestRequest, testRoute, testHandler, createTestClient } from '@robojs/server/testing'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { createTestRequest, testRoute, testHandler, createTestClient } from '@robojs/server/testing'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { createTestRequest, testRoute, testHandler, createTestClient } from '@robojs/server/testing'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { createTestRequest, testRoute, testHandler, createTestClient } from '@robojs/server/testing'
+  ```
+
+</Tab>
 </Tabs>
 
 ## Testing individual handlers
@@ -27,56 +31,60 @@ Import testing utilities from the dedicated subpath:
 Use `createTestRequest` to create a `RoboRequest` and call your handler directly:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="tests/api/users.test.ts"
-    import { createTestRequest } from '@robojs/server/testing'
-    import { GET, POST } from '../src/api/users/[id]'
+<Tab value="TypeScript">
 
-    test('GET returns user by ID', async () => {
-    	const request = createTestRequest({
-    		params: { id: '123' },
-    		query: { include: 'profile' }
-    	})
-    	const response = await GET(request)
-    	expect(response).toEqual({ id: '123', include: 'profile' })
-    })
+  ```ts title="tests/api/users.test.ts"
+  import { createTestRequest } from '@robojs/server/testing'
+  import { GET, POST } from '../src/api/users/[id]'
 
-    test('POST creates a user', async () => {
-    	const request = createTestRequest({
-    		method: 'POST',
-    		params: { id: '123' },
-    		body: { name: 'Alice' }
-    	})
-    	const response = await POST(request)
-    	expect(response.created).toBe(true)
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="tests/api/users.test.js"
-    import { createTestRequest } from '@robojs/server/testing'
-    import { GET, POST } from '../src/api/users/[id]'
+  test('GET returns user by ID', async () => {
+  	const request = createTestRequest({
+  		params: { id: '123' },
+  		query: { include: 'profile' }
+  	})
+  	const response = await GET(request)
+  	expect(response).toEqual({ id: '123', include: 'profile' })
+  })
 
-    test('GET returns user by ID', async () => {
-    	const request = createTestRequest({
-    		params: { id: '123' },
-    		query: { include: 'profile' }
-    	})
-    	const response = await GET(request)
-    	expect(response).toEqual({ id: '123', include: 'profile' })
-    })
+  test('POST creates a user', async () => {
+  	const request = createTestRequest({
+  		method: 'POST',
+  		params: { id: '123' },
+  		body: { name: 'Alice' }
+  	})
+  	const response = await POST(request)
+  	expect(response.created).toBe(true)
+  })
+  ```
 
-    test('POST creates a user', async () => {
-    	const request = createTestRequest({
-    		method: 'POST',
-    		params: { id: '123' },
-    		body: { name: 'Alice' }
-    	})
-    	const response = await POST(request)
-    	expect(response.created).toBe(true)
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="tests/api/users.test.js"
+  import { createTestRequest } from '@robojs/server/testing'
+  import { GET, POST } from '../src/api/users/[id]'
+
+  test('GET returns user by ID', async () => {
+  	const request = createTestRequest({
+  		params: { id: '123' },
+  		query: { include: 'profile' }
+  	})
+  	const response = await GET(request)
+  	expect(response).toEqual({ id: '123', include: 'profile' })
+  })
+
+  test('POST creates a user', async () => {
+  	const request = createTestRequest({
+  		method: 'POST',
+  		params: { id: '123' },
+  		body: { name: 'Alice' }
+  	})
+  	const response = await POST(request)
+  	expect(response.created).toBe(true)
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Testing route modules
@@ -84,44 +92,48 @@ Use `createTestRequest` to create a `RoboRequest` and call your handler directly
 Use `testRoute` to test a route module with automatic method dispatch:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="tests/api/users.test.ts"
-    import { testRoute } from '@robojs/server/testing'
-    import * as usersRoute from '../src/api/users/[id]'
+<Tab value="TypeScript">
 
-    test('POST dispatches to POST handler', async () => {
-    	const result = await testRoute(usersRoute, {
-    		method: 'POST',
-    		params: { id: '123' },
-    		body: { name: 'Alice' }
-    	})
+  ```ts title="tests/api/users.test.ts"
+  import { testRoute } from '@robojs/server/testing'
+  import * as usersRoute from '../src/api/users/[id]'
 
-    	expect(result.status).toBe(200)
-    	expect(result.ok).toBe(true)
-    	expect(await result.json()).toEqual({ id: '123', name: 'Alice' })
-    	expect(result.header('Content-Type')).toBe('application/json')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="tests/api/users.test.js"
-    import { testRoute } from '@robojs/server/testing'
-    import * as usersRoute from '../src/api/users/[id]'
+  test('POST dispatches to POST handler', async () => {
+  	const result = await testRoute(usersRoute, {
+  		method: 'POST',
+  		params: { id: '123' },
+  		body: { name: 'Alice' }
+  	})
 
-    test('POST dispatches to POST handler', async () => {
-    	const result = await testRoute(usersRoute, {
-    		method: 'POST',
-    		params: { id: '123' },
-    		body: { name: 'Alice' }
-    	})
+  	expect(result.status).toBe(200)
+  	expect(result.ok).toBe(true)
+  	expect(await result.json()).toEqual({ id: '123', name: 'Alice' })
+  	expect(result.header('Content-Type')).toBe('application/json')
+  })
+  ```
 
-    	expect(result.status).toBe(200)
-    	expect(result.ok).toBe(true)
-    	expect(await result.json()).toEqual({ id: '123', name: 'Alice' })
-    	expect(result.header('Content-Type')).toBe('application/json')
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="tests/api/users.test.js"
+  import { testRoute } from '@robojs/server/testing'
+  import * as usersRoute from '../src/api/users/[id]'
+
+  test('POST dispatches to POST handler', async () => {
+  	const result = await testRoute(usersRoute, {
+  		method: 'POST',
+  		params: { id: '123' },
+  		body: { name: 'Alice' }
+  	})
+
+  	expect(result.status).toBe(200)
+  	expect(result.ok).toBe(true)
+  	expect(await result.json()).toEqual({ id: '123', name: 'Alice' })
+  	expect(result.header('Content-Type')).toBe('application/json')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 `testRoute` uses the same method dispatch logic as the real server — including auto `OPTIONS`, auto `HEAD`-from-`GET`, and 405 for unsupported methods.
@@ -131,32 +143,36 @@ Use `testRoute` to test a route module with automatic method dispatch:
 Use `testHandler` when you want the raw return value before Response wrapping:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { testHandler } from '@robojs/server/testing'
-    import { GET } from '../src/api/users/[id]'
+<Tab value="TypeScript">
 
-    test('GET returns raw user object', async () => {
-    	const result = await testHandler(GET, {
-    		params: { id: '123' }
-    	})
-    	expect(result).toEqual({ id: '123', name: 'Alice' })
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { testHandler } from '@robojs/server/testing'
-    import { GET } from '../src/api/users/[id]'
+  ```ts
+  import { testHandler } from '@robojs/server/testing'
+  import { GET } from '../src/api/users/[id]'
 
-    test('GET returns raw user object', async () => {
-    	const result = await testHandler(GET, {
-    		params: { id: '123' }
-    	})
-    	expect(result).toEqual({ id: '123', name: 'Alice' })
-    })
-    ```
-  </Tab>
+  test('GET returns raw user object', async () => {
+  	const result = await testHandler(GET, {
+  		params: { id: '123' }
+  	})
+  	expect(result).toEqual({ id: '123', name: 'Alice' })
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { testHandler } from '@robojs/server/testing'
+  import { GET } from '../src/api/users/[id]'
+
+  test('GET returns raw user object', async () => {
+  	const result = await testHandler(GET, {
+  		params: { id: '123' }
+  	})
+  	expect(result).toEqual({ id: '123', name: 'Alice' })
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Testing multiple routes
@@ -164,56 +180,60 @@ Use `testHandler` when you want the raw return value before Response wrapping:
 Use `createTestClient` for integration-style testing:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="tests/integration.test.ts"
-    import { createTestClient } from '@robojs/server/testing'
-    import * as usersRoute from '../src/api/users/[id]'
-    import * as postsRoute from '../src/api/posts'
+<Tab value="TypeScript">
 
-    const client = createTestClient()
-    	.route('users/[id]', usersRoute)
-    	.route('posts', postsRoute)
+  ```ts title="tests/integration.test.ts"
+  import { createTestClient } from '@robojs/server/testing'
+  import * as usersRoute from '../src/api/users/[id]'
+  import * as postsRoute from '../src/api/posts'
 
-    test('full user flow', async () => {
-    	const user = await client.get('/users/123')
-    	expect(user.status).toBe(200)
+  const client = createTestClient()
+  	.route('users/[id]', usersRoute)
+  	.route('posts', postsRoute)
 
-    	const post = await client.post('/posts', {
-    		body: { title: 'Hello', authorId: '123' }
-    	})
-    	expect(post.status).toBe(201)
+  test('full user flow', async () => {
+  	const user = await client.get('/users/123')
+  	expect(user.status).toBe(200)
 
-    	await client.put('/users/123', { body: { name: 'Updated' } })
-    	await client.delete('/users/123')
-    	await client.patch('/users/123', { body: { active: false } })
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="tests/integration.test.js"
-    import { createTestClient } from '@robojs/server/testing'
-    import * as usersRoute from '../src/api/users/[id]'
-    import * as postsRoute from '../src/api/posts'
+  	const post = await client.post('/posts', {
+  		body: { title: 'Hello', authorId: '123' }
+  	})
+  	expect(post.status).toBe(201)
 
-    const client = createTestClient()
-    	.route('users/[id]', usersRoute)
-    	.route('posts', postsRoute)
+  	await client.put('/users/123', { body: { name: 'Updated' } })
+  	await client.delete('/users/123')
+  	await client.patch('/users/123', { body: { active: false } })
+  })
+  ```
 
-    test('full user flow', async () => {
-    	const user = await client.get('/users/123')
-    	expect(user.status).toBe(200)
+</Tab>
+<Tab value="JavaScript">
 
-    	const post = await client.post('/posts', {
-    		body: { title: 'Hello', authorId: '123' }
-    	})
-    	expect(post.status).toBe(201)
+  ```js title="tests/integration.test.js"
+  import { createTestClient } from '@robojs/server/testing'
+  import * as usersRoute from '../src/api/users/[id]'
+  import * as postsRoute from '../src/api/posts'
 
-    	await client.put('/users/123', { body: { name: 'Updated' } })
-    	await client.delete('/users/123')
-    	await client.patch('/users/123', { body: { active: false } })
-    })
-    ```
-  </Tab>
+  const client = createTestClient()
+  	.route('users/[id]', usersRoute)
+  	.route('posts', postsRoute)
+
+  test('full user flow', async () => {
+  	const user = await client.get('/users/123')
+  	expect(user.status).toBe(200)
+
+  	const post = await client.post('/posts', {
+  		body: { title: 'Hello', authorId: '123' }
+  	})
+  	expect(post.status).toBe(201)
+
+  	await client.put('/users/123', { body: { name: 'Updated' } })
+  	await client.delete('/users/123')
+  	await client.patch('/users/123', { body: { active: false } })
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 The client automatically extracts parameters from the URL path based on the registered route patterns.

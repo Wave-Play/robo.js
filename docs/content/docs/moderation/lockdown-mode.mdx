@@ -32,43 +32,51 @@ The `/mod setup` command is explicitly exempted so that moderators can always to
 The plugin exports a function to check lockdown status programmatically. This is the plugin's only exported API.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getLockdown } from '@robojs/moderation'
+<Tab value="TypeScript">
 
-    const { enabled } = getLockdown('123456789012345678')
+  ```ts
+  import { getLockdown } from '@robojs/moderation'
 
-    if (enabled) {
-      // Server is in lockdown mode
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getLockdown } from '@robojs/moderation'
+  const { enabled } = getLockdown('123456789012345678')
 
-    const { enabled } = getLockdown('123456789012345678')
+  if (enabled) {
+    // Server is in lockdown mode
+  }
+  ```
 
-    if (enabled) {
-      // Server is in lockdown mode
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getLockdown } from '@robojs/moderation'
+
+  const { enabled } = getLockdown('123456789012345678')
+
+  if (enabled) {
+    // Server is in lockdown mode
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function getLockdown(guildId: string): { enabled: boolean }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function getLockdown(guildId): { enabled: boolean }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function getLockdown(guildId: string): { enabled: boolean }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function getLockdown(guildId): { enabled: boolean }
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Description |
@@ -80,44 +88,48 @@ The plugin exports a function to check lockdown status programmatically. This is
 Use this in your own commands or plugins to respect lockdown status:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/custom.ts"
-    import { getLockdown } from '@robojs/moderation'
-    import type { CommandResult } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction): CommandResult => {
-      const { enabled } = getLockdown(interaction.guildId!)
+  ```ts title="src/commands/custom.ts"
+  import { getLockdown } from '@robojs/moderation'
+  import type { CommandResult } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-      if (enabled) {
-        return {
-          content: 'This command is disabled during lockdown.',
-          ephemeral: true
-        }
+  export default (interaction: ChatInputCommandInteraction): CommandResult => {
+    const { enabled } = getLockdown(interaction.guildId!)
+
+    if (enabled) {
+      return {
+        content: 'This command is disabled during lockdown.',
+        ephemeral: true
       }
-
-      return 'Command executed.'
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/custom.js"
-    import { getLockdown } from '@robojs/moderation'
 
-    export default (interaction) => {
-      const { enabled } = getLockdown(interaction.guildId)
+    return 'Command executed.'
+  }
+  ```
 
-      if (enabled) {
-        return {
-          content: 'This command is disabled during lockdown.',
-          ephemeral: true
-        }
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/custom.js"
+  import { getLockdown } from '@robojs/moderation'
+
+  export default (interaction) => {
+    const { enabled } = getLockdown(interaction.guildId)
+
+    if (enabled) {
+      return {
+        content: 'This command is disabled during lockdown.',
+        ephemeral: true
       }
-
-      return 'Command executed.'
     }
-    ```
-  </Tab>
+
+    return 'Command executed.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

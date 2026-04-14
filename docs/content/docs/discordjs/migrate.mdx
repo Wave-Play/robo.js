@@ -44,116 +44,132 @@ Replace manual `Client` setup with file-based routing entirely. Robo.js handles 
 **Before (Discord.js):**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="index.ts"
-    import { Client, GatewayIntentBits } from 'discord.js'
+<Tab value="TypeScript">
 
-    const client = new Client({ intents: [GatewayIntentBits.Guilds] })
+  ```ts title="index.ts"
+  import { Client, GatewayIntentBits } from 'discord.js'
 
-    client.on('ready', () => {
-    	console.log(`Logged in as ${client.user?.tag}`)
-    })
+  const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 
-    client.on('interactionCreate', async (interaction) => {
-    	if (!interaction.isChatInputCommand()) return
-    	if (interaction.commandName === 'ping') {
-    		await interaction.reply('Pong!')
-    	}
-    })
+  client.on('ready', () => {
+  	console.log(`Logged in as ${client.user?.tag}`)
+  })
 
-    client.login(process.env.DISCORD_TOKEN)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="index.js"
-    import { Client, GatewayIntentBits } from 'discord.js'
+  client.on('interactionCreate', async (interaction) => {
+  	if (!interaction.isChatInputCommand()) return
+  	if (interaction.commandName === 'ping') {
+  		await interaction.reply('Pong!')
+  	}
+  })
 
-    const client = new Client({ intents: [GatewayIntentBits.Guilds] })
+  client.login(process.env.DISCORD_TOKEN)
+  ```
 
-    client.on('ready', () => {
-    	console.log(`Logged in as ${client.user?.tag}`)
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    client.on('interactionCreate', async (interaction) => {
-    	if (!interaction.isChatInputCommand()) return
-    	if (interaction.commandName === 'ping') {
-    		await interaction.reply('Pong!')
-    	}
-    })
+  ```js title="index.js"
+  import { Client, GatewayIntentBits } from 'discord.js'
 
-    client.login(process.env.DISCORD_TOKEN)
-    ```
-  </Tab>
+  const client = new Client({ intents: [GatewayIntentBits.Guilds] })
+
+  client.on('ready', () => {
+  	console.log(`Logged in as ${client.user?.tag}`)
+  })
+
+  client.on('interactionCreate', async (interaction) => {
+  	if (!interaction.isChatInputCommand()) return
+  	if (interaction.commandName === 'ping') {
+  		await interaction.reply('Pong!')
+  	}
+  })
+
+  client.login(process.env.DISCORD_TOKEN)
+  ```
+
+</Tab>
 </Tabs>
 
 **After (Robo.js):**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    export default () => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default () => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/ping.ts"
+  export default () => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default () => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/clientReady.ts"
-    import type { EventConfig } from '@robojs/discordjs'
-    import type { Client } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: EventConfig = {
-    	frequency: 'once'
-    }
+  ```ts title="src/events/clientReady.ts"
+  import type { EventConfig } from '@robojs/discordjs'
+  import type { Client } from 'discord.js'
 
-    export default (client: Client) => {
-    	console.log(`Logged in as ${client.user?.tag}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/clientReady.js"
-    export const config = {
-    	frequency: 'once'
-    }
+  export const config: EventConfig = {
+  	frequency: 'once'
+  }
 
-    export default (client) => {
-    	console.log(`Logged in as ${client.user?.tag}`)
-    }
-    ```
-  </Tab>
+  export default (client: Client) => {
+  	console.log(`Logged in as ${client.user?.tag}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/clientReady.js"
+  export const config = {
+  	frequency: 'once'
+  }
+
+  export default (client) => {
+  	console.log(`Logged in as ${client.user?.tag}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds']
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds']
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds']
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Gradual migration
@@ -161,37 +177,41 @@ Replace manual `Client` setup with file-based routing entirely. Robo.js handles 
 Use `src/robo/start.ts` to keep existing code running while you migrate handlers incrementally. This is the recommended approach for large bots.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { getClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const client = getClient()
+  ```ts title="src/robo/start.ts"
+  import { getClient } from '@robojs/discordjs'
 
-    	// Keep existing handlers running while you migrate them one by one
-    	client.on('messageCreate', (message) => {
-    		if (message.content === '!hello') {
-    			message.reply('Hello from legacy handler!')
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { getClient } from '@robojs/discordjs'
+  export default () => {
+  	const client = getClient()
 
-    export default () => {
-    	const client = getClient()
+  	// Keep existing handlers running while you migrate them one by one
+  	client.on('messageCreate', (message) => {
+  		if (message.content === '!hello') {
+  			message.reply('Hello from legacy handler!')
+  		}
+  	})
+  }
+  ```
 
-    	client.on('messageCreate', (message) => {
-    		if (message.content === '!hello') {
-    			message.reply('Hello from legacy handler!')
-    		}
-    	})
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  import { getClient } from '@robojs/discordjs'
+
+  export default () => {
+  	const client = getClient()
+
+  	client.on('messageCreate', (message) => {
+  		if (message.content === '!hello') {
+  			message.reply('Hello from legacy handler!')
+  		}
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 New commands and events use the Robo.js file structure while existing ones continue running through `robo/start.ts`. As you migrate each handler to `src/events/` or `src/commands/`, remove it from the start file.
@@ -225,62 +245,70 @@ Discord-specific configuration moves from `config/robo.ts` to `config/plugins/ro
 **Before:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.ts"
-    // old -- no longer used for Discord settings
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages']
-    	},
-    	sage: {
-    		defer: true
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages']
-    	},
-    	sage: {
-    		defer: true
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/robo.ts"
+  // old -- no longer used for Discord settings
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages']
+  	},
+  	sage: {
+  		defer: true
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages']
+  	},
+  	sage: {
+  		defer: true
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 **After:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages']
-    	},
-    	sage: {
-    		defer: true
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages']
-    	},
-    	sage: {
-    		defer: true
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages']
+  	},
+  	sage: {
+  		defer: true
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages']
+  	},
+  	sage: {
+  		defer: true
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Client access

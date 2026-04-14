@@ -105,45 +105,49 @@ You can create your own `/` commands by placing files in `src/robo/terminal/comm
 ### Basic Example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```typescript
-    // src/robo/terminal/commands/ping.ts
-    import { createTerminalCommandConfig } from 'robo.js'
-    import type { TerminalContext } from 'robo.js'
+<Tab value="TypeScript">
 
-    export const config = createTerminalCommandConfig({
-      description: 'Check if Robo is responding',
-      options: [
-        { alias: '-c', name: '--count', description: 'Number of pings', type: 'number', default: 1 }
-      ]
-    } as const)
+  ```typescript
+  // src/robo/terminal/commands/ping.ts
+  import { createTerminalCommandConfig } from 'robo.js'
+  import type { TerminalContext } from 'robo.js'
 
-    export default async function (ctx: TerminalContext<typeof config>) {
-      for (let i = 0; i < ctx.options.count; i++) {
-        ctx.write(`pong! (${i + 1}/${ctx.options.count})\n`)
-      }
+  export const config = createTerminalCommandConfig({
+    description: 'Check if Robo is responding',
+    options: [
+      { alias: '-c', name: '--count', description: 'Number of pings', type: 'number', default: 1 }
+    ]
+  } as const)
+
+  export default async function (ctx: TerminalContext<typeof config>) {
+    for (let i = 0; i < ctx.options.count; i++) {
+      ctx.write(`pong! (${i + 1}/${ctx.options.count})\n`)
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // src/robo/terminal/commands/ping.mjs
-    import { createTerminalCommandConfig } from 'robo.js'
+  }
+  ```
 
-    export const config = createTerminalCommandConfig({
-      description: 'Check if Robo is responding',
-      options: [
-        { alias: '-c', name: '--count', description: 'Number of pings', type: 'number', default: 1 }
-      ]
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    export default async function (ctx) {
-      for (let i = 0; i < ctx.options.count; i++) {
-        ctx.write(`pong! (${i + 1}/${ctx.options.count})\n`)
-      }
+  ```js
+  // src/robo/terminal/commands/ping.mjs
+  import { createTerminalCommandConfig } from 'robo.js'
+
+  export const config = createTerminalCommandConfig({
+    description: 'Check if Robo is responding',
+    options: [
+      { alias: '-c', name: '--count', description: 'Number of pings', type: 'number', default: 1 }
+    ]
+  })
+
+  export default async function (ctx) {
+    for (let i = 0; i < ctx.options.count; i++) {
+      ctx.write(`pong! (${i + 1}/${ctx.options.count})\n`)
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -182,37 +186,41 @@ The `runtime` property provides methods for interacting with state and Flashcore
 Nested folders create subcommand hierarchies. For example, `src/robo/terminal/commands/db/status.ts` becomes `/db status`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```typescript
-    // src/robo/terminal/commands/db/status.ts
-    import { createTerminalCommandConfig } from 'robo.js'
-    import type { TerminalContext } from 'robo.js'
+<Tab value="TypeScript">
 
-    export const config = createTerminalCommandConfig({
-      description: 'Show database status'
-    })
+  ```typescript
+  // src/robo/terminal/commands/db/status.ts
+  import { createTerminalCommandConfig } from 'robo.js'
+  import type { TerminalContext } from 'robo.js'
 
-    export default async function (ctx: TerminalContext<typeof config>) {
-      const isRunning = ctx.runtime?.isRunning() ?? false
-      ctx.write(`Database: ${isRunning ? 'connected' : 'disconnected'}\n`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // src/robo/terminal/commands/db/status.mjs
-    import { createTerminalCommandConfig } from 'robo.js'
+  export const config = createTerminalCommandConfig({
+    description: 'Show database status'
+  })
 
-    export const config = createTerminalCommandConfig({
-      description: 'Show database status'
-    })
+  export default async function (ctx: TerminalContext<typeof config>) {
+    const isRunning = ctx.runtime?.isRunning() ?? false
+    ctx.write(`Database: ${isRunning ? 'connected' : 'disconnected'}\n`)
+  }
+  ```
 
-    export default async function (ctx) {
-      const isRunning = ctx.runtime?.isRunning() ?? false
-      ctx.write(`Database: ${isRunning ? 'connected' : 'disconnected'}\n`)
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // src/robo/terminal/commands/db/status.mjs
+  import { createTerminalCommandConfig } from 'robo.js'
+
+  export const config = createTerminalCommandConfig({
+    description: 'Show database status'
+  })
+
+  export default async function (ctx) {
+    const isRunning = ctx.runtime?.isRunning() ?? false
+    ctx.write(`Database: ${isRunning ? 'connected' : 'disconnected'}\n`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Plugin-Provided Commands
@@ -222,22 +230,26 @@ Plugins can provide terminal commands the same way — by placing files in `src/
 Project-level commands receive a priority boost of `+100` over plugin commands, so your local commands always take precedence. If you need finer control, set the `priority` field in your config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```typescript
-    export const config = createTerminalCommandConfig({
-      description: 'My high-priority command',
-      priority: 200
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    export const config = createTerminalCommandConfig({
-      description: 'My high-priority command',
-      priority: 200
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```typescript
+  export const config = createTerminalCommandConfig({
+    description: 'My high-priority command',
+    priority: 200
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  export const config = createTerminalCommandConfig({
+    description: 'My high-priority command',
+    priority: 200
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -259,61 +271,65 @@ The drawer is accessed via `ctx.drawer`, which is only available when the intera
 Any keypress automatically dismisses the drawer.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```typescript
-		// src/robo/terminal/commands/info.ts
-		import { createTerminalCommandConfig } from 'robo.js'
-		import type { TerminalContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export const config = createTerminalCommandConfig({
-			description: 'Show plugin status'
-		})
+	```typescript
+	// src/robo/terminal/commands/info.ts
+	import { createTerminalCommandConfig } from 'robo.js'
+	import type { TerminalContext } from 'robo.js'
 
-		export default async function (ctx: TerminalContext<typeof config>) {
-			const lines = [
-				'╭───────────────────────╮',
-				'│  Plugin Status        │',
-				'│  Database: connected  │',
-				'│  Cache: warm          │',
-				'│  Uptime: 2h 15m      │',
-				'╰───────────────────────╯'
-			]
+	export const config = createTerminalCommandConfig({
+		description: 'Show plugin status'
+	})
 
-			if (ctx.drawer) {
-				ctx.drawer.show(lines)
-			} else {
-				ctx.write(lines.join('\n') + '\n')
-			}
+	export default async function (ctx: TerminalContext<typeof config>) {
+		const lines = [
+			'╭───────────────────────╮',
+			'│  Plugin Status        │',
+			'│  Database: connected  │',
+			'│  Cache: warm          │',
+			'│  Uptime: 2h 15m      │',
+			'╰───────────────────────╯'
+		]
+
+		if (ctx.drawer) {
+			ctx.drawer.show(lines)
+		} else {
+			ctx.write(lines.join('\n') + '\n')
 		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js
-		// src/robo/terminal/commands/info.mjs
-		import { createTerminalCommandConfig } from 'robo.js'
+	}
+	```
 
-		export const config = createTerminalCommandConfig({
-			description: 'Show plugin status'
-		})
+</Tab>
+<Tab value="JavaScript">
 
-		export default async function (ctx) {
-			const lines = [
-				'╭───────────────────────╮',
-				'│  Plugin Status        │',
-				'│  Database: connected  │',
-				'│  Cache: warm          │',
-				'│  Uptime: 2h 15m      │',
-				'╰───────────────────────╯'
-			]
+	```js
+	// src/robo/terminal/commands/info.mjs
+	import { createTerminalCommandConfig } from 'robo.js'
 
-			if (ctx.drawer) {
-				ctx.drawer.show(lines)
-			} else {
-				ctx.write(lines.join('\n') + '\n')
-			}
+	export const config = createTerminalCommandConfig({
+		description: 'Show plugin status'
+	})
+
+	export default async function (ctx) {
+		const lines = [
+			'╭───────────────────────╮',
+			'│  Plugin Status        │',
+			'│  Database: connected  │',
+			'│  Cache: warm          │',
+			'│  Uptime: 2h 15m      │',
+			'╰───────────────────────╯'
+		]
+
+		if (ctx.drawer) {
+			ctx.drawer.show(lines)
+		} else {
+			ctx.write(lines.join('\n') + '\n')
 		}
-		```
-	</Tab>
+	}
+	```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

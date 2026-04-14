@@ -10,28 +10,32 @@ Configure maintenance mode behavior through plugin options, environment variable
 Create a config file to customize the plugin:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	maintenanceEnabled: false,
-    	maintenanceMessage: 'Bot is under maintenance. Please try again later.',
-    	excludeCommands: ['ping', 'status'],
-    	excludeContexts: [],
-    	excludeEvents: ['_start', 'guildMemberAdd']
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	maintenanceEnabled: false,
-    	maintenanceMessage: 'Bot is under maintenance. Please try again later.',
-    	excludeCommands: ['ping', 'status'],
-    	excludeContexts: [],
-    	excludeEvents: ['_start', 'guildMemberAdd']
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	maintenanceEnabled: false,
+  	maintenanceMessage: 'Bot is under maintenance. Please try again later.',
+  	excludeCommands: ['ping', 'status'],
+  	excludeContexts: [],
+  	excludeEvents: ['_start', 'guildMemberAdd']
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	maintenanceEnabled: false,
+  	maintenanceMessage: 'Bot is under maintenance. Please try again later.',
+  	excludeCommands: ['ping', 'status'],
+  	excludeContexts: [],
+  	excludeEvents: ['_start', 'guildMemberAdd']
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Options reference
@@ -71,34 +75,38 @@ Create a config file to customize the plugin:
 Use the exclude arrays to keep specific handlers active during maintenance. Pass the handler's key (its registered name in Robo.js):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	// These commands still work during maintenance
-    	excludeCommands: ['ping', 'status', 'admin'],
+<Tab value="TypeScript">
 
-    	// These context menu items still work
-    	excludeContexts: ['Report Message'],
+  ```ts title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	// These commands still work during maintenance
+  	excludeCommands: ['ping', 'status', 'admin'],
 
-    	// These events still fire
-    	excludeEvents: ['_start', 'guildMemberAdd', 'messageCreate']
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	// These commands still work during maintenance
-    	excludeCommands: ['ping', 'status', 'admin'],
+  	// These context menu items still work
+  	excludeContexts: ['Report Message'],
 
-    	// These context menu items still work
-    	excludeContexts: ['Report Message'],
+  	// These events still fire
+  	excludeEvents: ['_start', 'guildMemberAdd', 'messageCreate']
+  }
+  ```
 
-    	// These events still fire
-    	excludeEvents: ['_start', 'guildMemberAdd', 'messageCreate']
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	// These commands still work during maintenance
+  	excludeCommands: ['ping', 'status', 'admin'],
+
+  	// These context menu items still work
+  	excludeContexts: ['Report Message'],
+
+  	// These events still fire
+  	excludeEvents: ['_start', 'guildMemberAdd', 'messageCreate']
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -110,22 +118,26 @@ You don't need to add `maintenance` to `excludeCommands`. The plugin automatical
 Start the bot in maintenance mode by setting `maintenanceEnabled: true`. This is useful during deployments that require setup before going live:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	maintenanceEnabled: true,
-    	maintenanceMessage: 'Bot is starting up. Please wait a few minutes.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	maintenanceEnabled: true,
-    	maintenanceMessage: 'Bot is starting up. Please wait a few minutes.'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	maintenanceEnabled: true,
+  	maintenanceMessage: 'Bot is starting up. Please wait a few minutes.'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	maintenanceEnabled: true,
+  	maintenanceMessage: 'Bot is starting up. Please wait a few minutes.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Once ready, run `/maintenance enabled:False` in Discord to bring the bot online.
@@ -190,71 +202,79 @@ The plugin's config module exports setter functions and state variables. These a
 ### Reading state
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { maintenanceEnabled, maintenanceMessage } from '@robojs/maintenance/.robo/build/core/config.js'
+<Tab value="TypeScript">
 
-    if (maintenanceEnabled) {
-    	console.log(`Maintenance active: ${maintenanceMessage}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { maintenanceEnabled, maintenanceMessage } from '@robojs/maintenance/.robo/build/core/config.js'
+  ```ts
+  import { maintenanceEnabled, maintenanceMessage } from '@robojs/maintenance/.robo/build/core/config.js'
 
-    if (maintenanceEnabled) {
-    	console.log(`Maintenance active: ${maintenanceMessage}`)
-    }
-    ```
-  </Tab>
+  if (maintenanceEnabled) {
+  	console.log(`Maintenance active: ${maintenanceMessage}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { maintenanceEnabled, maintenanceMessage } from '@robojs/maintenance/.robo/build/core/config.js'
+
+  if (maintenanceEnabled) {
+  	console.log(`Maintenance active: ${maintenanceMessage}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Updating state
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-    	setMaintenanceEnabled,
-    	setMaintenanceMessage,
-    	setExcludeCommands,
-    	FLASHCORE_KEY
-    } from '@robojs/maintenance/.robo/build/core/config.js'
-    import { Flashcore } from 'robo.js'
+<Tab value="TypeScript">
 
-    // Enable maintenance programmatically
-    setMaintenanceEnabled(true)
-    await Flashcore.set(FLASHCORE_KEY, 'true')
+  ```ts
+  import {
+  	setMaintenanceEnabled,
+  	setMaintenanceMessage,
+  	setExcludeCommands,
+  	FLASHCORE_KEY
+  } from '@robojs/maintenance/.robo/build/core/config.js'
+  import { Flashcore } from 'robo.js'
 
-    // Change the message at runtime
-    setMaintenanceMessage('Back in 10 minutes.')
+  // Enable maintenance programmatically
+  setMaintenanceEnabled(true)
+  await Flashcore.set(FLASHCORE_KEY, 'true')
 
-    // Update exclude lists dynamically
-    setExcludeCommands(['ping', 'emergency-contact'])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-    	setMaintenanceEnabled,
-    	setMaintenanceMessage,
-    	setExcludeCommands,
-    	FLASHCORE_KEY
-    } from '@robojs/maintenance/.robo/build/core/config.js'
-    import { Flashcore } from 'robo.js'
+  // Change the message at runtime
+  setMaintenanceMessage('Back in 10 minutes.')
 
-    // Enable maintenance programmatically
-    setMaintenanceEnabled(true)
-    await Flashcore.set(FLASHCORE_KEY, 'true')
+  // Update exclude lists dynamically
+  setExcludeCommands(['ping', 'emergency-contact'])
+  ```
 
-    // Change the message at runtime
-    setMaintenanceMessage('Back in 10 minutes.')
+</Tab>
+<Tab value="JavaScript">
 
-    // Update exclude lists dynamically
-    setExcludeCommands(['ping', 'emergency-contact'])
-    ```
-  </Tab>
+  ```js
+  import {
+  	setMaintenanceEnabled,
+  	setMaintenanceMessage,
+  	setExcludeCommands,
+  	FLASHCORE_KEY
+  } from '@robojs/maintenance/.robo/build/core/config.js'
+  import { Flashcore } from 'robo.js'
+
+  // Enable maintenance programmatically
+  setMaintenanceEnabled(true)
+  await Flashcore.set(FLASHCORE_KEY, 'true')
+
+  // Change the message at runtime
+  setMaintenanceMessage('Back in 10 minutes.')
+
+  // Update exclude lists dynamically
+  setExcludeCommands(['ping', 'emergency-contact'])
+  ```
+
+</Tab>
 </Tabs>
 
 ### Available exports

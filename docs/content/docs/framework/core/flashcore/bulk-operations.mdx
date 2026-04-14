@@ -14,51 +14,59 @@ Flashcore supports batch operations for working with multiple records at once, p
 Insert multiple records in a single call:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const result = await Warning.createMany({
-    	data: [
-    		{ guildId: '123', userId: '456', reason: 'Spam', severity: 'low' },
-    		{ guildId: '123', userId: '789', reason: 'Off-topic', severity: 'low' },
-    		{ guildId: '123', userId: '456', reason: 'Harassment', severity: 'high' }
-    	]
-    })
-    // result.count === 3
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const result = await Warning.createMany({
-    	data: [
-    		{ guildId: '123', userId: '456', reason: 'Spam', severity: 'low' },
-    		{ guildId: '123', userId: '789', reason: 'Off-topic', severity: 'low' },
-    		{ guildId: '123', userId: '456', reason: 'Harassment', severity: 'high' }
-    	]
-    })
-    // result.count === 3
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const result = await Warning.createMany({
+  	data: [
+  		{ guildId: '123', userId: '456', reason: 'Spam', severity: 'low' },
+  		{ guildId: '123', userId: '789', reason: 'Off-topic', severity: 'low' },
+  		{ guildId: '123', userId: '456', reason: 'Harassment', severity: 'high' }
+  	]
+  })
+  // result.count === 3
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const result = await Warning.createMany({
+  	data: [
+  		{ guildId: '123', userId: '456', reason: 'Spam', severity: 'low' },
+  		{ guildId: '123', userId: '789', reason: 'Off-topic', severity: 'low' },
+  		{ guildId: '123', userId: '456', reason: 'Harassment', severity: 'high' }
+  	]
+  })
+  // result.count === 3
+  ```
+
+</Tab>
 </Tabs>
 
 Use `skipDuplicates` to silently skip records that violate unique constraints:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const result = await GuildMember.createMany({
-    	data: members,
-    	skipDuplicates: true
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const result = await GuildMember.createMany({
-    	data: members,
-    	skipDuplicates: true
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const result = await GuildMember.createMany({
+  	data: members,
+  	skipDuplicates: true
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const result = await GuildMember.createMany({
+  	data: members,
+  	skipDuplicates: true
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Update Many
@@ -66,24 +74,28 @@ Use `skipDuplicates` to silently skip records that violate unique constraints:
 Update all records matching a `where` clause:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const result = await Warning.updateMany({
-    	where: { guildId: '123', severity: 'low' },
-    	data: { active: false }
-    })
-    // result.count = number of records updated
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const result = await Warning.updateMany({
-    	where: { guildId: '123', severity: 'low' },
-    	data: { active: false }
-    })
-    // result.count = number of records updated
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const result = await Warning.updateMany({
+  	where: { guildId: '123', severity: 'low' },
+  	data: { active: false }
+  })
+  // result.count = number of records updated
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const result = await Warning.updateMany({
+  	where: { guildId: '123', severity: 'low' },
+  	data: { active: false }
+  })
+  // result.count = number of records updated
+  ```
+
+</Tab>
 </Tabs>
 
 ## Delete Many
@@ -91,22 +103,26 @@ Update all records matching a `where` clause:
 Delete all records matching a `where` clause:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const result = await Warning.deleteMany({
-    	where: { guildId: '123', active: false }
-    })
-    // result.count = number of records deleted
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const result = await Warning.deleteMany({
-    	where: { guildId: '123', active: false }
-    })
-    // result.count = number of records deleted
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const result = await Warning.deleteMany({
+  	where: { guildId: '123', active: false }
+  })
+  // result.count = number of records deleted
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const result = await Warning.deleteMany({
+  	where: { guildId: '123', active: false }
+  })
+  // result.count = number of records deleted
+  ```
+
+</Tab>
 </Tabs>
 
 ## Upsert
@@ -114,40 +130,44 @@ Delete all records matching a `where` clause:
 Create a record if it does not exist, or update it if it does:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const member = await GuildMember.upsert({
-    	where: { id: 'member-id' },
-    	create: {
-    		guildId: '123',
-    		userId: '456',
-    		nickname: 'NewUser',
-    		xp: 0
-    	},
-    	update: {
-    		nickname: 'UpdatedUser',
-    		xp: 100
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const member = await GuildMember.upsert({
-    	where: { id: 'member-id' },
-    	create: {
-    		guildId: '123',
-    		userId: '456',
-    		nickname: 'NewUser',
-    		xp: 0
-    	},
-    	update: {
-    		nickname: 'UpdatedUser',
-    		xp: 100
-    	}
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const member = await GuildMember.upsert({
+  	where: { id: 'member-id' },
+  	create: {
+  		guildId: '123',
+  		userId: '456',
+  		nickname: 'NewUser',
+  		xp: 0
+  	},
+  	update: {
+  		nickname: 'UpdatedUser',
+  		xp: 100
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const member = await GuildMember.upsert({
+  	where: { id: 'member-id' },
+  	create: {
+  		guildId: '123',
+  		userId: '456',
+  		nickname: 'NewUser',
+  		xp: 0
+  	},
+  	update: {
+  		nickname: 'UpdatedUser',
+  		xp: 100
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 The `where` clause uses the same unique-lookup rules as `findUnique` — by `id` or by unique fields.
@@ -157,73 +177,81 @@ The `where` clause uses the same unique-lookup rules as `findUnique` — by `id`
 Add a version field to detect concurrent modifications. The version auto-increments on each update:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { createModel, f, TransactionConflictError } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    export const GuildSettings = createModel('GuildSettings', {
-    	id: f.id(),
-    	guildId: f.string().unique(),
-    	prefix: f.string().default('!'),
-    	version: f.number().version() // [!code highlight]
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { createModel, f, TransactionConflictError } from 'robo.js/flashcore'
+  ```ts
+  import { createModel, f, TransactionConflictError } from 'robo.js/flashcore'
 
-    export const GuildSettings = createModel('GuildSettings', {
-    	id: f.id(),
-    	guildId: f.string().unique(),
-    	prefix: f.string().default('!'),
-    	version: f.number().version() // [!code highlight]
-    })
-    ```
-  </Tab>
+  export const GuildSettings = createModel('GuildSettings', {
+  	id: f.id(),
+  	guildId: f.string().unique(),
+  	prefix: f.string().default('!'),
+  	version: f.number().version() // [!code highlight]
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { createModel, f, TransactionConflictError } from 'robo.js/flashcore'
+
+  export const GuildSettings = createModel('GuildSettings', {
+  	id: f.id(),
+  	guildId: f.string().unique(),
+  	prefix: f.string().default('!'),
+  	version: f.number().version() // [!code highlight]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Pass the expected `version` when updating. If the stored version has changed since you read it, a `TransactionConflictError` is thrown:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const settings = await GuildSettings.findUnique({
-    	where: { guildId: '123' }
-    })
+<Tab value="TypeScript">
 
-    try {
-    	await GuildSettings.update({
-    		where: { id: settings.id },
-    		data: { prefix: '?' },
-    		version: settings.version // [!code highlight]
-    	})
-    } catch (error) {
-    	if (error instanceof TransactionConflictError) {
-    		// Another update happened — re-read and retry
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const settings = await GuildSettings.findUnique({
-    	where: { guildId: '123' }
-    })
+  ```ts
+  const settings = await GuildSettings.findUnique({
+  	where: { guildId: '123' }
+  })
 
-    try {
-    	await GuildSettings.update({
-    		where: { id: settings.id },
-    		data: { prefix: '?' },
-    		version: settings.version // [!code highlight]
-    	})
-    } catch (error) {
-    	if (error instanceof TransactionConflictError) {
-    		// Another update happened — re-read and retry
-    	}
-    }
-    ```
-  </Tab>
+  try {
+  	await GuildSettings.update({
+  		where: { id: settings.id },
+  		data: { prefix: '?' },
+  		version: settings.version // [!code highlight]
+  	})
+  } catch (error) {
+  	if (error instanceof TransactionConflictError) {
+  		// Another update happened — re-read and retry
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const settings = await GuildSettings.findUnique({
+  	where: { guildId: '123' }
+  })
+
+  try {
+  	await GuildSettings.update({
+  		where: { id: settings.id },
+  		data: { prefix: '?' },
+  		version: settings.version // [!code highlight]
+  	})
+  } catch (error) {
+  	if (error instanceof TransactionConflictError) {
+  		// Another update happened — re-read and retry
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

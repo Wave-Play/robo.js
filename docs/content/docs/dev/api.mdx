@@ -6,71 +6,87 @@ description: Exported functions, constants, and types from @robojs/dev.
 The plugin exports utilities you can use directly in your code. Import them from `@robojs/dev`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { DEBUG_MODE, sendDebugError, printErrorResponse, devLogger } from '@robojs/dev'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { DEBUG_MODE, sendDebugError, printErrorResponse, devLogger } from '@robojs/dev'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { DEBUG_MODE, sendDebugError, printErrorResponse, devLogger } from '@robojs/dev'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { DEBUG_MODE, sendDebugError, printErrorResponse, devLogger } from '@robojs/dev'
+  ```
+
+</Tab>
 </Tabs>
 
 ## `DEBUG_MODE`
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const DEBUG_MODE: boolean
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const DEBUG_MODE: boolean
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const DEBUG_MODE: boolean
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const DEBUG_MODE: boolean
+  ```
+
+</Tab>
 </Tabs>
 
 A constant that is `true` when the Robo is running in development mode (`robo dev`). Evaluated once at import time using `Mode.isDev()` from Robo.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { DEBUG_MODE } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    if (DEBUG_MODE) {
-    	// Only runs during development
-    	devLogger.info('Debug mode is active')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { DEBUG_MODE } from '@robojs/dev'
+  ```ts
+  import { DEBUG_MODE } from '@robojs/dev'
 
-    if (DEBUG_MODE) {
-    	// Only runs during development
-    	devLogger.info('Debug mode is active')
-    }
-    ```
-  </Tab>
+  if (DEBUG_MODE) {
+  	// Only runs during development
+  	devLogger.info('Debug mode is active')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { DEBUG_MODE } from '@robojs/dev'
+
+  if (DEBUG_MODE) {
+  	// Only runs during development
+  	devLogger.info('Debug mode is active')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## `sendDebugError`
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    async function sendDebugError(error: unknown): Promise<boolean>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    async function sendDebugError(error): Promise<boolean>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  async function sendDebugError(error: unknown): Promise<boolean>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  async function sendDebugError(error): Promise<boolean>
+  ```
+
+</Tab>
 </Tabs>
 
 Sends an error to the configured debug Discord channel as a rich embed with **Dismiss** and **Restart** buttons.
@@ -96,49 +112,57 @@ The function returns `false` without throwing in these cases:
 - Message send fails
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { sendDebugError } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    try {
-    	await riskyOperation()
-    } catch (error) {
-    	const sent = await sendDebugError(error)
-    	if (!sent) {
-    		console.error('Could not forward error to Discord:', error)
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { sendDebugError } from '@robojs/dev'
+  ```ts
+  import { sendDebugError } from '@robojs/dev'
 
-    try {
-    	await riskyOperation()
-    } catch (error) {
-    	const sent = await sendDebugError(error)
-    	if (!sent) {
-    		console.error('Could not forward error to Discord:', error)
-    	}
-    }
-    ```
-  </Tab>
+  try {
+  	await riskyOperation()
+  } catch (error) {
+  	const sent = await sendDebugError(error)
+  	if (!sent) {
+  		console.error('Could not forward error to Discord:', error)
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { sendDebugError } from '@robojs/dev'
+
+  try {
+  	await riskyOperation()
+  } catch (error) {
+  	const sent = await sendDebugError(error)
+  	if (!sent) {
+  		console.error('Could not forward error to Discord:', error)
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## `handleDebugButton`
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    async function handleDebugButton(interaction: ButtonInteraction): Promise<boolean>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    async function handleDebugButton(interaction): Promise<boolean>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  async function handleDebugButton(interaction: ButtonInteraction): Promise<boolean>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  async function handleDebugButton(interaction): Promise<boolean>
+  ```
+
+</Tab>
 </Tabs>
 
 Handles button interactions from debug error embeds. Checks if the button's `customId` starts with `__robo_debug_` and processes it.
@@ -163,51 +187,59 @@ Two actions are supported:
 The plugin already registers an `interactionCreate` event handler that calls this function automatically. Use this directly only if you need custom button handling logic.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { handleDebugButton } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    // In a custom interaction handler
-    if (interaction.isButton()) {
-    	const handled = await handleDebugButton(interaction)
-    	if (handled) return
-    	// Handle other buttons...
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { handleDebugButton } from '@robojs/dev'
+  ```ts
+  import { handleDebugButton } from '@robojs/dev'
 
-    // In a custom interaction handler
-    if (interaction.isButton()) {
-    	const handled = await handleDebugButton(interaction)
-    	if (handled) return
-    	// Handle other buttons...
-    }
-    ```
-  </Tab>
+  // In a custom interaction handler
+  if (interaction.isButton()) {
+  	const handled = await handleDebugButton(interaction)
+  	if (handled) return
+  	// Handle other buttons...
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { handleDebugButton } from '@robojs/dev'
+
+  // In a custom interaction handler
+  if (interaction.isButton()) {
+  	const handled = await handleDebugButton(interaction)
+  	if (handled) return
+  	// Handle other buttons...
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## `printErrorResponse`
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    async function printErrorResponse(
-    	error: unknown,
-    	interaction: CommandInteraction | Message | ButtonInteraction
-    ): Promise<void>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    async function printErrorResponse(
-    	error: unknown,
-    	interaction: CommandInteraction | Message | ButtonInteraction
-    ): Promise<void>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  async function printErrorResponse(
+  	error: unknown,
+  	interaction: CommandInteraction | Message | ButtonInteraction
+  ): Promise<void>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  async function printErrorResponse(
+  	error: unknown,
+  	interaction: CommandInteraction | Message | ButtonInteraction
+  ): Promise<void>
+  ```
+
+</Tab>
 </Tabs>
 
 Sends an error as a red embed reply. Handles all interaction states automatically.
@@ -239,104 +271,124 @@ The function determines the best reply method based on the interaction state:
 Error messages are truncated to 4000 characters for Discord embed limits.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { printErrorResponse } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    export default async function (interaction) {
-    	try {
-    		await someOperation()
-    	} catch (error) {
-    		await printErrorResponse(error, interaction)
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { printErrorResponse } from '@robojs/dev'
+  ```ts
+  import { printErrorResponse } from '@robojs/dev'
 
-    export default async function (interaction) {
-    	try {
-    		await someOperation()
-    	} catch (error) {
-    		await printErrorResponse(error, interaction)
-    	}
-    }
-    ```
-  </Tab>
+  export default async function (interaction) {
+  	try {
+  		await someOperation()
+  	} catch (error) {
+  		await printErrorResponse(error, interaction)
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { printErrorResponse } from '@robojs/dev'
+
+  export default async function (interaction) {
+  	try {
+  		await someOperation()
+  	} catch (error) {
+  		await printErrorResponse(error, interaction)
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## `devLogger`
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const devLogger: Logger
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const devLogger: Logger
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const devLogger: Logger
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const devLogger: Logger
+  ```
+
+</Tab>
 </Tabs>
 
 The plugin's forked logger instance, created with `logger.fork('dev')`. All log messages are prefixed with the `dev` namespace.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { devLogger } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    devLogger.info('Something happened')
-    devLogger.debug('Detailed info:', data)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { devLogger } from '@robojs/dev'
+  ```ts
+  import { devLogger } from '@robojs/dev'
 
-    devLogger.info('Something happened')
-    devLogger.debug('Detailed info:', data)
-    ```
-  </Tab>
+  devLogger.info('Something happened')
+  devLogger.debug('Detailed info:', data)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { devLogger } from '@robojs/dev'
+
+  devLogger.info('Something happened')
+  devLogger.debug('Detailed info:', data)
+  ```
+
+</Tab>
 </Tabs>
 
 ## `DevPluginConfig`
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { DevPluginConfig } from '@robojs/dev'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  import type { DevPluginConfig } from '@robojs/dev'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 TypeScript interface for the plugin's configuration options.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface DevPluginConfig {
-    	debugChannelId?: string
-    	errorPingRoleId?: string
-    	commands?: boolean
-    	enabledModes?: string[]
-    	errorForwarding?: boolean
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  interface DevPluginConfig {
+  	debugChannelId?: string
+  	errorPingRoleId?: string
+  	commands?: boolean
+  	enabledModes?: string[]
+  	errorForwarding?: boolean
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -370,22 +422,26 @@ TypeScript interface for the plugin's configuration options.
 Use this type for autocomplete when writing plugin config files:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/dev.mjs"
-    /** @type {import('@robojs/dev').DevPluginConfig} */
-    export default {
-    	debugChannelId: '1234567890123456789'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/dev.mjs"
-    /** @type {import('@robojs/dev').DevPluginConfig} */
-    export default {
-    	debugChannelId: '1234567890123456789'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/dev.mjs"
+  /** @type {import('@robojs/dev').DevPluginConfig} */
+  export default {
+  	debugChannelId: '1234567890123456789'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/dev.mjs"
+  /** @type {import('@robojs/dev').DevPluginConfig} */
+  export default {
+  	debugChannelId: '1234567890123456789'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

@@ -35,24 +35,28 @@ Heartbeat monitoring sends periodic HTTP pings to Better Stack. If pings stop ar
 Add the heartbeat URL to your plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Options
@@ -74,26 +78,30 @@ Match the `interval` value to the expected interval configured in your Better St
 The default interval is 5 seconds (5000ms). Adjust it to match your Better Stack monitor settings:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
-    		interval: 30_000 // 30 seconds
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
-    		interval: 30_000 // 30 seconds
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
+  		interval: 30_000 // 30 seconds
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
+  		interval: 30_000 // 30 seconds
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Debug mode
@@ -101,26 +109,30 @@ The default interval is 5 seconds (5000ms). Adjust it to match your Better Stack
 Enable `debug` to log each heartbeat ping. This is useful for verifying your setup:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
-    		debug: true
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
-    		debug: true
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
+  		debug: true
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id',
+  		debug: true
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Each ping logs a message like `Sending heartbeat... 2025-10-27T12:00:00.000Z`. Turn this off once you've confirmed the setup — it generates a log entry every interval.
@@ -138,24 +150,28 @@ When the Robo stops or restarts, the interval is cleared to prevent memory leaks
 You can use heartbeat monitoring without log integration. Just omit `sourceToken`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Troubleshooting

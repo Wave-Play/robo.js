@@ -99,22 +99,26 @@ Maintenance state is stored in [Flashcore](../framework/core/flashcore.mdx) unde
 Customize the maintenance message and exclude specific commands:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	maintenanceMessage: 'We are performing scheduled maintenance. Please check back soon.',
-    	excludeCommands: ['ping', 'status']
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/maintenance.mjs"
-    export default {
-    	maintenanceMessage: 'We are performing scheduled maintenance. Please check back soon.',
-    	excludeCommands: ['ping', 'status']
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	maintenanceMessage: 'We are performing scheduled maintenance. Please check back soon.',
+  	excludeCommands: ['ping', 'status']
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/maintenance.mjs"
+  export default {
+  	maintenanceMessage: 'We are performing scheduled maintenance. Please check back soon.',
+  	excludeCommands: ['ping', 'status']
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 With this config, `/ping` and `/status` continue to work during maintenance. All other commands return the custom message.

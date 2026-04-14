@@ -131,32 +131,36 @@ client.user?.setPresence({ status: 'idle' })
 Discord-specific configuration moves from `config/robo.ts` to `config/plugins/robojs/discordjs.ts`:
 
 <Tabs items={["Before", "After"]} persist>
-	<Tab value="Before">
-		```ts title="config/robo.ts"
-		export default {
-			clientOptions: {
-				intents: ['Guilds', 'GuildMessages']
-			},
-			sage: {
-				defer: true
-			}
-		}
-		```
-	</Tab>
-	<Tab value="After">
-		```ts title="config/plugins/robojs/discordjs.ts"
-		import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="Before">
 
-		export default {
-			clientOptions: {
-				intents: ['Guilds', 'GuildMessages']
-			},
-			sage: {
-				defer: true
-			}
-		} satisfies DiscordConfig
-		```
-	</Tab>
+	```ts title="config/robo.ts"
+	export default {
+		clientOptions: {
+			intents: ['Guilds', 'GuildMessages']
+		},
+		sage: {
+			defer: true
+		}
+	}
+	```
+
+</Tab>
+<Tab value="After">
+
+	```ts title="config/plugins/robojs/discordjs.ts"
+	import type { DiscordConfig } from '@robojs/discordjs'
+
+	export default {
+		clientOptions: {
+			intents: ['Guilds', 'GuildMessages']
+		},
+		sage: {
+			defer: true
+		}
+	} satisfies DiscordConfig
+	```
+
+</Tab>
 </Tabs>
 
 For the full Discord.js migration guide including command migration, event migration, and intent syntax changes, see the dedicated page.
@@ -202,22 +206,26 @@ Lifecycle hooks have moved from magic `_start`/`_stop` events in `src/events/` t
 Lifecycle hooks now receive a context object including `mode`, `projectConfig`, `pluginConfig`, `state`, `logger`, `env`, and `meta` fields. The old pattern of no arguments or bare arguments is replaced by a single typed context parameter.
 
 <Tabs items={["Before", "After"]} persist>
-	<Tab value="Before">
-		```ts title="src/events/_start.ts"
-		export default () => {
-			console.log('Bot started!')
-		}
-		```
-	</Tab>
-	<Tab value="After">
-		```ts title="src/robo/start.ts"
-		import type { StartContext } from 'robo.js'
+<Tab value="Before">
 
-		export default (context: StartContext) => {
-			context.logger.info('Bot started!')
-		}
-		```
-	</Tab>
+	```ts title="src/events/_start.ts"
+	export default () => {
+		console.log('Bot started!')
+	}
+	```
+
+</Tab>
+<Tab value="After">
+
+	```ts title="src/robo/start.ts"
+	import type { StartContext } from 'robo.js'
+
+	export default (context: StartContext) => {
+		context.logger.info('Bot started!')
+	}
+	```
+
+</Tab>
 </Tabs>
 
 ### Handling Restarts
@@ -258,37 +266,41 @@ Several fields have been removed from `config/robo.ts` and moved to plugin-speci
 | `defaults` | `config/robo.ts` | `config/plugins/robojs/discordjs.ts` |
 
 <Tabs items={["Before", "After"]} persist>
-	<Tab value="Before">
-		```ts title="config/robo.ts"
-		export default {
-			clientOptions: {
-				intents: ['Guilds']
-			},
-			sage: { defer: true },
-			logger: { level: 'info' },
-			plugins: []
-		}
-		```
-	</Tab>
-	<Tab value="After">
-		```ts title="config/robo.ts"
-		export default {
-			logger: { level: 'info' },
-			plugins: []
-		}
-		```
+<Tab value="Before">
 
-		```ts title="config/plugins/robojs/discordjs.ts"
-		import type { DiscordConfig } from '@robojs/discordjs'
+	```ts title="config/robo.ts"
+	export default {
+		clientOptions: {
+			intents: ['Guilds']
+		},
+		sage: { defer: true },
+		logger: { level: 'info' },
+		plugins: []
+	}
+	```
 
-		export default {
-			clientOptions: {
-				intents: ['Guilds']
-			},
-			sage: { defer: true }
-		} satisfies DiscordConfig
-		```
-	</Tab>
+</Tab>
+<Tab value="After">
+
+	```ts title="config/robo.ts"
+	export default {
+		logger: { level: 'info' },
+		plugins: []
+	}
+	```
+
+	```ts title="config/plugins/robojs/discordjs.ts"
+	import type { DiscordConfig } from '@robojs/discordjs'
+
+	export default {
+		clientOptions: {
+			intents: ['Guilds']
+		},
+		sage: { defer: true }
+	} satisfies DiscordConfig
+	```
+
+</Tab>
 </Tabs>
 
 ## Type and Export Moves
@@ -353,24 +365,28 @@ The old `getManifest()` function loaded one monolithic `manifest.json` file into
 This means faster startup (only load what you need), precise HMR invalidation (reload a single route instead of the entire manifest), and an extensible namespace system where any plugin can define its own route types without modifying core code.
 
 <Tabs items={["Before", "After"]} persist>
-	<Tab value="Before">
-		```ts
-		import { getManifest } from 'robo.js'
+<Tab value="Before">
 
-		const manifest = getManifest()
-		const commands = manifest.commands
-		```
-	</Tab>
-	<Tab value="After">
-		```ts
-		import { Manifest } from 'robo.js'
+	```ts
+	import { getManifest } from 'robo.js'
 
-		const commands = await Manifest.routes('discordjs', 'commands')
-		const hooks = Manifest.hooks('start')
-		const plugins = Manifest.plugins()
-		const config = Manifest.config()
-		```
-	</Tab>
+	const manifest = getManifest()
+	const commands = manifest.commands
+	```
+
+</Tab>
+<Tab value="After">
+
+	```ts
+	import { Manifest } from 'robo.js'
+
+	const commands = await Manifest.routes('discordjs', 'commands')
+	const hooks = Manifest.hooks('start')
+	const plugins = Manifest.plugins()
+	const config = Manifest.config()
+	```
+
+</Tab>
 </Tabs>
 
 The namespace + route pattern (`Manifest.routes('discordjs', 'commands')`) replaces hardcoded handler types. Each plugin owns its namespace — `@robojs/discordjs` uses `'discordjs'`, `@robojs/server` uses `'server'`, and so on.
@@ -467,27 +483,31 @@ The portal has been rewritten from a Discord-centric class with hardcoded `comma
 The old `portal.commands`, `portal.events`, `portal.context`, `portal.middleware`, and `portal.apis` properties no longer exist. Access handlers through the namespace API instead:
 
 <Tabs items={["Before", "After"]} persist>
-	<Tab value="Before">
-		```ts
-		import { portal } from 'robo.js'
+<Tab value="Before">
 
-		// Old: Discord.js Collection instances
-		const pingHandler = portal.commands.get('ping')
-		const allEvents = portal.events.keys()
-		```
-	</Tab>
-	<Tab value="After">
-		```ts
-		import { portal } from 'robo.js'
+	```ts
+	import { portal } from 'robo.js'
 
-		// New: namespace-based access
-		const record = portal.getRecord('discordjs', 'commands', 'ping')
-		const handler = await portal.getHandler('discordjs', 'commands', 'ping')
+	// Old: Discord.js Collection instances
+	const pingHandler = portal.commands.get('ping')
+	const allEvents = portal.events.keys()
+	```
 
-		// Or via namespace proxy (with @robojs/discordjs installed)
-		const commands = portal.discordjs.commands
-		```
-	</Tab>
+</Tab>
+<Tab value="After">
+
+	```ts
+	import { portal } from 'robo.js'
+
+	// New: namespace-based access
+	const record = portal.getRecord('discordjs', 'commands', 'ping')
+	const handler = await portal.getHandler('discordjs', 'commands', 'ping')
+
+	// Or via namespace proxy (with @robojs/discordjs installed)
+	const commands = portal.discordjs.commands
+	```
+
+</Tab>
 </Tabs>
 
 ### `isEnabled` is Now a Method

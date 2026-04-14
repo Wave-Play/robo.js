@@ -8,30 +8,34 @@ All plugin functionality is importable from `@robojs/roadmap` for use in custom 
 ## Provider access
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getProvider, isProviderReady } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    if (isProviderReady()) {
-      const provider = getProvider()
-      const cards = await provider.fetchCards()
-      const columns = await provider.getColumns()
-      const info = await provider.getProviderInfo()
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getProvider, isProviderReady } from '@robojs/roadmap'
+  ```ts
+  import { getProvider, isProviderReady } from '@robojs/roadmap'
 
-    if (isProviderReady()) {
-      const provider = getProvider()
-      const cards = await provider.fetchCards()
-      const columns = await provider.getColumns()
-      const info = await provider.getProviderInfo()
-    }
-    ```
-  </Tab>
+  if (isProviderReady()) {
+    const provider = getProvider()
+    const cards = await provider.fetchCards()
+    const columns = await provider.getColumns()
+    const info = await provider.getProviderInfo()
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getProvider, isProviderReady } from '@robojs/roadmap'
+
+  if (isProviderReady()) {
+    const provider = getProvider()
+    const cards = await provider.fetchCards()
+    const columns = await provider.getColumns()
+    const info = await provider.getProviderInfo()
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Function | Returns | Description |
@@ -46,45 +50,49 @@ All plugin functionality is importable from `@robojs/roadmap` for use in custom 
 Sync all cards from the provider to Discord:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { syncRoadmap } from '@robojs/roadmap'
-    import type { SyncOptions } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    const result = await syncRoadmap({
-      guild,
-      provider,
-      dryRun: false,
-      syncId: 'custom-id',
-      signal: abortController.signal,
-      onProgress: (update) => {
-        console.log(`${update.currentIndex + 1}/${update.totalCards}`)
-      }
-    })
+  ```ts
+  import { syncRoadmap } from '@robojs/roadmap'
+  import type { SyncOptions } from '@robojs/roadmap'
 
-    console.log(result.stats)
-    // { total: 42, created: 10, updated: 30, archived: 2, errors: 0 }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { syncRoadmap } from '@robojs/roadmap'
+  const result = await syncRoadmap({
+    guild,
+    provider,
+    dryRun: false,
+    syncId: 'custom-id',
+    signal: abortController.signal,
+    onProgress: (update) => {
+      console.log(`${update.currentIndex + 1}/${update.totalCards}`)
+    }
+  })
 
-    const result = await syncRoadmap({
-      guild,
-      provider,
-      dryRun: false,
-      syncId: 'custom-id',
-      signal: abortController.signal,
-      onProgress: (update) => {
-        console.log(`${update.currentIndex + 1}/${update.totalCards}`)
-      }
-    })
+  console.log(result.stats)
+  // { total: 42, created: 10, updated: 30, archived: 2, errors: 0 }
+  ```
 
-    console.log(result.stats)
-    // { total: 42, created: 10, updated: 30, archived: 2, errors: 0 }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { syncRoadmap } from '@robojs/roadmap'
+
+  const result = await syncRoadmap({
+    guild,
+    provider,
+    dryRun: false,
+    syncId: 'custom-id',
+    signal: abortController.signal,
+    onProgress: (update) => {
+      console.log(`${update.currentIndex + 1}/${update.totalCards}`)
+    }
+  })
+
+  console.log(result.stats)
+  // { total: 42, created: 10, updated: 30, archived: 2, errors: 0 }
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -105,26 +113,30 @@ Returns a `SyncResult` with `cards`, `columns`, `syncedAt`, `stats`, and `errors
 Sync a single card and get its thread information:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { syncSingleCard } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    const result = await syncSingleCard(card, guild, provider)
-    if (result) {
-      console.log(result.threadId, result.threadUrl)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { syncSingleCard } from '@robojs/roadmap'
+  ```ts
+  import { syncSingleCard } from '@robojs/roadmap'
 
-    const result = await syncSingleCard(card, guild, provider)
-    if (result) {
-      console.log(result.threadId, result.threadUrl)
-    }
-    ```
-  </Tab>
+  const result = await syncSingleCard(card, guild, provider)
+  if (result) {
+    console.log(result.threadId, result.threadUrl)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { syncSingleCard } from '@robojs/roadmap'
+
+  const result = await syncSingleCard(card, guild, provider)
+  if (result) {
+    console.log(result.threadId, result.threadUrl)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Returns `{ threadId: string, threadUrl: string }` or `null` if the card was skipped.
@@ -134,133 +146,149 @@ Returns `{ threadId: string, threadUrl: string }` or `null` if the card was skip
 Error class thrown when a sync is canceled via `AbortSignal`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { SyncCanceledError, syncRoadmap } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    try {
-      await syncRoadmap({ guild, provider, signal })
-    } catch (error) {
-      if (error instanceof SyncCanceledError) {
-        console.log('Sync was canceled')
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { SyncCanceledError, syncRoadmap } from '@robojs/roadmap'
+  ```ts
+  import { SyncCanceledError, syncRoadmap } from '@robojs/roadmap'
 
-    try {
-      await syncRoadmap({ guild, provider, signal })
-    } catch (error) {
-      if (error instanceof SyncCanceledError) {
-        console.log('Sync was canceled')
-      }
+  try {
+    await syncRoadmap({ guild, provider, signal })
+  } catch (error) {
+    if (error instanceof SyncCanceledError) {
+      console.log('Sync was canceled')
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { SyncCanceledError, syncRoadmap } from '@robojs/roadmap'
+
+  try {
+    await syncRoadmap({ guild, provider, signal })
+  } catch (error) {
+    if (error instanceof SyncCanceledError) {
+      console.log('Sync was canceled')
+    }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Content formatting
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { formatCardContent, formatCardContentV2, formatThreadName } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    // Plain text format (legacy)
-    const text = await formatCardContent(card, guildId, guild, 2000)
+  ```ts
+  import { formatCardContent, formatCardContentV2, formatThreadName } from '@robojs/roadmap'
 
-    // Components v2 format (current)
-    const { flags, components } = await formatCardContentV2(card, guildId, guild)
+  // Plain text format (legacy)
+  const text = await formatCardContent(card, guildId, guild, 2000)
 
-    // Thread name with template
-    const name = formatThreadName(card, guildId)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { formatCardContent, formatCardContentV2, formatThreadName } from '@robojs/roadmap'
+  // Components v2 format (current)
+  const { flags, components } = await formatCardContentV2(card, guildId, guild)
 
-    // Plain text format (legacy)
-    const text = await formatCardContent(card, guildId, guild, 2000)
+  // Thread name with template
+  const name = formatThreadName(card, guildId)
+  ```
 
-    // Components v2 format (current)
-    const { flags, components } = await formatCardContentV2(card, guildId, guild)
+</Tab>
+<Tab value="JavaScript">
 
-    // Thread name with template
-    const name = formatThreadName(card, guildId)
-    ```
-  </Tab>
+  ```js
+  import { formatCardContent, formatCardContentV2, formatThreadName } from '@robojs/roadmap'
+
+  // Plain text format (legacy)
+  const text = await formatCardContent(card, guildId, guild, 2000)
+
+  // Components v2 format (current)
+  const { flags, components } = await formatCardContentV2(card, guildId, guild)
+
+  // Thread name with template
+  const name = formatThreadName(card, guildId)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Thread management
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { moveThreadToNewForum } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    const newThread = await moveThreadToNewForum(
-      card,
-      existingThread,
-      targetForum,
-      appliedTags,
-      guildId
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { moveThreadToNewForum } from '@robojs/roadmap'
+  ```ts
+  import { moveThreadToNewForum } from '@robojs/roadmap'
 
-    const newThread = await moveThreadToNewForum(
-      card,
-      existingThread,
-      targetForum,
-      appliedTags,
-      guildId
-    )
-    ```
-  </Tab>
+  const newThread = await moveThreadToNewForum(
+    card,
+    existingThread,
+    targetForum,
+    appliedTags,
+    guildId
+  )
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { moveThreadToNewForum } from '@robojs/roadmap'
+
+  const newThread = await moveThreadToNewForum(
+    card,
+    existingThread,
+    targetForum,
+    appliedTags,
+    guildId
+  )
+  ```
+
+</Tab>
 </Tabs>
 
 ## Settings management
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-      getSettings,
-      updateSettings,
-      canUserCreateCards,
-      getAuthorizedCreatorRoles,
-      setAuthorizedCreatorRoles,
-      getSyncedPostId,
-      setSyncedPost,
-      getThreadHistory,
-      addThreadToHistory,
-      getThreadForColumn
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-      getSettings,
-      updateSettings,
-      canUserCreateCards,
-      getAuthorizedCreatorRoles,
-      setAuthorizedCreatorRoles,
-      getSyncedPostId,
-      setSyncedPost,
-      getThreadHistory,
-      addThreadToHistory,
-      getThreadForColumn
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import {
+    getSettings,
+    updateSettings,
+    canUserCreateCards,
+    getAuthorizedCreatorRoles,
+    setAuthorizedCreatorRoles,
+    getSyncedPostId,
+    setSyncedPost,
+    getThreadHistory,
+    addThreadToHistory,
+    getThreadForColumn
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import {
+    getSettings,
+    updateSettings,
+    canUserCreateCards,
+    getAuthorizedCreatorRoles,
+    setAuthorizedCreatorRoles,
+    getSyncedPostId,
+    setSyncedPost,
+    getThreadHistory,
+    addThreadToHistory,
+    getThreadForColumn
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
 </Tabs>
 
 | Function | Description |
@@ -279,26 +307,30 @@ Error class thrown when a sync is canceled via `AbortSignal`:
 ### Assignee mappings
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-      getAssigneeMapping,
-      setAssigneeMapping,
-      removeAssigneeMapping,
-      getDiscordUserIdForJiraName
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-      getAssigneeMapping,
-      setAssigneeMapping,
-      removeAssigneeMapping,
-      getDiscordUserIdForJiraName
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import {
+    getAssigneeMapping,
+    setAssigneeMapping,
+    removeAssigneeMapping,
+    getDiscordUserIdForJiraName
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import {
+    getAssigneeMapping,
+    setAssigneeMapping,
+    removeAssigneeMapping,
+    getDiscordUserIdForJiraName
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
 </Tabs>
 
 See [Assignee mapping](./assignee-mapping) for usage details.
@@ -306,28 +338,32 @@ See [Assignee mapping](./assignee-mapping) for usage details.
 ### Column mappings
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-      getColumnMapping,
-      setColumnMapping,
-      removeColumnMapping,
-      getCustomColumns,
-      setCustomColumns
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-      getColumnMapping,
-      setColumnMapping,
-      removeColumnMapping,
-      getCustomColumns,
-      setCustomColumns
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import {
+    getColumnMapping,
+    setColumnMapping,
+    removeColumnMapping,
+    getCustomColumns,
+    setCustomColumns
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import {
+    getColumnMapping,
+    setColumnMapping,
+    removeColumnMapping,
+    getCustomColumns,
+    setCustomColumns
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
 </Tabs>
 
 See [Column mapping](./column-mapping) for usage details.
@@ -335,30 +371,34 @@ See [Column mapping](./column-mapping) for usage details.
 ## Forum management
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-      createOrGetRoadmapCategory,
-      toggleForumAccess,
-      getAllForumChannels,
-      getForumChannelForColumn,
-      getRoadmapCategory,
-      updateForumTagsForColumn
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-      createOrGetRoadmapCategory,
-      toggleForumAccess,
-      getAllForumChannels,
-      getForumChannelForColumn,
-      getRoadmapCategory,
-      updateForumTagsForColumn
-    } from '@robojs/roadmap'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import {
+    createOrGetRoadmapCategory,
+    toggleForumAccess,
+    getAllForumChannels,
+    getForumChannelForColumn,
+    getRoadmapCategory,
+    updateForumTagsForColumn
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import {
+    createOrGetRoadmapCategory,
+    toggleForumAccess,
+    getAllForumChannels,
+    getForumChannelForColumn,
+    getRoadmapCategory,
+    updateForumTagsForColumn
+  } from '@robojs/roadmap'
+  ```
+
+</Tab>
 </Tabs>
 
 | Function | Description |
@@ -375,48 +415,52 @@ See [Column mapping](./column-mapping) for usage details.
 Fetch cards filtered by time range. Requires provider support for `fetchCardsByDateRange()`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-      getCardsFromLastMonth,
-      getCardsFromLastWeek,
-      getCardsFromLastDays,
-      getCardsFromDateRange
-    } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    const lastMonth = await getCardsFromLastMonth(provider)
-    const lastWeek = await getCardsFromLastWeek(provider)
-    const last30Days = await getCardsFromLastDays(provider, 30)
+  ```ts
+  import {
+    getCardsFromLastMonth,
+    getCardsFromLastWeek,
+    getCardsFromLastDays,
+    getCardsFromDateRange
+  } from '@robojs/roadmap'
 
-    const custom = await getCardsFromDateRange(
-      provider,
-      '2025-01-01',
-      '2025-01-31',
-      'created'  // or 'updated' (default)
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-      getCardsFromLastMonth,
-      getCardsFromLastWeek,
-      getCardsFromLastDays,
-      getCardsFromDateRange
-    } from '@robojs/roadmap'
+  const lastMonth = await getCardsFromLastMonth(provider)
+  const lastWeek = await getCardsFromLastWeek(provider)
+  const last30Days = await getCardsFromLastDays(provider, 30)
 
-    const lastMonth = await getCardsFromLastMonth(provider)
-    const lastWeek = await getCardsFromLastWeek(provider)
-    const last30Days = await getCardsFromLastDays(provider, 30)
+  const custom = await getCardsFromDateRange(
+    provider,
+    '2025-01-01',
+    '2025-01-31',
+    'created'  // or 'updated' (default)
+  )
+  ```
 
-    const custom = await getCardsFromDateRange(
-      provider,
-      '2025-01-01',
-      '2025-01-31',
-      'created'  // or 'updated' (default)
-    )
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import {
+    getCardsFromLastMonth,
+    getCardsFromLastWeek,
+    getCardsFromLastDays,
+    getCardsFromDateRange
+  } from '@robojs/roadmap'
+
+  const lastMonth = await getCardsFromLastMonth(provider)
+  const lastWeek = await getCardsFromLastWeek(provider)
+  const last30Days = await getCardsFromLastDays(provider, 30)
+
+  const custom = await getCardsFromDateRange(
+    provider,
+    '2025-01-01',
+    '2025-01-31',
+    'created'  // or 'updated' (default)
+  )
+  ```
+
+</Tab>
 </Tabs>
 
 | Function | Parameters | Description |

@@ -24,60 +24,64 @@ Examples on this page assume you have a test session set up. See [Automated Test
 Test a command with no options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/ping.test.ts"
-    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+<Tab value="TypeScript">
 
-    it('responds to /ping', async () => {
-      await dispatchInteraction(session.id, {
-        type: 2,                          // APPLICATION_COMMAND
-        data: {
-          name: 'ping',
-          type: 1                         // CHAT_INPUT
-        },
-        channel_id: session.channels[0].id,
-        guild_id: session.guildId
-      })
+  ```ts title="__tests__/commands/ping.test.ts"
+  import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-      await expectAction(session.id, {
-        description: 'Bot should respond with pong',
-        type: 'interaction_response',
-        expected: {
-          response_data: {
-            content: expect.stringContaining('Pong')
-          }
-        }
-      })
+  it('responds to /ping', async () => {
+    await dispatchInteraction(session.id, {
+      type: 2,                          // APPLICATION_COMMAND
+      data: {
+        name: 'ping',
+        type: 1                         // CHAT_INPUT
+      },
+      channel_id: session.channels[0].id,
+      guild_id: session.guildId
     })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/ping.test.js"
-    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-    it('responds to /ping', async () => {
-      await dispatchInteraction(session.id, {
-        type: 2,                          // APPLICATION_COMMAND
-        data: {
-          name: 'ping',
-          type: 1                         // CHAT_INPUT
-        },
-        channel_id: session.channels[0].id,
-        guild_id: session.guildId
-      })
-
-      await expectAction(session.id, {
-        description: 'Bot should respond with pong',
-        type: 'interaction_response',
-        expected: {
-          response_data: {
-            content: expect.stringContaining('Pong')
-          }
+    await expectAction(session.id, {
+      description: 'Bot should respond with pong',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: expect.stringContaining('Pong')
         }
-      })
+      }
     })
-    ```
-  </Tab>
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/ping.test.js"
+  import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+  it('responds to /ping', async () => {
+    await dispatchInteraction(session.id, {
+      type: 2,                          // APPLICATION_COMMAND
+      data: {
+        name: 'ping',
+        type: 1                         // CHAT_INPUT
+      },
+      channel_id: session.channels[0].id,
+      guild_id: session.guildId
+    })
+
+    await expectAction(session.id, {
+      description: 'Bot should respond with pong',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: expect.stringContaining('Pong')
+        }
+      }
+    })
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Response Types
@@ -85,52 +89,56 @@ Test a command with no options:
 Check different response behaviors:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/response-types.test.ts"
-    // Ephemeral response (only visible to the user who triggered it)
-    await expectAction(session.id, {
-      description: 'Response should be ephemeral',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          flags: 64                       // EPHEMERAL
-        }
-      }
-    })
+<Tab value="TypeScript">
 
-    // Deferred response (thinking state)
-    await expectAction(session.id, {
-      description: 'Bot should defer',
-      type: 'interaction_response',
-      expected: {
-        response_type: 5                  // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+  ```ts title="__tests__/commands/response-types.test.ts"
+  // Ephemeral response (only visible to the user who triggered it)
+  await expectAction(session.id, {
+    description: 'Response should be ephemeral',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        flags: 64                       // EPHEMERAL
       }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/response-types.test.js"
-    // Ephemeral response (only visible to the user who triggered it)
-    await expectAction(session.id, {
-      description: 'Response should be ephemeral',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          flags: 64                       // EPHEMERAL
-        }
-      }
-    })
+    }
+  })
 
-    // Deferred response (thinking state)
-    await expectAction(session.id, {
-      description: 'Bot should defer',
-      type: 'interaction_response',
-      expected: {
-        response_type: 5                  // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+  // Deferred response (thinking state)
+  await expectAction(session.id, {
+    description: 'Bot should defer',
+    type: 'interaction_response',
+    expected: {
+      response_type: 5                  // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/response-types.test.js"
+  // Ephemeral response (only visible to the user who triggered it)
+  await expectAction(session.id, {
+    description: 'Response should be ephemeral',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        flags: 64                       // EPHEMERAL
       }
-    })
-    ```
-  </Tab>
+    }
+  })
+
+  // Deferred response (thinking state)
+  await expectAction(session.id, {
+    description: 'Bot should defer',
+    type: 'interaction_response',
+    expected: {
+      response_type: 5                  // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Commands with Options
@@ -138,227 +146,243 @@ Check different response behaviors:
 ### String Options
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/echo.test.ts"
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'echo',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'message',
-          type: 3,                        // STRING
-          value: 'Hello world'
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
+<Tab value="TypeScript">
 
-    await expectAction(session.id, {
-      description: 'Bot should echo the message',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          content: 'Hello world'
-        }
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/echo.test.js"
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'echo',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'message',
-          type: 3,                        // STRING
-          value: 'Hello world'
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
+  ```ts title="__tests__/commands/echo.test.ts"
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'echo',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'message',
+        type: 3,                        // STRING
+        value: 'Hello world'
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
 
-    await expectAction(session.id, {
-      description: 'Bot should echo the message',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          content: 'Hello world'
-        }
+  await expectAction(session.id, {
+    description: 'Bot should echo the message',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        content: 'Hello world'
       }
-    })
-    ```
-  </Tab>
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/echo.test.js"
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'echo',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'message',
+        type: 3,                        // STRING
+        value: 'Hello world'
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot should echo the message',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        content: 'Hello world'
+      }
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### User Options
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/info.test.ts"
-    // These are mock IDs -- any snowflake-format string works for testing
-    const targetUserId = '111222333444555666'
-    const targetUsername = 'TestUser'
+<Tab value="TypeScript">
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'info',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'user',
-          type: 6,                        // USER
-          value: targetUserId
-        }],
-        resolved: {
-          users: {
-            [targetUserId]: {
-              id: targetUserId,
-              username: targetUsername,
-              discriminator: '0',
-              avatar: null
-            }
+  ```ts title="__tests__/commands/info.test.ts"
+  // These are mock IDs -- any snowflake-format string works for testing
+  const targetUserId = '111222333444555666'
+  const targetUsername = 'TestUser'
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'info',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'user',
+        type: 6,                        // USER
+        value: targetUserId
+      }],
+      resolved: {
+        users: {
+          [targetUserId]: {
+            id: targetUserId,
+            username: targetUsername,
+            discriminator: '0',
+            avatar: null
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/info.test.js"
-    // These are mock IDs -- any snowflake-format string works for testing
-    const targetUserId = '111222333444555666'
-    const targetUsername = 'TestUser'
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'info',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'user',
-          type: 6,                        // USER
-          value: targetUserId
-        }],
-        resolved: {
-          users: {
-            [targetUserId]: {
-              id: targetUserId,
-              username: targetUsername,
-              discriminator: '0',
-              avatar: null
-            }
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/info.test.js"
+  // These are mock IDs -- any snowflake-format string works for testing
+  const targetUserId = '111222333444555666'
+  const targetUsername = 'TestUser'
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'info',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'user',
+        type: 6,                        // USER
+        value: targetUserId
+      }],
+      resolved: {
+        users: {
+          [targetUserId]: {
+            id: targetUserId,
+            username: targetUsername,
+            discriminator: '0',
+            avatar: null
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Channel Options
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/announce.test.ts"
-    const channel = session.channels.find(c => c.name === 'announcements')
+<Tab value="TypeScript">
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'announce',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'channel',
-          type: 7,                        // CHANNEL
-          value: channel.id
-        }],
-        resolved: {
-          channels: {
-            [channel.id]: {
-              id: channel.id,
-              name: channel.name,
-              type: channel.type
-            }
+  ```ts title="__tests__/commands/announce.test.ts"
+  const channel = session.channels.find(c => c.name === 'announcements')
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'announce',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'channel',
+        type: 7,                        // CHANNEL
+        value: channel.id
+      }],
+      resolved: {
+        channels: {
+          [channel.id]: {
+            id: channel.id,
+            name: channel.name,
+            type: channel.type
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/announce.test.js"
-    const channel = session.channels.find(c => c.name === 'announcements')
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'announce',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'channel',
-          type: 7,                        // CHANNEL
-          value: channel.id
-        }],
-        resolved: {
-          channels: {
-            [channel.id]: {
-              id: channel.id,
-              name: channel.name,
-              type: channel.type
-            }
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/announce.test.js"
+  const channel = session.channels.find(c => c.name === 'announcements')
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'announce',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'channel',
+        type: 7,                        // CHANNEL
+        value: channel.id
+      }],
+      resolved: {
+        channels: {
+          [channel.id]: {
+            id: channel.id,
+            name: channel.name,
+            type: channel.type
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Number Options
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/roll.test.ts"
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'roll',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'sides',
-          type: 4,                        // INTEGER
-          value: 20
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/roll.test.js"
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'roll',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'sides',
-          type: 4,                        // INTEGER
-          value: 20
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="__tests__/commands/roll.test.ts"
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'roll',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'sides',
+        type: 4,                        // INTEGER
+        value: 20
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/roll.test.js"
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'roll',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'sides',
+        type: 4,                        // INTEGER
+        value: 20
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Subcommands
@@ -366,107 +390,115 @@ Check different response behaviors:
 ### Single Level
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/config.test.ts"
-    // /config set key:setting value:enabled
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'config',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'set',
-          type: 1,                        // SUB_COMMAND
-          options: [
-            { name: 'key', type: 3, value: 'setting' },       // STRING
-            { name: 'value', type: 3, value: 'enabled' }      // STRING
-          ]
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/config.test.js"
-    // /config set key:setting value:enabled
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'config',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'set',
-          type: 1,                        // SUB_COMMAND
-          options: [
-            { name: 'key', type: 3, value: 'setting' },       // STRING
-            { name: 'value', type: 3, value: 'enabled' }      // STRING
-          ]
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="__tests__/commands/config.test.ts"
+  // /config set key:setting value:enabled
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'config',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'set',
+        type: 1,                        // SUB_COMMAND
+        options: [
+          { name: 'key', type: 3, value: 'setting' },       // STRING
+          { name: 'value', type: 3, value: 'enabled' }      // STRING
+        ]
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/config.test.js"
+  // /config set key:setting value:enabled
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'config',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'set',
+        type: 1,                        // SUB_COMMAND
+        options: [
+          { name: 'key', type: 3, value: 'setting' },       // STRING
+          { name: 'value', type: 3, value: 'enabled' }      // STRING
+        ]
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Subcommand Groups
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/moderation.test.ts"
-    // /moderation user ban target:@user reason:spam
-    const targetUserId = '111222333444555666'  // Mock user ID
+<Tab value="TypeScript">
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'moderation',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'user',
-          type: 2,                        // SUB_COMMAND_GROUP
-          options: [{
-            name: 'ban',
-            type: 1,                      // SUB_COMMAND
-            options: [
-              { name: 'target', type: 6, value: targetUserId },  // USER
-              { name: 'reason', type: 3, value: 'spam' }         // STRING
-            ]
-          }]
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/moderation.test.js"
-    // /moderation user ban target:@user reason:spam
-    const targetUserId = '111222333444555666'  // Mock user ID
+  ```ts title="__tests__/commands/moderation.test.ts"
+  // /moderation user ban target:@user reason:spam
+  const targetUserId = '111222333444555666'  // Mock user ID
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'moderation',
-        type: 1,                          // CHAT_INPUT
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'moderation',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'user',
+        type: 2,                        // SUB_COMMAND_GROUP
         options: [{
-          name: 'user',
-          type: 2,                        // SUB_COMMAND_GROUP
-          options: [{
-            name: 'ban',
-            type: 1,                      // SUB_COMMAND
-            options: [
-              { name: 'target', type: 6, value: targetUserId },  // USER
-              { name: 'reason', type: 3, value: 'spam' }         // STRING
-            ]
-          }]
+          name: 'ban',
+          type: 1,                      // SUB_COMMAND
+          options: [
+            { name: 'target', type: 6, value: targetUserId },  // USER
+            { name: 'reason', type: 3, value: 'spam' }         // STRING
+          ]
         }]
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/moderation.test.js"
+  // /moderation user ban target:@user reason:spam
+  const targetUserId = '111222333444555666'  // Mock user ID
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'moderation',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'user',
+        type: 2,                        // SUB_COMMAND_GROUP
+        options: [{
+          name: 'ban',
+          type: 1,                      // SUB_COMMAND
+          options: [
+            { name: 'target', type: 6, value: targetUserId },  // USER
+            { name: 'reason', type: 3, value: 'spam' }         // STRING
+          ]
+        }]
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Autocomplete
@@ -476,109 +508,117 @@ Check different response behaviors:
 Autocomplete sends a special interaction type:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/search.test.ts"
-    await dispatchInteraction(session.id, {
-      type: 4,                            // APPLICATION_COMMAND_AUTOCOMPLETE
-      data: {
-        name: 'search',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'query',
-          type: 3,                        // STRING
-          value: 'test',
-          focused: true  // This option is being autocompleted
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
+<Tab value="TypeScript">
 
-    await expectAction(session.id, {
-      description: 'Bot should return autocomplete choices',
-      type: 'interaction_response',
-      expected: {
-        response_type: 8,                 // APPLICATION_COMMAND_AUTOCOMPLETE_RESULT
-        response_data: {
-          choices: expect.arrayContaining([
-            expect.objectContaining({ name: expect.any(String) })
-          ])
-        }
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/search.test.js"
-    await dispatchInteraction(session.id, {
-      type: 4,                            // APPLICATION_COMMAND_AUTOCOMPLETE
-      data: {
-        name: 'search',
-        type: 1,                          // CHAT_INPUT
-        options: [{
-          name: 'query',
-          type: 3,                        // STRING
-          value: 'test',
-          focused: true  // This option is being autocompleted
-        }]
-      },
-      channel_id: session.channels[0].id
-    })
+  ```ts title="__tests__/commands/search.test.ts"
+  await dispatchInteraction(session.id, {
+    type: 4,                            // APPLICATION_COMMAND_AUTOCOMPLETE
+    data: {
+      name: 'search',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'query',
+        type: 3,                        // STRING
+        value: 'test',
+        focused: true  // This option is being autocompleted
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
 
-    await expectAction(session.id, {
-      description: 'Bot should return autocomplete choices',
-      type: 'interaction_response',
-      expected: {
-        response_type: 8,                 // APPLICATION_COMMAND_AUTOCOMPLETE_RESULT
-        response_data: {
-          choices: expect.arrayContaining([
-            expect.objectContaining({ name: expect.any(String) })
-          ])
-        }
+  await expectAction(session.id, {
+    description: 'Bot should return autocomplete choices',
+    type: 'interaction_response',
+    expected: {
+      response_type: 8,                 // APPLICATION_COMMAND_AUTOCOMPLETE_RESULT
+      response_data: {
+        choices: expect.arrayContaining([
+          expect.objectContaining({ name: expect.any(String) })
+        ])
       }
-    })
-    ```
-  </Tab>
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/search.test.js"
+  await dispatchInteraction(session.id, {
+    type: 4,                            // APPLICATION_COMMAND_AUTOCOMPLETE
+    data: {
+      name: 'search',
+      type: 1,                          // CHAT_INPUT
+      options: [{
+        name: 'query',
+        type: 3,                        // STRING
+        value: 'test',
+        focused: true  // This option is being autocompleted
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot should return autocomplete choices',
+    type: 'interaction_response',
+    expected: {
+      response_type: 8,                 // APPLICATION_COMMAND_AUTOCOMPLETE_RESULT
+      response_data: {
+        choices: expect.arrayContaining([
+          expect.objectContaining({ name: expect.any(String) })
+        ])
+      }
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Verify Specific Choices
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/search-choices.test.ts"
-    import { waitForAction } from '@robojs/mock/testing'
+<Tab value="TypeScript">
 
-    const actions = await waitForAction(session.id, {
-      type: 'interaction_response',
-      timeout: 5000
+  ```ts title="__tests__/commands/search-choices.test.ts"
+  import { waitForAction } from '@robojs/mock/testing'
+
+  const actions = await waitForAction(session.id, {
+    type: 'interaction_response',
+    timeout: 5000
+  })
+
+  const choices = (actions[0].data as any)?.response_data?.choices
+  expect(choices).toContainEqual(
+    expect.objectContaining({
+      name: 'Test Item',
+      value: 'test-item'
     })
+  )
+  ```
 
-    const choices = (actions[0].data as any)?.response_data?.choices
-    expect(choices).toContainEqual(
-      expect.objectContaining({
-        name: 'Test Item',
-        value: 'test-item'
-      })
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/search-choices.test.js"
-    import { waitForAction } from '@robojs/mock/testing'
+</Tab>
+<Tab value="JavaScript">
 
-    const actions = await waitForAction(session.id, {
-      type: 'interaction_response',
-      timeout: 5000
+  ```js title="__tests__/commands/search-choices.test.js"
+  import { waitForAction } from '@robojs/mock/testing'
+
+  const actions = await waitForAction(session.id, {
+    type: 'interaction_response',
+    timeout: 5000
+  })
+
+  const choices = actions[0].data?.response_data?.choices
+  expect(choices).toContainEqual(
+    expect.objectContaining({
+      name: 'Test Item',
+      value: 'test-item'
     })
+  )
+  ```
 
-    const choices = actions[0].data?.response_data?.choices
-    expect(choices).toContainEqual(
-      expect.objectContaining({
-        name: 'Test Item',
-        value: 'test-item'
-      })
-    )
-    ```
-  </Tab>
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -594,117 +634,125 @@ Autocomplete sends a special interaction type:
 ### User Context Menu
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/user-context.test.ts"
-    const targetUserId = '111222333444555666'  // Mock user ID
-    const targetUsername = 'TestUser'
+<Tab value="TypeScript">
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'Get User Info',
-        type: 2,                          // USER context menu
-        target_id: targetUserId,
-        resolved: {
-          users: {
-            [targetUserId]: {
-              id: targetUserId,
-              username: targetUsername,
-              discriminator: '0',
-              avatar: null
-            }
+  ```ts title="__tests__/commands/user-context.test.ts"
+  const targetUserId = '111222333444555666'  // Mock user ID
+  const targetUsername = 'TestUser'
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'Get User Info',
+      type: 2,                          // USER context menu
+      target_id: targetUserId,
+      resolved: {
+        users: {
+          [targetUserId]: {
+            id: targetUserId,
+            username: targetUsername,
+            discriminator: '0',
+            avatar: null
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/user-context.test.js"
-    const targetUserId = '111222333444555666'  // Mock user ID
-    const targetUsername = 'TestUser'
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'Get User Info',
-        type: 2,                          // USER context menu
-        target_id: targetUserId,
-        resolved: {
-          users: {
-            [targetUserId]: {
-              id: targetUserId,
-              username: targetUsername,
-              discriminator: '0',
-              avatar: null
-            }
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/user-context.test.js"
+  const targetUserId = '111222333444555666'  // Mock user ID
+  const targetUsername = 'TestUser'
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'Get User Info',
+      type: 2,                          // USER context menu
+      target_id: targetUserId,
+      resolved: {
+        users: {
+          [targetUserId]: {
+            id: targetUserId,
+            username: targetUsername,
+            discriminator: '0',
+            avatar: null
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Message Context Menu
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/message-context.test.ts"
-    const messageId = '123456789'          // Mock message ID
-    const authorId = '111222333444555666'  // Mock author ID
-    const authorUsername = 'TestUser'
+<Tab value="TypeScript">
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'Translate',
-        type: 3,                          // MESSAGE context menu
-        target_id: messageId,
-        resolved: {
-          messages: {
-            [messageId]: {
-              id: messageId,
-              content: 'Bonjour',
-              channel_id: session.channels[0].id,
-              author: { id: authorId, username: authorUsername }
-            }
+  ```ts title="__tests__/commands/message-context.test.ts"
+  const messageId = '123456789'          // Mock message ID
+  const authorId = '111222333444555666'  // Mock author ID
+  const authorUsername = 'TestUser'
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'Translate',
+      type: 3,                          // MESSAGE context menu
+      target_id: messageId,
+      resolved: {
+        messages: {
+          [messageId]: {
+            id: messageId,
+            content: 'Bonjour',
+            channel_id: session.channels[0].id,
+            author: { id: authorId, username: authorUsername }
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/message-context.test.js"
-    const messageId = '123456789'          // Mock message ID
-    const authorId = '111222333444555666'  // Mock author ID
-    const authorUsername = 'TestUser'
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
 
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: {
-        name: 'Translate',
-        type: 3,                          // MESSAGE context menu
-        target_id: messageId,
-        resolved: {
-          messages: {
-            [messageId]: {
-              id: messageId,
-              content: 'Bonjour',
-              channel_id: session.channels[0].id,
-              author: { id: authorId, username: authorUsername }
-            }
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/message-context.test.js"
+  const messageId = '123456789'          // Mock message ID
+  const authorId = '111222333444555666'  // Mock author ID
+  const authorUsername = 'TestUser'
+
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: {
+      name: 'Translate',
+      type: 3,                          // MESSAGE context menu
+      target_id: messageId,
+      resolved: {
+        messages: {
+          [messageId]: {
+            id: messageId,
+            content: 'Bonjour',
+            channel_id: session.channels[0].id,
+            author: { id: authorId, username: authorUsername }
           }
         }
-      },
-      channel_id: session.channels[0].id
-    })
-    ```
-  </Tab>
+      }
+    },
+    channel_id: session.channels[0].id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -722,46 +770,50 @@ Autocomplete sends a special interaction type:
 Test that commands respect permissions. The mock server generates a member for the dispatching user with empty roles by default, so a non-admin user is the default behavior:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/permissions.test.ts"
-    // User without admin role (default behavior)
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: { name: 'admin-only', type: 1 },  // CHAT_INPUT
-      channel_id: session.channels[0].id
-    })
+<Tab value="TypeScript">
 
-    await expectAction(session.id, {
-      description: 'Bot should deny access',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          content: expect.stringContaining('permission')
-        }
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/permissions.test.js"
-    // User without admin role (default behavior)
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: { name: 'admin-only', type: 1 },  // CHAT_INPUT
-      channel_id: session.channels[0].id
-    })
+  ```ts title="__tests__/commands/permissions.test.ts"
+  // User without admin role (default behavior)
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: { name: 'admin-only', type: 1 },  // CHAT_INPUT
+    channel_id: session.channels[0].id
+  })
 
-    await expectAction(session.id, {
-      description: 'Bot should deny access',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          content: expect.stringContaining('permission')
-        }
+  await expectAction(session.id, {
+    description: 'Bot should deny access',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        content: expect.stringContaining('permission')
       }
-    })
-    ```
-  </Tab>
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/permissions.test.js"
+  // User without admin role (default behavior)
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: { name: 'admin-only', type: 1 },  // CHAT_INPUT
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot should deny access',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        content: expect.stringContaining('permission')
+      }
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Guild vs DM Commands
@@ -769,53 +821,61 @@ Test that commands respect permissions. The mock server generates a member for t
 ### Guild Command
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/guild.test.ts"
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: { name: 'server-info', type: 1 },  // CHAT_INPUT
-      channel_id: session.channels[0].id,
-      guild_id: session.guildId  // Include guild_id
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/guild.test.js"
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: { name: 'server-info', type: 1 },  // CHAT_INPUT
-      channel_id: session.channels[0].id,
-      guild_id: session.guildId  // Include guild_id
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="__tests__/commands/guild.test.ts"
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: { name: 'server-info', type: 1 },  // CHAT_INPUT
+    channel_id: session.channels[0].id,
+    guild_id: session.guildId  // Include guild_id
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/guild.test.js"
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: { name: 'server-info', type: 1 },  // CHAT_INPUT
+    channel_id: session.channels[0].id,
+    guild_id: session.guildId  // Include guild_id
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### DM Command
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="__tests__/commands/dm.test.ts"
-    // DM channels have no guild_id
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: { name: 'help', type: 1 },   // CHAT_INPUT
-      channel_id: dmChannel.id
-      // No guild_id for DMs
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="__tests__/commands/dm.test.js"
-    // DM channels have no guild_id
-    await dispatchInteraction(session.id, {
-      type: 2,                            // APPLICATION_COMMAND
-      data: { name: 'help', type: 1 },   // CHAT_INPUT
-      channel_id: dmChannel.id
-      // No guild_id for DMs
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="__tests__/commands/dm.test.ts"
+  // DM channels have no guild_id
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: { name: 'help', type: 1 },   // CHAT_INPUT
+    channel_id: dmChannel.id
+    // No guild_id for DMs
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="__tests__/commands/dm.test.js"
+  // DM channels have no guild_id
+  await dispatchInteraction(session.id, {
+    type: 2,                            // APPLICATION_COMMAND
+    data: { name: 'help', type: 1 },   // CHAT_INPUT
+    channel_id: dmChannel.id
+    // No guild_id for DMs
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

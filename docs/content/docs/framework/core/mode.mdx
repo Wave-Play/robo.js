@@ -170,32 +170,36 @@ Each mode runs in a separate process. Logs are prefixed with the mode name for i
 The `Mode` object provides runtime access to the current mode:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/what-mode.ts"
-    import { logger, Mode } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	if (Mode.is('development')) {
-    		logger.info('This mode is being', Mode.color('tested'))
-    	}
+  ```ts title="src/commands/what-mode.ts"
+  import { logger, Mode } from 'robo.js'
 
-    	return `Running in ${Mode.get()} mode!`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/what-mode.js"
-    import { logger, Mode } from 'robo.js'
+  export default () => {
+  	if (Mode.is('development')) {
+  		logger.info('This mode is being', Mode.color('tested'))
+  	}
 
-    export default () => {
-    	if (Mode.is('development')) {
-    		logger.info('This mode is being', Mode.color('tested'))
-    	}
+  	return `Running in ${Mode.get()} mode!`
+  }
+  ```
 
-    	return `Running in ${Mode.get()} mode!`
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/what-mode.js"
+  import { logger, Mode } from 'robo.js'
+
+  export default () => {
+  	if (Mode.is('development')) {
+  		logger.info('This mode is being', Mode.color('tested'))
+  	}
+
+  	return `Running in ${Mode.get()} mode!`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Method        | Description                                                                   |

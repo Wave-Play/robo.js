@@ -10,35 +10,39 @@ The server side of `@robojs/trpc` is where you define your tRPC router and proce
 Import `initTRPC` from `@robojs/trpc/server.js` and create your tRPC instance:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    import { initTRPC } from '@robojs/trpc/server.js'
+<Tab value="TypeScript">
 
-    const t = initTRPC.create()
-    export const router = t.router
-    export const procedure = t.procedure
+  ```ts title="src/trpc/server.ts"
+  import { initTRPC } from '@robojs/trpc/server.js'
 
-    export const appRouter = router({
-    	// procedures go here
-    })
+  const t = initTRPC.create()
+  export const router = t.router
+  export const procedure = t.procedure
 
-    export type AppRouter = typeof appRouter
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    import { initTRPC } from '@robojs/trpc/server.js'
+  export const appRouter = router({
+  	// procedures go here
+  })
 
-    const t = initTRPC.create()
-    export const router = t.router
-    export const procedure = t.procedure
+  export type AppRouter = typeof appRouter
+  ```
 
-    export const appRouter = router({
-    	// procedures go here
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    ```
-  </Tab>
+  ```js title="src/trpc/server.js"
+  import { initTRPC } from '@robojs/trpc/server.js'
+
+  const t = initTRPC.create()
+  export const router = t.router
+  export const procedure = t.procedure
+
+  export const appRouter = router({
+  	// procedures go here
+  })
+
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -56,40 +60,44 @@ Procedures are the building blocks of your tRPC API. Each procedure is either a 
 Queries handle read operations. They map to HTTP GET requests.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    import { z } from 'zod'
+<Tab value="TypeScript">
 
-    export const appRouter = router({
-    	getUser: procedure
-    		.input(z.object({ id: z.string() }))
-    		.query(({ input }) => {
-    			return { id: input.id, name: 'Alice' }
-    		}),
+  ```ts title="src/trpc/server.ts"
+  import { z } from 'zod'
 
-    	listUsers: procedure.query(() => {
-    		return [{ id: '1', name: 'Alice' }]
-    	})
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    import { z } from 'zod'
+  export const appRouter = router({
+  	getUser: procedure
+  		.input(z.object({ id: z.string() }))
+  		.query(({ input }) => {
+  			return { id: input.id, name: 'Alice' }
+  		}),
 
-    export const appRouter = router({
-    	getUser: procedure
-    		.input(z.object({ id: z.string() }))
-    		.query(({ input }) => {
-    			return { id: input.id, name: 'Alice' }
-    		}),
+  	listUsers: procedure.query(() => {
+  		return [{ id: '1', name: 'Alice' }]
+  	})
+  })
+  ```
 
-    	listUsers: procedure.query(() => {
-    		return [{ id: '1', name: 'Alice' }]
-    	})
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/server.js"
+  import { z } from 'zod'
+
+  export const appRouter = router({
+  	getUser: procedure
+  		.input(z.object({ id: z.string() }))
+  		.query(({ input }) => {
+  			return { id: input.id, name: 'Alice' }
+  		}),
+
+  	listUsers: procedure.query(() => {
+  		return [{ id: '1', name: 'Alice' }]
+  	})
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Mutations
@@ -97,40 +105,44 @@ Queries handle read operations. They map to HTTP GET requests.
 Mutations handle write operations. They map to HTTP POST requests.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    export const appRouter = router({
-    	createUser: procedure
-    		.input(
-    			z.object({
-    				name: z.string(),
-    				email: z.string().email()
-    			})
-    		)
-    		.mutation(({ input }) => {
-    			// Create user in database...
-    			return { id: '2', name: input.name, email: input.email }
-    		})
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    export const appRouter = router({
-    	createUser: procedure
-    		.input(
-    			z.object({
-    				name: z.string(),
-    				email: z.string().email()
-    			})
-    		)
-    		.mutation(({ input }) => {
-    			// Create user in database...
-    			return { id: '2', name: input.name, email: input.email }
-    		})
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/trpc/server.ts"
+  export const appRouter = router({
+  	createUser: procedure
+  		.input(
+  			z.object({
+  				name: z.string(),
+  				email: z.string().email()
+  			})
+  		)
+  		.mutation(({ input }) => {
+  			// Create user in database...
+  			return { id: '2', name: input.name, email: input.email }
+  		})
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/server.js"
+  export const appRouter = router({
+  	createUser: procedure
+  		.input(
+  			z.object({
+  				name: z.string(),
+  				email: z.string().email()
+  			})
+  		)
+  		.mutation(({ input }) => {
+  			// Create user in database...
+  			return { id: '2', name: input.name, email: input.email }
+  		})
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Input validation
@@ -138,38 +150,42 @@ Mutations handle write operations. They map to HTTP POST requests.
 Use [Zod](https://zod.dev) schemas with `.input()` to validate procedure inputs. Invalid input automatically returns a `BAD_REQUEST` error with validation details.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    procedure
-    	.input(
-    		z.object({
-    			name: z.string().min(1).max(100),
-    			age: z.number().int().positive().optional(),
-    			tags: z.array(z.string()).default([])
-    		})
-    	)
-    	.query(({ input }) => {
-    		// input is fully typed and validated
-    		return { name: input.name, age: input.age, tags: input.tags }
-    	})
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    procedure
-    	.input(
-    		z.object({
-    			name: z.string().min(1).max(100),
-    			age: z.number().int().positive().optional(),
-    			tags: z.array(z.string()).default([])
-    		})
-    	)
-    	.query(({ input }) => {
-    		// input is fully typed and validated
-    		return { name: input.name, age: input.age, tags: input.tags }
-    	})
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  procedure
+  	.input(
+  		z.object({
+  			name: z.string().min(1).max(100),
+  			age: z.number().int().positive().optional(),
+  			tags: z.array(z.string()).default([])
+  		})
+  	)
+  	.query(({ input }) => {
+  		// input is fully typed and validated
+  		return { name: input.name, age: input.age, tags: input.tags }
+  	})
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  procedure
+  	.input(
+  		z.object({
+  			name: z.string().min(1).max(100),
+  			age: z.number().int().positive().optional(),
+  			tags: z.array(z.string()).default([])
+  		})
+  	)
+  	.query(({ input }) => {
+  		// input is fully typed and validated
+  		return { name: input.name, age: input.age, tags: input.tags }
+  	})
+  ```
+
+</Tab>
 </Tabs>
 
 ## Context
@@ -177,33 +193,37 @@ Use [Zod](https://zod.dev) schemas with `.input()` to validate procedure inputs.
 Every procedure receives a context object containing the HTTP request and response from `@robojs/server`. Access it through `opts.ctx`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    import type { Context } from '@robojs/trpc'
+<Tab value="TypeScript">
 
-    export const appRouter = router({
-    	getProfile: procedure.query(({ ctx }) => {
-    		const authHeader = ctx.req.headers.get('authorization')
-    		const userAgent = ctx.req.headers.get('user-agent')
+  ```ts title="src/trpc/server.ts"
+  import type { Context } from '@robojs/trpc'
 
-    		return { authHeader, userAgent }
-    	})
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
+  export const appRouter = router({
+  	getProfile: procedure.query(({ ctx }) => {
+  		const authHeader = ctx.req.headers.get('authorization')
+  		const userAgent = ctx.req.headers.get('user-agent')
 
-    export const appRouter = router({
-    	getProfile: procedure.query(({ ctx }) => {
-    		const authHeader = ctx.req.headers.get('authorization')
-    		const userAgent = ctx.req.headers.get('user-agent')
+  		return { authHeader, userAgent }
+  	})
+  })
+  ```
 
-    		return { authHeader, userAgent }
-    	})
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/server.js"
+
+  export const appRouter = router({
+  	getProfile: procedure.query(({ ctx }) => {
+  		const authHeader = ctx.req.headers.get('authorization')
+  		const userAgent = ctx.req.headers.get('user-agent')
+
+  		return { authHeader, userAgent }
+  	})
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 The `Context` interface contains:
@@ -220,66 +240,70 @@ The `Context` interface contains:
 Throw `TRPCError` to return typed errors with HTTP status codes:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    import { TRPCError } from '@robojs/trpc'
+<Tab value="TypeScript">
 
-    export const appRouter = router({
-    	deleteUser: procedure
-    		.input(z.object({ id: z.string() }))
-    		.mutation(({ input, ctx }) => {
-    			const auth = ctx.req.headers.get('authorization')
-    			if (!auth) {
-    				throw new TRPCError({
-    					code: 'UNAUTHORIZED',
-    					message: 'Missing auth token'
-    				})
-    			}
+  ```ts title="src/trpc/server.ts"
+  import { TRPCError } from '@robojs/trpc'
 
-    			const user = findUser(input.id)
-    			if (!user) {
-    				throw new TRPCError({
-    					code: 'NOT_FOUND',
-    					message: `User ${input.id} not found`
-    				})
-    			}
+  export const appRouter = router({
+  	deleteUser: procedure
+  		.input(z.object({ id: z.string() }))
+  		.mutation(({ input, ctx }) => {
+  			const auth = ctx.req.headers.get('authorization')
+  			if (!auth) {
+  				throw new TRPCError({
+  					code: 'UNAUTHORIZED',
+  					message: 'Missing auth token'
+  				})
+  			}
 
-    			// Delete user...
-    			return { deleted: true }
-    		})
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    import { TRPCError } from '@robojs/trpc'
+  			const user = findUser(input.id)
+  			if (!user) {
+  				throw new TRPCError({
+  					code: 'NOT_FOUND',
+  					message: `User ${input.id} not found`
+  				})
+  			}
 
-    export const appRouter = router({
-    	deleteUser: procedure
-    		.input(z.object({ id: z.string() }))
-    		.mutation(({ input, ctx }) => {
-    			const auth = ctx.req.headers.get('authorization')
-    			if (!auth) {
-    				throw new TRPCError({
-    					code: 'UNAUTHORIZED',
-    					message: 'Missing auth token'
-    				})
-    			}
+  			// Delete user...
+  			return { deleted: true }
+  		})
+  })
+  ```
 
-    			const user = findUser(input.id)
-    			if (!user) {
-    				throw new TRPCError({
-    					code: 'NOT_FOUND',
-    					message: `User ${input.id} not found`
-    				})
-    			}
+</Tab>
+<Tab value="JavaScript">
 
-    			// Delete user...
-    			return { deleted: true }
-    		})
-    })
-    ```
-  </Tab>
+  ```js title="src/trpc/server.js"
+  import { TRPCError } from '@robojs/trpc'
+
+  export const appRouter = router({
+  	deleteUser: procedure
+  		.input(z.object({ id: z.string() }))
+  		.mutation(({ input, ctx }) => {
+  			const auth = ctx.req.headers.get('authorization')
+  			if (!auth) {
+  				throw new TRPCError({
+  					code: 'UNAUTHORIZED',
+  					message: 'Missing auth token'
+  				})
+  			}
+
+  			const user = findUser(input.id)
+  			if (!user) {
+  				throw new TRPCError({
+  					code: 'NOT_FOUND',
+  					message: `User ${input.id} not found`
+  				})
+  			}
+
+  			// Delete user...
+  			return { deleted: true }
+  		})
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Common error codes:
@@ -299,64 +323,68 @@ Common error codes:
 Use tRPC middleware to run shared logic before procedures. This is useful for authentication, logging, or adding data to the context.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    const isAuthed = t.middleware(({ ctx, next }) => {
-    	const token = ctx.req.headers.get('authorization')
-    	if (!token) {
-    		throw new TRPCError({ code: 'UNAUTHORIZED' })
-    	}
+<Tab value="TypeScript">
 
-    	return next({
-    		ctx: {
-    			...ctx,
-    			userId: parseToken(token)
-    		}
-    	})
-    })
+  ```ts title="src/trpc/server.ts"
+  const isAuthed = t.middleware(({ ctx, next }) => {
+  	const token = ctx.req.headers.get('authorization')
+  	if (!token) {
+  		throw new TRPCError({ code: 'UNAUTHORIZED' })
+  	}
 
-    const protectedProcedure = procedure.use(isAuthed)
+  	return next({
+  		ctx: {
+  			...ctx,
+  			userId: parseToken(token)
+  		}
+  	})
+  })
 
-    export const appRouter = router({
-    	// Public
-    	hello: procedure.query(() => 'Hello'),
+  const protectedProcedure = procedure.use(isAuthed)
 
-    	// Protected — requires auth
-    	secretData: protectedProcedure.query(({ ctx }) => {
-    		return { userId: ctx.userId, secret: 'classified' }
-    	})
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    const isAuthed = t.middleware(({ ctx, next }) => {
-    	const token = ctx.req.headers.get('authorization')
-    	if (!token) {
-    		throw new TRPCError({ code: 'UNAUTHORIZED' })
-    	}
+  export const appRouter = router({
+  	// Public
+  	hello: procedure.query(() => 'Hello'),
 
-    	return next({
-    		ctx: {
-    			...ctx,
-    			userId: parseToken(token)
-    		}
-    	})
-    })
+  	// Protected — requires auth
+  	secretData: protectedProcedure.query(({ ctx }) => {
+  		return { userId: ctx.userId, secret: 'classified' }
+  	})
+  })
+  ```
 
-    const protectedProcedure = procedure.use(isAuthed)
+</Tab>
+<Tab value="JavaScript">
 
-    export const appRouter = router({
-    	// Public
-    	hello: procedure.query(() => 'Hello'),
+  ```js title="src/trpc/server.js"
+  const isAuthed = t.middleware(({ ctx, next }) => {
+  	const token = ctx.req.headers.get('authorization')
+  	if (!token) {
+  		throw new TRPCError({ code: 'UNAUTHORIZED' })
+  	}
 
-    	// Protected — requires auth
-    	secretData: protectedProcedure.query(({ ctx }) => {
-    		return { userId: ctx.userId, secret: 'classified' }
-    	})
-    })
-    ```
-  </Tab>
+  	return next({
+  		ctx: {
+  			...ctx,
+  			userId: parseToken(token)
+  		}
+  	})
+  })
+
+  const protectedProcedure = procedure.use(isAuthed)
+
+  export const appRouter = router({
+  	// Public
+  	hello: procedure.query(() => 'Hello'),
+
+  	// Protected — requires auth
+  	secretData: protectedProcedure.query(({ ctx }) => {
+  		return { userId: ctx.userId, secret: 'classified' }
+  	})
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Splitting routers
@@ -364,110 +392,126 @@ Use tRPC middleware to run shared logic before procedures. This is useful for au
 As your project grows, split procedures into separate files and merge them:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/routers/user.ts"
-    import { router, procedure } from '../server'
-    import { z } from 'zod'
+<Tab value="TypeScript">
 
-    export const userRouter = router({
-    	get: procedure
-    		.input(z.object({ id: z.string() }))
-    		.query(({ input }) => ({ id: input.id, name: 'Alice' })),
+  ```ts title="src/trpc/routers/user.ts"
+  import { router, procedure } from '../server'
+  import { z } from 'zod'
 
-    	list: procedure.query(() => [{ id: '1', name: 'Alice' }])
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/routers/user.js"
-    import { router, procedure } from '../server'
-    import { z } from 'zod'
+  export const userRouter = router({
+  	get: procedure
+  		.input(z.object({ id: z.string() }))
+  		.query(({ input }) => ({ id: input.id, name: 'Alice' })),
 
-    export const userRouter = router({
-    	get: procedure
-    		.input(z.object({ id: z.string() }))
-    		.query(({ input }) => ({ id: input.id, name: 'Alice' })),
+  	list: procedure.query(() => [{ id: '1', name: 'Alice' }])
+  })
+  ```
 
-    	list: procedure.query(() => [{ id: '1', name: 'Alice' }])
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/routers/user.js"
+  import { router, procedure } from '../server'
+  import { z } from 'zod'
+
+  export const userRouter = router({
+  	get: procedure
+  		.input(z.object({ id: z.string() }))
+  		.query(({ input }) => ({ id: input.id, name: 'Alice' })),
+
+  	list: procedure.query(() => [{ id: '1', name: 'Alice' }])
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/routers/post.ts"
-    import { router, procedure } from '../server'
+<Tab value="TypeScript">
 
-    export const postRouter = router({
-    	list: procedure.query(() => [{ id: '1', title: 'Hello' }])
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/routers/post.js"
-    import { router, procedure } from '../server'
+  ```ts title="src/trpc/routers/post.ts"
+  import { router, procedure } from '../server'
 
-    export const postRouter = router({
-    	list: procedure.query(() => [{ id: '1', title: 'Hello' }])
-    })
-    ```
-  </Tab>
+  export const postRouter = router({
+  	list: procedure.query(() => [{ id: '1', title: 'Hello' }])
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/routers/post.js"
+  import { router, procedure } from '../server'
+
+  export const postRouter = router({
+  	list: procedure.query(() => [{ id: '1', title: 'Hello' }])
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    import { initTRPC } from '@robojs/trpc/server.js'
-    import { userRouter } from './routers/user'
-    import { postRouter } from './routers/post'
+<Tab value="TypeScript">
 
-    const t = initTRPC.create()
-    export const router = t.router
-    export const procedure = t.procedure
+  ```ts title="src/trpc/server.ts"
+  import { initTRPC } from '@robojs/trpc/server.js'
+  import { userRouter } from './routers/user'
+  import { postRouter } from './routers/post'
 
-    export const appRouter = router({
-    	user: userRouter,
-    	post: postRouter
-    })
+  const t = initTRPC.create()
+  export const router = t.router
+  export const procedure = t.procedure
 
-    export type AppRouter = typeof appRouter
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    import { initTRPC } from '@robojs/trpc/server.js'
-    import { userRouter } from './routers/user'
-    import { postRouter } from './routers/post'
+  export const appRouter = router({
+  	user: userRouter,
+  	post: postRouter
+  })
 
-    const t = initTRPC.create()
-    export const router = t.router
-    export const procedure = t.procedure
+  export type AppRouter = typeof appRouter
+  ```
 
-    export const appRouter = router({
-    	user: userRouter,
-    	post: postRouter
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    ```
-  </Tab>
+  ```js title="src/trpc/server.js"
+  import { initTRPC } from '@robojs/trpc/server.js'
+  import { userRouter } from './routers/user'
+  import { postRouter } from './routers/post'
+
+  const t = initTRPC.create()
+  export const router = t.router
+  export const procedure = t.procedure
+
+  export const appRouter = router({
+  	user: userRouter,
+  	post: postRouter
+  })
+
+  ```
+
+</Tab>
 </Tabs>
 
 The client accesses nested routers with dot notation:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const user = await trpcClient.user.get.query({ id: '1' })
-    const posts = await trpcClient.post.list.query()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const user = await trpcClient.user.get.query({ id: '1' })
-    const posts = await trpcClient.post.list.query()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const user = await trpcClient.user.get.query({ id: '1' })
+  const posts = await trpcClient.post.list.query()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const user = await trpcClient.user.get.query({ id: '1' })
+  const posts = await trpcClient.post.list.query()
+  ```
+
+</Tab>
 </Tabs>
 
 ## The start hook
@@ -475,16 +519,20 @@ The client accesses nested routers with dot notation:
 The seeded file at `src/robo/start/trpc.ts` is critical for router registration:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start/trpc.ts"
-    export default () => import('../../trpc/server.js')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start/trpc.js"
-    export default () => import('../../trpc/server.js')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/robo/start/trpc.ts"
+  export default () => import('../../trpc/server.js')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start/trpc.js"
+  export default () => import('../../trpc/server.js')
+  ```
+
+</Tab>
 </Tabs>
 
 This `_start` event handler dynamically imports your server file at startup, which triggers `initTRPC.create()` and `t.router()`, registering the router before any API requests arrive. Without this file, the tRPC endpoint throws a "Router is not registered" error on every request.

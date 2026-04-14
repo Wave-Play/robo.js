@@ -33,26 +33,30 @@ This page is the central reference for all **configuration** in a Discord Activi
 The main Robo config file is `config/robo.mjs` (or `.ts`). This controls the Robo.js runtime, plugins, and experimental features.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    export default {
-      // Enable experimental features
-      experimental: {
-        disableBot: true // Activities don't need the bot gateway connection
-      }
+<Tab value="TypeScript">
+
+  ```ts title="config/robo.mjs"
+  export default {
+    // Enable experimental features
+    experimental: {
+      disableBot: true // Activities don't need the bot gateway connection
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    export default {
-      // Enable experimental features
-      experimental: {
-        disableBot: true // Activities don't need the bot gateway connection
-      }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  export default {
+    // Enable experimental features
+    experimental: {
+      disableBot: true // Activities don't need the bot gateway connection
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Activity projects use the `--tunnel` (`-t`) flag on `robo dev` to start a Cloudflare Tunnel during development. The scaffolded `dev` script includes this flag by default. For stable tunnel URLs, configure Cloudflare credentials in the `@robojs/server` plugin config's `tunnel` section. See [Tunnels](./tunnels) for details.
@@ -62,34 +66,38 @@ Activity projects use the `--tunnel` (`-t`) flag on `robo dev` to start a Cloudf
 The `config/vite.mjs` file configures the Vite build tool. Activity projects include the React plugin and the Discord proxy plugin by default.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
+<Tab value="TypeScript">
 
-    export default defineConfig({
-      plugins: [react(), DiscordProxy.Vite()],
-      server: {
-        allowedHosts: true
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
+  ```ts title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
 
-    export default defineConfig({
-      plugins: [react(), DiscordProxy.Vite()],
-      server: {
-        allowedHosts: true
-      }
-    })
-    ```
-  </Tab>
+  export default defineConfig({
+    plugins: [react(), DiscordProxy.Vite()],
+    server: {
+      allowedHosts: true
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
+
+  export default defineConfig({
+    plugins: [react(), DiscordProxy.Vite()],
+    server: {
+      allowedHosts: true
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -101,22 +109,26 @@ The `config/vite.mjs` file configures the Vite build tool. Activity projects inc
 Configure `@robojs/server` in `config/plugins/robojs/server.ts`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.ts"
-    export default {
-      port: 3000,
-      cors: true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.js"
-    export default {
-      port: 3000,
-      cors: true
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.ts"
+  export default {
+    port: 3000,
+    cors: true
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.js"
+  export default {
+    port: 3000,
+    cors: true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Option | Type | Default | Description |

@@ -31,28 +31,32 @@ CSP restricts which resources an activity can load. Discord only allows requests
 **`@robojs/patch`** provides automatic URL patching via a Vite plugin. It is pre-installed in all activity templates and requires zero configuration.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
+<Tab value="TypeScript">
 
-    export default defineConfig({
-      plugins: [react(), DiscordProxy.Vite()]
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
+  ```ts title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
 
-    export default defineConfig({
-      plugins: [react(), DiscordProxy.Vite()]
-    })
-    ```
-  </Tab>
+  export default defineConfig({
+    plugins: [react(), DiscordProxy.Vite()]
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
+
+  export default defineConfig({
+    plugins: [react(), DiscordProxy.Vite()]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## URL Mapping
@@ -67,16 +71,20 @@ Configure URL mappings in the Discord Developer Portal under your application's 
 Use mapped paths in your code:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/Activity.tsx"
-    fetch('/google-fonts/css2?family=Inter')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/Activity.jsx"
-    fetch('/google-fonts/css2?family=Inter')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/app/Activity.tsx"
+  fetch('/google-fonts/css2?family=Inter')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/Activity.jsx"
+  fetch('/google-fonts/css2?family=Inter')
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -96,20 +104,24 @@ Most developers don't need this — `DiscordProxy.Vite()` handles URL rewriting 
 `patchUrlMappings()` from `@discord/embedded-app-sdk` rewrites URLs in third-party libraries that have hardcoded domains:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/App.tsx"
-    import { patchUrlMappings } from '@discord/embedded-app-sdk'
+<Tab value="TypeScript">
 
-    patchUrlMappings([{ prefix: '/google-fonts', target: 'fonts.googleapis.com' }])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/App.jsx"
-    import { patchUrlMappings } from '@discord/embedded-app-sdk'
+  ```ts title="src/app/App.tsx"
+  import { patchUrlMappings } from '@discord/embedded-app-sdk'
 
-    patchUrlMappings([{ prefix: '/google-fonts', target: 'fonts.googleapis.com' }])
-    ```
-  </Tab>
+  patchUrlMappings([{ prefix: '/google-fonts', target: 'fonts.googleapis.com' }])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/App.jsx"
+  import { patchUrlMappings } from '@discord/embedded-app-sdk'
+
+  patchUrlMappings([{ prefix: '/google-fonts', target: 'fonts.googleapis.com' }])
+  ```
+
+</Tab>
 </Tabs>
 
 ## Custom Proxy Server
@@ -117,24 +129,28 @@ Most developers don't need this — `DiscordProxy.Vite()` handles URL rewriting 
 For reaching services that Discord's URL Mappings cannot handle (such as specific ports, unsupported protocols, or dynamic URLs), create a custom proxy endpoint:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/proxy.ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export default async (req: RoboRequest) => {
-      const url = req.query.url as string
-      return fetch(url)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/proxy.js"
-    export default async (req) => {
-      const url = req.query.url
-      return fetch(url)
-    }
-    ```
-  </Tab>
+  ```ts title="src/api/proxy.ts"
+  import type { RoboRequest } from '@robojs/server'
+
+  export default async (req: RoboRequest) => {
+    const url = req.query.url as string
+    return fetch(url)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/proxy.js"
+  export default async (req) => {
+    const url = req.query.url
+    return fetch(url)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

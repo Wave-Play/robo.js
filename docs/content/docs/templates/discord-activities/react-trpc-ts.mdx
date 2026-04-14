@@ -55,28 +55,32 @@ Define your API procedures in the server and call them from the client with full
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Server
-    export const appRouter = router({
-      hello: publicProcedure.query(() => 'Hello, world!')
-    })
+<Tab value="TypeScript">
 
-    // Client
-    const { data } = trpc.hello.useQuery()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Server
-    export const appRouter = router({
-      hello: publicProcedure.query(() => 'Hello, world!')
-    })
+  ```ts
+  // Server
+  export const appRouter = router({
+    hello: publicProcedure.query(() => 'Hello, world!')
+  })
 
-    // Client
-    const { data } = trpc.hello.useQuery()
-    ```
-  </Tab>
+  // Client
+  const { data } = trpc.hello.useQuery()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Server
+  export const appRouter = router({
+    hello: publicProcedure.query(() => 'Hello, world!')
+  })
+
+  // Client
+  const { data } = trpc.hello.useQuery()
+  ```
+
+</Tab>
 </Tabs>
 
 ## Hosting

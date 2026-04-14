@@ -59,45 +59,49 @@ Create a plugin config file with your preferred auth providers.
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    import Discord from '@robojs/auth/providers/discord'
-    import Google from '@robojs/auth/providers/google'
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
-    import type { AuthPluginOptions } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    export default <AuthPluginOptions>{
-    	secret: process.env.AUTH_SECRET,
-    	appName: 'My App',
-    	adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
-    	providers: [
-    		Discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
-    		Google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
-    		EmailPassword({ adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }) })
-    	]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    import Discord from '@robojs/auth/providers/discord'
-    import Google from '@robojs/auth/providers/google'
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
+  ```ts title="config/plugins/robojs/auth.ts"
+  import Discord from '@robojs/auth/providers/discord'
+  import Google from '@robojs/auth/providers/google'
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+  import type { AuthPluginOptions } from '@robojs/auth'
 
-    export default {
-    	secret: process.env.AUTH_SECRET,
-    	appName: 'My App',
-    	adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
-    	providers: [
-    		Discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
-    		Google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
-    		EmailPassword({ adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }) })
-    	]
-    }
-    ```
-  </Tab>
+  export default <AuthPluginOptions>{
+  	secret: process.env.AUTH_SECRET,
+  	appName: 'My App',
+  	adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
+  	providers: [
+  		Discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
+  		Google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
+  		EmailPassword({ adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }) })
+  	]
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  import Discord from '@robojs/auth/providers/discord'
+  import Google from '@robojs/auth/providers/google'
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+
+  export default {
+  	secret: process.env.AUTH_SECRET,
+  	appName: 'My App',
+  	adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
+  	providers: [
+  		Discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
+  		Google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
+  		EmailPassword({ adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }) })
+  	]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## What you get

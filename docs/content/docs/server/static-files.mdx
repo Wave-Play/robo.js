@@ -56,24 +56,28 @@ The plugin auto-discovers your Vite config from `config/vite.ts`, `config/vite.m
 To specify a custom config path:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	viteBuild: {
-    		configFile: 'config/vite.ts'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	viteBuild: {
-    		configFile: 'config/vite.ts'
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	viteBuild: {
+  		configFile: 'config/vite.ts'
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	viteBuild: {
+  		configFile: 'config/vite.ts'
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Caching

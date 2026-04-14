@@ -6,24 +6,28 @@ description: Readable presets and builder functions for cron expressions.
 The `Patterns` helper provides named constants and builder functions so you don't have to write raw cron expressions. Import it alongside `Cron` and use it directly.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Cron, Patterns } from '@robojs/cron'
+<Tab value="TypeScript">
 
-    Cron(Patterns.EVERY_5_MINUTES, () => {
-    	console.log('Runs every 5 minutes')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Cron, Patterns } from '@robojs/cron'
+  ```ts
+  import { Cron, Patterns } from '@robojs/cron'
 
-    Cron(Patterns.EVERY_5_MINUTES, () => {
-    	console.log('Runs every 5 minutes')
-    })
-    ```
-  </Tab>
+  Cron(Patterns.EVERY_5_MINUTES, () => {
+  	console.log('Runs every 5 minutes')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Cron, Patterns } from '@robojs/cron'
+
+  Cron(Patterns.EVERY_5_MINUTES, () => {
+  	console.log('Runs every 5 minutes')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Constant presets
@@ -127,20 +131,24 @@ Generate cron expressions dynamically from parameters. These return a cron strin
 Runs every N seconds.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everySenconds(15), () => {
-    	console.log('Every 15 seconds')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everySenconds(15), () => {
-    	console.log('Every 15 seconds')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everySenconds(15), () => {
+  	console.log('Every 15 seconds')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everySenconds(15), () => {
+  	console.log('Every 15 seconds')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -152,20 +160,24 @@ Runs every N seconds.
 Runs every N minutes.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyMinutes(15), () => {
-    	console.log('Every 15 minutes')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyMinutes(15), () => {
-    	console.log('Every 15 minutes')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyMinutes(15), () => {
+  	console.log('Every 15 minutes')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyMinutes(15), () => {
+  	console.log('Every 15 minutes')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -177,20 +189,24 @@ Runs every N minutes.
 Runs every N hours.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyHours(4), () => {
-    	console.log('Every 4 hours')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyHours(4), () => {
-    	console.log('Every 4 hours')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyHours(4), () => {
+  	console.log('Every 4 hours')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyHours(4), () => {
+  	console.log('Every 4 hours')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -202,20 +218,24 @@ Runs every N hours.
 Runs every N hours at a specific minute offset.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyHoursAt(2, 30), () => {
-    	console.log('Every 2 hours at minute 30')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyHoursAt(2, 30), () => {
-    	console.log('Every 2 hours at minute 30')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyHoursAt(2, 30), () => {
+  	console.log('Every 2 hours at minute 30')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyHoursAt(2, 30), () => {
+  	console.log('Every 2 hours at minute 30')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -228,20 +248,24 @@ Runs every N hours at a specific minute offset.
 Runs once per day at a specific time in `HH:mm` format.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyDayAt('14:30'), () => {
-    	console.log('Daily at 2:30 PM')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyDayAt('14:30'), () => {
-    	console.log('Daily at 2:30 PM')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyDayAt('14:30'), () => {
+  	console.log('Daily at 2:30 PM')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyDayAt('14:30'), () => {
+  	console.log('Daily at 2:30 PM')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -253,20 +277,24 @@ Runs once per day at a specific time in `HH:mm` format.
 Runs once per week on a specific day and time. Use `Patterns` day constants for the day parameter.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyWeekOn(Patterns.MONDAY, '09:00'), () => {
-    	console.log('Every Monday at 9 AM')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyWeekOn(Patterns.MONDAY, '09:00'), () => {
-    	console.log('Every Monday at 9 AM')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyWeekOn(Patterns.MONDAY, '09:00'), () => {
+  	console.log('Every Monday at 9 AM')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyWeekOn(Patterns.MONDAY, '09:00'), () => {
+  	console.log('Every Monday at 9 AM')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -279,20 +307,24 @@ Runs once per week on a specific day and time. Use `Patterns` day constants for 
 Runs Monday through Friday at a specific time.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyWeekdayAt('08:00'), () => {
-    	console.log('Every weekday at 8 AM')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyWeekdayAt('08:00'), () => {
-    	console.log('Every weekday at 8 AM')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyWeekdayAt('08:00'), () => {
+  	console.log('Every weekday at 8 AM')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyWeekdayAt('08:00'), () => {
+  	console.log('Every weekday at 8 AM')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -304,20 +336,24 @@ Runs Monday through Friday at a specific time.
 Runs Saturday and Sunday at a specific time.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Cron(Patterns.everyWeekendAt('10:00'), () => {
-    	console.log('Every weekend at 10 AM')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Cron(Patterns.everyWeekendAt('10:00'), () => {
-    	console.log('Every weekend at 10 AM')
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Cron(Patterns.everyWeekendAt('10:00'), () => {
+  	console.log('Every weekend at 10 AM')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Cron(Patterns.everyWeekendAt('10:00'), () => {
+  	console.log('Every weekend at 10 AM')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Parameter | Type | Default | Description |
@@ -342,24 +378,28 @@ Zero-parameter convenience functions that return common preset expressions.
 | `yearly()` | `'0 0 1 1 *'` | `EVERY_YEAR` |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Cron, Patterns } from '@robojs/cron'
+<Tab value="TypeScript">
 
-    // These are equivalent:
-    Cron(Patterns.daily(), () => { /* ... */ })
-    Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, () => { /* ... */ })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Cron, Patterns } from '@robojs/cron'
+  ```ts
+  import { Cron, Patterns } from '@robojs/cron'
 
-    // These are equivalent:
-    Cron(Patterns.daily(), () => { /* ... */ })
-    Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, () => { /* ... */ })
-    ```
-  </Tab>
+  // These are equivalent:
+  Cron(Patterns.daily(), () => { /* ... */ })
+  Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, () => { /* ... */ })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Cron, Patterns } from '@robojs/cron'
+
+  // These are equivalent:
+  Cron(Patterns.daily(), () => { /* ... */ })
+  Cron(Patterns.EVERY_DAY_AT_MIDNIGHT, () => { /* ... */ })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Day constants
@@ -377,26 +417,30 @@ Numeric constants for days of the week, useful with `everyWeekOn()`.
 | `SATURDAY` | `6` |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Cron, Patterns } from '@robojs/cron'
+<Tab value="TypeScript">
 
-    // Run every Friday at 5 PM
-    Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => {
-    	console.log('Weekend starts now')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Cron, Patterns } from '@robojs/cron'
+  ```ts
+  import { Cron, Patterns } from '@robojs/cron'
 
-    // Run every Friday at 5 PM
-    Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => {
-    	console.log('Weekend starts now')
-    })
-    ```
-  </Tab>
+  // Run every Friday at 5 PM
+  Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => {
+  	console.log('Weekend starts now')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Cron, Patterns } from '@robojs/cron'
+
+  // Run every Friday at 5 PM
+  Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => {
+  	console.log('Weekend starts now')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

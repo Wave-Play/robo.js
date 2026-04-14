@@ -24,26 +24,30 @@ This page covers Flashcore-specific migration details. For the complete v0.11 mi
 All existing `Flashcore.get`, `Flashcore.set`, `Flashcore.delete`, `Flashcore.on`, `Flashcore.off`, and namespace calls work without modification:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // This still works exactly the same
-    import { Flashcore } from 'robo.js'
+<Tab value="TypeScript">
 
-    await Flashcore.set('key', 'value')
-    const value = await Flashcore.get<string>('key')
-    await Flashcore.delete('key')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // This still works exactly the same
-    import { Flashcore } from 'robo.js'
+  ```ts
+  // This still works exactly the same
+  import { Flashcore } from 'robo.js'
 
-    await Flashcore.set('key', 'value')
-    const value = await Flashcore.get('key')
-    await Flashcore.delete('key')
-    ```
-  </Tab>
+  await Flashcore.set('key', 'value')
+  const value = await Flashcore.get<string>('key')
+  await Flashcore.delete('key')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // This still works exactly the same
+  import { Flashcore } from 'robo.js'
+
+  await Flashcore.set('key', 'value')
+  const value = await Flashcore.get('key')
+  await Flashcore.delete('key')
+  ```
+
+</Tab>
 </Tabs>
 
 No code changes needed for the KV API.
@@ -81,34 +85,38 @@ If you delete a key during migration, a tombstone is written to prevent re-readi
 The old `flashcore.keyv` configuration still works. It is automatically wrapped in a `KeyvAdapter`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    // This still works — no changes needed
-    import KeyvSqlite from '@keyv/sqlite'
+<Tab value="TypeScript">
 
-    export default {
-    	flashcore: {
-    		keyv: {
-    			store: new KeyvSqlite('sqlite://robo.db')
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    // This still works — no changes needed
-    import KeyvSqlite from '@keyv/sqlite'
+  ```ts title="config/robo.mjs"
+  // This still works — no changes needed
+  import KeyvSqlite from '@keyv/sqlite'
 
-    export default {
-    	flashcore: {
-    		keyv: {
-    			store: new KeyvSqlite('sqlite://robo.db')
-    		}
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	flashcore: {
+  		keyv: {
+  			store: new KeyvSqlite('sqlite://robo.db')
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  // This still works — no changes needed
+  import KeyvSqlite from '@keyv/sqlite'
+
+  export default {
+  	flashcore: {
+  		keyv: {
+  			store: new KeyvSqlite('sqlite://robo.db')
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -132,32 +140,36 @@ When using a Keyv adapter, the automatic lazy-migration from `.robo/data/` is no
 You can start using models alongside KV at any time. Models and KV storage are independent:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/models/GuildSettings.ts"
-    import { createModel, f } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    export const GuildSettings = createModel('GuildSettings', {
-    	id: f.id(),
-    	guildId: f.string().unique(),
-    	prefix: f.string().default('!'),
-    	locale: f.string().default('en'),
-    	createdAt: f.date().default(() => new Date())
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/models/GuildSettings.js"
-    import { createModel, f } from 'robo.js/flashcore'
+  ```ts title="src/models/GuildSettings.ts"
+  import { createModel, f } from 'robo.js/flashcore'
 
-    export const GuildSettings = createModel('GuildSettings', {
-    	id: f.id(),
-    	guildId: f.string().unique(),
-    	prefix: f.string().default('!'),
-    	locale: f.string().default('en'),
-    	createdAt: f.date().default(() => new Date())
-    })
-    ```
-  </Tab>
+  export const GuildSettings = createModel('GuildSettings', {
+  	id: f.id(),
+  	guildId: f.string().unique(),
+  	prefix: f.string().default('!'),
+  	locale: f.string().default('en'),
+  	createdAt: f.date().default(() => new Date())
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/models/GuildSettings.js"
+  import { createModel, f } from 'robo.js/flashcore'
+
+  export const GuildSettings = createModel('GuildSettings', {
+  	id: f.id(),
+  	guildId: f.string().unique(),
+  	prefix: f.string().default('!'),
+  	locale: f.string().default('en'),
+  	createdAt: f.date().default(() => new Date())
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Models store data separately from KV keys. There is no collision risk.

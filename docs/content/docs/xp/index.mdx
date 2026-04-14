@@ -35,36 +35,40 @@ Standard chat XP system for Discord bots built on Robo.js. Awards XP for message
 A complete level-up announcement system in a few lines:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start/level-announcements.ts"
-    import { events } from '@robojs/xp'
-    import { getClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    events.onLevelUp(async ({ guildId, userId, newLevel }) => {
-    	const client = getClient()
-    	const guild = await client.guilds.fetch(guildId)
-    	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
-    	if (!channel?.isTextBased()) return
+  ```ts title="src/robo/start/level-announcements.ts"
+  import { events } from '@robojs/xp'
+  import { getClient } from '@robojs/discordjs'
 
-    	await channel.send(`<@${userId}> just reached Level ${newLevel}.`)
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start/level-announcements.js"
-    import { events } from '@robojs/xp'
-    import { getClient } from '@robojs/discordjs'
+  events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+  	const client = getClient()
+  	const guild = await client.guilds.fetch(guildId)
+  	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+  	if (!channel?.isTextBased()) return
 
-    events.onLevelUp(async ({ guildId, userId, newLevel }) => {
-    	const client = getClient()
-    	const guild = await client.guilds.fetch(guildId)
-    	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
-    	if (!channel?.isTextBased()) return
+  	await channel.send(`<@${userId}> just reached Level ${newLevel}.`)
+  })
+  ```
 
-    	await channel.send(`<@${userId}> just reached Level ${newLevel}.`)
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start/level-announcements.js"
+  import { events } from '@robojs/xp'
+  import { getClient } from '@robojs/discordjs'
+
+  events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+  	const client = getClient()
+  	const guild = await client.guilds.fetch(guildId)
+  	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+  	if (!channel?.isTextBased()) return
+
+  	await channel.send(`<@${userId}> just reached Level ${newLevel}.`)
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 The same pattern works for contest bonuses, moderation penalties, premium XP boosts, analytics tracking, and any other XP-based feature.

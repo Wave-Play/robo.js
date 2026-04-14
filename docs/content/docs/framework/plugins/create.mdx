@@ -74,24 +74,28 @@ Plugins can hook into the Robo.js lifecycle by creating files in `src/robo/`. Th
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import type { StartContext } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default async (context: StartContext) => {
-    	const { pluginConfig, logger } = context
-    	logger.info('My plugin started!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    export default async (context) => {
-    	const { pluginConfig, logger } = context
-    	logger.info('My plugin started!')
-    }
-    ```
-  </Tab>
+  ```ts title="src/robo/start.ts"
+  import type { StartContext } from 'robo.js'
+
+  export default async (context: StartContext) => {
+  	const { pluginConfig, logger } = context
+  	logger.info('My plugin started!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  export default async (context) => {
+  	const { pluginConfig, logger } = context
+  	logger.info('My plugin started!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Plugins can also define [route definitions](./routes) to register custom file conventions (like how `@robojs/discordjs` makes `src/commands/` work).

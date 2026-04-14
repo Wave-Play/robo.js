@@ -49,24 +49,28 @@ For each hook, **plugins run first** (in registration order), then the project's
 The earliest hook. Fires **before** the manifest is loaded and the portal is populated. Use it for log drains, monkey-patching, or setting hook priorities.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/init.ts"
-		import type { InitContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: InitContext) => {
-			// Set up a custom log drain
-			context.logger.addDrain(myLogDrain)
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/init.js"
-		export default async (context) => {
-			// Set up a custom log drain
-			context.logger.addDrain(myLogDrain)
-		}
-		```
-	</Tab>
+	```ts title="src/robo/init.ts"
+	import type { InitContext } from 'robo.js'
+
+	export default async (context: InitContext) => {
+		// Set up a custom log drain
+		context.logger.addDrain(myLogDrain)
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/init.js"
+	export default async (context) => {
+		// Set up a custom log drain
+		context.logger.addDrain(myLogDrain)
+	}
+	```
+
+</Tab>
 </Tabs>
 
 **Context fields:**
@@ -83,28 +87,32 @@ The earliest hook. Fires **before** the manifest is loaded and the portal is pop
 Fires **after** the portal is populated but **before** start hooks. Use it to create shared resources like HTTP servers or database connections that other plugins or your project depend on.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/prepare.ts"
-		import type { PrepareContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: PrepareContext) => {
-			const { pluginConfig, state, logger } = context
-			const server = createServer(pluginConfig.port)
-			state.set('server', server)
-			logger.info('Server created')
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/prepare.js"
-		export default async (context) => {
-			const { pluginConfig, state, logger } = context
-			const server = createServer(pluginConfig.port)
-			state.set('server', server)
-			logger.info('Server created')
-		}
-		```
-	</Tab>
+	```ts title="src/robo/prepare.ts"
+	import type { PrepareContext } from 'robo.js'
+
+	export default async (context: PrepareContext) => {
+		const { pluginConfig, state, logger } = context
+		const server = createServer(pluginConfig.port)
+		state.set('server', server)
+		logger.info('Server created')
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/prepare.js"
+	export default async (context) => {
+		const { pluginConfig, state, logger } = context
+		const server = createServer(pluginConfig.port)
+		state.set('server', server)
+		logger.info('Server created')
+	}
+	```
+
+</Tab>
 </Tabs>
 
 **Context fields:**
@@ -124,26 +132,30 @@ Fires **after** the portal is populated but **before** start hooks. Use it to cr
 The main startup hook. Fires after all prepare hooks have completed. By this point, all plugin resources should be ready.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/start.ts"
-		import type { StartContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: StartContext) => {
-			const { logger, mode } = context
-			logger.info(`Starting in ${mode} mode`)
-			await connectToDatabase()
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/start.js"
-		export default async (context) => {
-			const { logger, mode } = context
-			logger.info(`Starting in ${mode} mode`)
-			await connectToDatabase()
-		}
-		```
-	</Tab>
+	```ts title="src/robo/start.ts"
+	import type { StartContext } from 'robo.js'
+
+	export default async (context: StartContext) => {
+		const { logger, mode } = context
+		logger.info(`Starting in ${mode} mode`)
+		await connectToDatabase()
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/start.js"
+	export default async (context) => {
+		const { logger, mode } = context
+		logger.info(`Starting in ${mode} mode`)
+		await connectToDatabase()
+	}
+	```
+
+</Tab>
 </Tabs>
 
 The start context has the same fields as prepare, plus an optional `portal` field reserved for future use.
@@ -153,27 +165,31 @@ The start context has the same fields as prepare, plus an optional `portal` fiel
 Plugins can report their status during startup using `Robo.status`. In development, status items appear in the interactive terminal. In production, they fall back to logger output.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/start.ts"
-		import { Robo } from 'robo.js'
-		import type { StartContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: StartContext) => {
-			await connectToDatabase()
-			Robo.status.set('database', 'Database connected')
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/start.js"
-		import { Robo } from 'robo.js'
+	```ts title="src/robo/start.ts"
+	import { Robo } from 'robo.js'
+	import type { StartContext } from 'robo.js'
 
-		export default async (context) => {
-			await connectToDatabase()
-			Robo.status.set('database', 'Database connected')
-		}
-		```
-	</Tab>
+	export default async (context: StartContext) => {
+		await connectToDatabase()
+		Robo.status.set('database', 'Database connected')
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/start.js"
+	import { Robo } from 'robo.js'
+
+	export default async (context) => {
+		await connectToDatabase()
+		Robo.status.set('database', 'Database connected')
+	}
+	```
+
+</Tab>
 </Tabs>
 
 **API:**
@@ -211,26 +227,30 @@ All startup hooks (init, prepare, start) are subject to the lifecycle timeout co
 Fires when Robo.js shuts down. The execution order is **reversed** compared to startup: the project's stop hook runs **first**, then plugin stop hooks run in reverse priority order. This ensures things that started first are stopped last.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/stop.ts"
-		import type { StopContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: StopContext) => {
-			const { reason, logger } = context
-			logger.info(`Stopping because: ${reason}`)
-			await disconnectDatabase()
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/stop.js"
-		export default async (context) => {
-			const { reason, logger } = context
-			logger.info(`Stopping because: ${reason}`)
-			await disconnectDatabase()
-		}
-		```
-	</Tab>
+	```ts title="src/robo/stop.ts"
+	import type { StopContext } from 'robo.js'
+
+	export default async (context: StopContext) => {
+		const { reason, logger } = context
+		logger.info(`Stopping because: ${reason}`)
+		await disconnectDatabase()
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/stop.js"
+	export default async (context) => {
+		const { reason, logger } = context
+		logger.info(`Stopping because: ${reason}`)
+		await disconnectDatabase()
+	}
+	```
+
+</Tab>
 </Tabs>
 
 The stop context extends the start context with one additional field:
@@ -254,26 +274,30 @@ Stop hook errors are logged but do not prevent other stop hooks from running. Gr
 Handles unhandled rejections and uncaught exceptions. All error hooks (project and plugins) run **in parallel** with a 5-second timeout. Errors inside error hooks are caught and logged but never propagate -- error hooks should never crash the process.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/error.ts"
-		import type { ErrorContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: ErrorContext) => {
-			const { error, type, logger } = context
-			logger.error(`${type}: ${error}`)
-			await sendAlertToSlack(error)
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/error.js"
-		export default async (context) => {
-			const { error, type, logger } = context
-			logger.error(`${type}: ${error}`)
-			await sendAlertToSlack(error)
-		}
-		```
-	</Tab>
+	```ts title="src/robo/error.ts"
+	import type { ErrorContext } from 'robo.js'
+
+	export default async (context: ErrorContext) => {
+		const { error, type, logger } = context
+		logger.error(`${type}: ${error}`)
+		await sendAlertToSlack(error)
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/error.js"
+	export default async (context) => {
+		const { error, type, logger } = context
+		logger.error(`${type}: ${error}`)
+		await sendAlertToSlack(error)
+	}
+	```
+
+</Tab>
 </Tabs>
 
 **Context fields:**
@@ -295,36 +319,40 @@ Fires during development when files change and hot module replacement occurs. Al
 You can filter which changes trigger your hook by exporting a `config` object with `namespaces` and `routes` arrays.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/hmr.ts"
-		import type { HmrContext, HmrHookConfig } from 'robo.js'
+<Tab value="TypeScript">
 
-		export const config: HmrHookConfig = {
-			namespaces: ['server'],
-			routes: ['api']
-		}
+	```ts title="src/robo/hmr.ts"
+	import type { HmrContext, HmrHookConfig } from 'robo.js'
 
-		export default async (context: HmrContext) => {
-			const { changeType, files, routes, logger } = context
-			logger.info(`HMR ${changeType}: ${files.join(', ')}`)
-			// Clear caches, restart services, etc.
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/hmr.js"
-		export const config = {
-			namespaces: ['server'],
-			routes: ['api']
-		}
+	export const config: HmrHookConfig = {
+		namespaces: ['server'],
+		routes: ['api']
+	}
 
-		export default async (context) => {
-			const { changeType, files, routes, logger } = context
-			logger.info(`HMR ${changeType}: ${files.join(', ')}`)
-			// Clear caches, restart services, etc.
-		}
-		```
-	</Tab>
+	export default async (context: HmrContext) => {
+		const { changeType, files, routes, logger } = context
+		logger.info(`HMR ${changeType}: ${files.join(', ')}`)
+		// Clear caches, restart services, etc.
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/hmr.js"
+	export const config = {
+		namespaces: ['server'],
+		routes: ['api']
+	}
+
+	export default async (context) => {
+		const { changeType, files, routes, logger } = context
+		logger.info(`HMR ${changeType}: ${files.join(', ')}`)
+		// Clear caches, restart services, etc.
+	}
+	```
+
+</Tab>
 </Tabs>
 
 **Context fields:**
@@ -382,24 +410,28 @@ The `store` persists across all three build hooks within the same build, letting
 Runs before the build begins. The project's hook runs first, then plugin hooks run in parallel.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/build/start.ts"
-		import type { BuildContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: BuildContext) => {
-			context.store.set('buildStart', Date.now())
-			context.logger.info('Build starting...')
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/build/start.js"
-		export default async (context) => {
-			context.store.set('buildStart', Date.now())
-			context.logger.info('Build starting...')
-		}
-		```
-	</Tab>
+	```ts title="src/robo/build/start.ts"
+	import type { BuildContext } from 'robo.js'
+
+	export default async (context: BuildContext) => {
+		context.store.set('buildStart', Date.now())
+		context.logger.info('Build starting...')
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/build/start.js"
+	export default async (context) => {
+		context.store.set('buildStart', Date.now())
+		context.logger.info('Build starting...')
+	}
+	```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -413,25 +445,29 @@ Runs after entries are scanned but before the manifest is generated. The hook re
 The project's hook runs first, then plugin hooks run in parallel.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/build/transform.ts"
-		import type { BuildTransformContext } from 'robo.js'
-		import type { ProcessedEntry } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default (entries: ProcessedEntry[], context: BuildTransformContext) => {
-			context.logger.info(`Processing ${entries.length} entries`)
-			return entries.filter(entry => !entry.key.startsWith('internal/'))
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/build/transform.js"
-		export default (entries, context) => {
-			context.logger.info(`Processing ${entries.length} entries`)
-			return entries.filter(entry => !entry.key.startsWith('internal/'))
-		}
-		```
-	</Tab>
+	```ts title="src/robo/build/transform.ts"
+	import type { BuildTransformContext } from 'robo.js'
+	import type { ProcessedEntry } from 'robo.js'
+
+	export default (entries: ProcessedEntry[], context: BuildTransformContext) => {
+		context.logger.info(`Processing ${entries.length} entries`)
+		return entries.filter(entry => !entry.key.startsWith('internal/'))
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/build/transform.js"
+	export default (entries, context) => {
+		context.logger.info(`Processing ${entries.length} entries`)
+		return entries.filter(entry => !entry.key.startsWith('internal/'))
+	}
+	```
+
+</Tab>
 </Tabs>
 
 ### build/complete
@@ -441,30 +477,34 @@ Runs after the manifest has been written. Use it for post-build tasks like loggi
 The project's hook runs first, then plugin hooks run in parallel.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/build/complete.ts"
-		import type { BuildCompleteContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: BuildCompleteContext) => {
-			const elapsed = Date.now() - context.store.get('buildStart')
-			context.logger.info(`Build completed in ${elapsed}ms`)
+	```ts title="src/robo/build/complete.ts"
+	import type { BuildCompleteContext } from 'robo.js'
 
-			const commands = context.entries.get('discordjs', 'commands')
-			context.logger.info(`Built ${commands.length} commands`)
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/build/complete.js"
-		export default async (context) => {
-			const elapsed = Date.now() - context.store.get('buildStart')
-			context.logger.info(`Build completed in ${elapsed}ms`)
+	export default async (context: BuildCompleteContext) => {
+		const elapsed = Date.now() - context.store.get('buildStart')
+		context.logger.info(`Build completed in ${elapsed}ms`)
 
-			const commands = context.entries.get('discordjs', 'commands')
-			context.logger.info(`Built ${commands.length} commands`)
-		}
-		```
-	</Tab>
+		const commands = context.entries.get('discordjs', 'commands')
+		context.logger.info(`Built ${commands.length} commands`)
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/build/complete.js"
+	export default async (context) => {
+		const elapsed = Date.now() - context.store.get('buildStart')
+		context.logger.info(`Build completed in ${elapsed}ms`)
+
+		const commands = context.entries.get('discordjs', 'commands')
+		context.logger.info(`Built ${commands.length} commands`)
+	}
+	```
+
+</Tab>
 </Tabs>
 
 The `build/complete` context also provides two additional methods for metadata aggregation:
@@ -485,25 +525,29 @@ There are three ways to control execution order.
 Set priority per hook in your `config/robo.mjs`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="config/robo.mjs"
-		/** @type {import('robo.js').Config} */
-		export default {
-			plugins: [
-				['@robojs/server', { port: 3000 }, { hookPriority: { start: 50 } }]
-			]
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="config/robo.mjs"
-		export default {
-			plugins: [
-				['@robojs/server', { port: 3000 }, { hookPriority: { start: 50 } }]
-			]
-		}
-		```
-	</Tab>
+<Tab value="TypeScript">
+
+	```ts title="config/robo.mjs"
+	/** @type {import('robo.js').Config} */
+	export default {
+		plugins: [
+			['@robojs/server', { port: 3000 }, { hookPriority: { start: 50 } }]
+		]
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="config/robo.mjs"
+	export default {
+		plugins: [
+			['@robojs/server', { port: 3000 }, { hookPriority: { start: 50 } }]
+		]
+	}
+	```
+
+</Tab>
 </Tabs>
 
 The third element in the plugin tuple is the meta options object. The `hookPriority` field maps hook names to priority values.
@@ -513,38 +557,42 @@ The third element in the plugin tuple is the meta options object. The `hookPrior
 Call these functions in your `init.ts` hook to set priorities at runtime:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/init.ts"
-		import { setHookPriority, prioritizeHookBefore, prioritizeHookAfter } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default () => {
-			// Explicit priority (lower runs first)
-			setHookPriority('start', '@robojs/server', 50)
+	```ts title="src/robo/init.ts"
+	import { setHookPriority, prioritizeHookBefore, prioritizeHookAfter } from 'robo.js'
 
-			// Relative: run my-plugin before @robojs/server
-			prioritizeHookBefore('start', 'my-plugin', '@robojs/server')
+	export default () => {
+		// Explicit priority (lower runs first)
+		setHookPriority('start', '@robojs/server', 50)
 
-			// Relative: run my-plugin after @robojs/server
-			prioritizeHookAfter('start', 'my-plugin', '@robojs/server')
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/init.js"
-		import { setHookPriority, prioritizeHookBefore, prioritizeHookAfter } from 'robo.js'
+		// Relative: run my-plugin before @robojs/server
+		prioritizeHookBefore('start', 'my-plugin', '@robojs/server')
 
-		export default () => {
-			// Explicit priority (lower runs first)
-			setHookPriority('start', '@robojs/server', 50)
+		// Relative: run my-plugin after @robojs/server
+		prioritizeHookAfter('start', 'my-plugin', '@robojs/server')
+	}
+	```
 
-			// Relative: run my-plugin before @robojs/server
-			prioritizeHookBefore('start', 'my-plugin', '@robojs/server')
+</Tab>
+<Tab value="JavaScript">
 
-			// Relative: run my-plugin after @robojs/server
-			prioritizeHookAfter('start', 'my-plugin', '@robojs/server')
-		}
-		```
-	</Tab>
+	```js title="src/robo/init.js"
+	import { setHookPriority, prioritizeHookBefore, prioritizeHookAfter } from 'robo.js'
+
+	export default () => {
+		// Explicit priority (lower runs first)
+		setHookPriority('start', '@robojs/server', 50)
+
+		// Relative: run my-plugin before @robojs/server
+		prioritizeHookBefore('start', 'my-plugin', '@robojs/server')
+
+		// Relative: run my-plugin after @robojs/server
+		prioritizeHookAfter('start', 'my-plugin', '@robojs/server')
+	}
+	```
+
+</Tab>
 </Tabs>
 
 - `prioritizeHookBefore` sets the priority to the target's priority minus 10.
@@ -580,28 +628,32 @@ Both `database.ts` and `cache.ts` run during the start phase. This is useful whe
 The `setup.ts` hook is different from other lifecycle hooks. It runs during `npx create-robo` or `npx robo add`, not at runtime. Plugins use it to run installation wizards that collect configuration from the user.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-	<Tab value="TypeScript">
-		```ts title="src/robo/setup.ts"
-		import type { SetupContext } from 'robo.js'
+<Tab value="TypeScript">
 
-		export default async (context: SetupContext) => {
-			const answers = await context.prompt([
-				{ type: 'input', name: 'apiKey', message: 'Enter your API key:' }
-			])
-			context.logger.info(`Configured with key: ${answers.apiKey}`)
-		}
-		```
-	</Tab>
-	<Tab value="JavaScript">
-		```js title="src/robo/setup.js"
-		export default async (context) => {
-			const answers = await context.prompt([
-				{ type: 'input', name: 'apiKey', message: 'Enter your API key:' }
-			])
-			context.logger.info(`Configured with key: ${answers.apiKey}`)
-		}
-		```
-	</Tab>
+	```ts title="src/robo/setup.ts"
+	import type { SetupContext } from 'robo.js'
+
+	export default async (context: SetupContext) => {
+		const answers = await context.prompt([
+			{ type: 'input', name: 'apiKey', message: 'Enter your API key:' }
+		])
+		context.logger.info(`Configured with key: ${answers.apiKey}`)
+	}
+	```
+
+</Tab>
+<Tab value="JavaScript">
+
+	```js title="src/robo/setup.js"
+	export default async (context) => {
+		const answers = await context.prompt([
+			{ type: 'input', name: 'apiKey', message: 'Enter your API key:' }
+		])
+		context.logger.info(`Configured with key: ${answers.apiKey}`)
+	}
+	```
+
+</Tab>
 </Tabs>
 
 **Context fields:**

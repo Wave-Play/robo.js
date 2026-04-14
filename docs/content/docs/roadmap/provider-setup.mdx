@@ -35,81 +35,89 @@ JIRA_DEFAULT_ISSUE_TYPE="Story"
 For more control, configure the provider in your plugin config file:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/roadmap.ts"
-    import { JiraProvider } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    export default {
-      provider: new JiraProvider({
-        type: 'jira',
-        options: {
-          url: process.env.JIRA_URL,
-          email: process.env.JIRA_EMAIL,
-          apiToken: process.env.JIRA_API_TOKEN,
-          projectKey: process.env.JIRA_PROJECT_KEY,
-          jql: 'project = PROJ AND labels = public',
-          maxResults: 50,
-          defaultIssueType: 'Story'
-        }
-      })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/roadmap.js"
-    import { JiraProvider } from '@robojs/roadmap'
+  ```ts title="config/plugins/robojs/roadmap.ts"
+  import { JiraProvider } from '@robojs/roadmap'
 
-    export default {
-      provider: new JiraProvider({
-        type: 'jira',
-        options: {
-          url: process.env.JIRA_URL,
-          email: process.env.JIRA_EMAIL,
-          apiToken: process.env.JIRA_API_TOKEN,
-          projectKey: process.env.JIRA_PROJECT_KEY,
-          jql: 'project = PROJ AND labels = public',
-          maxResults: 50,
-          defaultIssueType: 'Story'
-        }
-      })
-    }
-    ```
-  </Tab>
+  export default {
+    provider: new JiraProvider({
+      type: 'jira',
+      options: {
+        url: process.env.JIRA_URL,
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_API_TOKEN,
+        projectKey: process.env.JIRA_PROJECT_KEY,
+        jql: 'project = PROJ AND labels = public',
+        maxResults: 50,
+        defaultIssueType: 'Story'
+      }
+    })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/roadmap.js"
+  import { JiraProvider } from '@robojs/roadmap'
+
+  export default {
+    provider: new JiraProvider({
+      type: 'jira',
+      options: {
+        url: process.env.JIRA_URL,
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_API_TOKEN,
+        projectKey: process.env.JIRA_PROJECT_KEY,
+        jql: 'project = PROJ AND labels = public',
+        maxResults: 50,
+        defaultIssueType: 'Story'
+      }
+    })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 You can also pass a plain config object instead of a provider instance:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/roadmap.ts"
-    export default {
-      provider: {
-        type: 'jira',
-        options: {
-          url: process.env.JIRA_URL,
-          email: process.env.JIRA_EMAIL,
-          apiToken: process.env.JIRA_API_TOKEN,
-          projectKey: process.env.JIRA_PROJECT_KEY
-        }
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/roadmap.ts"
+  export default {
+    provider: {
+      type: 'jira',
+      options: {
+        url: process.env.JIRA_URL,
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_API_TOKEN,
+        projectKey: process.env.JIRA_PROJECT_KEY
       }
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/roadmap.js"
-    export default {
-      provider: {
-        type: 'jira',
-        options: {
-          url: process.env.JIRA_URL,
-          email: process.env.JIRA_EMAIL,
-          apiToken: process.env.JIRA_API_TOKEN,
-          projectKey: process.env.JIRA_PROJECT_KEY
-        }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/roadmap.js"
+  export default {
+    provider: {
+      type: 'jira',
+      options: {
+        url: process.env.JIRA_URL,
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_API_TOKEN,
+        projectKey: process.env.JIRA_PROJECT_KEY
       }
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## JQL filtering
@@ -123,42 +131,46 @@ JQL (Jira Query Language) controls which issues the plugin fetches. The default 
 Common JQL patterns:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Public cards only
-    jql: 'project = PROJ AND labels = public'
+<Tab value="TypeScript">
 
-    // Exclude private cards
-    jql: 'project = PROJ AND labels != private'
+  ```ts
+  // Public cards only
+  jql: 'project = PROJ AND labels = public'
 
-    // Active cards only (not resolved)
-    jql: 'project = PROJ AND resolution = Unresolved'
+  // Exclude private cards
+  jql: 'project = PROJ AND labels != private'
 
-    // Cards updated in last 30 days
-    jql: 'project = PROJ AND updated >= -30d'
+  // Active cards only (not resolved)
+  jql: 'project = PROJ AND resolution = Unresolved'
 
-    // Multiple projects
-    jql: 'project IN (PROJ, OTHER) AND labels = roadmap'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Public cards only
-    jql: 'project = PROJ AND labels = public'
+  // Cards updated in last 30 days
+  jql: 'project = PROJ AND updated >= -30d'
 
-    // Exclude private cards
-    jql: 'project = PROJ AND labels != private'
+  // Multiple projects
+  jql: 'project IN (PROJ, OTHER) AND labels = roadmap'
+  ```
 
-    // Active cards only (not resolved)
-    jql: 'project = PROJ AND resolution = Unresolved'
+</Tab>
+<Tab value="JavaScript">
 
-    // Cards updated in last 30 days
-    jql: 'project = PROJ AND updated >= -30d'
+  ```js
+  // Public cards only
+  jql: 'project = PROJ AND labels = public'
 
-    // Multiple projects
-    jql: 'project IN (PROJ, OTHER) AND labels = roadmap'
-    ```
-  </Tab>
+  // Exclude private cards
+  jql: 'project = PROJ AND labels != private'
+
+  // Active cards only (not resolved)
+  jql: 'project = PROJ AND resolution = Unresolved'
+
+  // Cards updated in last 30 days
+  jql: 'project = PROJ AND updated >= -30d'
+
+  // Multiple projects
+  jql: 'project IN (PROJ, OTHER) AND labels = roadmap'
+  ```
+
+</Tab>
 </Tabs>
 
 See the [Atlassian JQL documentation](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/) for the full query language reference.
@@ -188,20 +200,24 @@ Map Jira issues directly to Discord users by storing Discord User IDs in a Jira 
     Or in the config file:
 
     <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-      <Tab value="TypeScript">
-        ```ts
-            options: {
-              discordUserIdFieldId: 'customfield_10042'
-            }
-        ```
-      </Tab>
-      <Tab value="JavaScript">
-        ```js
-            options: {
-              discordUserIdFieldId: 'customfield_10042'
-            }
-        ```
-      </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+      options: {
+        discordUserIdFieldId: 'customfield_10042'
+      }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+      options: {
+        discordUserIdFieldId: 'customfield_10042'
+      }
+  ```
+
+</Tab>
     </Tabs>
   </Step>
   <Step>

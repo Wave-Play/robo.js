@@ -24,24 +24,28 @@ The plugin uses the [Plausible Events API](https://plausible.io/docs/events-api)
     ### Start tracking
 
     <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-      <Tab value="TypeScript">
-        ```ts
-            import { Analytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-            Analytics.event('command_used', {
-            	data: { command: 'ping' }
-            })
-        ```
-      </Tab>
-      <Tab value="JavaScript">
-        ```js
-            import { Analytics } from '@robojs/analytics'
+  ```ts
+      import { Analytics } from '@robojs/analytics'
 
-            Analytics.event('command_used', {
-            	data: { command: 'ping' }
-            })
-        ```
-      </Tab>
+      Analytics.event('command_used', {
+      	data: { command: 'ping' }
+      })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+      import { Analytics } from '@robojs/analytics'
+
+      Analytics.event('command_used', {
+      	data: { command: 'ping' }
+      })
+  ```
+
+</Tab>
     </Tabs>
   </Step>
 </Steps>
@@ -71,18 +75,22 @@ Fields like `sessionId`, `userId`, `revenue`, `action`, `actionType`, `label`, a
 `Analytics.view()` sends a `pageview` event. The page name is converted to a URL-safe slug and appended to the domain:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.view('Settings Page')
-    // URL becomes: https://example.com/settings-page
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.view('Settings Page')
-    // URL becomes: https://example.com/settings-page
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.view('Settings Page')
+  // URL becomes: https://example.com/settings-page
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.view('Settings Page')
+  // URL becomes: https://example.com/settings-page
+  ```
+
+</Tab>
 </Tabs>
 
 The slugification normalizes diacritics, removes special characters, and converts spaces to hyphens.
@@ -92,28 +100,32 @@ The slugification normalizes diacritics, removes special characters, and convert
 Pass custom properties through the `data` field:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.event('feature_used', {
-    	data: {
-    		feature: 'leaderboard',
-    		guild_size: 'large',
-    		user_role: 'admin'
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.event('feature_used', {
-    	data: {
-    		feature: 'leaderboard',
-    		guild_size: 'large',
-    		user_role: 'admin'
-    	}
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.event('feature_used', {
+  	data: {
+  		feature: 'leaderboard',
+  		guild_size: 'large',
+  		user_role: 'admin'
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.event('feature_used', {
+  	data: {
+  		feature: 'leaderboard',
+  		guild_size: 'large',
+  		user_role: 'admin'
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -125,22 +137,26 @@ Plausible enforces a maximum of 30 custom properties per event. If `data` has mo
 Override the configured domain for a specific event:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.event('cross_site_action', {
-    	domain: 'other-site.com',
-    	data: { source: 'discord-bot' }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.event('cross_site_action', {
-    	domain: 'other-site.com',
-    	data: { source: 'discord-bot' }
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.event('cross_site_action', {
+  	domain: 'other-site.com',
+  	data: { source: 'discord-bot' }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.event('cross_site_action', {
+  	domain: 'other-site.com',
+  	data: { source: 'discord-bot' }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### URL override
@@ -148,20 +164,24 @@ Override the configured domain for a specific event:
 Override the auto-generated URL:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    Analytics.view('Custom Page', {
-    	url: 'https://example.com/custom/path'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    Analytics.view('Custom Page', {
-    	url: 'https://example.com/custom/path'
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  Analytics.view('Custom Page', {
+  	url: 'https://example.com/custom/path'
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  Analytics.view('Custom Page', {
+  	url: 'https://example.com/custom/path'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Request headers
@@ -181,24 +201,28 @@ These headers are required by the Plausible API. The `X-Forwarded-For` and `User
 Instead of environment variables, pass the domain directly to the constructor:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/analytics.mjs"
-    import { PlausibleAnalytics } from '@robojs/analytics'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new PlausibleAnalytics('example.com')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/analytics.mjs"
-    import { PlausibleAnalytics } from '@robojs/analytics'
+  ```ts title="config/plugins/robojs/analytics.mjs"
+  import { PlausibleAnalytics } from '@robojs/analytics'
 
-    export default {
-    	engine: new PlausibleAnalytics('example.com')
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new PlausibleAnalytics('example.com')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/analytics.mjs"
+  import { PlausibleAnalytics } from '@robojs/analytics'
+
+  export default {
+  	engine: new PlausibleAnalytics('example.com')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Constructor options take priority over the `PLAUSIBLE_DOMAIN` environment variable.

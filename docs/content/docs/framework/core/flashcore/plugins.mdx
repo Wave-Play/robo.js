@@ -10,70 +10,74 @@ Flashcore has a plugin system for adding middleware, model extensions, client ex
 Use `definePlugin` from `robo.js/flashcore`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { definePlugin } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    export const auditPlugin = () => definePlugin({
-    	name: 'audit',
+  ```ts
+  import { definePlugin } from 'robo.js/flashcore'
 
-    	setup(ctx) {
-    		ctx.state.log = []
-    	},
+  export const auditPlugin = () => definePlugin({
+  	name: 'audit',
 
-    	middleware: {
-    		async create(params, next) {
-    			const result = await next()
-    			this.state.log.push({ op: 'create', model: params.model, at: Date.now() })
-    			return result
-    		},
-    		async delete(params, next) {
-    			const result = await next()
-    			this.state.log.push({ op: 'delete', model: params.model, at: Date.now() })
-    			return result
-    		}
-    	},
+  	setup(ctx) {
+  		ctx.state.log = []
+  	},
 
-    	clientExtensions: {
-    		getAuditLog() {
-    			return [...this.state.log]
-    		}
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { definePlugin } from 'robo.js/flashcore'
+  	middleware: {
+  		async create(params, next) {
+  			const result = await next()
+  			this.state.log.push({ op: 'create', model: params.model, at: Date.now() })
+  			return result
+  		},
+  		async delete(params, next) {
+  			const result = await next()
+  			this.state.log.push({ op: 'delete', model: params.model, at: Date.now() })
+  			return result
+  		}
+  	},
 
-    export const auditPlugin = () => definePlugin({
-    	name: 'audit',
+  	clientExtensions: {
+  		getAuditLog() {
+  			return [...this.state.log]
+  		}
+  	}
+  })
+  ```
 
-    	setup(ctx) {
-    		ctx.state.log = []
-    	},
+</Tab>
+<Tab value="JavaScript">
 
-    	middleware: {
-    		async create(params, next) {
-    			const result = await next()
-    			this.state.log.push({ op: 'create', model: params.model, at: Date.now() })
-    			return result
-    		},
-    		async delete(params, next) {
-    			const result = await next()
-    			this.state.log.push({ op: 'delete', model: params.model, at: Date.now() })
-    			return result
-    		}
-    	},
+  ```js
+  import { definePlugin } from 'robo.js/flashcore'
 
-    	clientExtensions: {
-    		getAuditLog() {
-    			return [...this.state.log]
-    		}
-    	}
-    })
-    ```
-  </Tab>
+  export const auditPlugin = () => definePlugin({
+  	name: 'audit',
+
+  	setup(ctx) {
+  		ctx.state.log = []
+  	},
+
+  	middleware: {
+  		async create(params, next) {
+  			const result = await next()
+  			this.state.log.push({ op: 'create', model: params.model, at: Date.now() })
+  			return result
+  		},
+  		async delete(params, next) {
+  			const result = await next()
+  			this.state.log.push({ op: 'delete', model: params.model, at: Date.now() })
+  			return result
+  		}
+  	},
+
+  	clientExtensions: {
+  		getAuditLog() {
+  			return [...this.state.log]
+  		}
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Middleware
@@ -87,68 +91,72 @@ Supported operations: `create`, `update`, `delete`, `findUnique`, `findMany`, `c
 Flashcore provides utility factories for common patterns:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-    	createLoggingMiddleware,
-    	createValidationMiddleware,
-    	forModels,
-    	forOperations
-    } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    // Log all operations with the default logger
-    const logging = createLoggingMiddleware()
+  ```ts
+  import {
+  	createLoggingMiddleware,
+  	createValidationMiddleware,
+  	forModels,
+  	forOperations
+  } from 'robo.js/flashcore'
 
-    // Log with a custom logger function
-    const customLogging = createLoggingMiddleware((message, ...args) => {
-    	console.log(`[DB] ${message}`, ...args)
-    })
+  // Log all operations with the default logger
+  const logging = createLoggingMiddleware()
 
-    // Only run middleware for specific models
-    const modelScoped = forModels(['Warning', 'GuildSettings'], logging)
+  // Log with a custom logger function
+  const customLogging = createLoggingMiddleware((message, ...args) => {
+  	console.log(`[DB] ${message}`, ...args)
+  })
 
-    // Only run middleware for specific operations
-    const writeOnly = forOperations(['create', 'update', 'delete'], logging)
+  // Only run middleware for specific models
+  const modelScoped = forModels(['Warning', 'GuildSettings'], logging)
 
-    // Custom validation — receives (operation, args) and should throw on invalid data
-    const validate = createValidationMiddleware((operation, args) => {
-    	if (operation === 'create' && args?.data?.reason?.length < 3) {
-    		throw new Error('Reason must be at least 3 characters')
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-    	createLoggingMiddleware,
-    	createValidationMiddleware,
-    	forModels,
-    	forOperations
-    } from 'robo.js/flashcore'
+  // Only run middleware for specific operations
+  const writeOnly = forOperations(['create', 'update', 'delete'], logging)
 
-    // Log all operations with the default logger
-    const logging = createLoggingMiddleware()
+  // Custom validation — receives (operation, args) and should throw on invalid data
+  const validate = createValidationMiddleware((operation, args) => {
+  	if (operation === 'create' && args?.data?.reason?.length < 3) {
+  		throw new Error('Reason must be at least 3 characters')
+  	}
+  })
+  ```
 
-    // Log with a custom logger function
-    const customLogging = createLoggingMiddleware((message, ...args) => {
-    	console.log(`[DB] ${message}`, ...args)
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    // Only run middleware for specific models
-    const modelScoped = forModels(['Warning', 'GuildSettings'], logging)
+  ```js
+  import {
+  	createLoggingMiddleware,
+  	createValidationMiddleware,
+  	forModels,
+  	forOperations
+  } from 'robo.js/flashcore'
 
-    // Only run middleware for specific operations
-    const writeOnly = forOperations(['create', 'update', 'delete'], logging)
+  // Log all operations with the default logger
+  const logging = createLoggingMiddleware()
 
-    // Custom validation — receives (operation, args) and should throw on invalid data
-    const validate = createValidationMiddleware((operation, args) => {
-    	if (operation === 'create' && args?.data?.reason?.length < 3) {
-    		throw new Error('Reason must be at least 3 characters')
-    	}
-    })
-    ```
-  </Tab>
+  // Log with a custom logger function
+  const customLogging = createLoggingMiddleware((message, ...args) => {
+  	console.log(`[DB] ${message}`, ...args)
+  })
+
+  // Only run middleware for specific models
+  const modelScoped = forModels(['Warning', 'GuildSettings'], logging)
+
+  // Only run middleware for specific operations
+  const writeOnly = forOperations(['create', 'update', 'delete'], logging)
+
+  // Custom validation — receives (operation, args) and should throw on invalid data
+  const validate = createValidationMiddleware((operation, args) => {
+  	if (operation === 'create' && args?.data?.reason?.length < 3) {
+  		throw new Error('Reason must be at least 3 characters')
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Model Extensions
@@ -156,50 +164,54 @@ Flashcore provides utility factories for common patterns:
 Add custom methods to all models:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    export const softDeletePlugin = () => definePlugin({
-    	name: 'soft-delete',
+<Tab value="TypeScript">
 
-    	modelExtensions: {
-    		async softDelete(where) {
-    			return this.update({
-    				where,
-    				data: { deletedAt: new Date() }
-    			})
-    		},
-    		async findActive(args) {
-    			return this.findMany({
-    				...args,
-    				where: { ...args?.where, deletedAt: { equals: undefined } }
-    			})
-    		}
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    export const softDeletePlugin = () => definePlugin({
-    	name: 'soft-delete',
+  ```ts
+  export const softDeletePlugin = () => definePlugin({
+  	name: 'soft-delete',
 
-    	modelExtensions: {
-    		async softDelete(where) {
-    			return this.update({
-    				where,
-    				data: { deletedAt: new Date() }
-    			})
-    		},
-    		async findActive(args) {
-    			return this.findMany({
-    				...args,
-    				where: { ...args?.where, deletedAt: { equals: undefined } }
-    			})
-    		}
-    	}
-    })
-    ```
-  </Tab>
+  	modelExtensions: {
+  		async softDelete(where) {
+  			return this.update({
+  				where,
+  				data: { deletedAt: new Date() }
+  			})
+  		},
+  		async findActive(args) {
+  			return this.findMany({
+  				...args,
+  				where: { ...args?.where, deletedAt: { equals: undefined } }
+  			})
+  		}
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  export const softDeletePlugin = () => definePlugin({
+  	name: 'soft-delete',
+
+  	modelExtensions: {
+  		async softDelete(where) {
+  			return this.update({
+  				where,
+  				data: { deletedAt: new Date() }
+  			})
+  		},
+  		async findActive(args) {
+  			return this.findMany({
+  				...args,
+  				where: { ...args?.where, deletedAt: { equals: undefined } }
+  			})
+  		}
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Model extension methods are called with `this` bound to the model instance.
@@ -209,58 +221,62 @@ Model extension methods are called with `this` bound to the model instance.
 Add methods to `Flashcore.$`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    export const statsPlugin = () => definePlugin({
-    	name: 'stats',
+<Tab value="TypeScript">
 
-    	setup(ctx) {
-    		ctx.state.opCount = 0
-    	},
+  ```ts
+  export const statsPlugin = () => definePlugin({
+  	name: 'stats',
 
-    	middleware: {
-    		async create(params, next) {
-    			this.state.opCount++
-    			return next()
-    		}
-    	},
+  	setup(ctx) {
+  		ctx.state.opCount = 0
+  	},
 
-    	clientExtensions: {
-    		getOpCount() {
-    			return this.state.opCount
-    		}
-    	}
-    })
+  	middleware: {
+  		async create(params, next) {
+  			this.state.opCount++
+  			return next()
+  		}
+  	},
 
-    // Usage: Flashcore.$.stats.getOpCount()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    export const statsPlugin = () => definePlugin({
-    	name: 'stats',
+  	clientExtensions: {
+  		getOpCount() {
+  			return this.state.opCount
+  		}
+  	}
+  })
 
-    	setup(ctx) {
-    		ctx.state.opCount = 0
-    	},
+  // Usage: Flashcore.$.stats.getOpCount()
+  ```
 
-    	middleware: {
-    		async create(params, next) {
-    			this.state.opCount++
-    			return next()
-    		}
-    	},
+</Tab>
+<Tab value="JavaScript">
 
-    	clientExtensions: {
-    		getOpCount() {
-    			return this.state.opCount
-    		}
-    	}
-    })
+  ```js
+  export const statsPlugin = () => definePlugin({
+  	name: 'stats',
 
-    // Usage: Flashcore.$.stats.getOpCount()
-    ```
-  </Tab>
+  	setup(ctx) {
+  		ctx.state.opCount = 0
+  	},
+
+  	middleware: {
+  		async create(params, next) {
+  			this.state.opCount++
+  			return next()
+  		}
+  	},
+
+  	clientExtensions: {
+  		getOpCount() {
+  			return this.state.opCount
+  		}
+  	}
+  })
+
+  // Usage: Flashcore.$.stats.getOpCount()
+  ```
+
+</Tab>
 </Tabs>
 
 Client extensions are namespaced under the plugin name on the `$` API.
@@ -270,40 +286,44 @@ Client extensions are namespaced under the plugin name on the `$` API.
 Define custom index types for specialized queries:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { defineIndex, createTrieIndex, createFullTextIndex } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    // Built-in trie index for prefix matching
-    const trie = createTrieIndex()
+  ```ts
+  import { defineIndex, createTrieIndex, createFullTextIndex } from 'robo.js/flashcore'
 
-    // Built-in full-text index
-    const fullText = createFullTextIndex()
+  // Built-in trie index for prefix matching
+  const trie = createTrieIndex()
 
-    // Custom index
-    const geoIndex = defineIndex({
-    	create: (options) => new GeoIndex(options),
-    	operators: ['nearby', 'withinRadius']
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { defineIndex, createTrieIndex, createFullTextIndex } from 'robo.js/flashcore'
+  // Built-in full-text index
+  const fullText = createFullTextIndex()
 
-    // Built-in trie index for prefix matching
-    const trie = createTrieIndex()
+  // Custom index
+  const geoIndex = defineIndex({
+  	create: (options) => new GeoIndex(options),
+  	operators: ['nearby', 'withinRadius']
+  })
+  ```
 
-    // Built-in full-text index
-    const fullText = createFullTextIndex()
+</Tab>
+<Tab value="JavaScript">
 
-    // Custom index
-    const geoIndex = defineIndex({
-    	create: (options) => new GeoIndex(options),
-    	operators: ['nearby', 'withinRadius']
-    })
-    ```
-  </Tab>
+  ```js
+  import { defineIndex, createTrieIndex, createFullTextIndex } from 'robo.js/flashcore'
+
+  // Built-in trie index for prefix matching
+  const trie = createTrieIndex()
+
+  // Built-in full-text index
+  const fullText = createFullTextIndex()
+
+  // Custom index
+  const geoIndex = defineIndex({
+  	create: (options) => new GeoIndex(options),
+  	operators: ['nearby', 'withinRadius']
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Use custom indexes on fields with `.indexedWith()`:

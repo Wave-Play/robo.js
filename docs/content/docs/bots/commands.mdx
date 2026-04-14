@@ -30,41 +30,49 @@ Create a file in `src/commands` named after the command. The file's default expo
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    export default () => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default () => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/ping.ts"
+  export default () => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default () => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Returning a value uses **Sage mode** (Robo.js automatically sends the return value as the reply). You can also use the interaction object directly.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	interaction.reply('Pong!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default (interaction) => {
-    	interaction.reply('Pong!')
-    }
-    ```
-  </Tab>
+  ```ts title="src/commands/ping.ts"
+  import type { ChatInputCommandInteraction } from 'discord.js'
+
+  export default (interaction: ChatInputCommandInteraction) => {
+  	interaction.reply('Pong!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default (interaction) => {
+  	interaction.reply('Pong!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Both approaches register a `/ping` command when the file is named `ping.ts`.
@@ -74,24 +82,28 @@ Both approaches register a `/ping` command when the file is named `ping.ts`.
 Export a `config` object using `createCommandConfig()` to set metadata like descriptions, options, and permissions.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Responds with Pong!'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    import { createCommandConfig } from '@robojs/discordjs'
+  ```ts title="src/commands/ping.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
 
-    export const config = createCommandConfig({
-    	description: 'Responds with Pong!'
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'Responds with Pong!'
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+
+  export const config = createCommandConfig({
+  	description: 'Responds with Pong!'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Field | Type | Description |
@@ -110,59 +122,63 @@ Export a `config` object using `createCommandConfig()` to set metadata like desc
 Define parameters with the `options` array in your config. Access parsed values through the second parameter using `CommandOptions<typeof config>`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/greet.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction, CommandOptions } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Greet someone',
-    	options: [
-    		{
-    			name: 'user',
-    			type: 'user',
-    			description: 'User to greet',
-    			required: true
-    		},
-    		{
-    			name: 'message',
-    			type: 'string',
-    			description: 'Custom greeting'
-    		}
-    	]
-    } as const)
+  ```ts title="src/commands/greet.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction, CommandOptions } from '@robojs/discordjs'
 
-    export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
-    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/greet.js"
-    import { createCommandConfig } from '@robojs/discordjs'
+  export const config = createCommandConfig({
+  	description: 'Greet someone',
+  	options: [
+  		{
+  			name: 'user',
+  			type: 'user',
+  			description: 'User to greet',
+  			required: true
+  		},
+  		{
+  			name: 'message',
+  			type: 'string',
+  			description: 'Custom greeting'
+  		}
+  	]
+  } as const)
 
-    export const config = createCommandConfig({
-    	description: 'Greet someone',
-    	options: [
-    		{
-    			name: 'user',
-    			type: 'user',
-    			description: 'User to greet',
-    			required: true
-    		},
-    		{
-    			name: 'message',
-    			type: 'string',
-    			description: 'Custom greeting'
-    		}
-    	]
-    })
+  export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+  	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+  }
+  ```
 
-    export default (interaction, options) => {
-    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/greet.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+
+  export const config = createCommandConfig({
+  	description: 'Greet someone',
+  	options: [
+  		{
+  			name: 'user',
+  			type: 'user',
+  			description: 'User to greet',
+  			required: true
+  		},
+  		{
+  			name: 'message',
+  			type: 'string',
+  			description: 'Custom greeting'
+  		}
+  	]
+  })
+
+  export default (interaction, options) => {
+  	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -197,48 +213,52 @@ Define parameters with the `options` array in your config. Access parsed values 
 Restrict an option to a fixed set of values with the `choices` array.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/color.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Chooses a color',
-    	options: [
-    		{
-    			name: 'color',
-    			description: 'Your favorite color',
-    			type: 'string',
-    			choices: [
-    				{ name: 'Red', value: 'red' },
-    				{ name: 'Green', value: 'green' },
-    				{ name: 'Blue', value: 'blue' }
-    			]
-    		}
-    	]
-    } as const)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/color.js"
-    import { createCommandConfig } from '@robojs/discordjs'
+  ```ts title="src/commands/color.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
 
-    export const config = createCommandConfig({
-    	description: 'Chooses a color',
-    	options: [
-    		{
-    			name: 'color',
-    			description: 'Your favorite color',
-    			type: 'string',
-    			choices: [
-    				{ name: 'Red', value: 'red' },
-    				{ name: 'Green', value: 'green' },
-    				{ name: 'Blue', value: 'blue' }
-    			]
-    		}
-    	]
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'Chooses a color',
+  	options: [
+  		{
+  			name: 'color',
+  			description: 'Your favorite color',
+  			type: 'string',
+  			choices: [
+  				{ name: 'Red', value: 'red' },
+  				{ name: 'Green', value: 'green' },
+  				{ name: 'Blue', value: 'blue' }
+  			]
+  		}
+  	]
+  } as const)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/color.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+
+  export const config = createCommandConfig({
+  	description: 'Chooses a color',
+  	options: [
+  		{
+  			name: 'color',
+  			description: 'Your favorite color',
+  			type: 'string',
+  			choices: [
+  				{ name: 'Red', value: 'red' },
+  				{ name: 'Green', value: 'green' },
+  				{ name: 'Blue', value: 'blue' }
+  			]
+  		}
+  	]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Each choice has a `name` displayed to the user and a `value` passed to your handler.
@@ -256,30 +276,34 @@ Each choice has a `name` displayed to the user and a `value` passed to your hand
 For dynamic suggestions, set `autocomplete: true` on the option and export an `autocomplete` function.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/color.ts"
-    import type { AutocompleteInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    const colors = ['red', 'green', 'blue', 'yellow', 'purple']
+  ```ts title="src/commands/color.ts"
+  import type { AutocompleteInteraction } from 'discord.js'
 
-    export const autocomplete = (interaction: AutocompleteInteraction) => {
-    	const focused = interaction.options.getFocused()
-    	const filtered = colors.filter((c) => c.startsWith(focused))
-    	return filtered.map((c) => ({ name: c, value: c }))
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/color.js"
-    const colors = ['red', 'green', 'blue', 'yellow', 'purple']
+  const colors = ['red', 'green', 'blue', 'yellow', 'purple']
 
-    export const autocomplete = (interaction) => {
-    	const focused = interaction.options.getFocused()
-    	const filtered = colors.filter((c) => c.startsWith(focused))
-    	return filtered.map((c) => ({ name: c, value: c }))
-    }
-    ```
-  </Tab>
+  export const autocomplete = (interaction: AutocompleteInteraction) => {
+  	const focused = interaction.options.getFocused()
+  	const filtered = colors.filter((c) => c.startsWith(focused))
+  	return filtered.map((c) => ({ name: c, value: c }))
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/color.js"
+  const colors = ['red', 'green', 'blue', 'yellow', 'purple']
+
+  export const autocomplete = (interaction) => {
+  	const focused = interaction.options.getFocused()
+  	const filtered = colors.filter((c) => c.startsWith(focused))
+  	return filtered.map((c) => ({ name: c, value: c }))
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The function receives an `AutocompleteInteraction` and returns matching choices as the user types.
@@ -332,28 +356,32 @@ This creates `/bot status idle`.
 Control where your command is available with `contexts` and who can use it with `integrationTypes`. Use these when you want commands to work in DMs or with user-installed bots (installed by individual users rather than server admins).
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/hello.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Available everywhere',
-    	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
-    	integrationTypes: ['GuildInstall', 'UserInstall']
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/hello.js"
-    import { createCommandConfig } from '@robojs/discordjs'
+  ```ts title="src/commands/hello.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
 
-    export const config = createCommandConfig({
-    	description: 'Available everywhere',
-    	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
-    	integrationTypes: ['GuildInstall', 'UserInstall']
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'Available everywhere',
+  	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
+  	integrationTypes: ['GuildInstall', 'UserInstall']
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/hello.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+
+  export const config = createCommandConfig({
+  	description: 'Available everywhere',
+  	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
+  	integrationTypes: ['GuildInstall', 'UserInstall']
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Context | Description |
@@ -372,28 +400,32 @@ Control where your command is available with `contexts` and who can use it with 
 Use `defaultMemberPermissions` with Discord.js `PermissionFlagsBits` to restrict command access by server role.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/kick.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Kick a member',
-    	defaultMemberPermissions: PermissionFlagsBits.KickMembers
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/kick.js"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import { PermissionFlagsBits } from 'discord.js'
+  ```ts title="src/commands/kick.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
 
-    export const config = createCommandConfig({
-    	description: 'Kick a member',
-    	defaultMemberPermissions: PermissionFlagsBits.KickMembers
-    })
-    ```
-  </Tab>
+  export const config = createCommandConfig({
+  	description: 'Kick a member',
+  	defaultMemberPermissions: PermissionFlagsBits.KickMembers
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/kick.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import { PermissionFlagsBits } from 'discord.js'
+
+  export const config = createCommandConfig({
+  	description: 'Kick a member',
+  	defaultMemberPermissions: PermissionFlagsBits.KickMembers
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

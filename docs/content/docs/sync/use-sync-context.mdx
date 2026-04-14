@@ -8,24 +8,28 @@ Access room context without managing state. Track connected clients, determine h
 ## Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Key only
-    const context = useSyncContext<ClientData>(key)
+<Tab value="TypeScript">
 
-    // With event callbacks
-    useSyncContext<ClientData>(options, key)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Key only
-    const context = useSyncContext(key)
+  ```ts
+  // Key only
+  const context = useSyncContext<ClientData>(key)
 
-    // With event callbacks
-    useSyncContext(options, key)
-    ```
-  </Tab>
+  // With event callbacks
+  useSyncContext<ClientData>(options, key)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Key only
+  const context = useSyncContext(key)
+
+  // With event callbacks
+  useSyncContext(options, key)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Parameters
@@ -54,79 +58,87 @@ Returns a `SyncContext` object.
 ## Basic usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useSyncContext } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function PlayerList() {
-    	const { clients, clientId, isHost } = useSyncContext(['game', roomId])
+  ```tsx
+  import { useSyncContext } from '@robojs/sync'
 
-    	return (
-    		<div>
-    			<p>{isHost ? 'You are the host' : 'Guest'}</p>
-    			<ul>
-    				{clients.map((client) => (
-    					<li key={client.id}>
-    						{client.data?.name ?? client.id.slice(0, 6)}
-    						{client.id === clientId && ' (you)'}
-    					</li>
-    				))}
-    			</ul>
-    		</div>
-    	)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useSyncContext } from '@robojs/sync'
+  function PlayerList() {
+  	const { clients, clientId, isHost } = useSyncContext(['game', roomId])
 
-    function PlayerList() {
-    	const { clients, clientId, isHost } = useSyncContext(['game', roomId])
+  	return (
+  		<div>
+  			<p>{isHost ? 'You are the host' : 'Guest'}</p>
+  			<ul>
+  				{clients.map((client) => (
+  					<li key={client.id}>
+  						{client.data?.name ?? client.id.slice(0, 6)}
+  						{client.id === clientId && ' (you)'}
+  					</li>
+  				))}
+  			</ul>
+  		</div>
+  	)
+  }
+  ```
 
-    	return (
-    		<div>
-    			<p>{isHost ? 'You are the host' : 'Guest'}</p>
-    			<ul>
-    				{clients.map((client) => (
-    					<li key={client.id}>
-    						{client.data?.name ?? client.id.slice(0, 6)}
-    						{client.id === clientId && ' (you)'}
-    					</li>
-    				))}
-    			</ul>
-    		</div>
-    	)
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { useSyncContext } from '@robojs/sync'
+
+  function PlayerList() {
+  	const { clients, clientId, isHost } = useSyncContext(['game', roomId])
+
+  	return (
+  		<div>
+  			<p>{isHost ? 'You are the host' : 'Guest'}</p>
+  			<ul>
+  				{clients.map((client) => (
+  					<li key={client.id}>
+  						{client.data?.name ?? client.id.slice(0, 6)}
+  						{client.id === clientId && ' (you)'}
+  					</li>
+  				))}
+  			</ul>
+  		</div>
+  	)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Event callbacks
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    useSyncContext(
-    	{
-    		onConnect: (client) => console.log(`${client.data?.name} joined`),
-    		onDisconnect: (client) => console.log(`${client.data?.name} left`)
-    	},
-    	['game', roomId]
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    useSyncContext(
-    	{
-    		onConnect: (client) => console.log(`${client.data?.name} joined`),
-    		onDisconnect: (client) => console.log(`${client.data?.name} left`)
-    	},
-    	['game', roomId]
-    )
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  useSyncContext(
+  	{
+  		onConnect: (client) => console.log(`${client.data?.name} joined`),
+  		onDisconnect: (client) => console.log(`${client.data?.name} left`)
+  	},
+  	['game', roomId]
+  )
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  useSyncContext(
+  	{
+  		onConnect: (client) => console.log(`${client.data?.name} joined`),
+  		onDisconnect: (client) => console.log(`${client.data?.name} left`)
+  	},
+  	['game', roomId]
+  )
+  ```
+
+</Tab>
 </Tabs>
 
 These are useful for notifications, sound effects, or updating UI when players join or leave.

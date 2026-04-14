@@ -50,55 +50,63 @@ Robo.js ships with native TypeScript types. Common types include `Config`, `Plug
 Example of a typed async command:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/command.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'An async example command'
-    })
+  ```ts title="src/commands/command.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
 
-    export default async () => {
-    	await new Promise((resolve) => setTimeout(resolve, 1000))
-    	return 'Waited for 1 second.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/command.js"
-    import { createCommandConfig } from '@robojs/discordjs'
+  export const config = createCommandConfig({
+  	description: 'An async example command'
+  })
 
-    export const config = createCommandConfig({
-    	description: 'An async example command'
-    })
+  export default async () => {
+  	await new Promise((resolve) => setTimeout(resolve, 1000))
+  	return 'Waited for 1 second.'
+  }
+  ```
 
-    export default async () => {
-    	await new Promise((resolve) => setTimeout(resolve, 1000))
-    	return 'Waited for 1 second.'
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/command.js"
+  import { createCommandConfig } from '@robojs/discordjs'
+
+  export const config = createCommandConfig({
+  	description: 'An async example command'
+  })
+
+  export default async () => {
+  	await new Promise((resolve) => setTimeout(resolve, 1000))
+  	return 'Waited for 1 second.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 For interaction types, import directly from Discord.js:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ts-command.ts"
-    import { CommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: CommandInteraction) => {
-    	interaction.reply('Hello, TypeScript!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ts-command.js"
-    export default (interaction) => {
-    	interaction.reply('Hello, TypeScript!')
-    }
-    ```
-  </Tab>
+  ```ts title="src/commands/ts-command.ts"
+  import { CommandInteraction } from 'discord.js'
+
+  export default (interaction: CommandInteraction) => {
+  	interaction.reply('Hello, TypeScript!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ts-command.js"
+  export default (interaction) => {
+  	interaction.reply('Hello, TypeScript!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Building Plugins with TypeScript
@@ -155,24 +163,28 @@ TypeScript resolves `@/robo/` to `src/` and `@/something/` to `src/modules/somet
 Before and after:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/example.ts"
-    // Before
-    import { someVariable } from '../../../../modules/something/commands/someCommand.js'
+<Tab value="TypeScript">
 
-    // After
-    import { someVariable } from '@/something/commands/someCommand.js'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/example.js"
-    // Before
-    import { someVariable } from '../../../../modules/something/commands/someCommand.js'
+  ```ts title="src/commands/example.ts"
+  // Before
+  import { someVariable } from '../../../../modules/something/commands/someCommand.js'
 
-    // After
-    import { someVariable } from '@/something/commands/someCommand.js'
-    ```
-  </Tab>
+  // After
+  import { someVariable } from '@/something/commands/someCommand.js'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/example.js"
+  // Before
+  import { someVariable } from '../../../../modules/something/commands/someCommand.js'
+
+  // After
+  import { someVariable } from '@/something/commands/someCommand.js'
+  ```
+
+</Tab>
 </Tabs>
 
 ## Monorepos
@@ -220,16 +232,20 @@ Use path aliases to import from other packages:
 With this configuration, importing from another package works as expected:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { someFunction } from '@/api/someFile.js'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { someFunction } from '@/api/someFile.js'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { someFunction } from '@/api/someFile.js'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { someFunction } from '@/api/someFile.js'
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

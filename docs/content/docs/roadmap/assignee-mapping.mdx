@@ -32,54 +32,58 @@ The easiest way to manage mappings is through the `/roadmap setup` panel:
 Manage mappings directly with the settings API:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import {
-      setAssigneeMapping,
-      removeAssigneeMapping,
-      getAssigneeMapping,
-      getDiscordUserIdForJiraName
-    } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    // Create a mapping
-    setAssigneeMapping(guildId, 'Alice Smith', '123456789012345678')
+  ```ts
+  import {
+    setAssigneeMapping,
+    removeAssigneeMapping,
+    getAssigneeMapping,
+    getDiscordUserIdForJiraName
+  } from '@robojs/roadmap'
 
-    // Remove a mapping
-    removeAssigneeMapping(guildId, 'Alice Smith')
+  // Create a mapping
+  setAssigneeMapping(guildId, 'Alice Smith', '123456789012345678')
 
-    // Get all mappings for a guild
-    const mappings = getAssigneeMapping(guildId)
-    // { 'Alice Smith': '123456789012345678', 'Bob Jones': '987654321098765432' }
+  // Remove a mapping
+  removeAssigneeMapping(guildId, 'Alice Smith')
 
-    // Look up a single mapping
-    const discordId = getDiscordUserIdForJiraName(guildId, 'Alice Smith')
-    // '123456789012345678' or undefined
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import {
-      setAssigneeMapping,
-      removeAssigneeMapping,
-      getAssigneeMapping,
-      getDiscordUserIdForJiraName
-    } from '@robojs/roadmap'
+  // Get all mappings for a guild
+  const mappings = getAssigneeMapping(guildId)
+  // { 'Alice Smith': '123456789012345678', 'Bob Jones': '987654321098765432' }
 
-    // Create a mapping
-    setAssigneeMapping(guildId, 'Alice Smith', '123456789012345678')
+  // Look up a single mapping
+  const discordId = getDiscordUserIdForJiraName(guildId, 'Alice Smith')
+  // '123456789012345678' or undefined
+  ```
 
-    // Remove a mapping
-    removeAssigneeMapping(guildId, 'Alice Smith')
+</Tab>
+<Tab value="JavaScript">
 
-    // Get all mappings for a guild
-    const mappings = getAssigneeMapping(guildId)
-    // { 'Alice Smith': '123456789012345678', 'Bob Jones': '987654321098765432' }
+  ```js
+  import {
+    setAssigneeMapping,
+    removeAssigneeMapping,
+    getAssigneeMapping,
+    getDiscordUserIdForJiraName
+  } from '@robojs/roadmap'
 
-    // Look up a single mapping
-    const discordId = getDiscordUserIdForJiraName(guildId, 'Alice Smith')
-    // '123456789012345678' or undefined
-    ```
-  </Tab>
+  // Create a mapping
+  setAssigneeMapping(guildId, 'Alice Smith', '123456789012345678')
+
+  // Remove a mapping
+  removeAssigneeMapping(guildId, 'Alice Smith')
+
+  // Get all mappings for a guild
+  const mappings = getAssigneeMapping(guildId)
+  // { 'Alice Smith': '123456789012345678', 'Bob Jones': '987654321098765432' }
+
+  // Look up a single mapping
+  const discordId = getDiscordUserIdForJiraName(guildId, 'Alice Smith')
+  // '123456789012345678' or undefined
+  ```
+
+</Tab>
 </Tabs>
 
 ## Discord User ID custom field

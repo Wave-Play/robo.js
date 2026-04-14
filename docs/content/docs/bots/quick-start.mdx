@@ -72,41 +72,49 @@ Follow the prompts to configure TypeScript and select starter features. The CLI 
 Create `src/commands/ping.ts`. Return a string and Robo.js sends it as the bot's reply automatically (this is called **Sage mode**):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    export default () => {
-      return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default () => {
-      return 'Pong!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/ping.ts"
+  export default () => {
+    return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default () => {
+    return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 For explicit typing:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import type { CommandResult } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default (): CommandResult => {
-      return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default () => {
-      return 'Pong!'
-    }
-    ```
-  </Tab>
+  ```ts title="src/commands/ping.ts"
+  import type { CommandResult } from '@robojs/discordjs'
+
+  export default (): CommandResult => {
+    return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default () => {
+    return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The plugin registers this as the `/ping` slash command automatically.
@@ -128,26 +136,30 @@ The plugin registers this as the `/ping` slash command automatically.
 Create `src/events/ready.ts`. The `ready` event fires when your bot has successfully connected to Discord:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/ready.ts"
-    import { getClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default () => {
-      const client = getClient()
-      console.log(`Logged in as ${client.user?.tag}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/ready.js"
-    import { getClient } from '@robojs/discordjs'
+  ```ts title="src/events/ready.ts"
+  import { getClient } from '@robojs/discordjs'
 
-    export default () => {
-      const client = getClient()
-      console.log(`Logged in as ${client.user?.tag}`)
-    }
-    ```
-  </Tab>
+  export default () => {
+    const client = getClient()
+    console.log(`Logged in as ${client.user?.tag}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/ready.js"
+  import { getClient } from '@robojs/discordjs'
+
+  export default () => {
+    const client = getClient()
+    console.log(`Logged in as ${client.user?.tag}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Set Up Credentials

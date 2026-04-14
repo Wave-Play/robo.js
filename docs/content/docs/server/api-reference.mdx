@@ -6,17 +6,21 @@ description: Full reference for Server, RoboRequest, RoboReply, RoboResponse, an
 Import types and utilities from the main package:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Server, RoboResponse, define, getServerEngine, ready } from '@robojs/server'
-    import type { RoboRequest, RoboReply, HttpMethod } from '@robojs/server'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Server, RoboResponse, define, getServerEngine, ready } from '@robojs/server'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { Server, RoboResponse, define, getServerEngine, ready } from '@robojs/server'
+  import type { RoboRequest, RoboReply, HttpMethod } from '@robojs/server'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Server, RoboResponse, define, getServerEngine, ready } from '@robojs/server'
+  ```
+
+</Tab>
 </Tabs>
 
 ## Server
@@ -24,16 +28,20 @@ Import types and utilities from the main package:
 The `Server` object provides access to the server configuration, engine, and readiness state.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Server } from '@robojs/server'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Server } from '@robojs/server'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { Server } from '@robojs/server'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Server } from '@robojs/server'
+  ```
+
+</Tab>
 </Tabs>
 
 | Method | Return Type | Description |
@@ -43,36 +51,40 @@ The `Server` object provides access to the server configuration, engine, and rea
 | `Server.ready()` | `Promise<void>` | Resolves when the server is ready to accept requests. |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Server } from '@robojs/server'
+<Tab value="TypeScript">
 
-    // Wait for the server to be ready
-    await Server.ready()
+  ```ts
+  import { Server } from '@robojs/server'
 
-    // Access the engine
-    const engine = Server.get()
-    const httpServer = engine?.getHttpServer()
+  // Wait for the server to be ready
+  await Server.ready()
 
-    // Read config
-    const { port, hostname } = Server.config()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Server } from '@robojs/server'
+  // Access the engine
+  const engine = Server.get()
+  const httpServer = engine?.getHttpServer()
 
-    // Wait for the server to be ready
-    await Server.ready()
+  // Read config
+  const { port, hostname } = Server.config()
+  ```
 
-    // Access the engine
-    const engine = Server.get()
-    const httpServer = engine?.getHttpServer()
+</Tab>
+<Tab value="JavaScript">
 
-    // Read config
-    const { port, hostname } = Server.config()
-    ```
-  </Tab>
+  ```js
+  import { Server } from '@robojs/server'
+
+  // Wait for the server to be ready
+  await Server.ready()
+
+  // Access the engine
+  const engine = Server.get()
+  const httpServer = engine?.getHttpServer()
+
+  // Read config
+  const { port, hostname } = Server.config()
+  ```
+
+</Tab>
 </Tabs>
 
 ## RoboRequest
@@ -90,33 +102,37 @@ The `Server` object provides access to the server configuration, engine, and rea
 | `headers` | `Headers` | Request headers. |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export async function POST(request: RoboRequest) {
-    	const { id } = request.params
-    	const { page } = request.query
-    	const body = await request.json()
-    	const raw = request.raw // Node.js IncomingMessage
+  ```ts
+  import type { RoboRequest } from '@robojs/server'
 
-    	return { id, page, body }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  export async function POST(request: RoboRequest) {
+  	const { id } = request.params
+  	const { page } = request.query
+  	const body = await request.json()
+  	const raw = request.raw // Node.js IncomingMessage
 
-    export async function POST(request) {
-    	const { id } = request.params
-    	const { page } = request.query
-    	const body = await request.json()
-    	const raw = request.raw // Node.js IncomingMessage
+  	return { id, page, body }
+  }
+  ```
 
-    	return { id, page, body }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  export async function POST(request) {
+  	const { id } = request.params
+  	const { page } = request.query
+  	const body = await request.json()
+  	const raw = request.raw // Node.js IncomingMessage
+
+  	return { id, page, body }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -137,23 +153,27 @@ The `Server` object provides access to the server configuration, engine, and rea
 | `send(data)` | `RoboReply` | Send the response body. Returns `this` for chaining. |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { RoboRequest, RoboReply } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export function GET(request: RoboRequest, reply: RoboReply) {
-    	reply.code(200).header('X-Custom', 'value').json({ message: 'Hello' })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  ```ts
+  import type { RoboRequest, RoboReply } from '@robojs/server'
 
-    export function GET(request, reply) {
-    	reply.code(200).header('X-Custom', 'value').json({ message: 'Hello' })
-    }
-    ```
-  </Tab>
+  export function GET(request: RoboRequest, reply: RoboReply) {
+  	reply.code(200).header('X-Custom', 'value').json({ message: 'Hello' })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  export function GET(request, reply) {
+  	reply.code(200).header('X-Custom', 'value').json({ message: 'Hello' })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Most of the time you don't need `reply` — just return a value from your handler and it's automatically sent as a response.
@@ -163,42 +183,46 @@ Most of the time you don't need `reply` — just return a value from your handle
 `RoboResponse` extends the [Web Response API](https://developer.mozilla.org/en-US/docs/Web/API/Response). Use it when you need to set custom status codes or headers.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { RoboResponse } from '@robojs/server'
+<Tab value="TypeScript">
 
-    // JSON response with custom status
-    export function POST() {
-    	return RoboResponse.json({ id: '123' }, { status: 201 })
-    }
+  ```ts
+  import { RoboResponse } from '@robojs/server'
 
-    // Throwable response for error handling
-    export function GET(request: RoboRequest) {
-    	if (!request.query.token) {
-    		throw RoboResponse.json({ error: 'Token required' }, { status: 401 })
-    	}
-    	return { data: 'authenticated' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { RoboResponse } from '@robojs/server'
+  // JSON response with custom status
+  export function POST() {
+  	return RoboResponse.json({ id: '123' }, { status: 201 })
+  }
 
-    // JSON response with custom status
-    export function POST() {
-    	return RoboResponse.json({ id: '123' }, { status: 201 })
-    }
+  // Throwable response for error handling
+  export function GET(request: RoboRequest) {
+  	if (!request.query.token) {
+  		throw RoboResponse.json({ error: 'Token required' }, { status: 401 })
+  	}
+  	return { data: 'authenticated' }
+  }
+  ```
 
-    // Throwable response for error handling
-    export function GET(request) {
-    	if (!request.query.token) {
-    		throw RoboResponse.json({ error: 'Token required' }, { status: 401 })
-    	}
-    	return { data: 'authenticated' }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { RoboResponse } from '@robojs/server'
+
+  // JSON response with custom status
+  export function POST() {
+  	return RoboResponse.json({ id: '123' }, { status: 201 })
+  }
+
+  // Throwable response for error handling
+  export function GET(request) {
+  	if (!request.query.token) {
+  		throw RoboResponse.json({ error: 'Token required' }, { status: 401 })
+  	}
+  	return { data: 'authenticated' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Utility functions
@@ -208,22 +232,26 @@ Most of the time you don't need `reply` — just return a value from your handle
 Returns the server engine instance with optional type parameter:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getServerEngine } from '@robojs/server'
+<Tab value="TypeScript">
 
-    const engine = getServerEngine()
-    const httpServer = engine.getHttpServer()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getServerEngine } from '@robojs/server'
+  ```ts
+  import { getServerEngine } from '@robojs/server'
 
-    const engine = getServerEngine()
-    const httpServer = engine.getHttpServer()
-    ```
-  </Tab>
+  const engine = getServerEngine()
+  const httpServer = engine.getHttpServer()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getServerEngine } from '@robojs/server'
+
+  const engine = getServerEngine()
+  const httpServer = engine.getHttpServer()
+  ```
+
+</Tab>
 </Tabs>
 
 ### ready
@@ -231,20 +259,24 @@ Returns the server engine instance with optional type parameter:
 Standalone function equivalent to `Server.ready()`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { ready } from '@robojs/server'
+<Tab value="TypeScript">
 
-    await ready()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { ready } from '@robojs/server'
+  ```ts
+  import { ready } from '@robojs/server'
 
-    await ready()
-    ```
-  </Tab>
+  await ready()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { ready } from '@robojs/server'
+
+  await ready()
+  ```
+
+</Tab>
 </Tabs>
 
 ### isPortAvailable
@@ -252,20 +284,24 @@ Standalone function equivalent to `Server.ready()`:
 Check if a port is available:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { isPortAvailable } from '@robojs/server'
+<Tab value="TypeScript">
 
-    const available = await isPortAvailable(3000)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { isPortAvailable } from '@robojs/server'
+  ```ts
+  import { isPortAvailable } from '@robojs/server'
 
-    const available = await isPortAvailable(3000)
-    ```
-  </Tab>
+  const available = await isPortAvailable(3000)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { isPortAvailable } from '@robojs/server'
+
+  const available = await isPortAvailable(3000)
+  ```
+
+</Tab>
 </Tabs>
 
 ### findAvailablePort
@@ -273,30 +309,34 @@ Check if a port is available:
 Find the next available port:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { findAvailablePort } from '@robojs/server'
+<Tab value="TypeScript">
 
-    const result = await findAvailablePort({
-    	port: 3000,
-    	hostname: 'localhost',
-    	maxAttempts: 10
-    })
-    // result: { port: 3001, wasIncremented: true, originalPort: 3000 }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { findAvailablePort } from '@robojs/server'
+  ```ts
+  import { findAvailablePort } from '@robojs/server'
 
-    const result = await findAvailablePort({
-    	port: 3000,
-    	hostname: 'localhost',
-    	maxAttempts: 10
-    })
-    // result: { port: 3001, wasIncremented: true, originalPort: 3000 }
-    ```
-  </Tab>
+  const result = await findAvailablePort({
+  	port: 3000,
+  	hostname: 'localhost',
+  	maxAttempts: 10
+  })
+  // result: { port: 3001, wasIncremented: true, originalPort: 3000 }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { findAvailablePort } from '@robojs/server'
+
+  const result = await findAvailablePort({
+  	port: 3000,
+  	hostname: 'localhost',
+  	maxAttempts: 10
+  })
+  // result: { port: 3001, wasIncremented: true, originalPort: 3000 }
+  ```
+
+</Tab>
 </Tabs>
 
 ### define
@@ -306,30 +346,34 @@ Create a typed endpoint with Zod schemas. See [Typed endpoints](./typed-endpoint
 ## Types
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type {
-    	RoboRequest,
-    	RoboReply,
-    	HttpMethod,
-    	RouteHandler,
-    	NotFoundHandler,
-    	WebSocketHandler,
-    	ForTestingOptions,
-    	FindAvailablePortOptions,
-    	FindAvailablePortResult,
-    	TunnelProvider,
-    	TunnelInstance,
-    	TunnelProviderConfig,
-    	TunnelConfig
-    } from '@robojs/server'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  import type {
+  	RoboRequest,
+  	RoboReply,
+  	HttpMethod,
+  	RouteHandler,
+  	NotFoundHandler,
+  	WebSocketHandler,
+  	ForTestingOptions,
+  	FindAvailablePortOptions,
+  	FindAvailablePortResult,
+  	TunnelProvider,
+  	TunnelInstance,
+  	TunnelProviderConfig,
+  	TunnelConfig
+  } from '@robojs/server'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 | Type | Description |

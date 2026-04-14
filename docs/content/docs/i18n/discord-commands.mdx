@@ -58,54 +58,58 @@ Store command metadata alongside your translations. Nested keys work well for or
 Import `createCommandConfig` from `@robojs/i18n` instead of `robo.js`. Pass `nameKey` and `descriptionKey` to reference your locale keys.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import { createCommandConfig, t } from '@robojs/i18n'
-    import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { CommandOptions } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	nameKey: 'commands:ping.name',
-    	descriptionKey: 'commands:ping.desc',
-    	options: [
-    		{
-    			type: 'string',
-    			name: 'text',
-    			nameKey: 'commands:ping.arg.name',
-    			descriptionKey: 'commands:ping.arg.desc'
-    		}
-    	]
-    } as const)
+  ```ts title="src/commands/ping.ts"
+  import { createCommandConfig, t } from '@robojs/i18n'
+  import type { ChatInputCommandInteraction } from 'discord.js'
+  import type { CommandOptions } from '@robojs/discordjs'
 
-    export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
-    	const user = { name: options.text ?? 'Robo' }
-    	return t(interaction, 'commands:hey', { user })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    import { createCommandConfig, t } from '@robojs/i18n'
+  export const config = createCommandConfig({
+  	nameKey: 'commands:ping.name',
+  	descriptionKey: 'commands:ping.desc',
+  	options: [
+  		{
+  			type: 'string',
+  			name: 'text',
+  			nameKey: 'commands:ping.arg.name',
+  			descriptionKey: 'commands:ping.arg.desc'
+  		}
+  	]
+  } as const)
 
-    export const config = createCommandConfig({
-    	nameKey: 'commands:ping.name',
-    	descriptionKey: 'commands:ping.desc',
-    	options: [
-    		{
-    			type: 'string',
-    			name: 'text',
-    			nameKey: 'commands:ping.arg.name',
-    			descriptionKey: 'commands:ping.arg.desc'
-    		}
-    	]
-    })
+  export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+  	const user = { name: options.text ?? 'Robo' }
+  	return t(interaction, 'commands:hey', { user })
+  }
+  ```
 
-    export default (interaction, options) => {
-    	const user = { name: options.text ?? 'Robo' }
-    	return t(interaction, 'commands:hey', { user })
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  import { createCommandConfig, t } from '@robojs/i18n'
+
+  export const config = createCommandConfig({
+  	nameKey: 'commands:ping.name',
+  	descriptionKey: 'commands:ping.desc',
+  	options: [
+  		{
+  			type: 'string',
+  			name: 'text',
+  			nameKey: 'commands:ping.arg.name',
+  			descriptionKey: 'commands:ping.arg.desc'
+  		}
+  	]
+  })
+
+  export default (interaction, options) => {
+  	const user = { name: options.text ?? 'Robo' }
+  	return t(interaction, 'commands:hey', { user })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout>
@@ -129,47 +133,55 @@ The `defaultLocale` option controls which locale provides the primary `name` and
 Configure it in your plugin options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/i18n.mjs"
-    export default {
-    	defaultLocale: 'es-ES'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/i18n.mjs"
-    export default {
-    	defaultLocale: 'es-ES'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/i18n.mjs"
+  export default {
+  	defaultLocale: 'es-ES'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/i18n.mjs"
+  export default {
+  	defaultLocale: 'es-ES'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Or in your Robo config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    export default {
-    	plugins: [
-    		['@robojs/i18n', {
-    			defaultLocale: 'es-ES'
-    		}]
-    	]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    export default {
-    	plugins: [
-    		['@robojs/i18n', {
-    			defaultLocale: 'es-ES'
-    		}]
-    	]
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/robo.mjs"
+  export default {
+  	plugins: [
+  		['@robojs/i18n', {
+  			defaultLocale: 'es-ES'
+  		}]
+  	]
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  export default {
+  	plugins: [
+  		['@robojs/i18n', {
+  			defaultLocale: 'es-ES'
+  		}]
+  	]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Options
@@ -179,38 +191,42 @@ The `name` field on options is still required alongside `nameKey`. This helps Ty
 The `descriptionKey` field is optional on both the top-level config and individual options. When omitted, no description or description localizations are generated for that level.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    export const config = createCommandConfig({
-    	// No descriptionKey — description stays as-is (or undefined)
-    	description: 'A manually set description',
-    	options: [
-    		{
-    			type: 'string',
-    			name: 'text',
-    			nameKey: 'commands:ping.arg.name'
-    			// No descriptionKey — option description stays undefined
-    		}
-    	]
-    } as const)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    export const config = createCommandConfig({
-    	// No descriptionKey — description stays as-is (or undefined)
-    	description: 'A manually set description',
-    	options: [
-    		{
-    			type: 'string',
-    			name: 'text',
-    			nameKey: 'commands:ping.arg.name'
-    			// No descriptionKey — option description stays undefined
-    		}
-    	]
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  export const config = createCommandConfig({
+  	// No descriptionKey — description stays as-is (or undefined)
+  	description: 'A manually set description',
+  	options: [
+  		{
+  			type: 'string',
+  			name: 'text',
+  			nameKey: 'commands:ping.arg.name'
+  			// No descriptionKey — option description stays undefined
+  		}
+  	]
+  } as const)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  export const config = createCommandConfig({
+  	// No descriptionKey — description stays as-is (or undefined)
+  	description: 'A manually set description',
+  	options: [
+  		{
+  			type: 'string',
+  			name: 'text',
+  			nameKey: 'commands:ping.arg.name'
+  			// No descriptionKey — option description stays undefined
+  		}
+  	]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

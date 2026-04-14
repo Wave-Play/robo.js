@@ -23,22 +23,26 @@ Slash commands are defined by creating files in the `src/commands/` directory. T
 The default export receives a `ChatInputCommandInteraction` and an options object. Return a string, `InteractionReplyOptions`, or `void`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ping.ts"
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ping.js"
-    export default (interaction) => {
-    	return 'Pong!'
-    }
-    ```
-  </Tab>
+  ```ts title="src/commands/ping.ts"
+  import type { ChatInputCommandInteraction } from 'discord.js'
+
+  export default (interaction: ChatInputCommandInteraction) => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ping.js"
+  export default (interaction) => {
+  	return 'Pong!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The return type (`CommandResult`) can be:
@@ -81,40 +85,44 @@ The `dmPermission` field also exists on `CommandConfig` but is **deprecated**. U
 Define command parameters with the `options` array. Each option has a `name`, optional `type` (defaults to `'string'`), and other fields:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/greet.ts"
-    import type { CommandConfig } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
-    import type { User } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: CommandConfig = {
-    	description: 'Greet someone',
-    	options: [
-    		{ name: 'user', type: 'user', required: true },
-    		{ name: 'message', type: 'string', description: 'Custom greeting' }
-    	]
-    }
+  ```ts title="src/commands/greet.ts"
+  import type { CommandConfig } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
+  import type { User } from 'discord.js'
 
-    export default (interaction: ChatInputCommandInteraction, options: { user: User; message?: string }) => {
-    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/greet.js"
-    export const config = {
-    	description: 'Greet someone',
-    	options: [
-    		{ name: 'user', type: 'user', required: true },
-    		{ name: 'message', type: 'string', description: 'Custom greeting' }
-    	]
-    }
+  export const config: CommandConfig = {
+  	description: 'Greet someone',
+  	options: [
+  		{ name: 'user', type: 'user', required: true },
+  		{ name: 'message', type: 'string', description: 'Custom greeting' }
+  	]
+  }
 
-    export default (interaction, options) => {
-    	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
-    }
-    ```
-  </Tab>
+  export default (interaction: ChatInputCommandInteraction, options: { user: User; message?: string }) => {
+  	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/greet.js"
+  export const config = {
+  	description: 'Greet someone',
+  	options: [
+  		{ name: 'user', type: 'user', required: true },
+  		{ name: 'message', type: 'string', description: 'Custom greeting' }
+  	]
+  }
+
+  export default (interaction, options) => {
+  	return `Hello ${options.user.username}! ${options.message ?? 'Welcome!'}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Option types
@@ -191,57 +199,61 @@ The `as const` assertion on the config object is required to preserve **literal 
 `CommandOptions<typeof config>` maps over the config's `options` array to infer the handler's `options` parameter type. Required options (those with `required: true`) become non-optional properties, while all others become `T | undefined`. For options with `choices`, the resolved type is a union of the literal `value` fields rather than a plain `string` or `number`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/color.ts"
-    import { createCommandConfig } from '@robojs/discordjs'
-    import type { CommandOptions } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config = createCommandConfig({
-    	description: 'Pick a color',
-    	options: [
-    		{
-    			name: 'color',
-    			type: 'string',
-    			required: true,
-    			choices: [
-    				{ name: 'Red', value: 'red' },
-    				{ name: 'Blue', value: 'blue' }
-    			]
-    		},
-    		{ name: 'user', type: 'user', required: true }
-    	]
-    } as const)
+  ```ts title="src/commands/color.ts"
+  import { createCommandConfig } from '@robojs/discordjs'
+  import type { CommandOptions } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    // TypeScript knows: options.color is 'red' | 'blue', options.user is User
-    export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
-    	return `${options.user.username} picked ${options.color}!`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/color.js"
-    export const config = {
-    	description: 'Pick a color',
-    	options: [
-    		{
-    			name: 'color',
-    			type: 'string',
-    			required: true,
-    			choices: [
-    				{ name: 'Red', value: 'red' },
-    				{ name: 'Blue', value: 'blue' }
-    			]
-    		},
-    		{ name: 'user', type: 'user', required: true }
-    	]
-    }
+  export const config = createCommandConfig({
+  	description: 'Pick a color',
+  	options: [
+  		{
+  			name: 'color',
+  			type: 'string',
+  			required: true,
+  			choices: [
+  				{ name: 'Red', value: 'red' },
+  				{ name: 'Blue', value: 'blue' }
+  			]
+  		},
+  		{ name: 'user', type: 'user', required: true }
+  	]
+  } as const)
 
-    export default (interaction, options) => {
-    	return `${options.user.username} picked ${options.color}!`
-    }
-    ```
-  </Tab>
+  // TypeScript knows: options.color is 'red' | 'blue', options.user is User
+  export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+  	return `${options.user.username} picked ${options.color}!`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/color.js"
+  export const config = {
+  	description: 'Pick a color',
+  	options: [
+  		{
+  			name: 'color',
+  			type: 'string',
+  			required: true,
+  			choices: [
+  				{ name: 'Red', value: 'red' },
+  				{ name: 'Blue', value: 'blue' }
+  			]
+  		},
+  		{ name: 'user', type: 'user', required: true }
+  	]
+  }
+
+  export default (interaction, options) => {
+  	return `${options.user.username} picked ${options.color}!`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Autocomplete
@@ -249,53 +261,57 @@ The `as const` assertion on the config object is required to preserve **literal 
 Export an `autocomplete` function to provide dynamic suggestions. Discord gives you 3 seconds to respond.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/search.ts"
-    import type { CommandConfig } from '@robojs/discordjs'
-    import type { AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: CommandConfig = {
-    	description: 'Search for an item',
-    	options: [
-    		{ name: 'query', type: 'string', required: true, autocomplete: true }
-    	]
-    }
+  ```ts title="src/commands/search.ts"
+  import type { CommandConfig } from '@robojs/discordjs'
+  import type { AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js'
 
-    export const autocomplete = async (interaction: AutocompleteInteraction) => {
-    	const focused = interaction.options.getFocused()
-    	const items = ['Apple', 'Banana', 'Cherry'].filter(
-    		(item) => item.toLowerCase().includes(focused.toLowerCase())
-    	)
-    	return items.map((item) => ({ name: item, value: item }))
-    }
+  export const config: CommandConfig = {
+  	description: 'Search for an item',
+  	options: [
+  		{ name: 'query', type: 'string', required: true, autocomplete: true }
+  	]
+  }
 
-    export default (interaction: ChatInputCommandInteraction, options: { query: string }) => {
-    	return `You searched for: ${options.query}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/search.js"
-    export const config = {
-    	description: 'Search for an item',
-    	options: [
-    		{ name: 'query', type: 'string', required: true, autocomplete: true }
-    	]
-    }
+  export const autocomplete = async (interaction: AutocompleteInteraction) => {
+  	const focused = interaction.options.getFocused()
+  	const items = ['Apple', 'Banana', 'Cherry'].filter(
+  		(item) => item.toLowerCase().includes(focused.toLowerCase())
+  	)
+  	return items.map((item) => ({ name: item, value: item }))
+  }
 
-    export const autocomplete = async (interaction) => {
-    	const focused = interaction.options.getFocused()
-    	const items = ['Apple', 'Banana', 'Cherry'].filter(
-    		(item) => item.toLowerCase().includes(focused.toLowerCase())
-    	)
-    	return items.map((item) => ({ name: item, value: item }))
-    }
+  export default (interaction: ChatInputCommandInteraction, options: { query: string }) => {
+  	return `You searched for: ${options.query}`
+  }
+  ```
 
-    export default (interaction, options) => {
-    	return `You searched for: ${options.query}`
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/search.js"
+  export const config = {
+  	description: 'Search for an item',
+  	options: [
+  		{ name: 'query', type: 'string', required: true, autocomplete: true }
+  	]
+  }
+
+  export const autocomplete = async (interaction) => {
+  	const focused = interaction.options.getFocused()
+  	const items = ['Apple', 'Banana', 'Cherry'].filter(
+  		(item) => item.toLowerCase().includes(focused.toLowerCase())
+  	)
+  	return items.map((item) => ({ name: item, value: item }))
+  }
+
+  export default (interaction, options) => {
+  	return `You searched for: ${options.query}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Subcommands and groups

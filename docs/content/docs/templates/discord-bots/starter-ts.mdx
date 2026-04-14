@@ -66,20 +66,24 @@ Creating a **[Slash Command](/docs/discord-bots/commands)** is as easy as creati
 Let's say you want a new `/hello` command. Just create a file in the `/src/commands` directory named `hello.ts` and export a default function that returns something.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="/src/commands/hello.ts"
-    export default (interaction) => {
-    	interaction.reply('Hello World!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="/src/commands/hello.js"
-    export default (interaction) => {
-    	interaction.reply('Hello World!')
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="/src/commands/hello.ts"
+  export default (interaction) => {
+  	interaction.reply('Hello World!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="/src/commands/hello.js"
+  export default (interaction) => {
+  	interaction.reply('Hello World!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Your `/hello` command is now ready to use! **Robo.js** takes care of registration for you.
@@ -89,20 +93,24 @@ Ever clicked on an avatar or message and seen an _Apps_ section? Those are **[Co
 Create a file in `/src/context/message` named after the command. For example, `Quote.ts`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="/src/context/message/Quote.ts"
-    export default (interaction, message) => {
-    	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="/src/context/message/Quote.js"
-    export default (interaction, message) => {
-    	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="/src/context/message/Quote.ts"
+  export default (interaction, message) => {
+  	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="/src/context/message/Quote.js"
+  export default (interaction, message) => {
+  	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Cards>
@@ -130,26 +138,30 @@ You even get `/dev` **[Subcommands](/docs/discord-bots/commands#subcommands)** f
 **Robo.js** manages your **Discord.js** `Client` instance via the `@robojs/discordjs` plugin. Use `getClient()` to access it anywhere in your project.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const client = getClient()
-    	return `My name is ${client.user.username}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getClient } from '@robojs/discordjs'
+  ```ts
+  import { getClient } from '@robojs/discordjs'
 
-    export default () => {
-    	const client = getClient()
-    	return `My name is ${client.user.username}`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	const client = getClient()
+  	return `My name is ${client.user.username}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getClient } from '@robojs/discordjs'
+
+  export default () => {
+  	const client = getClient()
+  	return `My name is ${client.user.username}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Intents or other configurations can be set in the `config/plugins/robojs/discordjs.mjs` file.

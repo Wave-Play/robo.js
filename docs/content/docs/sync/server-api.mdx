@@ -10,16 +10,20 @@ Access and manipulate sync state from the server side. `SyncServer` provides zon
 Import from `@robojs/sync/server`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { SyncServer } from '@robojs/sync/server'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { SyncServer } from '@robojs/sync/server'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { SyncServer } from '@robojs/sync/server'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { SyncServer } from '@robojs/sync/server'
+  ```
+
+</Tab>
 </Tabs>
 
 | Method | Description |
@@ -33,16 +37,20 @@ Import from `@robojs/sync/server`:
 Get a zone handle to read and write state from the server.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const zone = SyncServer.getZone<GameState>(['game', 'room1'])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const zone = SyncServer.getZone(['game', 'room1'])
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const zone = SyncServer.getZone<GameState>(['game', 'room1'])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const zone = SyncServer.getZone(['game', 'room1'])
+  ```
+
+</Tab>
 </Tabs>
 
 | Method | Signature | Description |
@@ -58,30 +66,34 @@ Get a zone handle to read and write state from the server.
 ## Reading state
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const zone = SyncServer.getZone(['game', 'room1'])
-    const state = zone.getState()
-    const host = zone.getHost()
-    const clients = zone.getClients()
+<Tab value="TypeScript">
 
-    console.log('State:', state)
-    console.log('Host:', host)
-    console.log('Players:', clients.length)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const zone = SyncServer.getZone(['game', 'room1'])
-    const state = zone.getState()
-    const host = zone.getHost()
-    const clients = zone.getClients()
+  ```ts
+  const zone = SyncServer.getZone(['game', 'room1'])
+  const state = zone.getState()
+  const host = zone.getHost()
+  const clients = zone.getClients()
 
-    console.log('State:', state)
-    console.log('Host:', host)
-    console.log('Players:', clients.length)
-    ```
-  </Tab>
+  console.log('State:', state)
+  console.log('Host:', host)
+  console.log('Players:', clients.length)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const zone = SyncServer.getZone(['game', 'room1'])
+  const state = zone.getState()
+  const host = zone.getHost()
+  const clients = zone.getClients()
+
+  console.log('State:', state)
+  console.log('Host:', host)
+  console.log('Players:', clients.length)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Writing state
@@ -89,28 +101,32 @@ Get a zone handle to read and write state from the server.
 Updates broadcast automatically to all subscribed clients.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const zone = SyncServer.getZone(['game', 'room1'])
+<Tab value="TypeScript">
 
-    zone.setState({
-    	phase: 'playing',
-    	round: 2,
-    	startedAt: Date.now()
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const zone = SyncServer.getZone(['game', 'room1'])
+  ```ts
+  const zone = SyncServer.getZone(['game', 'room1'])
 
-    zone.setState({
-    	phase: 'playing',
-    	round: 2,
-    	startedAt: Date.now()
-    })
-    ```
-  </Tab>
+  zone.setState({
+  	phase: 'playing',
+  	round: 2,
+  	startedAt: Date.now()
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const zone = SyncServer.getZone(['game', 'room1'])
+
+  zone.setState({
+  	phase: 'playing',
+  	round: 2,
+  	startedAt: Date.now()
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Host management
@@ -118,28 +134,32 @@ Updates broadcast automatically to all subscribed clients.
 Override or clear the host. Useful for admin actions or automated game management.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const zone = SyncServer.getZone(['game', 'room1'])
+<Tab value="TypeScript">
 
-    // Assign host
-    zone.setHost('client-abc')
+  ```ts
+  const zone = SyncServer.getZone(['game', 'room1'])
 
-    // Clear host
-    zone.setHost(null)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const zone = SyncServer.getZone(['game', 'room1'])
+  // Assign host
+  zone.setHost('client-abc')
 
-    // Assign host
-    zone.setHost('client-abc')
+  // Clear host
+  zone.setHost(null)
+  ```
 
-    // Clear host
-    zone.setHost(null)
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const zone = SyncServer.getZone(['game', 'room1'])
+
+  // Assign host
+  zone.setHost('client-abc')
+
+  // Clear host
+  zone.setHost(null)
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -151,51 +171,59 @@ Override or clear the host. Useful for admin actions or automated game managemen
 Server broadcasts arrive on the client with `client.id === '__server__'`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const zone = SyncServer.getZone(['game', 'room1'])
+<Tab value="TypeScript">
 
-    // Broadcast to all subscribers
-    zone.broadcast({ event: 'countdown', seconds: 5 })
+  ```ts
+  const zone = SyncServer.getZone(['game', 'room1'])
 
-    // Send to specific client
-    zone.send('client-abc', { message: 'You win' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const zone = SyncServer.getZone(['game', 'room1'])
+  // Broadcast to all subscribers
+  zone.broadcast({ event: 'countdown', seconds: 5 })
 
-    // Broadcast to all subscribers
-    zone.broadcast({ event: 'countdown', seconds: 5 })
+  // Send to specific client
+  zone.send('client-abc', { message: 'You win' })
+  ```
 
-    // Send to specific client
-    zone.send('client-abc', { message: 'You win' })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const zone = SyncServer.getZone(['game', 'room1'])
+
+  // Broadcast to all subscribers
+  zone.broadcast({ event: 'countdown', seconds: 5 })
+
+  // Send to specific client
+  zone.send('client-abc', { message: 'You win' })
+  ```
+
+</Tab>
 </Tabs>
 
 Client-side handling:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    useSyncBroadcast((payload, { client }) => {
-    	if (client.id === '__server__') {
-    		console.log('Server says:', payload)
-    	}
-    }, ['game', 'room1'])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    useSyncBroadcast((payload, { client }) => {
-    	if (client.id === '__server__') {
-    		console.log('Server says:', payload)
-    	}
-    }, ['game', 'room1'])
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  useSyncBroadcast((payload, { client }) => {
+  	if (client.id === '__server__') {
+  		console.log('Server says:', payload)
+  	}
+  }, ['game', 'room1'])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  useSyncBroadcast((payload, { client }) => {
+  	if (client.id === '__server__') {
+  		console.log('Server says:', payload)
+  	}
+  }, ['game', 'room1'])
+  ```
+
+</Tab>
 </Tabs>
 
 ## Use cases
@@ -203,65 +231,73 @@ Client-side handling:
 ### API route integration
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/game/reset.ts"
-    import { SyncServer } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export default function handler(req, res) {
-    	const zone = SyncServer.getZone(['game', req.query.roomId])
-    	zone.setState({ score: 0, phase: 'lobby' })
-    	zone.broadcast({ type: 'game_reset' })
-    	return { success: true }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/game/reset.js"
-    import { SyncServer } from '@robojs/sync/server'
+  ```ts title="src/api/game/reset.ts"
+  import { SyncServer } from '@robojs/sync/server'
 
-    export default function handler(req, res) {
-    	const zone = SyncServer.getZone(['game', req.query.roomId])
-    	zone.setState({ score: 0, phase: 'lobby' })
-    	zone.broadcast({ type: 'game_reset' })
-    	return { success: true }
-    }
-    ```
-  </Tab>
+  export default function handler(req, res) {
+  	const zone = SyncServer.getZone(['game', req.query.roomId])
+  	zone.setState({ score: 0, phase: 'lobby' })
+  	zone.broadcast({ type: 'game_reset' })
+  	return { success: true }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/game/reset.js"
+  import { SyncServer } from '@robojs/sync/server'
+
+  export default function handler(req, res) {
+  	const zone = SyncServer.getZone(['game', req.query.roomId])
+  	zone.setState({ score: 0, phase: 'lobby' })
+  	zone.broadcast({ type: 'game_reset' })
+  	return { success: true }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Cron job
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { SyncServer } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export default () => {
-    	setInterval(() => {
-    		const zone = SyncServer.getZone(['dashboard', 'stats'])
-    		zone.setState({
-    			serverTime: Date.now(),
-    			uptime: process.uptime()
-    		})
-    	}, 5000)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { SyncServer } from '@robojs/sync/server'
+  ```ts title="src/robo/start.ts"
+  import { SyncServer } from '@robojs/sync/server'
 
-    export default () => {
-    	setInterval(() => {
-    		const zone = SyncServer.getZone(['dashboard', 'stats'])
-    		zone.setState({
-    			serverTime: Date.now(),
-    			uptime: process.uptime()
-    		})
-    	}, 5000)
-    }
-    ```
-  </Tab>
+  export default () => {
+  	setInterval(() => {
+  		const zone = SyncServer.getZone(['dashboard', 'stats'])
+  		zone.setState({
+  			serverTime: Date.now(),
+  			uptime: process.uptime()
+  		})
+  	}, 5000)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  import { SyncServer } from '@robojs/sync/server'
+
+  export default () => {
+  	setInterval(() => {
+  		const zone = SyncServer.getZone(['dashboard', 'stats'])
+  		zone.setState({
+  			serverTime: Date.now(),
+  			uptime: process.uptime()
+  		})
+  	}, 5000)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Raw WebSocket access
@@ -269,22 +305,26 @@ Client-side handling:
 For advanced scenarios, access the underlying `ws.WebSocketServer`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const wss = SyncServer.getSocketServer()
-    if (wss) {
-    	console.log('Connected clients:', wss.clients.size)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const wss = SyncServer.getSocketServer()
-    if (wss) {
-    	console.log('Connected clients:', wss.clients.size)
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const wss = SyncServer.getSocketServer()
+  if (wss) {
+  	console.log('Connected clients:', wss.clients.size)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const wss = SyncServer.getSocketServer()
+  if (wss) {
+  	console.log('Connected clients:', wss.clients.size)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

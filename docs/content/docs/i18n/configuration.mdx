@@ -26,43 +26,51 @@ Configure it via a plugin config file:
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/i18n.mjs"
-    export default {
-    	defaultLocale: 'en-US'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/i18n.mjs"
-    export default {
-    	defaultLocale: 'en-US'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/i18n.mjs"
+  export default {
+  	defaultLocale: 'en-US'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/i18n.mjs"
+  export default {
+  	defaultLocale: 'en-US'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Or inline in your Robo config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    export default {
-    	plugins: [
-    		['@robojs/i18n', { defaultLocale: 'en-US' }]
-    	]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    export default {
-    	plugins: [
-    		['@robojs/i18n', { defaultLocale: 'en-US' }]
-    	]
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/robo.mjs"
+  export default {
+  	plugins: [
+  		['@robojs/i18n', { defaultLocale: 'en-US' }]
+  	]
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  export default {
+  	plugins: [
+  		['@robojs/i18n', { defaultLocale: 'en-US' }]
+  	]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 If no config is provided, `defaultLocale` falls back to `'en-US'` without a warning.
@@ -128,21 +136,25 @@ On startup and when running `npx i18n`, the plugin scans `/locales/**/*.json` an
 The types file is written to `generated/types.d.ts` inside the plugin package directory. Import the re-exported types from `@robojs/i18n` rather than referencing the generated file directly.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Do this
-    import type { Locale, LocaleKey, ParamsFor } from '@robojs/i18n'
+<Tab value="TypeScript">
 
-    // Don't reference the generated path directly
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Do this
+  ```ts
+  // Do this
+  import type { Locale, LocaleKey, ParamsFor } from '@robojs/i18n'
 
-    // Don't reference the generated path directly
-    ```
-  </Tab>
+  // Don't reference the generated path directly
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Do this
+
+  // Don't reference the generated path directly
+  ```
+
+</Tab>
 </Tabs>
 
 ### When types are regenerated
@@ -207,18 +219,22 @@ This state is ephemeral (in-memory only). Locale data is reloaded from disk on e
 Compiled `MessageFormat` instances are cached in memory, keyed by `(locale, key, message)`. The cache grows with each unique combination. Clear it during tests or hot reloads:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { clearFormatterCache } from '@robojs/i18n'
-    clearFormatterCache()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { clearFormatterCache } from '@robojs/i18n'
-    clearFormatterCache()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { clearFormatterCache } from '@robojs/i18n'
+  clearFormatterCache()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { clearFormatterCache } from '@robojs/i18n'
+  clearFormatterCache()
+  ```
+
+</Tab>
 </Tabs>
 
 ### Locale loading
@@ -230,18 +246,22 @@ All locale JSON files are read synchronously at startup via `readFileSync`. The 
 MessageFormat may insert Unicode bidi isolation characters (`\u2068`/`\u2069`) around interpolated values. These are invisible but can affect string comparisons in tests. Strip them when asserting:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const deBidi = (s: string) => s.replace(/\u2068|\u2069/g, '')
-    expect(deBidi(t('en-US', 'app:hello', { name: 'Robo' }))).toBe('Hello Robo!')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const deBidi = (s) => s.replace(/\u2068|\u2069/g, '')
-    expect(deBidi(t('en-US', 'app:hello', { name: 'Robo' }))).toBe('Hello Robo!')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const deBidi = (s: string) => s.replace(/\u2068|\u2069/g, '')
+  expect(deBidi(t('en-US', 'app:hello', { name: 'Robo' }))).toBe('Hello Robo!')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const deBidi = (s) => s.replace(/\u2068|\u2069/g, '')
+  expect(deBidi(t('en-US', 'app:hello', { name: 'Robo' }))).toBe('Hello Robo!')
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

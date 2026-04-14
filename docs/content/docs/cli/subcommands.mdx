@@ -47,48 +47,52 @@ src/cli/
 ## Example subcommand
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/db/migrate.ts"
-    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = createCliCommandConfig({
-      description: 'Run database migrations',
-      options: [
-        { alias: '-t', name: '--target', description: 'Target version', type: 'string', default: 'latest' },
-        { alias: '-f', name: '--force', description: 'Force migration', type: 'boolean' }
-      ]
-    } as const)
+  ```ts title="src/cli/db/migrate.ts"
+  import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-    export default async (ctx: CliContext<typeof config>) => {
-      console.log(`Migrating to ${ctx.options.target}...`)
-      if (ctx.options.force) {
-        console.log('Force mode enabled')
-      }
-      // Migration logic here
-      console.log('Migration complete!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/db/migrate.js"
-    export const config = {
-      description: 'Run database migrations',
-      options: [
-        { alias: '-t', name: '--target', description: 'Target version', type: 'string', default: 'latest' },
-        { alias: '-f', name: '--force', description: 'Force migration', type: 'boolean' }
-      ]
-    }
+  export const config = createCliCommandConfig({
+    description: 'Run database migrations',
+    options: [
+      { alias: '-t', name: '--target', description: 'Target version', type: 'string', default: 'latest' },
+      { alias: '-f', name: '--force', description: 'Force migration', type: 'boolean' }
+    ]
+  } as const)
 
-    export default async (ctx) => {
-      console.log(`Migrating to ${ctx.options.target}...`)
-      if (ctx.options.force) {
-        console.log('Force mode enabled')
-      }
-      // Migration logic here
-      console.log('Migration complete!')
+  export default async (ctx: CliContext<typeof config>) => {
+    console.log(`Migrating to ${ctx.options.target}...`)
+    if (ctx.options.force) {
+      console.log('Force mode enabled')
     }
-    ```
-  </Tab>
+    // Migration logic here
+    console.log('Migration complete!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/db/migrate.js"
+  export const config = {
+    description: 'Run database migrations',
+    options: [
+      { alias: '-t', name: '--target', description: 'Target version', type: 'string', default: 'latest' },
+      { alias: '-f', name: '--force', description: 'Force migration', type: 'boolean' }
+    ]
+  }
+
+  export default async (ctx) => {
+    console.log(`Migrating to ${ctx.options.target}...`)
+    if (ctx.options.force) {
+      console.log('Force mode enabled')
+    }
+    // Migration logic here
+    console.log('Migration complete!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ```bash

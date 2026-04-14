@@ -65,22 +65,26 @@ When an unhandled error occurs, the plugin sends a rich embed to that channel wi
 For more control, use the [plugin config](./configuration.mdx):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/dev.mjs"
-    export default {
-    	debugChannelId: '1234567890123456789',
-    	errorPingRoleId: '987654321098765432'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/dev.mjs"
-    export default {
-    	debugChannelId: '1234567890123456789',
-    	errorPingRoleId: '987654321098765432'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/dev.mjs"
+  export default {
+  	debugChannelId: '1234567890123456789',
+  	errorPingRoleId: '987654321098765432'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/dev.mjs"
+  export default {
+  	debugChannelId: '1234567890123456789',
+  	errorPingRoleId: '987654321098765432'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

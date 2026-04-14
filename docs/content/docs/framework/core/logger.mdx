@@ -10,20 +10,24 @@ Robo.js includes a built-in logger that provides structured output, custom log l
 Import the global `logger` instance:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { logger } from 'robo.js'
+<Tab value="TypeScript">
 
-    logger.info('Hello World!')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { logger } from 'robo.js'
+  ```ts
+  import { logger } from 'robo.js'
 
-    logger.info('Hello World!')
-    ```
-  </Tab>
+  logger.info('Hello World!')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { logger } from 'robo.js'
+
+  logger.info('Hello World!')
+  ```
+
+</Tab>
 </Tabs>
 
 ## Creating a Logger
@@ -31,28 +35,32 @@ Import the global `logger` instance:
 You can create a new Logger instance with custom settings:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Logger } from 'robo.js'
+<Tab value="TypeScript">
 
-    const customLogger = new Logger({
-    	level: 'debug',
-    	prefix: 'DiscordLogger',
-    	maxEntries: 200 // Default: 100
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Logger } from 'robo.js'
+  ```ts
+  import { Logger } from 'robo.js'
 
-    const customLogger = new Logger({
-    	level: 'debug',
-    	prefix: 'DiscordLogger',
-    	maxEntries: 200 // Default: 100
-    })
-    ```
-  </Tab>
+  const customLogger = new Logger({
+  	level: 'debug',
+  	prefix: 'DiscordLogger',
+  	maxEntries: 200 // Default: 100
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Logger } from 'robo.js'
+
+  const customLogger = new Logger({
+  	level: 'debug',
+  	prefix: 'DiscordLogger',
+  	maxEntries: 200 // Default: 100
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -64,26 +72,30 @@ You can create a new Logger instance with custom settings:
 The logger provides methods for different severity levels:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    logger.debug('Debugging message')
-    logger.info('Info message')
-    logger.warn('Warning message')
-    logger.error('Error message')
-    logger.log('3rd Party message')
-    logger.event('Event Patched message')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    logger.debug('Debugging message')
-    logger.info('Info message')
-    logger.warn('Warning message')
-    logger.error('Error message')
-    logger.log('3rd Party message')
-    logger.event('Event Patched message')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  logger.debug('Debugging message')
+  logger.info('Info message')
+  logger.warn('Warning message')
+  logger.error('Error message')
+  logger.log('3rd Party message')
+  logger.event('Event Patched message')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  logger.debug('Debugging message')
+  logger.info('Info message')
+  logger.warn('Warning message')
+  logger.error('Error message')
+  logger.log('3rd Party message')
+  logger.event('Event Patched message')
+  ```
+
+</Tab>
 </Tabs>
 
 The configured log level determines which messages appear in output.
@@ -109,16 +121,20 @@ The default level is `info`.
 Update the log level at runtime by calling `logger()` with new options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    logger({ level: 'debug' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    logger({ level: 'debug' })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  logger({ level: 'debug' })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  logger({ level: 'debug' })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Child Loggers
@@ -126,18 +142,22 @@ Update the log level at runtime by calling `logger()` with new options:
 Create namespaced child loggers with `logger.fork()` to identify the source of log output:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const dbLogger = logger.fork('database')
-    dbLogger.info('Connection initiated!')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const dbLogger = logger.fork('database')
-    dbLogger.info('Connection initiated!')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const dbLogger = logger.fork('database')
+  dbLogger.info('Connection initiated!')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const dbLogger = logger.fork('database')
+  dbLogger.info('Connection initiated!')
+  ```
+
+</Tab>
 </Tabs>
 
 All output from `dbLogger` is prefixed with `database`, making it easy to filter logs by component. This is particularly useful in plugins and modules.
@@ -147,16 +167,20 @@ All output from `dbLogger` is prefixed with `database`, making it easy to filter
 Manually flush pending log writes:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await logger.flush()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await logger.flush()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  await logger.flush()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await logger.flush()
+  ```
+
+</Tab>
 </Tabs>
 
 This ensures all buffered writes complete before proceeding.
@@ -166,31 +190,39 @@ This ensures all buffered writes complete before proceeding.
 Access recent log entries from the logger's buffer:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const recentLogs = logger.getRecentLogs()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const recentLogs = logger.getRecentLogs()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const recentLogs = logger.getRecentLogs()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const recentLogs = logger.getRecentLogs()
+  ```
+
+</Tab>
 </Tabs>
 
 Specify a count to limit the number of entries returned:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const recent20Logs = logger.getRecentLogs(20) // Default: 25
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const recent20Logs = logger.getRecentLogs(20) // Default: 25
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const recent20Logs = logger.getRecentLogs(20) // Default: 25
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const recent20Logs = logger.getRecentLogs(20) // Default: 25
+  ```
+
+</Tab>
 </Tabs>
 
 ## Custom Drains
@@ -206,51 +238,59 @@ A drain is a target where log output is sent. By default, logs go to the console
 **Using `setDrain()`:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { logger } from 'robo.js'
+<Tab value="TypeScript">
 
-    async function customDrain(logger: any, level: string, ...data: any[]): Promise<void> {
-    	// Custom drain logic
-    }
+  ```ts
+  import { logger } from 'robo.js'
 
-    logger().setDrain(customDrain)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { logger } from 'robo.js'
+  async function customDrain(logger: any, level: string, ...data: any[]): Promise<void> {
+  	// Custom drain logic
+  }
 
-    async function customDrain(logger, level, ...data) {
-    	// Custom drain logic
-    }
+  logger().setDrain(customDrain)
+  ```
 
-    logger().setDrain(customDrain)
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { logger } from 'robo.js'
+
+  async function customDrain(logger, level, ...data) {
+  	// Custom drain logic
+  }
+
+  logger().setDrain(customDrain)
+  ```
+
+</Tab>
 </Tabs>
 
 **In the Logger constructor:**
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Logger } from 'robo.js'
+<Tab value="TypeScript">
 
-    const logger = new Logger({
-    	drain: customDrain
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Logger } from 'robo.js'
+  ```ts
+  import { Logger } from 'robo.js'
 
-    const logger = new Logger({
-    	drain: customDrain
-    })
-    ```
-  </Tab>
+  const logger = new Logger({
+  	drain: customDrain
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Logger } from 'robo.js'
+
+  const logger = new Logger({
+  	drain: customDrain
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 **In the `robo.mjs` configuration:**
@@ -267,20 +307,24 @@ export default {
 The default drain function writes to the console. All drains must return a `Promise<void>`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    async function consoleDrain(logger: any, level: string, ...data: any[]): Promise<void> {
-    	// Default drain logic
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    async function consoleDrain(logger, level, ...data) {
-    	// Default drain logic
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  async function consoleDrain(logger: any, level: string, ...data: any[]): Promise<void> {
+  	// Default drain logic
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  async function consoleDrain(logger, level, ...data) {
+  	// Default drain logic
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Performance

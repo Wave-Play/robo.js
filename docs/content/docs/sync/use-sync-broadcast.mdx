@@ -8,22 +8,26 @@ Send fire-and-forget messages across clients. Broadcasts don't persist on the se
 ## Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function useSyncBroadcast<ClientData = unknown>(
-    	handler: (payload: unknown, context: { client: Client<ClientData> }) => void,
-    	key: (string | null)[]
-    ): SyncBroadcastResult<ClientData>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function useSyncBroadcast(
-    	handler: (payload, context) => void,
-    	key: (string | null)[]
-    ): SyncBroadcastResult<ClientData>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function useSyncBroadcast<ClientData = unknown>(
+  	handler: (payload: unknown, context: { client: Client<ClientData> }) => void,
+  	key: (string | null)[]
+  ): SyncBroadcastResult<ClientData>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function useSyncBroadcast(
+  	handler: (payload, context) => void,
+  	key: (string | null)[]
+  ): SyncBroadcastResult<ClientData>
+  ```
+
+</Tab>
 </Tabs>
 
 ## Parameters
@@ -46,77 +50,85 @@ Send fire-and-forget messages across clients. Broadcasts don't persist on the se
 A typing indicator using broadcasts.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useSyncBroadcast } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function Chat() {
-    	const [typingUsers, setTypingUsers] = useState<string[]>([])
+  ```tsx
+  import { useSyncBroadcast } from '@robojs/sync'
 
-    	const { broadcast } = useSyncBroadcast((payload, { client }) => {
-    		if (payload.type === 'typing') {
-    			setTypingUsers((prev) => [...new Set([...prev, client.id])])
-    			setTimeout(() => {
-    				setTypingUsers((prev) => prev.filter((id) => id !== client.id))
-    			}, 2000)
-    		}
-    	}, ['chat', roomId])
+  function Chat() {
+  	const [typingUsers, setTypingUsers] = useState<string[]>([])
 
-    	return (
-    		<div>
-    			<input onKeyDown={() => broadcast({ type: 'typing' })} />
-    			{typingUsers.length > 0 && <p>{typingUsers.length} typing...</p>}
-    		</div>
-    	)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useSyncBroadcast } from '@robojs/sync'
+  	const { broadcast } = useSyncBroadcast((payload, { client }) => {
+  		if (payload.type === 'typing') {
+  			setTypingUsers((prev) => [...new Set([...prev, client.id])])
+  			setTimeout(() => {
+  				setTypingUsers((prev) => prev.filter((id) => id !== client.id))
+  			}, 2000)
+  		}
+  	}, ['chat', roomId])
 
-    function Chat() {
-    	const [typingUsers, setTypingUsers] = useState([])
+  	return (
+  		<div>
+  			<input onKeyDown={() => broadcast({ type: 'typing' })} />
+  			{typingUsers.length > 0 && <p>{typingUsers.length} typing...</p>}
+  		</div>
+  	)
+  }
+  ```
 
-    	const { broadcast } = useSyncBroadcast((payload, { client }) => {
-    		if (payload.type === 'typing') {
-    			setTypingUsers((prev) => [...new Set([...prev, client.id])])
-    			setTimeout(() => {
-    				setTypingUsers((prev) => prev.filter((id) => id !== client.id))
-    			}, 2000)
-    		}
-    	}, ['chat', roomId])
+</Tab>
+<Tab value="JavaScript">
 
-    	return (
-    		<div>
-    			<input onKeyDown={() => broadcast({ type: 'typing' })} />
-    			{typingUsers.length > 0 && <p>{typingUsers.length} typing...</p>}
-    		</div>
-    	)
-    }
-    ```
-  </Tab>
+  ```jsx
+  import { useSyncBroadcast } from '@robojs/sync'
+
+  function Chat() {
+  	const [typingUsers, setTypingUsers] = useState([])
+
+  	const { broadcast } = useSyncBroadcast((payload, { client }) => {
+  		if (payload.type === 'typing') {
+  			setTypingUsers((prev) => [...new Set([...prev, client.id])])
+  			setTimeout(() => {
+  				setTypingUsers((prev) => prev.filter((id) => id !== client.id))
+  			}, 2000)
+  		}
+  	}, ['chat', roomId])
+
+  	return (
+  		<div>
+  			<input onKeyDown={() => broadcast({ type: 'typing' })} />
+  			{typingUsers.length > 0 && <p>{typingUsers.length} typing...</p>}
+  		</div>
+  	)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Sending to a specific client
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const { send, context } = useSyncBroadcast(handler, ['game', roomId])
+<Tab value="TypeScript">
 
-    // Send private message to one client
-    send(targetClientId, { type: 'whisper', text: 'hello' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const { send, context } = useSyncBroadcast(handler, ['game', roomId])
+  ```tsx
+  const { send, context } = useSyncBroadcast(handler, ['game', roomId])
 
-    // Send private message to one client
-    send(targetClientId, { type: 'whisper', text: 'hello' })
-    ```
-  </Tab>
+  // Send private message to one client
+  send(targetClientId, { type: 'whisper', text: 'hello' })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const { send, context } = useSyncBroadcast(handler, ['game', roomId])
+
+  // Send private message to one client
+  send(targetClientId, { type: 'whisper', text: 'hello' })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Server broadcasts
@@ -124,24 +136,28 @@ A typing indicator using broadcasts.
 Server-side code can also send broadcasts via the [Server Zone API](./server-api.mdx). These arrive with `client.id === '__server__'`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    useSyncBroadcast((payload, { client }) => {
-    	if (client.id === '__server__') {
-    		console.log('Server notification:', payload)
-    	}
-    }, ['game', roomId])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    useSyncBroadcast((payload, { client }) => {
-    	if (client.id === '__server__') {
-    		console.log('Server notification:', payload)
-    	}
-    }, ['game', roomId])
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  useSyncBroadcast((payload, { client }) => {
+  	if (client.id === '__server__') {
+  		console.log('Server notification:', payload)
+  	}
+  }, ['game', roomId])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  useSyncBroadcast((payload, { client }) => {
+  	if (client.id === '__server__') {
+  		console.log('Server notification:', payload)
+  	}
+  }, ['game', roomId])
+  ```
+
+</Tab>
 </Tabs>
 
 ## Broadcast vs state

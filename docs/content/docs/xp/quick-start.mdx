@@ -44,28 +44,32 @@ Start your Robo and send a few messages in any text channel. The plugin begins t
 When installed, the plugin seeds a config file at `config/plugins/robojs/xp.ts`. This file controls global defaults applied to all guilds on startup.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/xp.ts"
-    import type { PluginOptions } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    export default {
-    	defaults: {
-    		cooldownSeconds: 60,
-    		xpRate: 1.0
-    	}
-    } satisfies PluginOptions
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/xp.js"
-    export default {
-    	defaults: {
-    		cooldownSeconds: 60,
-    		xpRate: 1.0
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/xp.ts"
+  import type { PluginOptions } from '@robojs/xp'
+
+  export default {
+  	defaults: {
+  		cooldownSeconds: 60,
+  		xpRate: 1.0
+  	}
+  } satisfies PluginOptions
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/xp.js"
+  export default {
+  	defaults: {
+  		cooldownSeconds: 60,
+  		xpRate: 1.0
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The `defaults` field accepts any `GuildConfig` fields. These become the global baseline that individual guilds can override through `/xp config` or the API.

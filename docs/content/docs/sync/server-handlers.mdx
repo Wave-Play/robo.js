@@ -40,31 +40,35 @@ Each handler file can export any combination of reserved functions. Any other na
 Block or allow direct state updates. Return `true` to accept, `false` to reject, or a string for a rejection reason.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { SyncUpdateContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function validate(ctx: SyncUpdateContext): boolean | string {
-    	// Only host can update directly
-    	if (ctx.client.id !== 'expected-host-id') {
-    		return 'only_host_can_update'
-    	}
-    	return true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { SyncUpdateContext } from '@robojs/sync/server'
 
-    export function validate(ctx) {
-    	// Only host can update directly
-    	if (ctx.client.id !== 'expected-host-id') {
-    		return 'only_host_can_update'
-    	}
-    	return true
-    }
-    ```
-  </Tab>
+  export function validate(ctx: SyncUpdateContext): boolean | string {
+  	// Only host can update directly
+  	if (ctx.client.id !== 'expected-host-id') {
+  		return 'only_host_can_update'
+  	}
+  	return true
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export function validate(ctx) {
+  	// Only host can update directly
+  	if (ctx.client.id !== 'expected-host-id') {
+  		return 'only_host_can_update'
+  	}
+  	return true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### transform
@@ -72,31 +76,35 @@ Block or allow direct state updates. Return `true` to accept, `false` to reject,
 Modify state before it's broadcast to clients. Useful for adding timestamps, sanitizing data, or computing derived values.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { SyncUpdateContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function transform(ctx: SyncUpdateContext) {
-    	return {
-    		...ctx.newState,
-    		updatedAt: Date.now(),
-    		updatedBy: ctx.client.id
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { SyncUpdateContext } from '@robojs/sync/server'
 
-    export function transform(ctx) {
-    	return {
-    		...ctx.newState,
-    		updatedAt: Date.now(),
-    		updatedBy: ctx.client.id
-    	}
-    }
-    ```
-  </Tab>
+  export function transform(ctx: SyncUpdateContext) {
+  	return {
+  		...ctx.newState,
+  		updatedAt: Date.now(),
+  		updatedBy: ctx.client.id
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export function transform(ctx) {
+  	return {
+  		...ctx.newState,
+  		updatedAt: Date.now(),
+  		updatedBy: ctx.client.id
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### onUpdate
@@ -104,23 +112,27 @@ Modify state before it's broadcast to clients. Useful for adding timestamps, san
 Side effect that runs after state is successfully broadcast. Use for logging, analytics, or triggering external systems.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { SyncUpdateContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export function onUpdate(ctx: SyncUpdateContext): void {
-    	console.log(`State updated by ${ctx.client.id} in room ${ctx.params.roomId}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { SyncUpdateContext } from '@robojs/sync/server'
 
-    export function onUpdate(ctx) {
-    	console.log(`State updated by ${ctx.client.id} in room ${ctx.params.roomId}`)
-    }
-    ```
-  </Tab>
+  export function onUpdate(ctx: SyncUpdateContext): void {
+  	console.log(`State updated by ${ctx.client.id} in room ${ctx.params.roomId}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export function onUpdate(ctx) {
+  	console.log(`State updated by ${ctx.client.id} in room ${ctx.params.roomId}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### schema
@@ -128,25 +140,29 @@ Side effect that runs after state is successfully broadcast. Use for logging, an
 Validate state structure. Supports both a built-in format and Zod schemas. See [Schema validation](./schema-validation.mdx) for details.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { BuiltInSchema } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export const schema: BuiltInSchema = {
-    	score: { type: 'number' },
-    	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { BuiltInSchema } from '@robojs/sync/server'
 
-    export const schema = {
-    	score: { type: 'number' },
-    	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] }
-    }
-    ```
-  </Tab>
+  export const schema: BuiltInSchema = {
+  	score: { type: 'number' },
+  	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export const schema = {
+  	score: { type: 'number' },
+  	phase: { type: 'string', enum: ['lobby', 'playing', 'ended'] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## RPC methods
@@ -154,75 +170,83 @@ Validate state structure. Supports both a built-in format and Zod schemas. See [
 Any named export that isn't a reserved name (`schema`, `validate`, `transform`, `onUpdate`, `before`, `after`) becomes a callable RPC method. Call these from the client via [useSyncCall](./use-sync-call.mdx).
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { SyncCallContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export async function startGame(
-    	payload: { difficulty: string },
-    	ctx: SyncCallContext
-    ) {
-    	const host = ctx.getHost()
-    	if (ctx.client.id !== host) {
-    		return { success: false, error: 'only_host_can_start' }
-    	}
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { SyncCallContext } from '@robojs/sync/server'
 
-    	ctx.setState({
-    		...ctx.getState(),
-    		phase: 'playing',
-    		difficulty: payload.difficulty
-    	})
+  export async function startGame(
+  	payload: { difficulty: string },
+  	ctx: SyncCallContext
+  ) {
+  	const host = ctx.getHost()
+  	if (ctx.client.id !== host) {
+  		return { success: false, error: 'only_host_can_start' }
+  	}
 
-    	ctx.broadcast({ type: 'game_started' })
-    	return { success: true }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  	ctx.setState({
+  		...ctx.getState(),
+  		phase: 'playing',
+  		difficulty: payload.difficulty
+  	})
 
-    export async function startGame(payload, ctx) {
-    	const host = ctx.getHost()
-    	if (ctx.client.id !== host) {
-    		return { success: false, error: 'only_host_can_start' }
-    	}
+  	ctx.broadcast({ type: 'game_started' })
+  	return { success: true }
+  }
+  ```
 
-    	ctx.setState({
-    		...ctx.getState(),
-    		phase: 'playing',
-    		difficulty: payload.difficulty
-    	})
+</Tab>
+<Tab value="JavaScript">
 
-    	ctx.broadcast({ type: 'game_started' })
-    	return { success: true }
-    }
-    ```
-  </Tab>
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export async function startGame(payload, ctx) {
+  	const host = ctx.getHost()
+  	if (ctx.client.id !== host) {
+  		return { success: false, error: 'only_host_can_start' }
+  	}
+
+  	ctx.setState({
+  		...ctx.getState(),
+  		phase: 'playing',
+  		difficulty: payload.difficulty
+  	})
+
+  	ctx.broadcast({ type: 'game_started' })
+  	return { success: true }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Client-side:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const call = useSyncCall(['game', roomId, 'state'])
+<Tab value="TypeScript">
 
-    const result = await call('startGame', { difficulty: 'hard' })
-    if (!result.success) {
-    	console.error(result.error)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const call = useSyncCall(['game', roomId, 'state'])
+  ```tsx
+  const call = useSyncCall(['game', roomId, 'state'])
 
-    const result = await call('startGame', { difficulty: 'hard' })
-    if (!result.success) {
-    	console.error(result.error)
-    }
-    ```
-  </Tab>
+  const result = await call('startGame', { difficulty: 'hard' })
+  if (!result.success) {
+  	console.error(result.error)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const call = useSyncCall(['game', roomId, 'state'])
+
+  const result = await call('startGame', { difficulty: 'hard' })
+  if (!result.success) {
+  	console.error(result.error)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## SyncUpdateContext
@@ -299,160 +323,168 @@ A coin collection game with server-authoritative scoring.
 Server handler:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/coins.ts"
-    import type { SyncCallContext, BuiltInSchema } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    interface CoinState {
-    	coins: Record<string, { id: string; x: number; y: number; value: number; collected: boolean }>
-    	scores: Record<string, number>
-    }
+  ```ts title="src/sync/game/[roomId]/coins.ts"
+  import type { SyncCallContext, BuiltInSchema } from '@robojs/sync/server'
 
-    export const schema: BuiltInSchema = {
-    	coins: { type: 'object' },
-    	scores: { type: 'object' }
-    }
+  interface CoinState {
+  	coins: Record<string, { id: string; x: number; y: number; value: number; collected: boolean }>
+  	scores: Record<string, number>
+  }
 
-    export function validate(): string {
-    	return 'use_rpc_to_collect'
-    }
+  export const schema: BuiltInSchema = {
+  	coins: { type: 'object' },
+  	scores: { type: 'object' }
+  }
 
-    export async function collect(
-    	payload: { coinId: string },
-    	ctx: SyncCallContext<CoinState>
-    ) {
-    	const state = ctx.getState() ?? { coins: {}, scores: {} }
-    	const coin = state.coins[payload.coinId]
+  export function validate(): string {
+  	return 'use_rpc_to_collect'
+  }
 
-    	if (!coin || coin.collected) {
-    		return { success: false, error: 'invalid_coin' }
-    	}
+  export async function collect(
+  	payload: { coinId: string },
+  	ctx: SyncCallContext<CoinState>
+  ) {
+  	const state = ctx.getState() ?? { coins: {}, scores: {} }
+  	const coin = state.coins[payload.coinId]
 
-    	const playerId = ctx.client.id
-    	const newScore = (state.scores[playerId] ?? 0) + coin.value
+  	if (!coin || coin.collected) {
+  		return { success: false, error: 'invalid_coin' }
+  	}
 
-    	ctx.setState({
-    		...state,
-    		coins: { ...state.coins, [payload.coinId]: { ...coin, collected: true } },
-    		scores: { ...state.scores, [playerId]: newScore }
-    	})
+  	const playerId = ctx.client.id
+  	const newScore = (state.scores[playerId] ?? 0) + coin.value
 
-    	ctx.send(playerId, { type: 'collected', points: coin.value, total: newScore })
-    	ctx.broadcast({ type: 'coin_collected', playerId, coinId: payload.coinId })
+  	ctx.setState({
+  		...state,
+  		coins: { ...state.coins, [payload.coinId]: { ...coin, collected: true } },
+  		scores: { ...state.scores, [playerId]: newScore }
+  	})
 
-    	return { success: true, points: coin.value }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/coins.js"
+  	ctx.send(playerId, { type: 'collected', points: coin.value, total: newScore })
+  	ctx.broadcast({ type: 'coin_collected', playerId, coinId: payload.coinId })
 
-    export const schema = {
-    	coins: { type: 'object' },
-    	scores: { type: 'object' }
-    }
+  	return { success: true, points: coin.value }
+  }
+  ```
 
-    export function validate() {
-    	return 'use_rpc_to_collect'
-    }
+</Tab>
+<Tab value="JavaScript">
 
-    export async function collect(payload, ctx) {
-    	const state = ctx.getState() ?? { coins: {}, scores: {} }
-    	const coin = state.coins[payload.coinId]
+  ```js title="src/sync/game/[roomId]/coins.js"
 
-    	if (!coin || coin.collected) {
-    		return { success: false, error: 'invalid_coin' }
-    	}
+  export const schema = {
+  	coins: { type: 'object' },
+  	scores: { type: 'object' }
+  }
 
-    	const playerId = ctx.client.id
-    	const newScore = (state.scores[playerId] ?? 0) + coin.value
+  export function validate() {
+  	return 'use_rpc_to_collect'
+  }
 
-    	ctx.setState({
-    		...state,
-    		coins: { ...state.coins, [payload.coinId]: { ...coin, collected: true } },
-    		scores: { ...state.scores, [playerId]: newScore }
-    	})
+  export async function collect(payload, ctx) {
+  	const state = ctx.getState() ?? { coins: {}, scores: {} }
+  	const coin = state.coins[payload.coinId]
 
-    	ctx.send(playerId, { type: 'collected', points: coin.value, total: newScore })
-    	ctx.broadcast({ type: 'coin_collected', playerId, coinId: payload.coinId })
+  	if (!coin || coin.collected) {
+  		return { success: false, error: 'invalid_coin' }
+  	}
 
-    	return { success: true, points: coin.value }
-    }
-    ```
-  </Tab>
+  	const playerId = ctx.client.id
+  	const newScore = (state.scores[playerId] ?? 0) + coin.value
+
+  	ctx.setState({
+  		...state,
+  		coins: { ...state.coins, [payload.coinId]: { ...coin, collected: true } },
+  		scores: { ...state.scores, [playerId]: newScore }
+  	})
+
+  	ctx.send(playerId, { type: 'collected', points: coin.value, total: newScore })
+  	ctx.broadcast({ type: 'coin_collected', playerId, coinId: payload.coinId })
+
+  	return { success: true, points: coin.value }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Client:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/CoinGame.tsx"
-    import { useSyncState, useSyncCall, useSyncBroadcast } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function CoinGame({ roomId }: { roomId: string }) {
-    	const coinKey = ['game', roomId, 'coins']
-    	const [gameState] = useSyncState({ coins: {}, scores: {} }, coinKey)
-    	const call = useSyncCall(coinKey)
+  ```tsx title="src/app/CoinGame.tsx"
+  import { useSyncState, useSyncCall, useSyncBroadcast } from '@robojs/sync'
 
-    	useSyncBroadcast((payload, { client }) => {
-    		if (client.id === '__server__') {
-    			console.log(payload)
-    		}
-    	}, coinKey)
+  function CoinGame({ roomId }: { roomId: string }) {
+  	const coinKey = ['game', roomId, 'coins']
+  	const [gameState] = useSyncState({ coins: {}, scores: {} }, coinKey)
+  	const call = useSyncCall(coinKey)
 
-    	const collectCoin = async (coinId: string) => {
-    		const result = await call('collect', { coinId })
-    		if (!result.success) {
-    			console.error(result.error)
-    		}
-    	}
+  	useSyncBroadcast((payload, { client }) => {
+  		if (client.id === '__server__') {
+  			console.log(payload)
+  		}
+  	}, coinKey)
 
-    	return (
-    		<div>
-    			{Object.values(gameState.coins).map((coin) => (
-    				<button key={coin.id} onClick={() => collectCoin(coin.id)} disabled={coin.collected}>
-    					{coin.value} pts
-    				</button>
-    			))}
-    		</div>
-    	)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/CoinGame.jsx"
-    import { useSyncState, useSyncCall, useSyncBroadcast } from '@robojs/sync'
+  	const collectCoin = async (coinId: string) => {
+  		const result = await call('collect', { coinId })
+  		if (!result.success) {
+  			console.error(result.error)
+  		}
+  	}
 
-    function CoinGame({ roomId }) {
-    	const coinKey = ['game', roomId, 'coins']
-    	const [gameState] = useSyncState({ coins: {}, scores: {} }, coinKey)
-    	const call = useSyncCall(coinKey)
+  	return (
+  		<div>
+  			{Object.values(gameState.coins).map((coin) => (
+  				<button key={coin.id} onClick={() => collectCoin(coin.id)} disabled={coin.collected}>
+  					{coin.value} pts
+  				</button>
+  			))}
+  		</div>
+  	)
+  }
+  ```
 
-    	useSyncBroadcast((payload, { client }) => {
-    		if (client.id === '__server__') {
-    			console.log(payload)
-    		}
-    	}, coinKey)
+</Tab>
+<Tab value="JavaScript">
 
-    	const collectCoin = async (coinId) => {
-    		const result = await call('collect', { coinId })
-    		if (!result.success) {
-    			console.error(result.error)
-    		}
-    	}
+  ```jsx title="src/app/CoinGame.jsx"
+  import { useSyncState, useSyncCall, useSyncBroadcast } from '@robojs/sync'
 
-    	return (
-    		<div>
-    			{Object.values(gameState.coins).map((coin) => (
-    				<button key={coin.id} onClick={() => collectCoin(coin.id)} disabled={coin.collected}>
-    					{coin.value} pts
-    				</button>
-    			))}
-    		</div>
-    	)
-    }
-    ```
-  </Tab>
+  function CoinGame({ roomId }) {
+  	const coinKey = ['game', roomId, 'coins']
+  	const [gameState] = useSyncState({ coins: {}, scores: {} }, coinKey)
+  	const call = useSyncCall(coinKey)
+
+  	useSyncBroadcast((payload, { client }) => {
+  		if (client.id === '__server__') {
+  			console.log(payload)
+  		}
+  	}, coinKey)
+
+  	const collectCoin = async (coinId) => {
+  		const result = await call('collect', { coinId })
+  		if (!result.success) {
+  			console.error(result.error)
+  		}
+  	}
+
+  	return (
+  		<div>
+  			{Object.values(gameState.coins).map((coin) => (
+  				<button key={coin.id} onClick={() => collectCoin(coin.id)} disabled={coin.collected}>
+  					{coin.value} pts
+  				</button>
+  			))}
+  		</div>
+  	)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next Steps

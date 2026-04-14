@@ -40,59 +40,67 @@ Robo.js adds file-based routing (your file names and folder structure automatica
 **Before** (plain SDK):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="main.ts"
-    import { DiscordSDK } from '@discord/embedded-app-sdk'
+<Tab value="TypeScript">
 
-    const sdk = new DiscordSDK(CLIENT_ID)
-    await sdk.ready()
-    const { code } = await sdk.commands.authorize({ client_id: CLIENT_ID, response_type: 'code', scope: ['identify'] })
-    // manual token exchange...
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="main.js"
-    import { DiscordSDK } from '@discord/embedded-app-sdk'
+  ```ts title="main.ts"
+  import { DiscordSDK } from '@discord/embedded-app-sdk'
 
-    const sdk = new DiscordSDK(CLIENT_ID)
-    await sdk.ready()
-    const { code } = await sdk.commands.authorize({ client_id: CLIENT_ID, response_type: 'code', scope: ['identify'] })
-    // manual token exchange...
-    ```
-  </Tab>
+  const sdk = new DiscordSDK(CLIENT_ID)
+  await sdk.ready()
+  const { code } = await sdk.commands.authorize({ client_id: CLIENT_ID, response_type: 'code', scope: ['identify'] })
+  // manual token exchange...
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="main.js"
+  import { DiscordSDK } from '@discord/embedded-app-sdk'
+
+  const sdk = new DiscordSDK(CLIENT_ID)
+  await sdk.ready()
+  const { code } = await sdk.commands.authorize({ client_id: CLIENT_ID, response_type: 'code', scope: ['identify'] })
+  // manual token exchange...
+  ```
+
+</Tab>
 </Tabs>
 
 **After** (Robo.js):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/App.tsx"
-    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
-    import { Activity } from './Activity'
+<Tab value="TypeScript">
 
-    export default function App() {
-      return (
-        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
-          <Activity />
-        </DiscordContextProvider>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/App.jsx"
-    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
-    import { Activity } from './Activity'
+  ```tsx title="src/app/App.tsx"
+  import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+  import { Activity } from './Activity'
 
-    export default function App() {
-      return (
-        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
-          <Activity />
-        </DiscordContextProvider>
-      )
-    }
-    ```
-  </Tab>
+  export default function App() {
+    return (
+      <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+        <Activity />
+      </DiscordContextProvider>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx title="src/app/App.jsx"
+  import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+  import { Activity } from './Activity'
+
+  export default function App() {
+    return (
+      <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+        <Activity />
+      </DiscordContextProvider>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The `DiscordContextProvider` handles SDK initialization, authorization, token exchange, and authentication automatically.
@@ -127,22 +135,26 @@ The `DiscordContextProvider` handles SDK initialization, authorization, token ex
 Convert routes to the file-based `src/api/` structure. Each route file exports a default handler function.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/health.ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export default (req: RoboRequest) => {
-      return { status: 'ok' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/health.js"
-    export default (req) => {
-      return { status: 'ok' }
-    }
-    ```
-  </Tab>
+  ```ts title="src/api/health.ts"
+  import type { RoboRequest } from '@robojs/server'
+
+  export default (req: RoboRequest) => {
+    return { status: 'ok' }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/health.js"
+  export default (req) => {
+    return { status: 'ok' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 For Fastify, the `@robojs/server` plugin supports custom engine configuration.

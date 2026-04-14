@@ -51,36 +51,40 @@ Stable tunnels are optional. Free tunnels work fine for development — you just
 For a fixed URL that persists across restarts, configure Cloudflare credentials in your `@robojs/server` plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.ts"
-    export default {
-      tunnel: {
-        enabled: true,
-        cloudflare: {
-          domain: process.env.CLOUDFLARE_DOMAIN,
-          apiKey: process.env.CLOUDFLARE_API_KEY,
-          zoneId: process.env.CLOUDFLARE_ZONE_ID,
-          accountId: process.env.CLOUDFLARE_ACCOUNT_ID
-        }
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.ts"
+  export default {
+    tunnel: {
+      enabled: true,
+      cloudflare: {
+        domain: process.env.CLOUDFLARE_DOMAIN,
+        apiKey: process.env.CLOUDFLARE_API_KEY,
+        zoneId: process.env.CLOUDFLARE_ZONE_ID,
+        accountId: process.env.CLOUDFLARE_ACCOUNT_ID
       }
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.js"
-    export default {
-      tunnel: {
-        enabled: true,
-        cloudflare: {
-          domain: process.env.CLOUDFLARE_DOMAIN,
-          apiKey: process.env.CLOUDFLARE_API_KEY,
-          zoneId: process.env.CLOUDFLARE_ZONE_ID,
-          accountId: process.env.CLOUDFLARE_ACCOUNT_ID
-        }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.js"
+  export default {
+    tunnel: {
+      enabled: true,
+      cloudflare: {
+        domain: process.env.CLOUDFLARE_DOMAIN,
+        apiKey: process.env.CLOUDFLARE_API_KEY,
+        zoneId: process.env.CLOUDFLARE_ZONE_ID,
+        accountId: process.env.CLOUDFLARE_ACCOUNT_ID
       }
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 On first run, the provider automatically creates a named tunnel and stores `CLOUDFLARE_TUNNEL_ID` and `CLOUDFLARE_TUNNEL_TOKEN` in your `.env` file. Subsequent runs reuse the same tunnel URL.

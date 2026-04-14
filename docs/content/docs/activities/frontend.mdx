@@ -38,40 +38,44 @@ Activity projects organize frontend code into a few key directories:
 Robo.js integrates Vite as the frontend build tool for activity projects. The configuration file is `config/vite.mjs`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
+<Tab value="TypeScript">
 
-    export default defineConfig({
-      plugins: [
-        react(), // Fast JSX compilation using SWC
-        DiscordProxy.Vite() // Rewrites network requests to work through Discord's proxy
-      ],
-      server: {
-        allowedHosts: true // Allows tunnel URLs to connect to the dev server
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
+  ```ts title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
 
-    export default defineConfig({
-      plugins: [
-        react(), // Fast JSX compilation using SWC
-        DiscordProxy.Vite() // Rewrites network requests to work through Discord's proxy
-      ],
-      server: {
-        allowedHosts: true // Allows tunnel URLs to connect to the dev server
-      }
-    })
-    ```
-  </Tab>
+  export default defineConfig({
+    plugins: [
+      react(), // Fast JSX compilation using SWC
+      DiscordProxy.Vite() // Rewrites network requests to work through Discord's proxy
+    ],
+    server: {
+      allowedHosts: true // Allows tunnel URLs to connect to the dev server
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
+
+  export default defineConfig({
+    plugins: [
+      react(), // Fast JSX compilation using SWC
+      DiscordProxy.Vite() // Rewrites network requests to work through Discord's proxy
+    ],
+    server: {
+      allowedHosts: true // Allows tunnel URLs to connect to the dev server
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Running `npx robo dev` starts the Vite dev server alongside the Robo backend.
@@ -93,31 +97,39 @@ Changes to files in `src/app/` hot reload instantly in the browser. Component st
 CSS files in `src/app/` are imported directly in components:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/App.tsx"
-    import './App.css'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/App.jsx"
-    import './App.css'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/app/App.tsx"
+  import './App.css'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/App.jsx"
+  import './App.css'
+  ```
+
+</Tab>
 </Tabs>
 
 CSS Modules are supported out of the box. Name your file with the `.module.css` extension and import it as an object:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/Activity.tsx"
-    import styles from './Activity.module.css'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/Activity.jsx"
-    import styles from './Activity.module.css'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/app/Activity.tsx"
+  import styles from './Activity.module.css'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/Activity.jsx"
+  import styles from './Activity.module.css'
+  ```
+
+</Tab>
 </Tabs>
 
 Tailwind CSS integration is available through the `react-tailwind-ts` template. To add Tailwind to an existing project, follow the [Vite guide in the Tailwind CSS docs](https://tailwindcss.com/docs/installation/using-vite).
@@ -127,16 +139,20 @@ Tailwind CSS integration is available through the `react-tailwind-ts` template. 
 Files placed in the `public/` directory are served at the root path. Reference them with absolute paths:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/Activity.tsx"
-    <img src="/rocket.png" alt="Rocket" />
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/Activity.jsx"
-    <img src="/rocket.png" alt="Rocket" />
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx title="src/app/Activity.tsx"
+  <img src="/rocket.png" alt="Rocket" />
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx title="src/app/Activity.jsx"
+  <img src="/rocket.png" alt="Rocket" />
+  ```
+
+</Tab>
 </Tabs>
 
 Store images, fonts, and other static files here.
@@ -155,46 +171,50 @@ Store images, fonts, and other static files here.
 Add plugins, aliases, and build options by editing `config/vite.mjs`. For example, adding a path alias:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
-    import path from 'node:path'
+<Tab value="TypeScript">
 
-    export default defineConfig({
-      plugins: [react(), DiscordProxy.Vite()],
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '../src')
-        }
-      },
-      server: {
-        allowedHosts: true
-      }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/vite.mjs"
-    import { DiscordProxy } from '@robojs/patch'
-    import react from '@vitejs/plugin-react-swc'
-    import { defineConfig } from 'vite'
-    import path from 'node:path'
+  ```ts title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
+  import path from 'node:path'
 
-    export default defineConfig({
-      plugins: [react(), DiscordProxy.Vite()],
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '../src')
-        }
-      },
-      server: {
-        allowedHosts: true
+  export default defineConfig({
+    plugins: [react(), DiscordProxy.Vite()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '../src')
       }
-    })
-    ```
-  </Tab>
+    },
+    server: {
+      allowedHosts: true
+    }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/vite.mjs"
+  import { DiscordProxy } from '@robojs/patch'
+  import react from '@vitejs/plugin-react-swc'
+  import { defineConfig } from 'vite'
+  import path from 'node:path'
+
+  export default defineConfig({
+    plugins: [react(), DiscordProxy.Vite()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '../src')
+      }
+    },
+    server: {
+      allowedHosts: true
+    }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

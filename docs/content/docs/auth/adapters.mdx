@@ -10,20 +10,24 @@ The plugin ships two storage adapters: Flashcore (zero-config default) and Prism
 ### Setup
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { createFlashcoreAdapter } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { createFlashcoreAdapter } from '@robojs/auth'
+  ```ts
+  import { createFlashcoreAdapter } from '@robojs/auth'
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
-    ```
-  </Tab>
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { createFlashcoreAdapter } from '@robojs/auth'
+
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  ```
+
+</Tab>
 </Tabs>
 
 The only required option is `secret`, used for hashing verification tokens. When no adapter is passed to the plugin config, Flashcore is created automatically from the resolved secret.
@@ -45,28 +49,32 @@ The only required option is `secret`, used for hashing verification tokens. When
 ### Pagination
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { listUsers, listUserIds } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    // Full user records (page 0, 500 per page)
-    const { users, page, pageCount, total } = await listUsers()
+  ```ts
+  import { listUsers, listUserIds } from '@robojs/auth'
 
-    // User IDs only (lighter)
-    const { ids } = await listUserIds(2)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { listUsers, listUserIds } from '@robojs/auth'
+  // Full user records (page 0, 500 per page)
+  const { users, page, pageCount, total } = await listUsers()
 
-    // Full user records (page 0, 500 per page)
-    const { users, page, pageCount, total } = await listUsers()
+  // User IDs only (lighter)
+  const { ids } = await listUserIds(2)
+  ```
 
-    // User IDs only (lighter)
-    const { ids } = await listUserIds(2)
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { listUsers, listUserIds } from '@robojs/auth'
+
+  // Full user records (page 0, 500 per page)
+  const { users, page, pageCount, total } = await listUsers()
+
+  // User IDs only (lighter)
+  const { ids } = await listUserIds(2)
+  ```
+
+</Tab>
 </Tabs>
 
 Default page size is 500. Out-of-range pages return empty arrays with metadata.
@@ -84,30 +92,34 @@ Default page size is 500. Out-of-range pages return empty arrays with metadata.
 ### Setup
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { PrismaClient } from '@prisma/client'
-    import { createPrismaAdapter } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const prisma = new PrismaClient()
-    const adapter = createPrismaAdapter({
-      client: prisma,
-      secret: process.env.AUTH_SECRET!
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { PrismaClient } from '@prisma/client'
-    import { createPrismaAdapter } from '@robojs/auth'
+  ```ts
+  import { PrismaClient } from '@prisma/client'
+  import { createPrismaAdapter } from '@robojs/auth'
 
-    const prisma = new PrismaClient()
-    const adapter = createPrismaAdapter({
-      client: prisma,
-      secret: process.env.AUTH_SECRET!
-    })
-    ```
-  </Tab>
+  const prisma = new PrismaClient()
+  const adapter = createPrismaAdapter({
+    client: prisma,
+    secret: process.env.AUTH_SECRET!
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { PrismaClient } from '@prisma/client'
+  import { createPrismaAdapter } from '@robojs/auth'
+
+  const prisma = new PrismaClient()
+  const adapter = createPrismaAdapter({
+    client: prisma,
+    secret: process.env.AUTH_SECRET!
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout>
@@ -150,32 +162,36 @@ PostgreSQL users can use `@db.Citext` on the `email` field for native case-insen
 ### Pagination
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { listPrismaUsers, listPrismaUserIds } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const { users } = await listPrismaUsers(prisma)
-    const { ids } = await listPrismaUserIds(prisma, {
-      page: 1,
-      pageSize: 100,
-      orderBy: { createdAt: 'desc' },
-      where: { emailVerified: { not: null } }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { listPrismaUsers, listPrismaUserIds } from '@robojs/auth'
+  ```ts
+  import { listPrismaUsers, listPrismaUserIds } from '@robojs/auth'
 
-    const { users } = await listPrismaUsers(prisma)
-    const { ids } = await listPrismaUserIds(prisma, {
-      page: 1,
-      pageSize: 100,
-      orderBy: { createdAt: 'desc' },
-      where: { emailVerified: { not: null } }
-    })
-    ```
-  </Tab>
+  const { users } = await listPrismaUsers(prisma)
+  const { ids } = await listPrismaUserIds(prisma, {
+    page: 1,
+    pageSize: 100,
+    orderBy: { createdAt: 'desc' },
+    where: { emailVerified: { not: null } }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { listPrismaUsers, listPrismaUserIds } from '@robojs/auth'
+
+  const { users } = await listPrismaUsers(prisma)
+  const { ids } = await listPrismaUserIds(prisma, {
+    page: 1,
+    pageSize: 100,
+    orderBy: { createdAt: 'desc' },
+    where: { emailVerified: { not: null } }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Both functions accept `page`, `pageSize`, `orderBy`, and `where` parameters. Default page size: 500.
@@ -199,87 +215,100 @@ Both adapters implement this interface, which extends Auth.js's `Adapter`:
 Validate at runtime:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { assertPasswordAdapter } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    assertPasswordAdapter(myAdapter) // throws if methods are missing
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { assertPasswordAdapter } from '@robojs/auth'
+  ```ts
+  import { assertPasswordAdapter } from '@robojs/auth'
 
-    assertPasswordAdapter(myAdapter) // throws if methods are missing
-    ```
-  </Tab>
+  assertPasswordAdapter(myAdapter) // throws if methods are missing
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { assertPasswordAdapter } from '@robojs/auth'
+
+  assertPasswordAdapter(myAdapter) // throws if methods are missing
+  ```
+
+</Tab>
 </Tabs>
 
 ## Switching adapters
 
 <Tabs items={['Flashcore', 'Prisma']}>
 <Tab value="Flashcore">
+
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  ```ts title="config/plugins/robojs/auth.ts"
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
 
-    export default {
-      adapter,
-      providers: [EmailPassword({ adapter })]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  export default {
+    adapter,
+    providers: [EmailPassword({ adapter })]
+  }
+  ```
 
-    export default {
-      adapter,
-      providers: [EmailPassword({ adapter })]
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+  export default {
+    adapter,
+    providers: [EmailPassword({ adapter })]
+  }
+  ```
+
+</Tab>
 </Tabs>
 </Tab>
 <Tab value="Prisma">
     <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-      <Tab value="TypeScript">
-        ```ts title="config/plugins/robojs/auth.ts"
-            import { PrismaClient } from '@prisma/client'
-            import EmailPassword from '@robojs/auth/providers/email-password'
-            import { createPrismaAdapter } from '@robojs/auth'
+<Tab value="TypeScript">
 
-            const prisma = new PrismaClient()
-            const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+  ```ts title="config/plugins/robojs/auth.ts"
+      import { PrismaClient } from '@prisma/client'
+      import EmailPassword from '@robojs/auth/providers/email-password'
+      import { createPrismaAdapter } from '@robojs/auth'
 
-            export default {
-              adapter,
-              providers: [EmailPassword({ adapter })]
-            }
-        ```
-      </Tab>
-      <Tab value="JavaScript">
-        ```js title="config/plugins/robojs/auth.js"
-            import { PrismaClient } from '@prisma/client'
-            import EmailPassword from '@robojs/auth/providers/email-password'
-            import { createPrismaAdapter } from '@robojs/auth'
+      const prisma = new PrismaClient()
+      const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
 
-            const prisma = new PrismaClient()
-            const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+      export default {
+        adapter,
+        providers: [EmailPassword({ adapter })]
+      }
+  ```
 
-            export default {
-              adapter,
-              providers: [EmailPassword({ adapter })]
-            }
-        ```
-      </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+      import { PrismaClient } from '@prisma/client'
+      import EmailPassword from '@robojs/auth/providers/email-password'
+      import { createPrismaAdapter } from '@robojs/auth'
+
+      const prisma = new PrismaClient()
+      const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+
+      export default {
+        adapter,
+        providers: [EmailPassword({ adapter })]
+      }
+  ```
+
+</Tab>
     </Tabs>
 </Tab>
 </Tabs>

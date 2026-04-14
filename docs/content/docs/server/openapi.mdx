@@ -16,86 +16,90 @@ The plugin generates an OpenAPI 3.1 specification from your typed endpoints duri
 Customize the generated spec through your plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-      openapi: {
-        title: 'My API',
-        version: '1.0.0',
-        description: 'Production REST API',
-        contact: {
-          name: 'API Support',
-          email: 'support@example.com'
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+    openapi: {
+      title: 'My API',
+      version: '1.0.0',
+      description: 'Production REST API',
+      contact: {
+        name: 'API Support',
+        email: 'support@example.com'
+      },
+      license: {
+        name: 'MIT',
+        identifier: 'MIT'
+      },
+      servers: [
+        { url: 'https://api.example.com', description: 'Production' },
+        { url: 'http://localhost:3000', description: 'Development' }
+      ],
+      tags: [
+        { name: 'users', description: 'User management' },
+        { name: 'posts', description: 'Blog operations' }
+      ],
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
         },
-        license: {
-          name: 'MIT',
-          identifier: 'MIT'
-        },
-        servers: [
-          { url: 'https://api.example.com', description: 'Production' },
-          { url: 'http://localhost:3000', description: 'Development' }
-        ],
-        tags: [
-          { name: 'users', description: 'User management' },
-          { name: 'posts', description: 'Blog operations' }
-        ],
-        securitySchemes: {
-          bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT'
-          },
-          apiKey: {
-            type: 'apiKey',
-            in: 'header',
-            name: 'X-API-Key'
-          }
-        },
-        security: [{ bearerAuth: [] }]
-      }
+        apiKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-API-Key'
+        }
+      },
+      security: [{ bearerAuth: [] }]
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-      openapi: {
-        title: 'My API',
-        version: '1.0.0',
-        description: 'Production REST API',
-        contact: {
-          name: 'API Support',
-          email: 'support@example.com'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+    openapi: {
+      title: 'My API',
+      version: '1.0.0',
+      description: 'Production REST API',
+      contact: {
+        name: 'API Support',
+        email: 'support@example.com'
+      },
+      license: {
+        name: 'MIT',
+        identifier: 'MIT'
+      },
+      servers: [
+        { url: 'https://api.example.com', description: 'Production' },
+        { url: 'http://localhost:3000', description: 'Development' }
+      ],
+      tags: [
+        { name: 'users', description: 'User management' },
+        { name: 'posts', description: 'Blog operations' }
+      ],
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
         },
-        license: {
-          name: 'MIT',
-          identifier: 'MIT'
-        },
-        servers: [
-          { url: 'https://api.example.com', description: 'Production' },
-          { url: 'http://localhost:3000', description: 'Development' }
-        ],
-        tags: [
-          { name: 'users', description: 'User management' },
-          { name: 'posts', description: 'Blog operations' }
-        ],
-        securitySchemes: {
-          bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT'
-          },
-          apiKey: {
-            type: 'apiKey',
-            in: 'header',
-            name: 'X-API-Key'
-          }
-        },
-        security: [{ bearerAuth: [] }]
-      }
+        apiKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-API-Key'
+        }
+      },
+      security: [{ bearerAuth: [] }]
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Configuration options
@@ -118,20 +122,24 @@ Customize the generated spec through your plugin config:
 ## Disabling generation
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-      openapi: false
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-      openapi: false
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+    openapi: false
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+    openapi: false
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Route path conversion

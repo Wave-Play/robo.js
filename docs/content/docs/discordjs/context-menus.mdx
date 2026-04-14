@@ -25,22 +25,26 @@ The file name becomes the context menu label. Unlike slash commands, context men
 The handler receives a `UserContextMenuCommandInteraction` and the targeted `User`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/user/Get Info.ts"
-    import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: UserContextMenuCommandInteraction, user: User) => {
-    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/user/Get Info.js"
-    export default (interaction, user) => {
-    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
-    }
-    ```
-  </Tab>
+  ```ts title="src/context/user/Get Info.ts"
+  import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+
+  export default (interaction: UserContextMenuCommandInteraction, user: User) => {
+  	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/user/Get Info.js"
+  export default (interaction, user) => {
+  	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Message context menus
@@ -48,24 +52,28 @@ The handler receives a `UserContextMenuCommandInteraction` and the targeted `Use
 The handler receives a `MessageContextMenuCommandInteraction` and the targeted `Message`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/message/Pin Message.ts"
-    import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
-    	await message.pin()
-    	return 'Message pinned!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/message/Pin Message.js"
-    export default async (interaction, message) => {
-    	await message.pin()
-    	return 'Message pinned!'
-    }
-    ```
-  </Tab>
+  ```ts title="src/context/message/Pin Message.ts"
+  import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+
+  export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
+  	await message.pin()
+  	return 'Message pinned!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/message/Pin Message.js"
+  export default async (interaction, message) => {
+  	await message.pin()
+  	return 'Message pinned!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Return types
@@ -100,33 +108,37 @@ Export a `config` object to configure the context menu. All fields are optional.
 You can use the `ContextConfig` type for annotation:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/user/Get Info.ts"
-    import type { ContextConfig } from '@robojs/discordjs'
-    import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: ContextConfig = {
-    	description: 'View user information',
-    	contexts: ['Guild']
-    }
+  ```ts title="src/context/user/Get Info.ts"
+  import type { ContextConfig } from '@robojs/discordjs'
+  import type { UserContextMenuCommandInteraction, User } from 'discord.js'
 
-    export default (interaction: UserContextMenuCommandInteraction, user: User) => {
-    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/user/Get Info.js"
-    export const config = {
-    	description: 'View user information',
-    	contexts: ['Guild']
-    }
+  export const config: ContextConfig = {
+  	description: 'View user information',
+  	contexts: ['Guild']
+  }
 
-    export default (interaction, user) => {
-    	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
-    }
-    ```
-  </Tab>
+  export default (interaction: UserContextMenuCommandInteraction, user: User) => {
+  	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/user/Get Info.js"
+  export const config = {
+  	description: 'View user information',
+  	contexts: ['Guild']
+  }
+
+  export default (interaction, user) => {
+  	return `User: ${user.username} (${user.id})\nCreated: ${user.createdAt.toDateString()}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Type-safe configs with `createContextConfig()`
@@ -134,37 +146,41 @@ You can use the `ContextConfig` type for annotation:
 Use `createContextConfig()` for type-safe context menu configuration:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/message/Pin Message.ts"
-    import { createContextConfig } from '@robojs/discordjs'
-    import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config = createContextConfig({
-    	description: 'Pin this message',
-    	defaultMemberPermissions: 'ManageMessages',
-    	contexts: ['Guild']
-    })
+  ```ts title="src/context/message/Pin Message.ts"
+  import { createContextConfig } from '@robojs/discordjs'
+  import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
 
-    export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
-    	await message.pin()
-    	return 'Message pinned!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/message/Pin Message.js"
-    export const config = {
-    	description: 'Pin this message',
-    	defaultMemberPermissions: 'ManageMessages',
-    	contexts: ['Guild']
-    }
+  export const config = createContextConfig({
+  	description: 'Pin this message',
+  	defaultMemberPermissions: 'ManageMessages',
+  	contexts: ['Guild']
+  })
 
-    export default async (interaction, message) => {
-    	await message.pin()
-    	return 'Message pinned!'
-    }
-    ```
-  </Tab>
+  export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
+  	await message.pin()
+  	return 'Message pinned!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/message/Pin Message.js"
+  export const config = {
+  	description: 'Pin this message',
+  	defaultMemberPermissions: 'ManageMessages',
+  	contexts: ['Guild']
+  }
+
+  export default async (interaction, message) => {
+  	await message.pin()
+  	return 'Message pinned!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## ContextType constant

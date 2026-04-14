@@ -45,83 +45,87 @@ Extend the `BaseEngine` abstract class to create a custom engine. Four methods a
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/engines/custom.ts"
-    import { BaseEngine } from '@robojs/ai'
-    import type {
-    	ChatMessage,
-    	ChatOptions,
-    	ChatResult,
-    	GenerateImageOptions,
-    	GenerateImageResult
-    } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export class CustomEngine extends BaseEngine {
-    	async init() {
-    		// Authenticate, warm up connections
-    	}
+  ```ts title="src/engines/custom.ts"
+  import { BaseEngine } from '@robojs/ai'
+  import type {
+  	ChatMessage,
+  	ChatOptions,
+  	ChatResult,
+  	GenerateImageOptions,
+  	GenerateImageResult
+  } from '@robojs/ai'
 
-    	async chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult> {
-    		const response = await myProvider.complete(messages)
-    		return {
-    			finish_reason: 'stop',
-    			message: { role: 'assistant', content: response.text }
-    		}
-    	}
+  export class CustomEngine extends BaseEngine {
+  	async init() {
+  		// Authenticate, warm up connections
+  	}
 
-    	async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
-    		throw new Error('Image generation not supported')
-    	}
+  	async chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult> {
+  		const response = await myProvider.complete(messages)
+  		return {
+  			finish_reason: 'stop',
+  			message: { role: 'assistant', content: response.text }
+  		}
+  	}
 
-    	getFunctionHandlers() {
-    		return {}
-    	}
+  	async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
+  		throw new Error('Image generation not supported')
+  	}
 
-    	getInfo() {
-    		return { name: 'custom', version: '1.0.0' }
-    	}
+  	getFunctionHandlers() {
+  		return {}
+  	}
 
-    	supportedFeatures() {
-    		return { voice: false, voiceTranscription: false, vision: true }
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/engines/custom.js"
-    import { BaseEngine } from '@robojs/ai'
+  	getInfo() {
+  		return { name: 'custom', version: '1.0.0' }
+  	}
 
-    export class CustomEngine extends BaseEngine {
-    	async init() {
-    		// Authenticate, warm up connections
-    	}
+  	supportedFeatures() {
+  		return { voice: false, voiceTranscription: false, vision: true }
+  	}
+  }
+  ```
 
-    	async chat(messages, options) {
-    		const response = await myProvider.complete(messages)
-    		return {
-    			finish_reason: 'stop',
-    			message: { role: 'assistant', content: response.text }
-    		}
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	async generateImage(options) {
-    		throw new Error('Image generation not supported')
-    	}
+  ```js title="src/engines/custom.js"
+  import { BaseEngine } from '@robojs/ai'
 
-    	getFunctionHandlers() {
-    		return {}
-    	}
+  export class CustomEngine extends BaseEngine {
+  	async init() {
+  		// Authenticate, warm up connections
+  	}
 
-    	getInfo() {
-    		return { name: 'custom', version: '1.0.0' }
-    	}
+  	async chat(messages, options) {
+  		const response = await myProvider.complete(messages)
+  		return {
+  			finish_reason: 'stop',
+  			message: { role: 'assistant', content: response.text }
+  		}
+  	}
 
-    	supportedFeatures() {
-    		return { voice: false, voiceTranscription: false, vision: true }
-    	}
-    }
-    ```
-  </Tab>
+  	async generateImage(options) {
+  		throw new Error('Image generation not supported')
+  	}
+
+  	getFunctionHandlers() {
+  		return {}
+  	}
+
+  	getInfo() {
+  		return { name: 'custom', version: '1.0.0' }
+  	}
+
+  	supportedFeatures() {
+  		return { voice: false, voiceTranscription: false, vision: true }
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Registration
@@ -129,24 +133,28 @@ Extend the `BaseEngine` abstract class to create a custom engine. Four methods a
 Wire your engine in the plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    import { CustomEngine } from '../src/engines/custom.js'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new CustomEngine()
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    import { CustomEngine } from '../src/engines/custom.js'
+  ```ts title="config/plugins/robojs/ai.ts"
+  import { CustomEngine } from '../src/engines/custom.js'
 
-    export default {
-    	engine: new CustomEngine()
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new CustomEngine()
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  import { CustomEngine } from '../src/engines/custom.js'
+
+  export default {
+  	engine: new CustomEngine()
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 When a custom engine is provided, `OPENAI_API_KEY` isn't required. The engine handles its own authentication.

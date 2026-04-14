@@ -10,20 +10,24 @@ The AI can execute your Robo's slash commands via natural language. When a user 
 Control which commands are exposed to the AI as tools:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	commands: true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	commands: true
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	commands: true
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	commands: true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -35,20 +39,24 @@ Control which commands are exposed to the AI as tools:
 Whitelisting specific commands:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	commands: ['ban', 'kick', 'ai log']
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	commands: ['ban', 'kick', 'ai log']
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	commands: ['ban', 'kick', 'ai log']
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	commands: ['ban', 'kick', 'ai log']
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## How it works
@@ -93,22 +101,26 @@ The defer buffer prevents premature deferral for fast commands while still catch
 When commands take time to complete, the plugin tracks them per channel:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/example.ts"
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    // Check active tasks in a channel
-    const tasks = AI.getActiveTasks(channelId)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/example.js"
-    import { AI } from '@robojs/ai'
+  ```ts title="src/events/example.ts"
+  import { AI } from '@robojs/ai'
 
-    // Check active tasks in a channel
-    const tasks = AI.getActiveTasks(channelId)
-    ```
-  </Tab>
+  // Check active tasks in a channel
+  const tasks = AI.getActiveTasks(channelId)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/example.js"
+  import { AI } from '@robojs/ai'
+
+  // Check active tasks in a channel
+  const tasks = AI.getActiveTasks(channelId)
+  ```
+
+</Tab>
 </Tabs>
 
 The lifecycle of a background task:

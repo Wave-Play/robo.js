@@ -8,28 +8,32 @@ Call server-side methods and get typed results. `useSyncCall` sends RPC requests
 ## Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function useSyncCall(key: (string | null)[]): SyncCallFunction
+<Tab value="TypeScript">
 
-    type SyncCallFunction = <Payload = unknown, Result = unknown>(
-    	method: string,
-    	payload?: Payload
-    ) => Promise<CallResult<Result>>
+  ```ts
+  function useSyncCall(key: (string | null)[]): SyncCallFunction
 
-    interface CallResult<T = unknown> {
-    	success: boolean
-    	result?: T
-    	error?: string
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function useSyncCall(key)
-    // Returns: call(method, payload) => Promise<CallResult>
-    ```
-  </Tab>
+  type SyncCallFunction = <Payload = unknown, Result = unknown>(
+  	method: string,
+  	payload?: Payload
+  ) => Promise<CallResult<Result>>
+
+  interface CallResult<T = unknown> {
+  	success: boolean
+  	result?: T
+  	error?: string
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function useSyncCall(key)
+  // Returns: call(method, payload) => Promise<CallResult>
+  ```
+
+</Tab>
 </Tabs>
 
 ## Parameters
@@ -51,73 +55,81 @@ The hook returns an async `call` function. Each call returns a `CallResult`.
 ## Basic usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useSyncCall } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function GameControls() {
-    	const call = useSyncCall(['game', roomId, 'state'])
+  ```tsx
+  import { useSyncCall } from '@robojs/sync'
 
-    	const handleMove = async () => {
-    		const result = await call('move', { x: 10, y: 20 })
-    		if (!result.success) {
-    			console.error('Move rejected:', result.error)
-    		}
-    	}
+  function GameControls() {
+  	const call = useSyncCall(['game', roomId, 'state'])
 
-    	return <button onClick={handleMove}>Move</button>
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useSyncCall } from '@robojs/sync'
+  	const handleMove = async () => {
+  		const result = await call('move', { x: 10, y: 20 })
+  		if (!result.success) {
+  			console.error('Move rejected:', result.error)
+  		}
+  	}
 
-    function GameControls() {
-    	const call = useSyncCall(['game', roomId, 'state'])
+  	return <button onClick={handleMove}>Move</button>
+  }
+  ```
 
-    	const handleMove = async () => {
-    		const result = await call('move', { x: 10, y: 20 })
-    		if (!result.success) {
-    			console.error('Move rejected:', result.error)
-    		}
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	return <button onClick={handleMove}>Move</button>
-    }
-    ```
-  </Tab>
+  ```jsx
+  import { useSyncCall } from '@robojs/sync'
+
+  function GameControls() {
+  	const call = useSyncCall(['game', roomId, 'state'])
+
+  	const handleMove = async () => {
+  		const result = await call('move', { x: 10, y: 20 })
+  		if (!result.success) {
+  			console.error('Move rejected:', result.error)
+  		}
+  	}
+
+  	return <button onClick={handleMove}>Move</button>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Typed calls
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    interface MovePayload {
-    	x: number
-    	y: number
-    }
-    interface MoveResult {
-    	valid: boolean
-    	newPosition: { x: number; y: number }
-    }
+<Tab value="TypeScript">
 
-    const result = await call<MovePayload, MoveResult>('move', { x: 10, y: 20 })
-    if (result.success && result.result?.valid) {
-    	console.log('Moved to:', result.result.newPosition)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
+  ```tsx
+  interface MovePayload {
+  	x: number
+  	y: number
+  }
+  interface MoveResult {
+  	valid: boolean
+  	newPosition: { x: number; y: number }
+  }
 
-    const result = await call('move', { x: 10, y: 20 })
-    if (result.success && result.result?.valid) {
-    	console.log('Moved to:', result.result.newPosition)
-    }
-    ```
-  </Tab>
+  const result = await call<MovePayload, MoveResult>('move', { x: 10, y: 20 })
+  if (result.success && result.result?.valid) {
+  	console.log('Moved to:', result.result.newPosition)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+
+  const result = await call('move', { x: 10, y: 20 })
+  if (result.success && result.result?.valid) {
+  	console.log('Moved to:', result.result.newPosition)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Server handler
@@ -125,79 +137,87 @@ The hook returns an async `call` function. Each call returns a `CallResult`.
 The key array maps to a file path under `src/sync/`. Any named export that isn't a reserved name (`schema`, `validate`, `transform`, `onUpdate`, `before`, `after`) becomes a callable RPC method.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/sync/game/[roomId]/state.ts"
-    import type { SyncCallContext } from '@robojs/sync/server'
+<Tab value="TypeScript">
 
-    export async function move(
-    	payload: { x: number; y: number },
-    	ctx: SyncCallContext
-    ) {
-    	const state = ctx.getState()
-    	ctx.setState({ ...state, x: payload.x, y: payload.y })
-    	return { valid: true, newPosition: { x: payload.x, y: payload.y } }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/sync/game/[roomId]/state.js"
+  ```ts title="src/sync/game/[roomId]/state.ts"
+  import type { SyncCallContext } from '@robojs/sync/server'
 
-    export async function move(payload, ctx) {
-    	const state = ctx.getState()
-    	ctx.setState({ ...state, x: payload.x, y: payload.y })
-    	return { valid: true, newPosition: { x: payload.x, y: payload.y } }
-    }
-    ```
-  </Tab>
+  export async function move(
+  	payload: { x: number; y: number },
+  	ctx: SyncCallContext
+  ) {
+  	const state = ctx.getState()
+  	ctx.setState({ ...state, x: payload.x, y: payload.y })
+  	return { valid: true, newPosition: { x: payload.x, y: payload.y } }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/sync/game/[roomId]/state.js"
+
+  export async function move(payload, ctx) {
+  	const state = ctx.getState()
+  	ctx.setState({ ...state, x: payload.x, y: payload.y })
+  	return { valid: true, newPosition: { x: payload.x, y: payload.y } }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Error handling
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const result = await call('action', payload)
+<Tab value="TypeScript">
 
-    if (!result.success) {
-    	switch (result.error) {
-    		case 'timeout':
-    			// Server didn't respond within 30 seconds
-    			break
-    		case 'not_connected':
-    			// WebSocket is disconnected
-    			break
-    		case 'method_not_found':
-    			// No matching export in the handler
-    			break
-    		default:
-    			// Custom error from the handler
-    			console.error(result.error)
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const result = await call('action', payload)
+  ```tsx
+  const result = await call('action', payload)
 
-    if (!result.success) {
-    	switch (result.error) {
-    		case 'timeout':
-    			// Server didn't respond within 30 seconds
-    			break
-    		case 'not_connected':
-    			// WebSocket is disconnected
-    			break
-    		case 'method_not_found':
-    			// No matching export in the handler
-    			break
-    		default:
-    			// Custom error from the handler
-    			console.error(result.error)
-    	}
-    }
-    ```
-  </Tab>
+  if (!result.success) {
+  	switch (result.error) {
+  		case 'timeout':
+  			// Server didn't respond within 30 seconds
+  			break
+  		case 'not_connected':
+  			// WebSocket is disconnected
+  			break
+  		case 'method_not_found':
+  			// No matching export in the handler
+  			break
+  		default:
+  			// Custom error from the handler
+  			console.error(result.error)
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const result = await call('action', payload)
+
+  if (!result.success) {
+  	switch (result.error) {
+  		case 'timeout':
+  			// Server didn't respond within 30 seconds
+  			break
+  		case 'not_connected':
+  			// WebSocket is disconnected
+  			break
+  		case 'method_not_found':
+  			// No matching export in the handler
+  			break
+  		default:
+  			// Custom error from the handler
+  			console.error(result.error)
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Timeout

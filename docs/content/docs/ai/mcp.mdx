@@ -10,38 +10,42 @@ MCP tools are server-side proxied by OpenAI. The engine passes MCP configs in th
 Add MCP servers to your plugin options via the `mcpServers` array:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	mcpServers: [
-    		{
-    			type: 'mcp',
-    			server_label: 'context7',
-    			server_url: 'https://mcp.context7.com/mcp',
-    			headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
-    			allowed_tools: ['resolve-library-id', 'get-library-docs'],
-    			require_approval: 'never'
-    		}
-    	]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	mcpServers: [
-    		{
-    			type: 'mcp',
-    			server_label: 'context7',
-    			server_url: 'https://mcp.context7.com/mcp',
-    			headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
-    			allowed_tools: ['resolve-library-id', 'get-library-docs'],
-    			require_approval: 'never'
-    		}
-    	]
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	mcpServers: [
+  		{
+  			type: 'mcp',
+  			server_label: 'context7',
+  			server_url: 'https://mcp.context7.com/mcp',
+  			headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+  			allowed_tools: ['resolve-library-id', 'get-library-docs'],
+  			require_approval: 'never'
+  		}
+  	]
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	mcpServers: [
+  		{
+  			type: 'mcp',
+  			server_label: 'context7',
+  			server_url: 'https://mcp.context7.com/mcp',
+  			headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+  			allowed_tools: ['resolve-library-id', 'get-library-docs'],
+  			require_approval: 'never'
+  		}
+  	]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 You can add multiple MCP servers. Each one must have a unique `server_label`.
@@ -64,30 +68,34 @@ You can add multiple MCP servers. Each one must have a unique `server_label`.
 Configure resilience for MCP tool failures via the `mcp` option:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	mcp: {
-    		gracefulDegradation: true,
-    		extraRetries: 1,
-    		baseDelayMs: 500,
-    		maxDelayMs: 2000
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	mcp: {
-    		gracefulDegradation: true,
-    		extraRetries: 1,
-    		baseDelayMs: 500,
-    		maxDelayMs: 2000
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	mcp: {
+  		gracefulDegradation: true,
+  		extraRetries: 1,
+  		baseDelayMs: 500,
+  		maxDelayMs: 2000
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	mcp: {
+  		gracefulDegradation: true,
+  		extraRetries: 1,
+  		baseDelayMs: 500,
+  		maxDelayMs: 2000
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -115,26 +123,30 @@ This prevents entire requests from failing due to transient MCP server issues wh
 Retrieve configured MCP servers at runtime with `AI.getMCPServers()`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/check-mcp.ts"
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const servers = AI.getMCPServers()
-    	return `${servers.length} MCP server(s) configured.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/check-mcp.js"
-    import { AI } from '@robojs/ai'
+  ```ts title="src/commands/check-mcp.ts"
+  import { AI } from '@robojs/ai'
 
-    export default () => {
-    	const servers = AI.getMCPServers()
-    	return `${servers.length} MCP server(s) configured.`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	const servers = AI.getMCPServers()
+  	return `${servers.length} MCP server(s) configured.`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/check-mcp.js"
+  import { AI } from '@robojs/ai'
+
+  export default () => {
+  	const servers = AI.getMCPServers()
+  	return `${servers.length} MCP server(s) configured.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Validation

@@ -37,30 +37,34 @@ Commands are the building blocks of your CLI. Place files in `src/cli/` and each
 Every command file must export a default function. This is the handler that runs when the command is invoked.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/greet.ts"
-    import type { CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = {
-      description: 'Greet the user'
-    }
+  ```ts title="src/cli/greet.ts"
+  import type { CliContext } from 'robo.js/cli.js'
 
-    export default (ctx: CliContext) => {
-      console.log('Hello!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/greet.js"
-    export const config = {
-      description: 'Greet the user'
-    }
+  export const config = {
+    description: 'Greet the user'
+  }
 
-    export default (ctx) => {
-      console.log('Hello!')
-    }
-    ```
-  </Tab>
+  export default (ctx: CliContext) => {
+    console.log('Hello!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/greet.js"
+  export const config = {
+    description: 'Greet the user'
+  }
+
+  export default (ctx) => {
+    console.log('Hello!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Handler context
@@ -80,44 +84,48 @@ The handler receives a `CliContext` object with the following properties:
 Add typed options using `createCliCommandConfig` with `as const` for full TypeScript inference.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/build.ts"
-    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = createCliCommandConfig({
-      description: 'Build the project',
-      options: [
-        { alias: '-w', name: '--watch', description: 'Watch for changes', type: 'boolean' },
-        { alias: '-o', name: '--output', description: 'Output directory', type: 'string', default: './build' }
-      ]
-    } as const)
+  ```ts title="src/cli/build.ts"
+  import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-    export default (ctx: CliContext<typeof config>) => {
-      console.log(`Building to ${ctx.options.output}...`)
-      if (ctx.options.watch) {
-        console.log('Watching for changes...')
-      }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/build.js"
-    export const config = {
-      description: 'Build the project',
-      options: [
-        { alias: '-w', name: '--watch', description: 'Watch for changes', type: 'boolean' },
-        { alias: '-o', name: '--output', description: 'Output directory', type: 'string', default: './build' }
-      ]
-    }
+  export const config = createCliCommandConfig({
+    description: 'Build the project',
+    options: [
+      { alias: '-w', name: '--watch', description: 'Watch for changes', type: 'boolean' },
+      { alias: '-o', name: '--output', description: 'Output directory', type: 'string', default: './build' }
+    ]
+  } as const)
 
-    export default (ctx) => {
-      console.log(`Building to ${ctx.options.output}...`)
-      if (ctx.options.watch) {
-        console.log('Watching for changes...')
-      }
+  export default (ctx: CliContext<typeof config>) => {
+    console.log(`Building to ${ctx.options.output}...`)
+    if (ctx.options.watch) {
+      console.log('Watching for changes...')
     }
-    ```
-  </Tab>
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/build.js"
+  export const config = {
+    description: 'Build the project',
+    options: [
+      { alias: '-w', name: '--watch', description: 'Watch for changes', type: 'boolean' },
+      { alias: '-o', name: '--output', description: 'Output directory', type: 'string', default: './build' }
+    ]
+  }
+
+  export default (ctx) => {
+    console.log(`Building to ${ctx.options.output}...`)
+    if (ctx.options.watch) {
+      console.log('Watching for changes...')
+    }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Async commands
@@ -125,40 +133,44 @@ Add typed options using `createCliCommandConfig` with `as const` for full TypeSc
 Handlers can be async. The CLI waits for the promise to resolve before exiting.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/cli/deploy.ts"
-    import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+<Tab value="TypeScript">
 
-    export const config = createCliCommandConfig({
-      description: 'Deploy the project',
-      options: [
-        { alias: '-e', name: '--env', description: 'Target environment', type: 'string', default: 'production' }
-      ]
-    } as const)
+  ```ts title="src/cli/deploy.ts"
+  import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
 
-    export default async (ctx: CliContext<typeof config>) => {
-      console.log(`Deploying to ${ctx.options.env}...`)
-      // Your deploy logic here
-      console.log('Done!')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/cli/deploy.js"
-    export const config = {
-      description: 'Deploy the project',
-      options: [
-        { alias: '-e', name: '--env', description: 'Target environment', type: 'string', default: 'production' }
-      ]
-    }
+  export const config = createCliCommandConfig({
+    description: 'Deploy the project',
+    options: [
+      { alias: '-e', name: '--env', description: 'Target environment', type: 'string', default: 'production' }
+    ]
+  } as const)
 
-    export default async (ctx) => {
-      console.log(`Deploying to ${ctx.options.env}...`)
-      // Your deploy logic here
-      console.log('Done!')
-    }
-    ```
-  </Tab>
+  export default async (ctx: CliContext<typeof config>) => {
+    console.log(`Deploying to ${ctx.options.env}...`)
+    // Your deploy logic here
+    console.log('Done!')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/cli/deploy.js"
+  export const config = {
+    description: 'Deploy the project',
+    options: [
+      { alias: '-e', name: '--env', description: 'Target environment', type: 'string', default: 'production' }
+    ]
+  }
+
+  export default async (ctx) => {
+    console.log(`Deploying to ${ctx.options.env}...`)
+    // Your deploy logic here
+    console.log('Done!')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

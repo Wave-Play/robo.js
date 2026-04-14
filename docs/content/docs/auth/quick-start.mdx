@@ -42,51 +42,55 @@ The CLI installs the package, seeds a config file at `config/plugins/robojs/auth
 The seed file sets up the Flashcore adapter, Discord OAuth, and email/password authentication.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    import Discord from '@robojs/auth/providers/discord'
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
-    import type { AuthPluginOptions } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  ```ts title="config/plugins/robojs/auth.ts"
+  import Discord from '@robojs/auth/providers/discord'
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+  import type { AuthPluginOptions } from '@robojs/auth'
 
-    export default <AuthPluginOptions>{
-    	secret: process.env.AUTH_SECRET,
-    	appName: 'My App',
-    	adapter,
-    	providers: [
-    		Discord({
-    			clientId: process.env.DISCORD_CLIENT_ID!,
-    			clientSecret: process.env.DISCORD_CLIENT_SECRET!
-    		}),
-    		EmailPassword({ adapter })
-    	]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    import Discord from '@robojs/auth/providers/discord'
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  export default <AuthPluginOptions>{
+  	secret: process.env.AUTH_SECRET,
+  	appName: 'My App',
+  	adapter,
+  	providers: [
+  		Discord({
+  			clientId: process.env.DISCORD_CLIENT_ID!,
+  			clientSecret: process.env.DISCORD_CLIENT_SECRET!
+  		}),
+  		EmailPassword({ adapter })
+  	]
+  }
+  ```
 
-    export default {
-    	secret: process.env.AUTH_SECRET,
-    	appName: 'My App',
-    	adapter,
-    	providers: [
-    		Discord({
-    			clientId: process.env.DISCORD_CLIENT_ID!,
-    			clientSecret: process.env.DISCORD_CLIENT_SECRET!
-    		}),
-    		EmailPassword({ adapter })
-    	]
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/auth.js"
+  import Discord from '@robojs/auth/providers/discord'
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+  export default {
+  	secret: process.env.AUTH_SECRET,
+  	appName: 'My App',
+  	adapter,
+  	providers: [
+  		Discord({
+  			clientId: process.env.DISCORD_CLIENT_ID!,
+  			clientSecret: process.env.DISCORD_CLIENT_SECRET!
+  		}),
+  		EmailPassword({ adapter })
+  	]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Add the required environment variables to your `.env` file.
@@ -132,42 +136,46 @@ The plugin registers routes at `/api/auth/*`. Key endpoints:
 Use the client helpers to authenticate users.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { signIn, getSession } from '@robojs/auth/client'
+<Tab value="TypeScript">
 
-    // OAuth sign-in (redirects to Discord)
-    await signIn('discord')
+  ```ts
+  import { signIn, getSession } from '@robojs/auth/client'
 
-    // Email/password sign-in
-    await signIn('credentials', {
-    	email: 'user@example.com',
-    	password: 'securepass'
-    })
+  // OAuth sign-in (redirects to Discord)
+  await signIn('discord')
 
-    // Check session
-    const session = await getSession()
-    console.log(session?.user)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { signIn, getSession } from '@robojs/auth/client'
+  // Email/password sign-in
+  await signIn('credentials', {
+  	email: 'user@example.com',
+  	password: 'securepass'
+  })
 
-    // OAuth sign-in (redirects to Discord)
-    await signIn('discord')
+  // Check session
+  const session = await getSession()
+  console.log(session?.user)
+  ```
 
-    // Email/password sign-in
-    await signIn('credentials', {
-    	email: 'user@example.com',
-    	password: 'securepass'
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    // Check session
-    const session = await getSession()
-    console.log(session?.user)
-    ```
-  </Tab>
+  ```js
+  import { signIn, getSession } from '@robojs/auth/client'
+
+  // OAuth sign-in (redirects to Discord)
+  await signIn('discord')
+
+  // Email/password sign-in
+  await signIn('credentials', {
+  	email: 'user@example.com',
+  	password: 'securepass'
+  })
+
+  // Check session
+  const session = await getSession()
+  console.log(session?.user)
+  ```
+
+</Tab>
 </Tabs>
 
 The `signIn` function handles CSRF tokens and redirects automatically.
@@ -181,37 +189,41 @@ The `signIn` function handles CSRF tokens and redirects automatically.
 Validate sessions in API routes using `getServerSession`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/protected.ts"
-    import { getServerSession } from '@robojs/auth'
-    import type { RoboRequest, RoboReply } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export default async (request: RoboRequest, reply: RoboReply) => {
-    	const session = await getServerSession(request)
+  ```ts title="src/api/protected.ts"
+  import { getServerSession } from '@robojs/auth'
+  import type { RoboRequest, RoboReply } from '@robojs/server'
 
-    	if (!session) {
-    		return reply.code(401).send({ error: 'Unauthorized' })
-    	}
+  export default async (request: RoboRequest, reply: RoboReply) => {
+  	const session = await getServerSession(request)
 
-    	return { message: `Hello ${session.user?.name}` }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/protected.js"
-    import { getServerSession } from '@robojs/auth'
+  	if (!session) {
+  		return reply.code(401).send({ error: 'Unauthorized' })
+  	}
 
-    export default async (request, reply) => {
-    	const session = await getServerSession(request)
+  	return { message: `Hello ${session.user?.name}` }
+  }
+  ```
 
-    	if (!session) {
-    		return reply.code(401).send({ error: 'Unauthorized' })
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	return { message: `Hello ${session.user?.name}` }
-    }
-    ```
-  </Tab>
+  ```js title="src/api/protected.js"
+  import { getServerSession } from '@robojs/auth'
+
+  export default async (request, reply) => {
+  	const session = await getServerSession(request)
+
+  	if (!session) {
+  		return reply.code(401).send({ error: 'Unauthorized' })
+  	}
+
+  	return { message: `Hello ${session.user?.name}` }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The session contains user information from the configured provider.

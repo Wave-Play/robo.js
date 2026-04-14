@@ -39,22 +39,26 @@ The file name becomes the command name. Spaces and capitalization in file names 
 User context commands receive a `UserContextMenuCommandInteraction` and the target `User` as parameters.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/user/Info.ts"
-    import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: UserContextMenuCommandInteraction, user: User) => {
-    	return `${user.username} joined Discord on ${user.createdAt.toDateString()}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/user/Info.js"
-    export default (interaction, user) => {
-    	return `${user.username} joined Discord on ${user.createdAt.toDateString()}`
-    }
-    ```
-  </Tab>
+  ```ts title="src/context/user/Info.ts"
+  import type { UserContextMenuCommandInteraction, User } from 'discord.js'
+
+  export default (interaction: UserContextMenuCommandInteraction, user: User) => {
+  	return `${user.username} joined Discord on ${user.createdAt.toDateString()}`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/user/Info.js"
+  export default (interaction, user) => {
+  	return `${user.username} joined Discord on ${user.createdAt.toDateString()}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Message Context Commands
@@ -62,24 +66,28 @@ User context commands receive a `UserContextMenuCommandInteraction` and the targ
 Message context commands receive a `MessageContextMenuCommandInteraction` and the target `Message`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/message/Bookmark.ts"
-    import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
-    	await interaction.user.send(`Bookmarked: ${message.content}`)
-    	return 'Message bookmarked!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/message/Bookmark.js"
-    export default async (interaction, message) => {
-    	await interaction.user.send(`Bookmarked: ${message.content}`)
-    	return 'Message bookmarked!'
-    }
-    ```
-  </Tab>
+  ```ts title="src/context/message/Bookmark.ts"
+  import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+
+  export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
+  	await interaction.user.send(`Bookmarked: ${message.content}`)
+  	return 'Message bookmarked!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/message/Bookmark.js"
+  export default async (interaction, message) => {
+  	await interaction.user.send(`Bookmarked: ${message.content}`)
+  	return 'Message bookmarked!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -95,24 +103,28 @@ Message context commands receive a `MessageContextMenuCommandInteraction` and th
 Export a `config` object using `createContextConfig()` to set metadata and behavior.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/context/user/Info.ts"
-    import { createContextConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config = createContextConfig({
-    	description: 'Get user information'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/context/user/Info.js"
-    import { createContextConfig } from '@robojs/discordjs'
+  ```ts title="src/context/user/Info.ts"
+  import { createContextConfig } from '@robojs/discordjs'
 
-    export const config = createContextConfig({
-    	description: 'Get user information'
-    })
-    ```
-  </Tab>
+  export const config = createContextConfig({
+  	description: 'Get user information'
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/context/user/Info.js"
+  import { createContextConfig } from '@robojs/discordjs'
+
+  export const config = createContextConfig({
+  	description: 'Get user information'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 | Field | Type | Description |

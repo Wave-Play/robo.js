@@ -8,42 +8,46 @@ Transactions wrap multiple Flashcore operations in an atomic unit — either all
 ## Basic Usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Flashcore } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    const result = await Flashcore.$.transaction(async (ctx) => {
-    	// Read within the transaction
-    	const user = await ctx.read('user:123')
+  ```ts
+  import { Flashcore } from 'robo.js/flashcore'
 
-    	// Stage writes (applied on commit)
-    	ctx.set('user:123', { ...user, xp: user.xp + 100 })
-    	ctx.set('audit:latest', { action: 'xp-grant', userId: '123' })
+  const result = await Flashcore.$.transaction(async (ctx) => {
+  	// Read within the transaction
+  	const user = await ctx.read('user:123')
 
-    	return { granted: 100 }
-    })
+  	// Stage writes (applied on commit)
+  	ctx.set('user:123', { ...user, xp: user.xp + 100 })
+  	ctx.set('audit:latest', { action: 'xp-grant', userId: '123' })
 
-    console.log(result) // { granted: 100 }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Flashcore } from 'robo.js/flashcore'
+  	return { granted: 100 }
+  })
 
-    const result = await Flashcore.$.transaction(async (ctx) => {
-    	// Read within the transaction
-    	const user = await ctx.read('user:123')
+  console.log(result) // { granted: 100 }
+  ```
 
-    	// Stage writes (applied on commit)
-    	ctx.set('user:123', { ...user, xp: user.xp + 100 })
-    	ctx.set('audit:latest', { action: 'xp-grant', userId: '123' })
+</Tab>
+<Tab value="JavaScript">
 
-    	return { granted: 100 }
-    })
+  ```js
+  import { Flashcore } from 'robo.js/flashcore'
 
-    console.log(result) // { granted: 100 }
-    ```
-  </Tab>
+  const result = await Flashcore.$.transaction(async (ctx) => {
+  	// Read within the transaction
+  	const user = await ctx.read('user:123')
+
+  	// Stage writes (applied on commit)
+  	ctx.set('user:123', { ...user, xp: user.xp + 100 })
+  	ctx.set('audit:latest', { action: 'xp-grant', userId: '123' })
+
+  	return { granted: 100 }
+  })
+
+  console.log(result) // { granted: 100 }
+  ```
+
+</Tab>
 </Tabs>
 
 The transaction context provides:
@@ -61,59 +65,67 @@ The transaction context provides:
 | `auto` | Adapter decides the best mode | Default |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Force serial mode
-    await Flashcore.$.transaction(async (ctx) => {
-    	// ...
-    }, { mode: 'serial' })
+<Tab value="TypeScript">
 
-    // Force optimistic mode
-    await Flashcore.$.transaction(async (ctx) => {
-    	// ...
-    }, { mode: 'optimistic' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Force serial mode
-    await Flashcore.$.transaction(async (ctx) => {
-    	// ...
-    }, { mode: 'serial' })
+  ```ts
+  // Force serial mode
+  await Flashcore.$.transaction(async (ctx) => {
+  	// ...
+  }, { mode: 'serial' })
 
-    // Force optimistic mode
-    await Flashcore.$.transaction(async (ctx) => {
-    	// ...
-    }, { mode: 'optimistic' })
-    ```
-  </Tab>
+  // Force optimistic mode
+  await Flashcore.$.transaction(async (ctx) => {
+  	// ...
+  }, { mode: 'optimistic' })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Force serial mode
+  await Flashcore.$.transaction(async (ctx) => {
+  	// ...
+  }, { mode: 'serial' })
+
+  // Force optimistic mode
+  await Flashcore.$.transaction(async (ctx) => {
+  	// ...
+  }, { mode: 'optimistic' })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Options
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await Flashcore.$.transaction(async (ctx) => {
-    	// ...
-    }, {
-    	mode: 'auto',        // Transaction mode
-    	maxRetries: 3,       // Max retries on conflict (optimistic mode)
-    	timeout: 5000        // Timeout in ms
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await Flashcore.$.transaction(async (ctx) => {
-    	// ...
-    }, {
-    	mode: 'auto',        // Transaction mode
-    	maxRetries: 3,       // Max retries on conflict (optimistic mode)
-    	timeout: 5000        // Timeout in ms
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  await Flashcore.$.transaction(async (ctx) => {
+  	// ...
+  }, {
+  	mode: 'auto',        // Transaction mode
+  	maxRetries: 3,       // Max retries on conflict (optimistic mode)
+  	timeout: 5000        // Timeout in ms
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await Flashcore.$.transaction(async (ctx) => {
+  	// ...
+  }, {
+  	mode: 'auto',        // Transaction mode
+  	maxRetries: 3,       // Max retries on conflict (optimistic mode)
+  	timeout: 5000        // Timeout in ms
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Conflict Handling
@@ -121,38 +133,42 @@ The transaction context provides:
 In optimistic mode, Flashcore tracks versions of read values. On commit, if any read value was modified by another operation, a `TransactionConflictError` is thrown and the transaction is retried (up to `maxRetries`):
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { TransactionConflictError } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    try {
-    	await Flashcore.$.transaction(async (ctx) => {
-    		const balance = await ctx.read('balance:123')
-    		await ctx.write('balance:123', balance - 100)
-    	}, { mode: 'optimistic', maxRetries: 5 })
-    } catch (error) {
-    	if (error instanceof TransactionConflictError) {
-    		console.log('Transaction failed after max retries')
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { TransactionConflictError } from 'robo.js/flashcore'
+  ```ts
+  import { TransactionConflictError } from 'robo.js/flashcore'
 
-    try {
-    	await Flashcore.$.transaction(async (ctx) => {
-    		const balance = await ctx.read('balance:123')
-    		await ctx.write('balance:123', balance - 100)
-    	}, { mode: 'optimistic', maxRetries: 5 })
-    } catch (error) {
-    	if (error instanceof TransactionConflictError) {
-    		console.log('Transaction failed after max retries')
-    	}
-    }
-    ```
-  </Tab>
+  try {
+  	await Flashcore.$.transaction(async (ctx) => {
+  		const balance = await ctx.read('balance:123')
+  		await ctx.write('balance:123', balance - 100)
+  	}, { mode: 'optimistic', maxRetries: 5 })
+  } catch (error) {
+  	if (error instanceof TransactionConflictError) {
+  		console.log('Transaction failed after max retries')
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { TransactionConflictError } from 'robo.js/flashcore'
+
+  try {
+  	await Flashcore.$.transaction(async (ctx) => {
+  		const balance = await ctx.read('balance:123')
+  		await ctx.write('balance:123', balance - 100)
+  	}, { mode: 'optimistic', maxRetries: 5 })
+  } catch (error) {
+  	if (error instanceof TransactionConflictError) {
+  		console.log('Transaction failed after max retries')
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Requirements

@@ -8,52 +8,56 @@ The `define()` function lets you attach Zod schemas to your endpoints. You get f
 ## Basic usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/users.ts"
-    import { define } from '@robojs/server'
-    import { z } from 'zod'
+<Tab value="TypeScript">
 
-    export const POST = define(
-    	{
-    		summary: 'Create a user',
-    		body: z.object({
-    			name: z.string(),
-    			email: z.string().email()
-    		}),
-    		response: {
-    			201: z.object({ id: z.string() })
-    		}
-    	},
-    	async (request) => {
-    		const body = await request.json() // Typed as { name: string, email: string }
-    		return { id: crypto.randomUUID() }
-    	}
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/users.js"
-    import { define } from '@robojs/server'
-    import { z } from 'zod'
+  ```ts title="src/api/users.ts"
+  import { define } from '@robojs/server'
+  import { z } from 'zod'
 
-    export const POST = define(
-    	{
-    		summary: 'Create a user',
-    		body: z.object({
-    			name: z.string(),
-    			email: z.string().email()
-    		}),
-    		response: {
-    			201: z.object({ id: z.string() })
-    		}
-    	},
-    	async (request) => {
-    		const body = await request.json() // Typed as { name: string, email: string }
-    		return { id: crypto.randomUUID() }
-    	}
-    )
-    ```
-  </Tab>
+  export const POST = define(
+  	{
+  		summary: 'Create a user',
+  		body: z.object({
+  			name: z.string(),
+  			email: z.string().email()
+  		}),
+  		response: {
+  			201: z.object({ id: z.string() })
+  		}
+  	},
+  	async (request) => {
+  		const body = await request.json() // Typed as { name: string, email: string }
+  		return { id: crypto.randomUUID() }
+  	}
+  )
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/users.js"
+  import { define } from '@robojs/server'
+  import { z } from 'zod'
+
+  export const POST = define(
+  	{
+  		summary: 'Create a user',
+  		body: z.object({
+  			name: z.string(),
+  			email: z.string().email()
+  		}),
+  		response: {
+  			201: z.object({ id: z.string() })
+  		}
+  	},
+  	async (request) => {
+  		const body = await request.json() // Typed as { name: string, email: string }
+  		return { id: crypto.randomUUID() }
+  	}
+  )
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout>
@@ -108,84 +112,88 @@ Supported status codes for `response`: `200`, `201`, `204`, `400`, `401`, `403`,
 ## Full example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/users/[id].ts"
-    import { define } from '@robojs/server'
-    import { z } from 'zod'
+<Tab value="TypeScript">
 
-    export const GET = define(
-    	{
-    		summary: 'Get user by ID',
-    		tags: ['users'],
-    		params: z.object({
-    			id: z.string().uuid()
-    		}),
-    		query: z.object({
-    			include: z.string().optional()
-    		}),
-    		headers: z.object({
-    			'x-api-key': z.string()
-    		}),
-    		response: {
-    			200: z.object({
-    				id: z.string(),
-    				name: z.string(),
-    				email: z.string()
-    			}),
-    			404: z.object({
-    				error: z.string()
-    			})
-    		}
-    	},
-    	async (request) => {
-    		const { id } = request.params // typed as { id: string }
-    		const { include } = request.query // typed as { include?: string }
-    		const apiKey = request.header('x-api-key') // typed as string
+  ```ts title="src/api/users/[id].ts"
+  import { define } from '@robojs/server'
+  import { z } from 'zod'
 
-    		return { id, name: 'Alice', email: 'alice@example.com' }
-    	}
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/users/[id].js"
-    import { define } from '@robojs/server'
-    import { z } from 'zod'
+  export const GET = define(
+  	{
+  		summary: 'Get user by ID',
+  		tags: ['users'],
+  		params: z.object({
+  			id: z.string().uuid()
+  		}),
+  		query: z.object({
+  			include: z.string().optional()
+  		}),
+  		headers: z.object({
+  			'x-api-key': z.string()
+  		}),
+  		response: {
+  			200: z.object({
+  				id: z.string(),
+  				name: z.string(),
+  				email: z.string()
+  			}),
+  			404: z.object({
+  				error: z.string()
+  			})
+  		}
+  	},
+  	async (request) => {
+  		const { id } = request.params // typed as { id: string }
+  		const { include } = request.query // typed as { include?: string }
+  		const apiKey = request.header('x-api-key') // typed as string
 
-    export const GET = define(
-    	{
-    		summary: 'Get user by ID',
-    		tags: ['users'],
-    		params: z.object({
-    			id: z.string().uuid()
-    		}),
-    		query: z.object({
-    			include: z.string().optional()
-    		}),
-    		headers: z.object({
-    			'x-api-key': z.string()
-    		}),
-    		response: {
-    			200: z.object({
-    				id: z.string(),
-    				name: z.string(),
-    				email: z.string()
-    			}),
-    			404: z.object({
-    				error: z.string()
-    			})
-    		}
-    	},
-    	async (request) => {
-    		const { id } = request.params // typed as { id: string }
-    		const { include } = request.query // typed as { include?: string }
-    		const apiKey = request.header('x-api-key') // typed
+  		return { id, name: 'Alice', email: 'alice@example.com' }
+  	}
+  )
+  ```
 
-    		return { id, name: 'Alice', email: 'alice@example.com' }
-    	}
-    )
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/users/[id].js"
+  import { define } from '@robojs/server'
+  import { z } from 'zod'
+
+  export const GET = define(
+  	{
+  		summary: 'Get user by ID',
+  		tags: ['users'],
+  		params: z.object({
+  			id: z.string().uuid()
+  		}),
+  		query: z.object({
+  			include: z.string().optional()
+  		}),
+  		headers: z.object({
+  			'x-api-key': z.string()
+  		}),
+  		response: {
+  			200: z.object({
+  				id: z.string(),
+  				name: z.string(),
+  				email: z.string()
+  			}),
+  			404: z.object({
+  				error: z.string()
+  			})
+  		}
+  	},
+  	async (request) => {
+  		const { id } = request.params // typed as { id: string }
+  		const { include } = request.query // typed as { include?: string }
+  		const apiKey = request.header('x-api-key') // typed
+
+  		return { id, name: 'Alice', email: 'alice@example.com' }
+  	}
+  )
+  ```
+
+</Tab>
 </Tabs>
 
 ## Plain exports still work
@@ -193,23 +201,27 @@ Supported status codes for `response`: `200`, `201`, `204`, `400`, `401`, `403`,
 You don't need `define()` for every endpoint. Plain exports work as before:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/api/health.ts"
-    import type { RoboRequest } from '@robojs/server'
+<Tab value="TypeScript">
 
-    export function GET(request: RoboRequest) {
-    	return { status: 'ok' }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/api/health.js"
+  ```ts title="src/api/health.ts"
+  import type { RoboRequest } from '@robojs/server'
 
-    export function GET(request) {
-    	return { status: 'ok' }
-    }
-    ```
-  </Tab>
+  export function GET(request: RoboRequest) {
+  	return { status: 'ok' }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/api/health.js"
+
+  export function GET(request) {
+  	return { status: 'ok' }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 These endpoints won't appear in the generated OpenAPI spec unless they use `define()`.

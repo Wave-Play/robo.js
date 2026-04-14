@@ -29,22 +29,26 @@ There are three ways to configure log integration, each with different trade-off
 The simplest approach. Add your credentials directly to the plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN',
-    	ingestingHost: 'in.logtail.com'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN',
-    	ingestingHost: 'in.logtail.com'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN',
+  	ingestingHost: 'in.logtail.com'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN',
+  	ingestingHost: 'in.logtail.com'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 This method supports both log integration and [heartbeat monitoring](./heartbeat.mdx) in a single file.
@@ -65,36 +69,40 @@ Plugin config values take precedence over environment variables. If both are set
 For the earliest possible log capture — including logs during plugin initialization — create the drain directly in your Robo config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    import { createLogtailDrain } from '@robojs/better-stack'
+<Tab value="TypeScript">
 
-    export default {
-    	logger: {
-    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
-    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
-    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
-    				: undefined
-    		})
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    import { createLogtailDrain } from '@robojs/better-stack'
+  ```ts title="config/robo.mjs"
+  import { createLogtailDrain } from '@robojs/better-stack'
 
-    export default {
-    	logger: {
-    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
-    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
-    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
-    				: undefined
-    		})
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	logger: {
+  		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+  			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+  				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+  				: undefined
+  		})
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  import { createLogtailDrain } from '@robojs/better-stack'
+
+  export default {
+  	logger: {
+  		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+  			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+  				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+  				: undefined
+  		})
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -106,57 +114,65 @@ The direct drain method does not support heartbeat monitoring. Use a separate pl
 Need both early log capture and heartbeat monitoring? Use the direct drain in `robo.mjs` for logs, and a plugin config for heartbeat only:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    import { createLogtailDrain } from '@robojs/better-stack'
+<Tab value="TypeScript">
 
-    export default {
-    	logger: {
-    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
-    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
-    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
-    				: undefined
-    		})
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    import { createLogtailDrain } from '@robojs/better-stack'
+  ```ts title="config/robo.mjs"
+  import { createLogtailDrain } from '@robojs/better-stack'
 
-    export default {
-    	logger: {
-    		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
-    			endpoint: process.env.BETTER_STACK_INGESTING_HOST
-    				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
-    				: undefined
-    		})
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	logger: {
+  		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+  			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+  				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+  				: undefined
+  		})
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  import { createLogtailDrain } from '@robojs/better-stack'
+
+  export default {
+  	logger: {
+  		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+  			endpoint: process.env.BETTER_STACK_INGESTING_HOST
+  				? `https://${process.env.BETTER_STACK_INGESTING_HOST}`
+  				: undefined
+  		})
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Don't set `sourceToken` in both locations — the plugin config runs after the Robo config, so it would replace the drain you already set.
@@ -205,22 +221,26 @@ Set the ingesting host via plugin config (`ingestingHost`) or environment variab
 The plugin exports `createLogtailDrain` for creating a log drain directly.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function createLogtailDrain(
-    	sourceToken: string,
-    	options?: ConstructorParameters<typeof Logtail>[1]
-    ): LogDrain
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function createLogtailDrain(
-    	sourceToken: string,
-    	options?: ConstructorParameters<typeof Logtail>[1]
-    ): LogDrain
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function createLogtailDrain(
+  	sourceToken: string,
+  	options?: ConstructorParameters<typeof Logtail>[1]
+  ): LogDrain
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function createLogtailDrain(
+  	sourceToken: string,
+  	options?: ConstructorParameters<typeof Logtail>[1]
+  ): LogDrain
+  ```
+
+</Tab>
 </Tabs>
 
 **Parameters:**

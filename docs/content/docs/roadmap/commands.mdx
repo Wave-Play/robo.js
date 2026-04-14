@@ -125,20 +125,24 @@ The card autocomplete has a 60-second per-guild cache.
 Configure authorized roles through the `/roadmap setup` panel or programmatically:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { setAuthorizedCreatorRoles } from '@robojs/roadmap'
+<Tab value="TypeScript">
 
-    setAuthorizedCreatorRoles(guildId, ['role-id-1', 'role-id-2'])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { setAuthorizedCreatorRoles } from '@robojs/roadmap'
+  ```ts
+  import { setAuthorizedCreatorRoles } from '@robojs/roadmap'
 
-    setAuthorizedCreatorRoles(guildId, ['role-id-1', 'role-id-2'])
-    ```
-  </Tab>
+  setAuthorizedCreatorRoles(guildId, ['role-id-1', 'role-id-2'])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { setAuthorizedCreatorRoles } from '@robojs/roadmap'
+
+  setAuthorizedCreatorRoles(guildId, ['role-id-1', 'role-id-2'])
+  ```
+
+</Tab>
 </Tabs>
 
 When no roles are configured, only administrators can create and edit cards.

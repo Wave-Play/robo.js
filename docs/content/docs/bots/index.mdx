@@ -23,20 +23,24 @@ These guides cover common bot-building patterns. For the complete plugin API ref
 Here's a complete `/hello` command in one file:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/hello.ts"
-    export default () => {
-    	return 'Hello, world!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/hello.js"
-    export default () => {
-    	return 'Hello, world!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/hello.ts"
+  export default () => {
+  	return 'Hello, world!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/hello.js"
+  export default () => {
+  	return 'Hello, world!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 That's it — Robo.js registers the command and handles the reply automatically.

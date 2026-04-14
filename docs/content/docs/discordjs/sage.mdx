@@ -38,32 +38,36 @@ Configure Sage globally in your plugin config:
 />
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	sage: {
-    		defer: true,
-    		deferBuffer: 250,
-    		ephemeral: false,
-    		errorReplies: true
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	sage: {
-    		defer: true,
-    		deferBuffer: 250,
-    		ephemeral: false,
-    		errorReplies: true
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	sage: {
+  		defer: true,
+  		deferBuffer: 250,
+  		ephemeral: false,
+  		errorReplies: true
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	sage: {
+  		defer: true,
+  		deferBuffer: 250,
+  		ephemeral: false,
+  		errorReplies: true
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Per-command overrides

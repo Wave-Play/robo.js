@@ -22,26 +22,30 @@ For details on the priority field, concurrent execution, plugin options argument
 Create a file in `src/events/` with the name of the Discord event you want to handle. The default export runs when that event fires.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/ready.ts"
-    import { getClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const client = getClient()
-    	console.log(`Logged in as ${client.user?.tag}`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/ready.js"
-    import { getClient } from '@robojs/discordjs'
+  ```ts title="src/events/ready.ts"
+  import { getClient } from '@robojs/discordjs'
 
-    export default () => {
-    	const client = getClient()
-    	console.log(`Logged in as ${client.user?.tag}`)
-    }
-    ```
-  </Tab>
+  export default () => {
+  	const client = getClient()
+  	console.log(`Logged in as ${client.user?.tag}`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/ready.js"
+  import { getClient } from '@robojs/discordjs'
+
+  export default () => {
+  	const client = getClient()
+  	console.log(`Logged in as ${client.user?.tag}`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Files>
@@ -69,26 +73,30 @@ The `ready` event passes a `Client` as its first argument. You can accept it as 
 </Callout>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/messageCreate.ts"
-    import type { Message } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (message: Message) => {
-    	if (message.content === 'hello') {
-    		message.reply('Hello there!')
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/messageCreate.js"
-    export default (message) => {
-    	if (message.content === 'hello') {
-    		message.reply('Hello there!')
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="src/events/messageCreate.ts"
+  import type { Message } from 'discord.js'
+
+  export default (message: Message) => {
+  	if (message.content === 'hello') {
+  		message.reply('Hello there!')
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/messageCreate.js"
+  export default (message) => {
+  	if (message.content === 'hello') {
+  		message.reply('Hello there!')
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -119,30 +127,34 @@ Handle the same event with multiple files by creating a folder named after the e
 Export a `config` object to control how an event handler behaves.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/ready.ts"
-    import type { EventConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export const config: EventConfig = {
-    	frequency: 'once'
-    }
+  ```ts title="src/events/ready.ts"
+  import type { EventConfig } from '@robojs/discordjs'
 
-    export default () => {
-    	console.log('Bot is ready (runs once)')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/ready.js"
-    export const config = {
-    	frequency: 'once'
-    }
+  export const config: EventConfig = {
+  	frequency: 'once'
+  }
 
-    export default () => {
-    	console.log('Bot is ready (runs once)')
-    }
-    ```
-  </Tab>
+  export default () => {
+  	console.log('Bot is ready (runs once)')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/ready.js"
+  export const config = {
+  	frequency: 'once'
+  }
+
+  export default () => {
+  	console.log('Bot is ready (runs once)')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Field | Type | Default | Description |
@@ -172,20 +184,24 @@ Robo.js provides framework-level lifecycle hooks that are not Discord events. Pl
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    export default () => {
-    	console.log('Bot is starting up')
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    export default () => {
-    	console.log('Bot is starting up')
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/robo/start.ts"
+  export default () => {
+  	console.log('Bot is starting up')
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  export default () => {
+  	console.log('Bot is starting up')
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

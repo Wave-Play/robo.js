@@ -71,41 +71,45 @@ These give you a working tRPC setup out of the box. Define procedures on the ser
 ### Define a procedure
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    import { initTRPC } from '@robojs/trpc/server.js'
-    import { z } from 'zod'
+<Tab value="TypeScript">
 
-    const t = initTRPC.create()
+  ```ts title="src/trpc/server.ts"
+  import { initTRPC } from '@robojs/trpc/server.js'
+  import { z } from 'zod'
 
-    export const appRouter = t.router({
-    	hello: t.procedure
-    		.input(z.object({ text: z.string() }))
-    		.query(({ input }) => {
-    			return { message: `Hello ${input.text}` }
-    		})
-    })
+  const t = initTRPC.create()
 
-    export type AppRouter = typeof appRouter
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
-    import { initTRPC } from '@robojs/trpc/server.js'
-    import { z } from 'zod'
+  export const appRouter = t.router({
+  	hello: t.procedure
+  		.input(z.object({ text: z.string() }))
+  		.query(({ input }) => {
+  			return { message: `Hello ${input.text}` }
+  		})
+  })
 
-    const t = initTRPC.create()
+  export type AppRouter = typeof appRouter
+  ```
 
-    export const appRouter = t.router({
-    	hello: t.procedure
-    		.input(z.object({ text: z.string() }))
-    		.query(({ input }) => {
-    			return { message: `Hello ${input.text}` }
-    		})
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    ```
-  </Tab>
+  ```js title="src/trpc/server.js"
+  import { initTRPC } from '@robojs/trpc/server.js'
+  import { z } from 'zod'
+
+  const t = initTRPC.create()
+
+  export const appRouter = t.router({
+  	hello: t.procedure
+  		.input(z.object({ text: z.string() }))
+  		.query(({ input }) => {
+  			return { message: `Hello ${input.text}` }
+  		})
+  })
+
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -117,51 +121,59 @@ Import `initTRPC` from `@robojs/trpc/server.js`, not from `@trpc/server`. The pl
 Use the standalone client for direct calls:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { trpcClient } from '../trpc/client'
+<Tab value="TypeScript">
 
-    const result = await trpcClient.hello.query({ text: 'World' })
-    console.log(result.message) // "Hello World"
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { trpcClient } from '../trpc/client'
+  ```ts
+  import { trpcClient } from '../trpc/client'
 
-    const result = await trpcClient.hello.query({ text: 'World' })
-    console.log(result.message) // "Hello World"
-    ```
-  </Tab>
+  const result = await trpcClient.hello.query({ text: 'World' })
+  console.log(result.message) // "Hello World"
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { trpcClient } from '../trpc/client'
+
+  const result = await trpcClient.hello.query({ text: 'World' })
+  console.log(result.message) // "Hello World"
+  ```
+
+</Tab>
 </Tabs>
 
 Or use React Query hooks for automatic caching and loading states:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { trpc } from '../trpc/client'
+<Tab value="TypeScript">
 
-    function Greeting() {
-    	const { data, isLoading } = trpc.hello.useQuery({ text: 'World' })
+  ```tsx
+  import { trpc } from '../trpc/client'
 
-    	if (isLoading) return <span>Loading...</span>
-    	return <span>{data?.message}</span>
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { trpc } from '../trpc/client'
+  function Greeting() {
+  	const { data, isLoading } = trpc.hello.useQuery({ text: 'World' })
 
-    function Greeting() {
-    	const { data, isLoading } = trpc.hello.useQuery({ text: 'World' })
+  	if (isLoading) return <span>Loading...</span>
+  	return <span>{data?.message}</span>
+  }
+  ```
 
-    	if (isLoading) return <span>Loading...</span>
-    	return <span>{data?.message}</span>
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { trpc } from '../trpc/client'
+
+  function Greeting() {
+  	const { data, isLoading } = trpc.hello.useQuery({ text: 'World' })
+
+  	if (isLoading) return <span>Loading...</span>
+  	return <span>{data?.message}</span>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 React Query hooks require wrapping your app in `TRPCProvider`. See the [client guide](./client.mdx) for setup.

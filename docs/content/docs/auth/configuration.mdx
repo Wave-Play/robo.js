@@ -18,51 +18,55 @@ The plugin is configured via `config/plugins/robojs/auth.ts`. The config type is
 ## Config file example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/auth.ts"
-    import Discord from '@robojs/auth/providers/discord'
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
-    import type { AuthPluginOptions } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  ```ts title="config/plugins/robojs/auth.ts"
+  import Discord from '@robojs/auth/providers/discord'
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+  import type { AuthPluginOptions } from '@robojs/auth'
 
-    const config: AuthPluginOptions = {
-    	appName: 'My App',
-    	adapter,
-    	secret: process.env.AUTH_SECRET,
-    	providers: [
-    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
-    		EmailPassword({ adapter })
-    	],
-    	session: { strategy: 'database', maxAge: 60 * 60 * 24 * 30 }
-    }
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
 
-    export default config
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/auth.js"
-    import Discord from '@robojs/auth/providers/discord'
-    import EmailPassword from '@robojs/auth/providers/email-password'
-    import { createFlashcoreAdapter } from '@robojs/auth'
+  const config: AuthPluginOptions = {
+  	appName: 'My App',
+  	adapter,
+  	secret: process.env.AUTH_SECRET,
+  	providers: [
+  		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+  		EmailPassword({ adapter })
+  	],
+  	session: { strategy: 'database', maxAge: 60 * 60 * 24 * 30 }
+  }
 
-    const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+  export default config
+  ```
 
-    const config = {
-    	appName: 'My App',
-    	adapter,
-    	secret: process.env.AUTH_SECRET,
-    	providers: [
-    		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
-    		EmailPassword({ adapter })
-    	],
-    	session: { strategy: 'database', maxAge: 60 * 60 * 24 * 30 }
-    }
+</Tab>
+<Tab value="JavaScript">
 
-    export default config
-    ```
-  </Tab>
+  ```js title="config/plugins/robojs/auth.js"
+  import Discord from '@robojs/auth/providers/discord'
+  import EmailPassword from '@robojs/auth/providers/email-password'
+  import { createFlashcoreAdapter } from '@robojs/auth'
+
+  const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+
+  const config = {
+  	appName: 'My App',
+  	adapter,
+  	secret: process.env.AUTH_SECRET,
+  	providers: [
+  		Discord({ clientId: process.env.DISCORD_CLIENT_ID!, clientSecret: process.env.DISCORD_CLIENT_SECRET! }),
+  		EmailPassword({ adapter })
+  	],
+  	session: { strategy: 'database', maxAge: 60 * 60 * 24 * 30 }
+  }
+
+  export default config
+  ```
+
+</Tab>
 </Tabs>
 
 ## Core options
@@ -242,22 +246,26 @@ These variables are read by the plugin during initialization.
 The exported `authPluginOptionsSchema` (Zod) and `normalizeAuthOptions()` function enable programmatic validation.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { authPluginOptionsSchema, normalizeAuthOptions } from '@robojs/auth'
+<Tab value="TypeScript">
 
-    const validated = authPluginOptionsSchema.parse(rawConfig)
-    const normalized = normalizeAuthOptions(rawConfig)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { authPluginOptionsSchema, normalizeAuthOptions } from '@robojs/auth'
+  ```ts
+  import { authPluginOptionsSchema, normalizeAuthOptions } from '@robojs/auth'
 
-    const validated = authPluginOptionsSchema.parse(rawConfig)
-    const normalized = normalizeAuthOptions(rawConfig)
-    ```
-  </Tab>
+  const validated = authPluginOptionsSchema.parse(rawConfig)
+  const normalized = normalizeAuthOptions(rawConfig)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { authPluginOptionsSchema, normalizeAuthOptions } from '@robojs/auth'
+
+  const validated = authPluginOptionsSchema.parse(rawConfig)
+  const normalized = normalizeAuthOptions(rawConfig)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Secret auto-generation

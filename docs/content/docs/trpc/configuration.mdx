@@ -10,20 +10,24 @@ The `@robojs/trpc` plugin has no configuration options of its own. Its behavior 
 The plugin detects `@robojs/server`'s `prefix` option at startup and registers the tRPC endpoint at `{prefix}/trpc`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	prefix: '/api' // default
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	prefix: '/api' // default
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	prefix: '/api' // default
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	prefix: '/api' // default
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Server prefix | tRPC endpoint |
@@ -159,39 +163,47 @@ This error means the tRPC router was never captured by the plugin. Common causes
 **Wrong `initTRPC` import.** Import from `@robojs/trpc/server.js`, not `@trpc/server`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Correct
-    import { initTRPC } from '@robojs/trpc/server.js'
+<Tab value="TypeScript">
 
-    // Wrong — bypasses router registration
-    import { initTRPC } from '@trpc/server'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Correct
-    import { initTRPC } from '@robojs/trpc/server.js'
+  ```ts
+  // Correct
+  import { initTRPC } from '@robojs/trpc/server.js'
 
-    // Wrong — bypasses router registration
-    import { initTRPC } from '@trpc/server'
-    ```
-  </Tab>
+  // Wrong — bypasses router registration
+  import { initTRPC } from '@trpc/server'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Correct
+  import { initTRPC } from '@robojs/trpc/server.js'
+
+  // Wrong — bypasses router registration
+  import { initTRPC } from '@trpc/server'
+  ```
+
+</Tab>
 </Tabs>
 
 **Missing start hook.** Make sure `src/robo/start/trpc.ts` exists and imports your server file:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start/trpc.ts"
-    export default () => import('../../trpc/server.js')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start/trpc.js"
-    export default () => import('../../trpc/server.js')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/robo/start/trpc.ts"
+  export default () => import('../../trpc/server.js')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start/trpc.js"
+  export default () => import('../../trpc/server.js')
+  ```
+
+</Tab>
 </Tabs>
 
 **Router not called.** The server file must call `t.router()` — defining the router is what triggers registration.
@@ -201,24 +213,28 @@ This error means the tRPC router was never captured by the plugin. Common causes
 The client URL doesn't match the server prefix. If `@robojs/server` uses a custom prefix, update the `httpBatchLink` URL:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // If server prefix is '/v1':
-    httpBatchLink({ url: '/v1/trpc' })
+<Tab value="TypeScript">
 
-    // If server prefix is '' (empty):
-    httpBatchLink({ url: '/trpc' })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // If server prefix is '/v1':
-    httpBatchLink({ url: '/v1/trpc' })
+  ```ts
+  // If server prefix is '/v1':
+  httpBatchLink({ url: '/v1/trpc' })
 
-    // If server prefix is '' (empty):
-    httpBatchLink({ url: '/trpc' })
-    ```
-  </Tab>
+  // If server prefix is '' (empty):
+  httpBatchLink({ url: '/trpc' })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // If server prefix is '/v1':
+  httpBatchLink({ url: '/v1/trpc' })
+
+  // If server prefix is '' (empty):
+  httpBatchLink({ url: '/trpc' })
+  ```
+
+</Tab>
 </Tabs>
 
 ### TypeScript errors on client
@@ -226,31 +242,39 @@ The client URL doesn't match the server prefix. If `@robojs/server` uses a custo
 Make sure your server file exports the `AppRouter` type:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/server.ts"
-    export type AppRouter = typeof appRouter
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/server.js"
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts title="src/trpc/server.ts"
+  export type AppRouter = typeof appRouter
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/server.js"
+
+  ```
+
+</Tab>
 </Tabs>
 
 And the client imports it as a type:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/trpc/client.ts"
-    import type { AppRouter } from './server'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/trpc/client.js"
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts title="src/trpc/client.ts"
+  import type { AppRouter } from './server'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/trpc/client.js"
+
+  ```
+
+</Tab>
 </Tabs>
 
 ### Missing `@robojs/server`

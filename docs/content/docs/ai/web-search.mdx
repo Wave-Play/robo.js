@@ -10,24 +10,28 @@ Enable web search to let the AI pull in live information from the web. Responses
 Set `webSearch: true` on the OpenAI engine:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new OpenAiEngine({ webSearch: true })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+  ```ts title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
 
-    export default {
-    	engine: new OpenAiEngine({ webSearch: true })
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new OpenAiEngine({ webSearch: true })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+  export default {
+  	engine: new OpenAiEngine({ webSearch: true })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The engine adds a `web_search` tool to the OpenAI Responses API toolset. When the model decides a query benefits from live data, it triggers the search automatically.
@@ -61,36 +65,40 @@ Citation markers appear inline where the model referenced external sources. The 
 Web search pairs with other engine options. You can enable it alongside a custom model and temperature:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+<Tab value="TypeScript">
 
-    export default {
-    	engine: new OpenAiEngine({
-    		webSearch: true,
-    		chat: {
-    			model: 'gpt-4.1',
-    			temperature: 0.5
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+  ```ts title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
 
-    export default {
-    	engine: new OpenAiEngine({
-    		webSearch: true,
-    		chat: {
-    			model: 'gpt-4.1',
-    			temperature: 0.5
-    		}
-    	})
-    }
-    ```
-  </Tab>
+  export default {
+  	engine: new OpenAiEngine({
+  		webSearch: true,
+  		chat: {
+  			model: 'gpt-4.1',
+  			temperature: 0.5
+  		}
+  	})
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+  export default {
+  	engine: new OpenAiEngine({
+  		webSearch: true,
+  		chat: {
+  			model: 'gpt-4.1',
+  			temperature: 0.5
+  		}
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

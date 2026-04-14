@@ -10,46 +10,50 @@ The `tokenLedger` singleton tracks every AI operation's token consumption. It re
 Set limits in the plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.ts"
-    export default {
-    	usage: {
-    		limits: {
-    			perModel: {
-    				'gpt-4o': { window: 'day', maxTokens: 50_000, mode: 'block' },
-    				'gpt-4o-mini': { window: 'month', maxTokens: 1_000_000, mode: 'warn' }
-    			}
-    		},
-    		onRecorded: (payload) => {
-    			console.log(`Used ${payload.entry.total} tokens on ${payload.model}`)
-    		},
-    		onLimitReached: (payload) => {
-    			console.warn('Limit breached:', payload.breaches)
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.js"
-    export default {
-    	usage: {
-    		limits: {
-    			perModel: {
-    				'gpt-4o': { window: 'day', maxTokens: 50_000, mode: 'block' },
-    				'gpt-4o-mini': { window: 'month', maxTokens: 1_000_000, mode: 'warn' }
-    			}
-    		},
-    		onRecorded: (payload) => {
-    			console.log(`Used ${payload.entry.total} tokens on ${payload.model}`)
-    		},
-    		onLimitReached: (payload) => {
-    			console.warn('Limit breached:', payload.breaches)
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.ts"
+  export default {
+  	usage: {
+  		limits: {
+  			perModel: {
+  				'gpt-4o': { window: 'day', maxTokens: 50_000, mode: 'block' },
+  				'gpt-4o-mini': { window: 'month', maxTokens: 1_000_000, mode: 'warn' }
+  			}
+  		},
+  		onRecorded: (payload) => {
+  			console.log(`Used ${payload.entry.total} tokens on ${payload.model}`)
+  		},
+  		onLimitReached: (payload) => {
+  			console.warn('Limit breached:', payload.breaches)
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.js"
+  export default {
+  	usage: {
+  		limits: {
+  			perModel: {
+  				'gpt-4o': { window: 'day', maxTokens: 50_000, mode: 'block' },
+  				'gpt-4o-mini': { window: 'month', maxTokens: 1_000_000, mode: 'warn' }
+  			}
+  		},
+  		onRecorded: (payload) => {
+  			console.log(`Used ${payload.entry.total} tokens on ${payload.model}`)
+  		},
+  		onLimitReached: (payload) => {
+  			console.warn('Limit breached:', payload.breaches)
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Limit rules
@@ -78,32 +82,36 @@ Emits a `'usage.limitReached'` event without blocking. Operations continue norma
 When `mode` is `'block'`, the thrown error carries context about the breach:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/ask.ts"
-    import { AI, TokenLimitError } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    try {
-    	const reply = await AI.chatSync([{ role: 'user', content: 'Hello' }], {})
-    } catch (error) {
-    	if (error instanceof TokenLimitError) {
-    		console.warn(error.displayMessage)
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/ask.js"
-    import { AI, TokenLimitError } from '@robojs/ai'
+  ```ts title="src/commands/ask.ts"
+  import { AI, TokenLimitError } from '@robojs/ai'
 
-    try {
-    	const reply = await AI.chatSync([{ role: 'user', content: 'Hello' }], {})
-    } catch (error) {
-    	if (error instanceof TokenLimitError) {
-    		console.warn(error.displayMessage)
-    	}
-    }
-    ```
-  </Tab>
+  try {
+  	const reply = await AI.chatSync([{ role: 'user', content: 'Hello' }], {})
+  } catch (error) {
+  	if (error instanceof TokenLimitError) {
+  		console.warn(error.displayMessage)
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/ask.js"
+  import { AI, TokenLimitError } from '@robojs/ai'
+
+  try {
+  	const reply = await AI.chatSync([{ role: 'user', content: 'Hello' }], {})
+  } catch (error) {
+  	if (error instanceof TokenLimitError) {
+  		console.warn(error.displayMessage)
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Properties on `TokenLimitError`:
@@ -120,34 +128,38 @@ Properties on `TokenLimitError`:
 Pull usage data through the `AI` singleton or `tokenLedger` directly:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/usage.ts"
-    import { AI, tokenLedger } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    // Via AI singleton
-    const daily = await AI.getUsageSummary({ window: 'day', model: 'gpt-4o' })
-    const lifetime = await AI.getLifetimeUsage('gpt-4o')
+  ```ts title="src/commands/usage.ts"
+  import { AI, tokenLedger } from '@robojs/ai'
 
-    // Via tokenLedger directly
-    const summary = await tokenLedger.getSummary({ window: 'week', limit: 10 })
-    const totals = await tokenLedger.getLifetimeTotals()
-    const entries = await tokenLedger.getEntriesForDay('2025-01-15')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/usage.js"
-    import { AI, tokenLedger } from '@robojs/ai'
+  // Via AI singleton
+  const daily = await AI.getUsageSummary({ window: 'day', model: 'gpt-4o' })
+  const lifetime = await AI.getLifetimeUsage('gpt-4o')
 
-    // Via AI singleton
-    const daily = await AI.getUsageSummary({ window: 'day', model: 'gpt-4o' })
-    const lifetime = await AI.getLifetimeUsage('gpt-4o')
+  // Via tokenLedger directly
+  const summary = await tokenLedger.getSummary({ window: 'week', limit: 10 })
+  const totals = await tokenLedger.getLifetimeTotals()
+  const entries = await tokenLedger.getEntriesForDay('2025-01-15')
+  ```
 
-    // Via tokenLedger directly
-    const summary = await tokenLedger.getSummary({ window: 'week', limit: 10 })
-    const totals = await tokenLedger.getLifetimeTotals()
-    const entries = await tokenLedger.getEntriesForDay('2025-01-15')
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/usage.js"
+  import { AI, tokenLedger } from '@robojs/ai'
+
+  // Via AI singleton
+  const daily = await AI.getUsageSummary({ window: 'day', model: 'gpt-4o' })
+  const lifetime = await AI.getLifetimeUsage('gpt-4o')
+
+  // Via tokenLedger directly
+  const summary = await tokenLedger.getSummary({ window: 'week', limit: 10 })
+  const totals = await tokenLedger.getLifetimeTotals()
+  const entries = await tokenLedger.getEntriesForDay('2025-01-15')
+  ```
+
+</Tab>
 </Tabs>
 
 ## Pre-checking limits
@@ -155,24 +167,28 @@ Pull usage data through the `AI` singleton or `tokenLedger` directly:
 Check whether an operation would exceed limits before running it:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/check.ts"
-    import { tokenLedger } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    const willExceed = await tokenLedger.willExceedLimit('gpt-4o', 5000)
-    const state = await tokenLedger.getLimitState('gpt-4o')
-    // state.blocked, state.windows.day.remaining, state.windows.day.total
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/check.js"
-    import { tokenLedger } from '@robojs/ai'
+  ```ts title="src/commands/check.ts"
+  import { tokenLedger } from '@robojs/ai'
 
-    const willExceed = await tokenLedger.willExceedLimit('gpt-4o', 5000)
-    const state = await tokenLedger.getLimitState('gpt-4o')
-    // state.blocked, state.windows.day.remaining, state.windows.day.total
-    ```
-  </Tab>
+  const willExceed = await tokenLedger.willExceedLimit('gpt-4o', 5000)
+  const state = await tokenLedger.getLimitState('gpt-4o')
+  // state.blocked, state.windows.day.remaining, state.windows.day.total
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/check.js"
+  import { tokenLedger } from '@robojs/ai'
+
+  const willExceed = await tokenLedger.willExceedLimit('gpt-4o', 5000)
+  const state = await tokenLedger.getLimitState('gpt-4o')
+  // state.blocked, state.windows.day.remaining, state.windows.day.total
+  ```
+
+</Tab>
 </Tabs>
 
 ## Events
@@ -180,40 +196,44 @@ Check whether an operation would exceed limits before running it:
 Subscribe to usage events for monitoring and alerting:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { tokenLedger } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export default () => {
-    	tokenLedger.on('usage.recorded', (event) => {
-    		console.log(`${event.model}: +${event.entry.total} tokens`)
-    	})
+  ```ts title="src/robo/start.ts"
+  import { tokenLedger } from '@robojs/ai'
 
-    	tokenLedger.on('usage.limitReached', (event) => {
-    		for (const breach of event.breaches) {
-    			console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { tokenLedger } from '@robojs/ai'
+  export default () => {
+  	tokenLedger.on('usage.recorded', (event) => {
+  		console.log(`${event.model}: +${event.entry.total} tokens`)
+  	})
 
-    export default () => {
-    	tokenLedger.on('usage.recorded', (event) => {
-    		console.log(`${event.model}: +${event.entry.total} tokens`)
-    	})
+  	tokenLedger.on('usage.limitReached', (event) => {
+  		for (const breach of event.breaches) {
+  			console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
+  		}
+  	})
+  }
+  ```
 
-    	tokenLedger.on('usage.limitReached', (event) => {
-    		for (const breach of event.breaches) {
-    			console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
-    		}
-    	})
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  import { tokenLedger } from '@robojs/ai'
+
+  export default () => {
+  	tokenLedger.on('usage.recorded', (event) => {
+  		console.log(`${event.model}: +${event.entry.total} tokens`)
+  	})
+
+  	tokenLedger.on('usage.limitReached', (event) => {
+  		for (const breach of event.breaches) {
+  			console.warn(`${breach.model} exceeded ${breach.window} limit by ${breach.exceededBy}`)
+  		}
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The event emitter supports `tokenLedger.on()`, `tokenLedger.once()`, and `tokenLedger.off()`.
@@ -223,44 +243,48 @@ The event emitter supports `tokenLedger.on()`, `tokenLedger.once()`, and `tokenL
 Configure the ledger at runtime instead of (or in addition to) the plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { tokenLedger } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export default () => {
-    	tokenLedger.configure({
-    		limits: {
-    			perModel: {
-    				'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
-    			}
-    		},
-    		hooks: {
-    			onRecorded: (payload) => { /* ... */ },
-    			onLimitReached: (payload) => { /* ... */ }
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { tokenLedger } from '@robojs/ai'
+  ```ts title="src/robo/start.ts"
+  import { tokenLedger } from '@robojs/ai'
 
-    export default () => {
-    	tokenLedger.configure({
-    		limits: {
-    			perModel: {
-    				'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
-    			}
-    		},
-    		hooks: {
-    			onRecorded: (payload) => { /* ... */ },
-    			onLimitReached: (payload) => { /* ... */ }
-    		}
-    	})
-    }
-    ```
-  </Tab>
+  export default () => {
+  	tokenLedger.configure({
+  		limits: {
+  			perModel: {
+  				'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
+  			}
+  		},
+  		hooks: {
+  			onRecorded: (payload) => { /* ... */ },
+  			onLimitReached: (payload) => { /* ... */ }
+  		}
+  	})
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  import { tokenLedger } from '@robojs/ai'
+
+  export default () => {
+  	tokenLedger.configure({
+  		limits: {
+  			perModel: {
+  				'gpt-4o': { window: 'day', maxTokens: 50000, mode: 'block' }
+  			}
+  		},
+  		hooks: {
+  			onRecorded: (payload) => { /* ... */ },
+  			onLimitReached: (payload) => { /* ... */ }
+  		}
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Time windows

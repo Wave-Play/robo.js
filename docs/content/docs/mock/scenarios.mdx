@@ -155,31 +155,35 @@ Every scenario follows this top-level structure:
 ### Metadata
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface ScenarioMetadata {
-      name: string           // Display name (required)
-      description?: string   // Longer description
-      tags?: string[]        // For filtering ("happy-path", "edge-case")
-      createdAt?: string     // ISO 8601 timestamp
-      updatedAt?: string     // ISO 8601 timestamp
-      author?: string        // Author identifier
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // ScenarioMetadata shape:
-    // {
-    //   name: string,           // Display name (required)
-    //   description: string,    // Longer description
-    //   tags: string[],         // For filtering ("happy-path", "edge-case")
-    //   createdAt: string,      // ISO 8601 timestamp
-    //   updatedAt: string,      // ISO 8601 timestamp
-    //   author: string          // Author identifier
-    // }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  interface ScenarioMetadata {
+    name: string           // Display name (required)
+    description?: string   // Longer description
+    tags?: string[]        // For filtering ("happy-path", "edge-case")
+    createdAt?: string     // ISO 8601 timestamp
+    updatedAt?: string     // ISO 8601 timestamp
+    author?: string        // Author identifier
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // ScenarioMetadata shape:
+  // {
+  //   name: string,           // Display name (required)
+  //   description: string,    // Longer description
+  //   tags: string[],         // For filtering ("happy-path", "edge-case")
+  //   createdAt: string,      // ISO 8601 timestamp
+  //   updatedAt: string,      // ISO 8601 timestamp
+  //   author: string          // Author identifier
+  // }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Mock Config
@@ -187,29 +191,33 @@ Every scenario follows this top-level structure:
 Applied to the session before execution begins:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface ScenarioMockConfig {
-      user?: MockUserConfig        // Invoking user identity
-      guild?: MockGuildConfig      // Test guild setup
-      channel?: MockChannelConfig  // Test channel setup
-      commandOptions?: Record<string, Record<string, unknown>>
-      time?: { fixedTime?: number; timeScale?: number }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // ScenarioMockConfig shape:
-    // {
-    //   user: MockUserConfig,        // Invoking user identity
-    //   guild: MockGuildConfig,       // Test guild setup
-    //   channel: MockChannelConfig,   // Test channel setup
-    //   commandOptions: object,       // { [command]: { [option]: value } }
-    //   time: { fixedTime: number, timeScale: number }
-    // }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  interface ScenarioMockConfig {
+    user?: MockUserConfig        // Invoking user identity
+    guild?: MockGuildConfig      // Test guild setup
+    channel?: MockChannelConfig  // Test channel setup
+    commandOptions?: Record<string, Record<string, unknown>>
+    time?: { fixedTime?: number; timeScale?: number }
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // ScenarioMockConfig shape:
+  // {
+  //   user: MockUserConfig,        // Invoking user identity
+  //   guild: MockGuildConfig,       // Test guild setup
+  //   channel: MockChannelConfig,   // Test channel setup
+  //   commandOptions: object,       // { [command]: { [option]: value } }
+  //   time: { fixedTime: number, timeScale: number }
+  // }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -221,27 +229,31 @@ Applied to the session before execution begins:
 Each step has a `type` discriminator and optional base fields:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface ScenarioStepBase {
-      id?: string              // Step identifier for debugging
-      description?: string     // Human-readable description
-      expectedNodeId?: string  // Source system node ID (for UI highlighting)
-      timeout?: number         // Max wait time in ms (overrides default)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // ScenarioStepBase shape:
-    // {
-    //   id: string,              // Step identifier for debugging
-    //   description: string,     // Human-readable description
-    //   expectedNodeId: string,  // Source system node ID (for UI highlighting)
-    //   timeout: number          // Max wait time in ms (overrides default)
-    // }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  interface ScenarioStepBase {
+    id?: string              // Step identifier for debugging
+    description?: string     // Human-readable description
+    expectedNodeId?: string  // Source system node ID (for UI highlighting)
+    timeout?: number         // Max wait time in ms (overrides default)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // ScenarioStepBase shape:
+  // {
+  //   id: string,              // Step identifier for debugging
+  //   description: string,     // Human-readable description
+  //   expectedNodeId: string,  // Source system node ID (for UI highlighting)
+  //   timeout: number          // Max wait time in ms (overrides default)
+  // }
+  ```
+
+</Tab>
 </Tabs>
 
 ### dispatch

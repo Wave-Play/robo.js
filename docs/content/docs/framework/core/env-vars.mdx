@@ -22,20 +22,24 @@ EXAMPLE_VARIABLE="Sshh, this is a secret!"
 Variables are key-value pairs separated by an equals sign. Access them in code using `process.env`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/secret.ts"
-    export default () => {
-    	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/secret.js"
-    export default () => {
-    	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/secret.ts"
+  export default () => {
+  	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/secret.js"
+  export default () => {
+  	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -82,20 +86,24 @@ EXAMPLE_VARIABLE="Hello, development!"
 Running `robo dev` loads `.env.development`, while `robo start` loads `.env.production`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/secret.ts"
-    export default () => {
-    	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/secret.js"
-    export default () => {
-    	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/commands/secret.ts"
+  export default () => {
+  	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/secret.js"
+  export default () => {
+  	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Env API
@@ -103,16 +111,20 @@ Running `robo dev` loads `.env.development`, while `robo start` loads `.env.prod
 Robo.js manages environment variables automatically, but it also exports an `Env` API for more control.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Env } from 'robo.js'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Env } from 'robo.js'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { Env } from 'robo.js'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Env } from 'robo.js'
+  ```
+
+</Tab>
 </Tabs>
 
 | Method       | Description                         |
@@ -127,94 +139,106 @@ Robo.js manages environment variables automatically, but it also exports an `Env
 Robo.js loads your `.env` file automatically at startup. Access values through `process.env`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    export default () => {
-    	console.log(process.env.EXAMPLE_VARIABLE)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    export default () => {
-    	console.log(process.env.EXAMPLE_VARIABLE)
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="src/robo/start.ts"
+  export default () => {
+  	console.log(process.env.EXAMPLE_VARIABLE)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start.js"
+  export default () => {
+  	console.log(process.env.EXAMPLE_VARIABLE)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 You can also load environment variables manually:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { Env } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default async () => {
-    	await Env.load()
+  ```ts title="src/robo/start.ts"
+  import { Env } from 'robo.js'
 
-    	// Synchronous alternative
-    	Env.loadSync()
+  export default async () => {
+  	await Env.load()
 
-    	console.log(process.env.EXAMPLE_VARIABLE)
+  	// Synchronous alternative
+  	Env.loadSync()
 
-    	// View only variables loaded by Robo (excludes system variables)
-    	console.log(Env.data())
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { Env } from 'robo.js'
+  	console.log(process.env.EXAMPLE_VARIABLE)
 
-    export default async () => {
-    	await Env.load()
+  	// View only variables loaded by Robo (excludes system variables)
+  	console.log(Env.data())
+  }
+  ```
 
-    	// Synchronous alternative
-    	Env.loadSync()
+</Tab>
+<Tab value="JavaScript">
 
-    	console.log(process.env.EXAMPLE_VARIABLE)
+  ```js title="src/robo/start.js"
+  import { Env } from 'robo.js'
 
-    	// View only variables loaded by Robo (excludes system variables)
-    	console.log(Env.data())
-    }
-    ```
-  </Tab>
+  export default async () => {
+  	await Env.load()
+
+  	// Synchronous alternative
+  	Env.loadSync()
+
+  	console.log(process.env.EXAMPLE_VARIABLE)
+
+  	// View only variables loaded by Robo (excludes system variables)
+  	console.log(Env.data())
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Customize loading behavior with an options object:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await Env.load({
-    	// The mode to load environment variables for
-    	mode: 'production',
+<Tab value="TypeScript">
 
-    	// Whether to overwrite existing environment variables
-    	// Can be a boolean or an array of keys to overwrite
-    	overwrite: true,
+  ```ts
+  await Env.load({
+  	// The mode to load environment variables for
+  	mode: 'production',
 
-    	// The path to the environment file. Defaults to `.env`
-    	path: '/path/to/.env'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await Env.load({
-    	// The mode to load environment variables for
-    	mode: 'production',
+  	// Whether to overwrite existing environment variables
+  	// Can be a boolean or an array of keys to overwrite
+  	overwrite: true,
 
-    	// Whether to overwrite existing environment variables
-    	// Can be a boolean or an array of keys to overwrite
-    	overwrite: true,
+  	// The path to the environment file. Defaults to `.env`
+  	path: '/path/to/.env'
+  })
+  ```
 
-    	// The path to the environment file. Defaults to `.env`
-    	path: '/path/to/.env'
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await Env.load({
+  	// The mode to load environment variables for
+  	mode: 'production',
+
+  	// Whether to overwrite existing environment variables
+  	// Can be a boolean or an array of keys to overwrite
+  	overwrite: true,
+
+  	// The path to the environment file. Defaults to `.env`
+  	path: '/path/to/.env'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Both `load()` and `loadSync()` modify `process.env` directly and return an object with the loaded variables.
@@ -224,73 +248,81 @@ Both `load()` and `loadSync()` modify `process.env` directly and return an objec
 The `Env` constructor creates a structured schema for your environment variables, providing organized access and default values:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Env } from 'robo.js'
+<Tab value="TypeScript">
 
-    const env = new Env({
-    	discord: {
-    		clientId: {
-    			env: 'DISCORD_CLIENT_ID'
-    		},
-    		token: {
-    			env: 'DISCORD_TOKEN'
-    		}
-    	},
-    	example: {
-    		default: 'Nothing to see here',
-    		env: 'EXAMPLE_VARIABLE'
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Env } from 'robo.js'
+  ```ts
+  import { Env } from 'robo.js'
 
-    const env = new Env({
-    	discord: {
-    		clientId: {
-    			env: 'DISCORD_CLIENT_ID'
-    		},
-    		token: {
-    			env: 'DISCORD_TOKEN'
-    		}
-    	},
-    	example: {
-    		default: 'Nothing to see here',
-    		env: 'EXAMPLE_VARIABLE'
-    	}
-    })
-    ```
-  </Tab>
+  const env = new Env({
+  	discord: {
+  		clientId: {
+  			env: 'DISCORD_CLIENT_ID'
+  		},
+  		token: {
+  			env: 'DISCORD_TOKEN'
+  		}
+  	},
+  	example: {
+  		default: 'Nothing to see here',
+  		env: 'EXAMPLE_VARIABLE'
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Env } from 'robo.js'
+
+  const env = new Env({
+  	discord: {
+  		clientId: {
+  			env: 'DISCORD_CLIENT_ID'
+  		},
+  		token: {
+  			env: 'DISCORD_TOKEN'
+  		}
+  	},
+  	example: {
+  		default: 'Nothing to see here',
+  		env: 'EXAMPLE_VARIABLE'
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Access variables through the schema:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Use get() to access variables
-    console.log(env.get('example'))
+<Tab value="TypeScript">
 
-    // Use dot notation for nested variables
-    console.log(env.get('discord.clientId'))
+  ```ts
+  // Use get() to access variables
+  console.log(env.get('example'))
 
-    // Equivalent to: process.env.DISCORD_CLIENT_ID ?? 'Nothing to see here'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Use get() to access variables
-    console.log(env.get('example'))
+  // Use dot notation for nested variables
+  console.log(env.get('discord.clientId'))
 
-    // Use dot notation for nested variables
-    console.log(env.get('discord.clientId'))
+  // Equivalent to: process.env.DISCORD_CLIENT_ID ?? 'Nothing to see here'
+  ```
 
-    // Equivalent to: process.env.DISCORD_CLIENT_ID ?? 'Nothing to see here'
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Use get() to access variables
+  console.log(env.get('example'))
+
+  // Use dot notation for nested variables
+  console.log(env.get('discord.clientId'))
+
+  // Equivalent to: process.env.DISCORD_CLIENT_ID ?? 'Nothing to see here'
+  ```
+
+</Tab>
 </Tabs>
 
 This approach centralizes your environment variable references. Renaming a variable in `.env` requires updating only the schema, not every `process.env` reference in your code.

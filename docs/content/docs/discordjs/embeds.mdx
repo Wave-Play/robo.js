@@ -10,35 +10,39 @@ Embeds are rich content blocks that Discord renders with special formatting -- c
 Build an embed with `EmbedBuilder` and return it in an `embeds` array. Sage mode wraps the return value as a reply automatically.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/info.ts"
-    import { EmbedBuilder } from 'discord.js'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Server Info')
-    		.setDescription('Welcome to our server!')
-    		.setColor(0x5865f2)
+  ```ts title="src/commands/info.ts"
+  import { EmbedBuilder } from 'discord.js'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/info.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Server Info')
+  		.setDescription('Welcome to our server!')
+  		.setColor(0x5865f2)
 
-    export default (interaction) => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Server Info')
-    		.setDescription('Welcome to our server!')
-    		.setColor(0x5865f2)
+  	return { embeds: [embed] }
+  }
+  ```
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/info.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default (interaction) => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Server Info')
+  		.setDescription('Welcome to our server!')
+  		.setColor(0x5865f2)
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## EmbedBuilder methods
@@ -79,62 +83,66 @@ Discord enforces strict limits on embed content. Exceeding any limit causes the 
 ## Full-featured embed
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/profile.ts"
-    import { EmbedBuilder } from 'discord.js'
-    import type { CommandConfig } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction, User } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: CommandConfig = {
-    	description: 'View a user profile',
-    	options: [{ name: 'user', type: 'user', required: true }]
-    }
+  ```ts title="src/commands/profile.ts"
+  import { EmbedBuilder } from 'discord.js'
+  import type { CommandConfig } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction, User } from 'discord.js'
 
-    export default (interaction: ChatInputCommandInteraction, options: { user: User }) => {
-    	const embed = new EmbedBuilder()
-    		.setTitle(`${options.user.username}'s Profile`)
-    		.setDescription('Member details and stats')
-    		.setColor(0x57f287)
-    		.setThumbnail(options.user.displayAvatarURL())
-    		.addFields(
-    			{ name: 'Joined Discord', value: options.user.createdAt.toDateString(), inline: true },
-    			{ name: 'User ID', value: options.user.id, inline: true },
-    			{ name: 'Bot', value: options.user.bot ? 'Yes' : 'No', inline: true }
-    		)
-    		.setFooter({ text: `Requested by ${interaction.user.username}` })
-    		.setTimestamp()
+  export const config: CommandConfig = {
+  	description: 'View a user profile',
+  	options: [{ name: 'user', type: 'user', required: true }]
+  }
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/profile.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default (interaction: ChatInputCommandInteraction, options: { user: User }) => {
+  	const embed = new EmbedBuilder()
+  		.setTitle(`${options.user.username}'s Profile`)
+  		.setDescription('Member details and stats')
+  		.setColor(0x57f287)
+  		.setThumbnail(options.user.displayAvatarURL())
+  		.addFields(
+  			{ name: 'Joined Discord', value: options.user.createdAt.toDateString(), inline: true },
+  			{ name: 'User ID', value: options.user.id, inline: true },
+  			{ name: 'Bot', value: options.user.bot ? 'Yes' : 'No', inline: true }
+  		)
+  		.setFooter({ text: `Requested by ${interaction.user.username}` })
+  		.setTimestamp()
 
-    export const config = {
-    	description: 'View a user profile',
-    	options: [{ name: 'user', type: 'user', required: true }]
-    }
+  	return { embeds: [embed] }
+  }
+  ```
 
-    export default (interaction, options) => {
-    	const embed = new EmbedBuilder()
-    		.setTitle(`${options.user.username}'s Profile`)
-    		.setDescription('Member details and stats')
-    		.setColor(0x57f287)
-    		.setThumbnail(options.user.displayAvatarURL())
-    		.addFields(
-    			{ name: 'Joined Discord', value: options.user.createdAt.toDateString(), inline: true },
-    			{ name: 'User ID', value: options.user.id, inline: true },
-    			{ name: 'Bot', value: options.user.bot ? 'Yes' : 'No', inline: true }
-    		)
-    		.setFooter({ text: `Requested by ${interaction.user.username}` })
-    		.setTimestamp()
+</Tab>
+<Tab value="JavaScript">
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/profile.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export const config = {
+  	description: 'View a user profile',
+  	options: [{ name: 'user', type: 'user', required: true }]
+  }
+
+  export default (interaction, options) => {
+  	const embed = new EmbedBuilder()
+  		.setTitle(`${options.user.username}'s Profile`)
+  		.setDescription('Member details and stats')
+  		.setColor(0x57f287)
+  		.setThumbnail(options.user.displayAvatarURL())
+  		.addFields(
+  			{ name: 'Joined Discord', value: options.user.createdAt.toDateString(), inline: true },
+  			{ name: 'User ID', value: options.user.id, inline: true },
+  			{ name: 'Bot', value: options.user.bot ? 'Yes' : 'No', inline: true }
+  		)
+  		.setFooter({ text: `Requested by ${interaction.user.username}` })
+  		.setTimestamp()
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Multiple embeds
@@ -142,44 +150,48 @@ Discord enforces strict limits on embed content. Exceeding any limit causes the 
 Send up to 10 embeds in a single message by adding them to the `embeds` array:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/dashboard.ts"
-    import { EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const statsEmbed = new EmbedBuilder()
-    		.setTitle('Server Stats')
-    		.setColor(0x5865f2)
-    		.addFields({ name: 'Members', value: '1,234', inline: true })
+  ```ts title="src/commands/dashboard.ts"
+  import { EmbedBuilder } from 'discord.js'
 
-    	const rulesEmbed = new EmbedBuilder()
-    		.setTitle('Server Rules')
-    		.setColor(0xed4245)
-    		.setDescription('1. Be respectful\n2. No spam\n3. Have fun!')
+  export default () => {
+  	const statsEmbed = new EmbedBuilder()
+  		.setTitle('Server Stats')
+  		.setColor(0x5865f2)
+  		.addFields({ name: 'Members', value: '1,234', inline: true })
 
-    	return { embeds: [statsEmbed, rulesEmbed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/dashboard.js"
-    import { EmbedBuilder } from 'discord.js'
+  	const rulesEmbed = new EmbedBuilder()
+  		.setTitle('Server Rules')
+  		.setColor(0xed4245)
+  		.setDescription('1. Be respectful\n2. No spam\n3. Have fun!')
 
-    export default () => {
-    	const statsEmbed = new EmbedBuilder()
-    		.setTitle('Server Stats')
-    		.setColor(0x5865f2)
-    		.addFields({ name: 'Members', value: '1,234', inline: true })
+  	return { embeds: [statsEmbed, rulesEmbed] }
+  }
+  ```
 
-    	const rulesEmbed = new EmbedBuilder()
-    		.setTitle('Server Rules')
-    		.setColor(0xed4245)
-    		.setDescription('1. Be respectful\n2. No spam\n3. Have fun!')
+</Tab>
+<Tab value="JavaScript">
 
-    	return { embeds: [statsEmbed, rulesEmbed] }
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/dashboard.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default () => {
+  	const statsEmbed = new EmbedBuilder()
+  		.setTitle('Server Stats')
+  		.setColor(0x5865f2)
+  		.addFields({ name: 'Members', value: '1,234', inline: true })
+
+  	const rulesEmbed = new EmbedBuilder()
+  		.setTitle('Server Rules')
+  		.setColor(0xed4245)
+  		.setDescription('1. Be respectful\n2. No spam\n3. Have fun!')
+
+  	return { embeds: [statsEmbed, rulesEmbed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Inline fields
@@ -202,60 +214,64 @@ A non-inline field always starts a new row.
 Build embeds from dynamic data by mapping arrays to fields:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/leaderboard.ts"
-    import { EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    const scores = [
-    	{ name: 'Alice', score: 9500 },
-    	{ name: 'Bob', score: 8200 },
-    	{ name: 'Charlie', score: 7100 }
-    ]
+  ```ts title="src/commands/leaderboard.ts"
+  import { EmbedBuilder } from 'discord.js'
 
-    export default () => {
-    	const medals = ['🥇', '🥈', '🥉']
-    	const embed = new EmbedBuilder()
-    		.setTitle('Leaderboard')
-    		.setColor(0xfee75c)
-    		.addFields(
-    			scores.map((entry, i) => ({
-    				name: `${medals[i] ?? ''} #${i + 1} ${entry.name}`,
-    				value: `${entry.score.toLocaleString()} points`,
-    				inline: false
-    			}))
-    		)
+  const scores = [
+  	{ name: 'Alice', score: 9500 },
+  	{ name: 'Bob', score: 8200 },
+  	{ name: 'Charlie', score: 7100 }
+  ]
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/leaderboard.js"
-    import { EmbedBuilder } from 'discord.js'
+  export default () => {
+  	const medals = ['🥇', '🥈', '🥉']
+  	const embed = new EmbedBuilder()
+  		.setTitle('Leaderboard')
+  		.setColor(0xfee75c)
+  		.addFields(
+  			scores.map((entry, i) => ({
+  				name: `${medals[i] ?? ''} #${i + 1} ${entry.name}`,
+  				value: `${entry.score.toLocaleString()} points`,
+  				inline: false
+  			}))
+  		)
 
-    const scores = [
-    	{ name: 'Alice', score: 9500 },
-    	{ name: 'Bob', score: 8200 },
-    	{ name: 'Charlie', score: 7100 }
-    ]
+  	return { embeds: [embed] }
+  }
+  ```
 
-    export default () => {
-    	const medals = ['🥇', '🥈', '🥉']
-    	const embed = new EmbedBuilder()
-    		.setTitle('Leaderboard')
-    		.setColor(0xfee75c)
-    		.addFields(
-    			scores.map((entry, i) => ({
-    				name: `${medals[i] ?? ''} #${i + 1} ${entry.name}`,
-    				value: `${entry.score.toLocaleString()} points`,
-    				inline: false
-    			}))
-    		)
+</Tab>
+<Tab value="JavaScript">
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/leaderboard.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  const scores = [
+  	{ name: 'Alice', score: 9500 },
+  	{ name: 'Bob', score: 8200 },
+  	{ name: 'Charlie', score: 7100 }
+  ]
+
+  export default () => {
+  	const medals = ['🥇', '🥈', '🥉']
+  	const embed = new EmbedBuilder()
+  		.setTitle('Leaderboard')
+  		.setColor(0xfee75c)
+  		.addFields(
+  			scores.map((entry, i) => ({
+  				name: `${medals[i] ?? ''} #${i + 1} ${entry.name}`,
+  				value: `${entry.score.toLocaleString()} points`,
+  				inline: false
+  			}))
+  		)
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Editing embeds
@@ -263,40 +279,44 @@ Build embeds from dynamic data by mapping arrays to fields:
 Use `interaction.editReply()` to update an embed after async work. This works with Sage's auto-defer -- when your handler takes longer than the defer buffer, Sage defers automatically, and you can edit the reply with updated content.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/fetch-data.ts"
-    import { EmbedBuilder } from 'discord.js'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: ChatInputCommandInteraction) => {
-    	// Sage auto-defers if this takes > 250ms
-    	const data = await fetchExternalApi()
+  ```ts title="src/commands/fetch-data.ts"
+  import { EmbedBuilder } from 'discord.js'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	const embed = new EmbedBuilder()
-    		.setTitle('API Results')
-    		.setDescription(data.summary)
-    		.setColor(0x57f287)
+  export default async (interaction: ChatInputCommandInteraction) => {
+  	// Sage auto-defers if this takes > 250ms
+  	const data = await fetchExternalApi()
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/fetch-data.js"
-    import { EmbedBuilder } from 'discord.js'
+  	const embed = new EmbedBuilder()
+  		.setTitle('API Results')
+  		.setDescription(data.summary)
+  		.setColor(0x57f287)
 
-    export default async (interaction) => {
-    	const data = await fetchExternalApi()
+  	return { embeds: [embed] }
+  }
+  ```
 
-    	const embed = new EmbedBuilder()
-    		.setTitle('API Results')
-    		.setDescription(data.summary)
-    		.setColor(0x57f287)
+</Tab>
+<Tab value="JavaScript">
 
-    	return { embeds: [embed] }
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/fetch-data.js"
+  import { EmbedBuilder } from 'discord.js'
+
+  export default async (interaction) => {
+  	const data = await fetchExternalApi()
+
+  	const embed = new EmbedBuilder()
+  		.setTitle('API Results')
+  		.setDescription(data.summary)
+  		.setColor(0x57f287)
+
+  	return { embeds: [embed] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Embeds with components
@@ -304,44 +324,48 @@ Use `interaction.editReply()` to update an embed after async work. This works wi
 Combine embeds with action rows (buttons, select menus) in a single reply:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/poll.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Quick Poll')
-    		.setDescription('Do you like embeds?')
-    		.setColor(0x5865f2)
+  ```ts title="src/commands/poll.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
 
-    	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder().setCustomId('poll-yes').setLabel('Yes').setStyle(ButtonStyle.Success),
-    		new ButtonBuilder().setCustomId('poll-no').setLabel('No').setStyle(ButtonStyle.Danger)
-    	)
+  export default () => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Quick Poll')
+  		.setDescription('Do you like embeds?')
+  		.setColor(0x5865f2)
 
-    	return { embeds: [embed], components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/poll.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
+  	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder().setCustomId('poll-yes').setLabel('Yes').setStyle(ButtonStyle.Success),
+  		new ButtonBuilder().setCustomId('poll-no').setLabel('No').setStyle(ButtonStyle.Danger)
+  	)
 
-    export default () => {
-    	const embed = new EmbedBuilder()
-    		.setTitle('Quick Poll')
-    		.setDescription('Do you like embeds?')
-    		.setColor(0x5865f2)
+  	return { embeds: [embed], components: [row] }
+  }
+  ```
 
-    	const row = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder().setCustomId('poll-yes').setLabel('Yes').setStyle(ButtonStyle.Success),
-    		new ButtonBuilder().setCustomId('poll-no').setLabel('No').setStyle(ButtonStyle.Danger)
-    	)
+</Tab>
+<Tab value="JavaScript">
 
-    	return { embeds: [embed], components: [row] }
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/poll.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
+
+  export default () => {
+  	const embed = new EmbedBuilder()
+  		.setTitle('Quick Poll')
+  		.setDescription('Do you like embeds?')
+  		.setColor(0x5865f2)
+
+  	const row = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder().setCustomId('poll-yes').setLabel('Yes').setStyle(ButtonStyle.Success),
+  		new ButtonBuilder().setCustomId('poll-no').setLabel('No').setStyle(ButtonStyle.Danger)
+  	)
+
+  	return { embeds: [embed], components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 See [Components](./components) for the full reference on buttons and select menus.

@@ -10,46 +10,50 @@ Create draggable elements that sync position across clients in real-time. The `u
 The easiest way to create synchronized draggable elements.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { SyncDraggable } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function GameBoard() {
-      return (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <SyncDraggable
-            id={['piece', '1']}
-            initial={{ x: 0.5, y: 0.5 }}
-            interpolate={{ x: 0.2, y: 0.2 }}
-            bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
-          >
-            <div className="game-piece">Drag me</div>
-          </SyncDraggable>
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { SyncDraggable } from '@robojs/sync'
+  ```tsx
+  import { SyncDraggable } from '@robojs/sync'
 
-    function GameBoard() {
-      return (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <SyncDraggable
-            id={['piece', '1']}
-            initial={{ x: 0.5, y: 0.5 }}
-            interpolate={{ x: 0.2, y: 0.2 }}
-            bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
-          >
-            <div className="game-piece">Drag me</div>
-          </SyncDraggable>
-        </div>
-      )
-    }
-    ```
-  </Tab>
+  function GameBoard() {
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <SyncDraggable
+          id={['piece', '1']}
+          initial={{ x: 0.5, y: 0.5 }}
+          interpolate={{ x: 0.2, y: 0.2 }}
+          bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
+        >
+          <div className="game-piece">Drag me</div>
+        </SyncDraggable>
+      </div>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { SyncDraggable } from '@robojs/sync'
+
+  function GameBoard() {
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <SyncDraggable
+          id={['piece', '1']}
+          initial={{ x: 0.5, y: 0.5 }}
+          interpolate={{ x: 0.2, y: 0.2 }}
+          bounds={{ minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }}
+        >
+          <div className="game-piece">Drag me</div>
+        </SyncDraggable>
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Props
@@ -74,48 +78,52 @@ The easiest way to create synchronized draggable elements.
 ### Render props
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    <SyncDraggable
-      id={['card', cardId]}
-      initial={{ x: 0.1, y: 0.1 }}
-      interpolate={{ x: 0.15, y: 0.15 }}
-      onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
-    >
-      {({ state, isDragging, canInteract }) => (
-        <div
-          style={{
-            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
-            opacity: isDragging ? 0.8 : 1
-          }}
-        >
-          Card ({state.x.toFixed(2)}, {state.y.toFixed(2)})
-        </div>
-      )}
-    </SyncDraggable>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    <SyncDraggable
-      id={['card', cardId]}
-      initial={{ x: 0.1, y: 0.1 }}
-      interpolate={{ x: 0.15, y: 0.15 }}
-      onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
-    >
-      {({ state, isDragging, canInteract }) => (
-        <div
-          style={{
-            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
-            opacity: isDragging ? 0.8 : 1
-          }}
-        >
-          Card ({state.x.toFixed(2)}, {state.y.toFixed(2)})
-        </div>
-      )}
-    </SyncDraggable>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  <SyncDraggable
+    id={['card', cardId]}
+    initial={{ x: 0.1, y: 0.1 }}
+    interpolate={{ x: 0.15, y: 0.15 }}
+    onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
+  >
+    {({ state, isDragging, canInteract }) => (
+      <div
+        style={{
+          cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
+          opacity: isDragging ? 0.8 : 1
+        }}
+      >
+        Card ({state.x.toFixed(2)}, {state.y.toFixed(2)})
+      </div>
+    )}
+  </SyncDraggable>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  <SyncDraggable
+    id={['card', cardId]}
+    initial={{ x: 0.1, y: 0.1 }}
+    interpolate={{ x: 0.15, y: 0.15 }}
+    onDragEnd={(s) => console.log('Dropped at', s.x, s.y)}
+  >
+    {({ state, isDragging, canInteract }) => (
+      <div
+        style={{
+          cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed',
+          opacity: isDragging ? 0.8 : 1
+        }}
+      >
+        Card ({state.x.toFixed(2)}, {state.y.toFixed(2)})
+      </div>
+    )}
+  </SyncDraggable>
+  ```
+
+</Tab>
 </Tabs>
 
 #### SyncDraggableRenderProps
@@ -134,24 +142,28 @@ For full control without a wrapper component.
 ### Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function useSyncDrag<T extends DragState, ClientData = unknown>(
-      key: (string | null)[],
-      initialState: T,
-      options?: DragOptions<T>
-    ): DragResult<T, ClientData>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function useSyncDrag(
-      key: (string | null)[],
-      initialState: T,
-      options?: DragOptions<T>
-    ): DragResult<T, ClientData>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function useSyncDrag<T extends DragState, ClientData = unknown>(
+    key: (string | null)[],
+    initialState: T,
+    options?: DragOptions<T>
+  ): DragResult<T, ClientData>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function useSyncDrag(
+    key: (string | null)[],
+    initialState: T,
+    options?: DragOptions<T>
+  ): DragResult<T, ClientData>
+  ```
+
+</Tab>
 </Tabs>
 
 ### Options
@@ -180,66 +192,70 @@ For full control without a wrapper component.
 ### Usage example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useSyncDrag } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function DraggableBall({ id }: { id: string }) {
-      const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
-        ['ball', id],
-        { x: 0.5, y: 0.5 },
-        {
-          interpolate: { x: 0.2, y: 0.2 },
-          bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }
-        }
-      )
+  ```tsx
+  import { useSyncDrag } from '@robojs/sync'
 
-      return (
-        <div
-          {...dragHandlers}
-          style={{
-            position: 'absolute',
-            left: `${state.x * 100}%`,
-            top: `${state.y * 100}%`,
-            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
-          }}
-        >
-          Ball
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useSyncDrag } from '@robojs/sync'
+  function DraggableBall({ id }: { id: string }) {
+    const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+      ['ball', id],
+      { x: 0.5, y: 0.5 },
+      {
+        interpolate: { x: 0.2, y: 0.2 },
+        bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }
+      }
+    )
 
-    function DraggableBall({ id }) {
-      const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
-        ['ball', id],
-        { x: 0.5, y: 0.5 },
-        {
-          interpolate: { x: 0.2, y: 0.2 },
-          bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }
-        }
-      )
+    return (
+      <div
+        {...dragHandlers}
+        style={{
+          position: 'absolute',
+          left: `${state.x * 100}%`,
+          top: `${state.y * 100}%`,
+          cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+        }}
+      >
+        Ball
+      </div>
+    )
+  }
+  ```
 
-      return (
-        <div
-          {...dragHandlers}
-          style={{
-            position: 'absolute',
-            left: `${state.x * 100}%`,
-            top: `${state.y * 100}%`,
-            cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
-          }}
-        >
-          Ball
-        </div>
-      )
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { useSyncDrag } from '@robojs/sync'
+
+  function DraggableBall({ id }) {
+    const { state, isDragging, canInteract, dragHandlers } = useSyncDrag(
+      ['ball', id],
+      { x: 0.5, y: 0.5 },
+      {
+        interpolate: { x: 0.2, y: 0.2 },
+        bounds: { minX: 0.05, maxX: 0.95, minY: 0.05, maxY: 0.95 }
+      }
+    )
+
+    return (
+      <div
+        {...dragHandlers}
+        style={{
+          position: 'absolute',
+          left: `${state.x * 100}%`,
+          top: `${state.y * 100}%`,
+          cursor: isDragging ? 'grabbing' : canInteract ? 'grab' : 'not-allowed'
+        }}
+      >
+        Ball
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## How locking works

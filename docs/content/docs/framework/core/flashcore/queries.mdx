@@ -10,34 +10,38 @@ Flashcore models support a Prisma-like query API for filtering, sorting, paginat
 Pass a `where` object to filter records. Direct values match with equality:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Exact match
-    const warnings = await Warning.findMany({
-    	where: { guildId: '123456789', active: true }
-    })
+<Tab value="TypeScript">
 
-    // Find first match
-    const latest = await Warning.findFirst({
-    	where: { userId: '987654321' },
-    	orderBy: { createdAt: 'desc' }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Exact match
-    const warnings = await Warning.findMany({
-    	where: { guildId: '123456789', active: true }
-    })
+  ```ts
+  // Exact match
+  const warnings = await Warning.findMany({
+  	where: { guildId: '123456789', active: true }
+  })
 
-    // Find first match
-    const latest = await Warning.findFirst({
-    	where: { userId: '987654321' },
-    	orderBy: { createdAt: 'desc' }
-    })
-    ```
-  </Tab>
+  // Find first match
+  const latest = await Warning.findFirst({
+  	where: { userId: '987654321' },
+  	orderBy: { createdAt: 'desc' }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Exact match
+  const warnings = await Warning.findMany({
+  	where: { guildId: '123456789', active: true }
+  })
+
+  // Find first match
+  const latest = await Warning.findFirst({
+  	where: { userId: '987654321' },
+  	orderBy: { createdAt: 'desc' }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Operators
@@ -47,86 +51,98 @@ For advanced filtering, pass an operator object instead of a direct value:
 ### Comparison
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Equality
-    await Warning.findMany({ where: { severity: { equals: 'high' } } })
+<Tab value="TypeScript">
 
-    // Negation
-    await Warning.findMany({ where: { severity: { not: 'low' } } })
+  ```ts
+  // Equality
+  await Warning.findMany({ where: { severity: { equals: 'high' } } })
 
-    // Greater than / less than
-    await Warning.findMany({ where: { points: { gt: 5 } } })
-    await Warning.findMany({ where: { points: { gte: 5 } } })
-    await Warning.findMany({ where: { points: { lt: 10 } } })
-    await Warning.findMany({ where: { points: { lte: 10 } } })
+  // Negation
+  await Warning.findMany({ where: { severity: { not: 'low' } } })
 
-    // Range (combine operators)
-    await Warning.findMany({
-    	where: { points: { gte: 5, lte: 10 } }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Equality
-    await Warning.findMany({ where: { severity: { equals: 'high' } } })
+  // Greater than / less than
+  await Warning.findMany({ where: { points: { gt: 5 } } })
+  await Warning.findMany({ where: { points: { gte: 5 } } })
+  await Warning.findMany({ where: { points: { lt: 10 } } })
+  await Warning.findMany({ where: { points: { lte: 10 } } })
 
-    // Negation
-    await Warning.findMany({ where: { severity: { not: 'low' } } })
+  // Range (combine operators)
+  await Warning.findMany({
+  	where: { points: { gte: 5, lte: 10 } }
+  })
+  ```
 
-    // Greater than / less than
-    await Warning.findMany({ where: { points: { gt: 5 } } })
-    await Warning.findMany({ where: { points: { gte: 5 } } })
-    await Warning.findMany({ where: { points: { lt: 10 } } })
-    await Warning.findMany({ where: { points: { lte: 10 } } })
+</Tab>
+<Tab value="JavaScript">
 
-    // Range (combine operators)
-    await Warning.findMany({
-    	where: { points: { gte: 5, lte: 10 } }
-    })
-    ```
-  </Tab>
+  ```js
+  // Equality
+  await Warning.findMany({ where: { severity: { equals: 'high' } } })
+
+  // Negation
+  await Warning.findMany({ where: { severity: { not: 'low' } } })
+
+  // Greater than / less than
+  await Warning.findMany({ where: { points: { gt: 5 } } })
+  await Warning.findMany({ where: { points: { gte: 5 } } })
+  await Warning.findMany({ where: { points: { lt: 10 } } })
+  await Warning.findMany({ where: { points: { lte: 10 } } })
+
+  // Range (combine operators)
+  await Warning.findMany({
+  	where: { points: { gte: 5, lte: 10 } }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Set Membership
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // In set
-    await Warning.findMany({
-    	where: { severity: { in: ['medium', 'high'] } }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // In set
-    await Warning.findMany({
-    	where: { severity: { in: ['medium', 'high'] } }
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  // In set
+  await Warning.findMany({
+  	where: { severity: { in: ['medium', 'high'] } }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // In set
+  await Warning.findMany({
+  	where: { severity: { in: ['medium', 'high'] } }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### String Matching
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await Warning.findMany({ where: { reason: { contains: 'spam' } } })
-    await Warning.findMany({ where: { reason: { startsWith: 'Rule' } } })
-    await Warning.findMany({ where: { reason: { endsWith: 'violation' } } })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await Warning.findMany({ where: { reason: { contains: 'spam' } } })
-    await Warning.findMany({ where: { reason: { startsWith: 'Rule' } } })
-    await Warning.findMany({ where: { reason: { endsWith: 'violation' } } })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  await Warning.findMany({ where: { reason: { contains: 'spam' } } })
+  await Warning.findMany({ where: { reason: { startsWith: 'Rule' } } })
+  await Warning.findMany({ where: { reason: { endsWith: 'violation' } } })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await Warning.findMany({ where: { reason: { contains: 'spam' } } })
+  await Warning.findMany({ where: { reason: { startsWith: 'Rule' } } })
+  await Warning.findMany({ where: { reason: { endsWith: 'violation' } } })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Logical Operators
@@ -134,90 +150,94 @@ For advanced filtering, pass an operator object instead of a direct value:
 Combine conditions with `AND` and `OR`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // AND — all conditions must match
-    const results = await Warning.findMany({
-    	where: {
-    		AND: [
-    			{ guildId: '123456789' },
-    			{ points: { gte: 5 } },
-    			{ active: true }
-    		]
-    	}
-    })
+<Tab value="TypeScript">
 
-    // OR — any condition can match
-    const results = await Warning.findMany({
-    	where: {
-    		OR: [
-    			{ severity: 'high' },
-    			{ points: { gte: 10 } }
-    		]
-    	}
-    })
+  ```ts
+  // AND — all conditions must match
+  const results = await Warning.findMany({
+  	where: {
+  		AND: [
+  			{ guildId: '123456789' },
+  			{ points: { gte: 5 } },
+  			{ active: true }
+  		]
+  	}
+  })
 
-    // NOT — negate a condition
-    const results = await Warning.findMany({
-    	where: {
-    		NOT: { severity: 'low' }
-    	}
-    })
+  // OR — any condition can match
+  const results = await Warning.findMany({
+  	where: {
+  		OR: [
+  			{ severity: 'high' },
+  			{ points: { gte: 10 } }
+  		]
+  	}
+  })
 
-    // Combined
-    const results = await Warning.findMany({
-    	where: {
-    		guildId: '123456789',
-    		OR: [
-    			{ severity: 'high' },
-    			{ AND: [{ severity: 'medium' }, { points: { gte: 5 } }] }
-    		]
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // AND — all conditions must match
-    const results = await Warning.findMany({
-    	where: {
-    		AND: [
-    			{ guildId: '123456789' },
-    			{ points: { gte: 5 } },
-    			{ active: true }
-    		]
-    	}
-    })
+  // NOT — negate a condition
+  const results = await Warning.findMany({
+  	where: {
+  		NOT: { severity: 'low' }
+  	}
+  })
 
-    // OR — any condition can match
-    const results = await Warning.findMany({
-    	where: {
-    		OR: [
-    			{ severity: 'high' },
-    			{ points: { gte: 10 } }
-    		]
-    	}
-    })
+  // Combined
+  const results = await Warning.findMany({
+  	where: {
+  		guildId: '123456789',
+  		OR: [
+  			{ severity: 'high' },
+  			{ AND: [{ severity: 'medium' }, { points: { gte: 5 } }] }
+  		]
+  	}
+  })
+  ```
 
-    // NOT — negate a condition
-    const results = await Warning.findMany({
-    	where: {
-    		NOT: { severity: 'low' }
-    	}
-    })
+</Tab>
+<Tab value="JavaScript">
 
-    // Combined
-    const results = await Warning.findMany({
-    	where: {
-    		guildId: '123456789',
-    		OR: [
-    			{ severity: 'high' },
-    			{ AND: [{ severity: 'medium' }, { points: { gte: 5 } }] }
-    		]
-    	}
-    })
-    ```
-  </Tab>
+  ```js
+  // AND — all conditions must match
+  const results = await Warning.findMany({
+  	where: {
+  		AND: [
+  			{ guildId: '123456789' },
+  			{ points: { gte: 5 } },
+  			{ active: true }
+  		]
+  	}
+  })
+
+  // OR — any condition can match
+  const results = await Warning.findMany({
+  	where: {
+  		OR: [
+  			{ severity: 'high' },
+  			{ points: { gte: 10 } }
+  		]
+  	}
+  })
+
+  // NOT — negate a condition
+  const results = await Warning.findMany({
+  	where: {
+  		NOT: { severity: 'low' }
+  	}
+  })
+
+  // Combined
+  const results = await Warning.findMany({
+  	where: {
+  		guildId: '123456789',
+  		OR: [
+  			{ severity: 'high' },
+  			{ AND: [{ severity: 'medium' }, { points: { gte: 5 } }] }
+  		]
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Ordering
@@ -225,38 +245,42 @@ Combine conditions with `AND` and `OR`:
 Sort results with `orderBy`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Single field
-    const warnings = await Warning.findMany({
-    	orderBy: { createdAt: 'desc' }
-    })
+<Tab value="TypeScript">
 
-    // Multiple fields (applied in order)
-    const warnings = await Warning.findMany({
-    	orderBy: [
-    		{ severity: 'desc' },
-    		{ createdAt: 'desc' }
-    	]
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Single field
-    const warnings = await Warning.findMany({
-    	orderBy: { createdAt: 'desc' }
-    })
+  ```ts
+  // Single field
+  const warnings = await Warning.findMany({
+  	orderBy: { createdAt: 'desc' }
+  })
 
-    // Multiple fields (applied in order)
-    const warnings = await Warning.findMany({
-    	orderBy: [
-    		{ severity: 'desc' },
-    		{ createdAt: 'desc' }
-    	]
-    })
-    ```
-  </Tab>
+  // Multiple fields (applied in order)
+  const warnings = await Warning.findMany({
+  	orderBy: [
+  		{ severity: 'desc' },
+  		{ createdAt: 'desc' }
+  	]
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Single field
+  const warnings = await Warning.findMany({
+  	orderBy: { createdAt: 'desc' }
+  })
+
+  // Multiple fields (applied in order)
+  const warnings = await Warning.findMany({
+  	orderBy: [
+  		{ severity: 'desc' },
+  		{ createdAt: 'desc' }
+  	]
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Pagination
@@ -264,40 +288,44 @@ Sort results with `orderBy`:
 Use `skip` and `take` for pagination:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // First page (10 results)
-    const page1 = await Warning.findMany({
-    	orderBy: { createdAt: 'desc' },
-    	take: 10,
-    	skip: 0
-    })
+<Tab value="TypeScript">
 
-    // Second page
-    const page2 = await Warning.findMany({
-    	orderBy: { createdAt: 'desc' },
-    	take: 10,
-    	skip: 10
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // First page (10 results)
-    const page1 = await Warning.findMany({
-    	orderBy: { createdAt: 'desc' },
-    	take: 10,
-    	skip: 0
-    })
+  ```ts
+  // First page (10 results)
+  const page1 = await Warning.findMany({
+  	orderBy: { createdAt: 'desc' },
+  	take: 10,
+  	skip: 0
+  })
 
-    // Second page
-    const page2 = await Warning.findMany({
-    	orderBy: { createdAt: 'desc' },
-    	take: 10,
-    	skip: 10
-    })
-    ```
-  </Tab>
+  // Second page
+  const page2 = await Warning.findMany({
+  	orderBy: { createdAt: 'desc' },
+  	take: 10,
+  	skip: 10
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // First page (10 results)
+  const page1 = await Warning.findMany({
+  	orderBy: { createdAt: 'desc' },
+  	take: 10,
+  	skip: 0
+  })
+
+  // Second page
+  const page2 = await Warning.findMany({
+  	orderBy: { createdAt: 'desc' },
+  	take: 10,
+  	skip: 10
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Projection
@@ -305,24 +333,28 @@ Use `skip` and `take` for pagination:
 Use `select` to return only specific fields. The `id` field is always included.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const warnings = await Warning.findMany({
-    	where: { guildId: '123456789' },
-    	select: { userId: true, reason: true, createdAt: true }
-    })
-    // Each result only has id, userId, reason, and createdAt
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const warnings = await Warning.findMany({
-    	where: { guildId: '123456789' },
-    	select: { userId: true, reason: true, createdAt: true }
-    })
-    // Each result only has id, userId, reason, and createdAt
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const warnings = await Warning.findMany({
+  	where: { guildId: '123456789' },
+  	select: { userId: true, reason: true, createdAt: true }
+  })
+  // Each result only has id, userId, reason, and createdAt
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const warnings = await Warning.findMany({
+  	where: { guildId: '123456789' },
+  	select: { userId: true, reason: true, createdAt: true }
+  })
+  // Each result only has id, userId, reason, and createdAt
+  ```
+
+</Tab>
 </Tabs>
 
 ## Counting
@@ -330,24 +362,28 @@ Use `select` to return only specific fields. The `id` field is always included.
 Count matching records without loading them:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const total = await Warning.count()
+<Tab value="TypeScript">
 
-    const activeCount = await Warning.count({
-    	where: { guildId: '123456789', active: true }
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const total = await Warning.count()
+  ```ts
+  const total = await Warning.count()
 
-    const activeCount = await Warning.count({
-    	where: { guildId: '123456789', active: true }
-    })
-    ```
-  </Tab>
+  const activeCount = await Warning.count({
+  	where: { guildId: '123456789', active: true }
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const total = await Warning.count()
+
+  const activeCount = await Warning.count({
+  	where: { guildId: '123456789', active: true }
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Safety Limits

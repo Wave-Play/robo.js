@@ -16,24 +16,28 @@ Three events are available:
 Fires when a user's level increases.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { events } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
-    	console.log(`${userId} leveled up from ${oldLevel} to ${newLevel}`)
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { events } from '@robojs/xp'
+  ```ts
+  import { events } from '@robojs/xp'
 
-    events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
-    	console.log(`${userId} leveled up from ${oldLevel} to ${newLevel}`)
-    })
-    ```
-  </Tab>
+  events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+  	console.log(`${userId} leveled up from ${oldLevel} to ${newLevel}`)
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { events } from '@robojs/xp'
+
+  events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+  	console.log(`${userId} leveled up from ${oldLevel} to ${newLevel}`)
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 **Payload:**
@@ -54,20 +58,24 @@ Fires when a user's level increases.
 Fires when a user's level decreases (e.g., from XP removal).
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
-    	console.log(`${userId} dropped from level ${oldLevel} to ${newLevel}`)
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
-    	console.log(`${userId} dropped from level ${oldLevel} to ${newLevel}`)
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+  	console.log(`${userId} dropped from level ${oldLevel} to ${newLevel}`)
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp, storeId }) => {
+  	console.log(`${userId} dropped from level ${oldLevel} to ${newLevel}`)
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 **Payload:** Same shape as `levelUp`, but `newLevel` is always less than `oldLevel`.
@@ -77,20 +85,24 @@ Fires when a user's level decreases (e.g., from XP removal).
 Fires on every XP modification (add, remove, set, or message award).
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason, storeId }) => {
-    	console.log(`${userId} XP changed by ${delta} (reason: ${reason})`)
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason, storeId }) => {
-    	console.log(`${userId} XP changed by ${delta} (reason: ${reason})`)
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason, storeId }) => {
+  	console.log(`${userId} XP changed by ${delta} (reason: ${reason})`)
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason, storeId }) => {
+  	console.log(`${userId} XP changed by ${delta} (reason: ${reason})`)
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 **Payload:**
@@ -114,34 +126,38 @@ reason: { type: 'string | undefined', description: 'Optional reason provided by 
 The generic event API supports registering, removing, and one-time listeners.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { events } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    // Persistent listener
-    events.on('levelUp', handler)
+  ```ts
+  import { events } from '@robojs/xp'
 
-    // One-time listener (removed after first trigger)
-    events.once('xpChange', handler)
+  // Persistent listener
+  events.on('levelUp', handler)
 
-    // Remove a listener (must be the same function reference)
-    events.off('levelUp', handler)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { events } from '@robojs/xp'
+  // One-time listener (removed after first trigger)
+  events.once('xpChange', handler)
 
-    // Persistent listener
-    events.on('levelUp', handler)
+  // Remove a listener (must be the same function reference)
+  events.off('levelUp', handler)
+  ```
 
-    // One-time listener (removed after first trigger)
-    events.once('xpChange', handler)
+</Tab>
+<Tab value="JavaScript">
 
-    // Remove a listener (must be the same function reference)
-    events.off('levelUp', handler)
-    ```
-  </Tab>
+  ```js
+  import { events } from '@robojs/xp'
+
+  // Persistent listener
+  events.on('levelUp', handler)
+
+  // One-time listener (removed after first trigger)
+  events.once('xpChange', handler)
+
+  // Remove a listener (must be the same function reference)
+  events.off('levelUp', handler)
+  ```
+
+</Tab>
 </Tabs>
 
 ### Convenience methods
@@ -149,20 +165,24 @@ The generic event API supports registering, removing, and one-time listeners.
 Shorthand methods for common patterns:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    events.onLevelUp(handler)   // events.on('levelUp', handler)
-    events.onLevelDown(handler) // events.on('levelDown', handler)
-    events.onXPChange(handler)  // events.on('xpChange', handler)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    events.onLevelUp(handler)   // events.on('levelUp', handler)
-    events.onLevelDown(handler) // events.on('levelDown', handler)
-    events.onXPChange(handler)  // events.on('xpChange', handler)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  events.onLevelUp(handler)   // events.on('levelUp', handler)
+  events.onLevelDown(handler) // events.on('levelDown', handler)
+  events.onXPChange(handler)  // events.on('xpChange', handler)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  events.onLevelUp(handler)   // events.on('levelUp', handler)
+  events.onLevelDown(handler) // events.on('levelDown', handler)
+  events.onXPChange(handler)  // events.on('xpChange', handler)
+  ```
+
+</Tab>
 </Tabs>
 
 ## Emission order
@@ -179,32 +199,36 @@ Design listeners to be order-agnostic when possible. If your listener needs data
 When using [multi-store](./multi-store.mdx), all events include a `storeId` field. Filter events to respond only to specific stores.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { events } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    events.onLevelUp((event) => {
-    	if (event.storeId === 'reputation') {
-    		console.log('Reputation level up:', event.newLevel)
-    	} else if (event.storeId === 'default') {
-    		console.log('XP level up:', event.newLevel)
-    	}
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { events } from '@robojs/xp'
+  ```ts
+  import { events } from '@robojs/xp'
 
-    events.onLevelUp((event) => {
-    	if (event.storeId === 'reputation') {
-    		console.log('Reputation level up:', event.newLevel)
-    	} else if (event.storeId === 'default') {
-    		console.log('XP level up:', event.newLevel)
-    	}
-    })
-    ```
-  </Tab>
+  events.onLevelUp((event) => {
+  	if (event.storeId === 'reputation') {
+  		console.log('Reputation level up:', event.newLevel)
+  	} else if (event.storeId === 'default') {
+  		console.log('XP level up:', event.newLevel)
+  	}
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { events } from '@robojs/xp'
+
+  events.onLevelUp((event) => {
+  	if (event.storeId === 'reputation') {
+  		console.log('Reputation level up:', event.newLevel)
+  	} else if (event.storeId === 'default') {
+  		console.log('XP level up:', event.newLevel)
+  	}
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Built-in listeners
@@ -235,42 +259,46 @@ Role reward reconciliation only runs for the default store. Custom stores never 
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start/xp-analytics.ts"
-    import { events } from '@robojs/xp'
+<Tab value="TypeScript">
 
-    export default () => {
-    	events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
-    		if (storeId !== 'default') return
+  ```ts title="src/robo/start/xp-analytics.ts"
+  import { events } from '@robojs/xp'
 
-    		await analyticsService.track('xp_change', {
-    			guild: guildId,
-    			user: userId,
-    			amount: delta,
-    			reason
-    		})
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start/xp-analytics.js"
-    import { events } from '@robojs/xp'
+  export default () => {
+  	events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+  		if (storeId !== 'default') return
 
-    export default () => {
-    	events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
-    		if (storeId !== 'default') return
+  		await analyticsService.track('xp_change', {
+  			guild: guildId,
+  			user: userId,
+  			amount: delta,
+  			reason
+  		})
+  	})
+  }
+  ```
 
-    		await analyticsService.track('xp_change', {
-    			guild: guildId,
-    			user: userId,
-    			amount: delta,
-    			reason
-    		})
-    	})
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/start/xp-analytics.js"
+  import { events } from '@robojs/xp'
+
+  export default () => {
+  	events.onXPChange(async ({ guildId, userId, delta, reason, storeId }) => {
+  		if (storeId !== 'default') return
+
+  		await analyticsService.track('xp_change', {
+  			guild: guildId,
+  			user: userId,
+  			amount: delta,
+  			reason
+  		})
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

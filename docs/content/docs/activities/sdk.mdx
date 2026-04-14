@@ -14,34 +14,38 @@ This code is already in your project if you used the activity template.
 </Callout>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/App.tsx"
-    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
-    import { Activity } from './Activity'
+<Tab value="TypeScript">
 
-    export default function App() {
-      return (
-        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
-          <Activity />
-        </DiscordContextProvider>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/App.jsx"
-    import { DiscordContextProvider } from '../hooks/useDiscordSdk'
-    import { Activity } from './Activity'
+  ```tsx title="src/app/App.tsx"
+  import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+  import { Activity } from './Activity'
 
-    export default function App() {
-      return (
-        <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
-          <Activity />
-        </DiscordContextProvider>
-      )
-    }
-    ```
-  </Tab>
+  export default function App() {
+    return (
+      <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+        <Activity />
+      </DiscordContextProvider>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx title="src/app/App.jsx"
+  import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+  import { Activity } from './Activity'
+
+  export default function App() {
+    return (
+      <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+        <Activity />
+      </DiscordContextProvider>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 This provider initializes the SDK, handles the OAuth2 flow, and makes the SDK instance available to child components.
@@ -61,36 +65,40 @@ When `authenticate` is set, the provider automatically runs the full authorizati
 Access SDK state and user data from any component:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx title="src/app/Activity.tsx"
-    import { useDiscordSdk } from '../hooks/useDiscordSdk'
+<Tab value="TypeScript">
 
-    export function Activity() {
-      const { authenticated, session, status } = useDiscordSdk()
+  ```tsx title="src/app/Activity.tsx"
+  import { useDiscordSdk } from '../hooks/useDiscordSdk'
 
-      if (!authenticated) {
-        return <div>Connecting...</div>
-      }
+  export function Activity() {
+    const { authenticated, session, status } = useDiscordSdk()
 
-      return <div>Welcome, {session?.user.username}</div>
+    if (!authenticated) {
+      return <div>Connecting...</div>
     }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx title="src/app/Activity.jsx"
-    import { useDiscordSdk } from '../hooks/useDiscordSdk'
 
-    export function Activity() {
-      const { authenticated, session, status } = useDiscordSdk()
+    return <div>Welcome, {session?.user.username}</div>
+  }
+  ```
 
-      if (!authenticated) {
-        return <div>Connecting...</div>
-      }
+</Tab>
+<Tab value="JavaScript">
 
-      return <div>Welcome, {session?.user.username}</div>
+  ```jsx title="src/app/Activity.jsx"
+  import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+  export function Activity() {
+    const { authenticated, session, status } = useDiscordSdk()
+
+    if (!authenticated) {
+      return <div>Connecting...</div>
     }
-    ```
-  </Tab>
+
+    return <div>Welcome, {session?.user.username}</div>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Field | Type | Description |
@@ -128,20 +136,24 @@ The `discordSdk` object provides access to Discord commands and events.
 Example using the SDK instance directly:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/Activity.tsx"
-    const { discordSdk } = useDiscordSdk()
+<Tab value="TypeScript">
 
-    const channel = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/Activity.jsx"
-    const { discordSdk } = useDiscordSdk()
+  ```ts title="src/app/Activity.tsx"
+  const { discordSdk } = useDiscordSdk()
 
-    const channel = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId })
-    ```
-  </Tab>
+  const channel = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/Activity.jsx"
+  const { discordSdk } = useDiscordSdk()
+
+  const channel = await discordSdk.commands.getChannel({ channel_id: discordSdk.channelId })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Mock Mode
@@ -171,22 +183,26 @@ Override mock values via query parameters:
 For non-React projects, import the SDK directly. Call `ready()` and handle authorization and authentication manually:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/app/main.ts"
-    import { DiscordSDK } from '@discord/embedded-app-sdk'
+<Tab value="TypeScript">
 
-    const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
-    await discordSdk.ready()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/app/main.js"
-    import { DiscordSDK } from '@discord/embedded-app-sdk'
+  ```ts title="src/app/main.ts"
+  import { DiscordSDK } from '@discord/embedded-app-sdk'
 
-    const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
-    await discordSdk.ready()
-    ```
-  </Tab>
+  const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+  await discordSdk.ready()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/app/main.js"
+  import { DiscordSDK } from '@discord/embedded-app-sdk'
+
+  const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+  await discordSdk.ready()
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

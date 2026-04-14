@@ -12,53 +12,61 @@ States do survive hot reloads and `/dev restart` commands during development, so
 Set and retrieve state values with `setState` and `getState`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/add-points.ts"
-    import { setState, getState } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	let currentPoints = getState('currentPoints') ?? 0
-    	setState('currentPoints', currentPoints + 10)
-    	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/add-points.js"
-    import { setState, getState } from 'robo.js'
+  ```ts title="src/commands/add-points.ts"
+  import { setState, getState } from 'robo.js'
 
-    export default () => {
-    	let currentPoints = getState('currentPoints') ?? 0
-    	setState('currentPoints', currentPoints + 10)
-    	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	let currentPoints = getState('currentPoints') ?? 0
+  	setState('currentPoints', currentPoints + 10)
+  	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/add-points.js"
+  import { setState, getState } from 'robo.js'
+
+  export default () => {
+  	let currentPoints = getState('currentPoints') ?? 0
+  	setState('currentPoints', currentPoints + 10)
+  	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Retrieve state values in another command:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/get-points.ts"
-    import { getState } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	let currentPoints = getState('currentPoints') ?? 0
-    	return `You currently have ${currentPoints} points.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/get-points.js"
-    import { getState } from 'robo.js'
+  ```ts title="src/commands/get-points.ts"
+  import { getState } from 'robo.js'
 
-    export default () => {
-    	let currentPoints = getState('currentPoints') ?? 0
-    	return `You currently have ${currentPoints} points.`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	let currentPoints = getState('currentPoints') ?? 0
+  	return `You currently have ${currentPoints} points.`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/get-points.js"
+  import { getState } from 'robo.js'
+
+  export default () => {
+  	let currentPoints = getState('currentPoints') ?? 0
+  	return `You currently have ${currentPoints} points.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Forking Namespace
@@ -68,101 +76,117 @@ When multiple modules use the same state key name, their values can collide. For
 The problem:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/modules/foo/commands/increment.ts"
-    import { setState, getState } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	let counter = getState('counter') ?? 0
-    	setState('counter', counter + 1)
-    	return `Counter in Foo module is now ${counter + 1}.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/modules/foo/commands/increment.js"
-    import { setState, getState } from 'robo.js'
+  ```ts title="src/modules/foo/commands/increment.ts"
+  import { setState, getState } from 'robo.js'
 
-    export default () => {
-    	let counter = getState('counter') ?? 0
-    	setState('counter', counter + 1)
-    	return `Counter in Foo module is now ${counter + 1}.`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	let counter = getState('counter') ?? 0
+  	setState('counter', counter + 1)
+  	return `Counter in Foo module is now ${counter + 1}.`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/modules/foo/commands/increment.js"
+  import { setState, getState } from 'robo.js'
+
+  export default () => {
+  	let counter = getState('counter') ?? 0
+  	setState('counter', counter + 1)
+  	return `Counter in Foo module is now ${counter + 1}.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/modules/bar/commands/bar-increment.ts"
-    import { setState, getState } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	let counter = getState('counter') ?? 0
-    	setState('counter', counter + 5)
-    	return `Counter in Bar module is now ${counter + 5}.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/modules/bar/commands/bar-increment.js"
-    import { setState, getState } from 'robo.js'
+  ```ts title="src/modules/bar/commands/bar-increment.ts"
+  import { setState, getState } from 'robo.js'
 
-    export default () => {
-    	let counter = getState('counter') ?? 0
-    	setState('counter', counter + 5)
-    	return `Counter in Bar module is now ${counter + 5}.`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	let counter = getState('counter') ?? 0
+  	setState('counter', counter + 5)
+  	return `Counter in Bar module is now ${counter + 5}.`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/modules/bar/commands/bar-increment.js"
+  import { setState, getState } from 'robo.js'
+
+  export default () => {
+  	let counter = getState('counter') ?? 0
+  	setState('counter', counter + 5)
+  	return `Counter in Bar module is now ${counter + 5}.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 To prevent this, fork the state into a separate namespace:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { State } from 'robo.js'
+<Tab value="TypeScript">
 
-    const { getState, setState } = State.fork('foo')
-    export { getState, setState }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { State } from 'robo.js'
+  ```ts
+  import { State } from 'robo.js'
 
-    const { getState, setState } = State.fork('foo')
-    export { getState, setState }
-    ```
-  </Tab>
+  const { getState, setState } = State.fork('foo')
+  export { getState, setState }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { State } from 'robo.js'
+
+  const { getState, setState } = State.fork('foo')
+  export { getState, setState }
+  ```
+
+</Tab>
 </Tabs>
 
 Then import the forked functions in your module's commands:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/modules/foo/commands/increment.ts"
-    import { setState, getState } from '../state.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	let counter = getState('counter') ?? 0
-    	setState('counter', counter + 1)
-    	return `Counter in Foo module is now ${counter + 1}.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/modules/foo/commands/increment.js"
-    import { setState, getState } from '../state.js'
+  ```ts title="src/modules/foo/commands/increment.ts"
+  import { setState, getState } from '../state.js'
 
-    export default () => {
-    	let counter = getState('counter') ?? 0
-    	setState('counter', counter + 1)
-    	return `Counter in Foo module is now ${counter + 1}.`
-    }
-    ```
-  </Tab>
+  export default () => {
+  	let counter = getState('counter') ?? 0
+  	setState('counter', counter + 1)
+  	return `Counter in Foo module is now ${counter + 1}.`
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/modules/foo/commands/increment.js"
+  import { setState, getState } from '../state.js'
+
+  export default () => {
+  	let counter = getState('counter') ?? 0
+  	setState('counter', counter + 1)
+  	return `Counter in Foo module is now ${counter + 1}.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The `foo` module now has its own isolated namespace, preventing conflicts with other modules.
@@ -172,26 +196,30 @@ The `foo` module now has its own isolated namespace, preventing conflicts with o
 By default, states clear when the process exits. To preserve a value across shutdowns, use the `persist` option:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/set-important-data.ts"
-    import { setState } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	setState('importantData', 'Never forget this', { persist: true })
-    	return 'Data has been saved and will survive restarts.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/set-important-data.js"
-    import { setState } from 'robo.js'
+  ```ts title="src/commands/set-important-data.ts"
+  import { setState } from 'robo.js'
 
-    export default () => {
-    	setState('importantData', 'Never forget this', { persist: true })
-    	return 'Data has been saved and will survive restarts.'
-    }
-    ```
-  </Tab>
+  export default () => {
+  	setState('importantData', 'Never forget this', { persist: true })
+  	return 'Data has been saved and will survive restarts.'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/set-important-data.js"
+  import { setState } from 'robo.js'
+
+  export default () => {
+  	setState('importantData', 'Never forget this', { persist: true })
+  	return 'Data has been saved and will survive restarts.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Under the hood, persisted state values are stored using **Flashcore**, so they follow the same storage rules.
@@ -207,39 +235,47 @@ Namespaces prevent key collisions when storing data for different contexts such 
 Include a `namespace` in the options object:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    setState('my-key', 'example-value', {
-    	namespace: 'my-namespace'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    setState('my-key', 'example-value', {
-    	namespace: 'my-namespace'
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  setState('my-key', 'example-value', {
+  	namespace: 'my-namespace'
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  setState('my-key', 'example-value', {
+  	namespace: 'my-namespace'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Retrieve values using the same namespace:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const value = getState('my-key', {
-    	namespace: 'my-namespace'
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const value = getState('my-key', {
-    	namespace: 'my-namespace'
-    })
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const value = getState('my-key', {
+  	namespace: 'my-namespace'
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const value = getState('my-key', {
+  	namespace: 'my-namespace'
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Practical Example
@@ -247,56 +283,60 @@ Retrieve values using the same namespace:
 Track per-server participation in a daily challenge:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/daily-challenge.ts"
-    import { getState, setState } from 'robo.js'
+<Tab value="TypeScript">
 
-    import type { ChatInputCommandInteraction } from 'discord.js'
+  ```ts title="src/commands/daily-challenge.ts"
+  import { getState, setState } from 'robo.js'
 
-    export default (interaction: ChatInputCommandInteraction) => {
-    	const userId = interaction.user.id
-    	const challengeId = 'daily-challenge'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    	const userParticipation =
-    		getState(userId, {
-    			namespace: interaction.guildId
-    		}) ?? {}
+  export default (interaction: ChatInputCommandInteraction) => {
+  	const userId = interaction.user.id
+  	const challengeId = 'daily-challenge'
 
-    	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
-    	userParticipation[challengeId] = newParticipationCount
+  	const userParticipation =
+  		getState(userId, {
+  			namespace: interaction.guildId
+  		}) ?? {}
 
-    	setState(userId, userParticipation, {
-    		namespace: interaction.guildId
-    	})
+  	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
+  	userParticipation[challengeId] = newParticipationCount
 
-    	return `You've participated in '${challengeId}' ${newParticipationCount} times in this server.`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/daily-challenge.js"
-    import { getState, setState } from 'robo.js'
+  	setState(userId, userParticipation, {
+  		namespace: interaction.guildId
+  	})
 
-    export default (interaction) => {
-    	const userId = interaction.user.id
-    	const challengeId = 'daily-challenge'
+  	return `You've participated in '${challengeId}' ${newParticipationCount} times in this server.`
+  }
+  ```
 
-    	const userParticipation =
-    		getState(userId, {
-    			namespace: interaction.guildId
-    		}) ?? {}
+</Tab>
+<Tab value="JavaScript">
 
-    	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
-    	userParticipation[challengeId] = newParticipationCount
+  ```js title="src/commands/daily-challenge.js"
+  import { getState, setState } from 'robo.js'
 
-    	setState(userId, userParticipation, {
-    		namespace: interaction.guildId
-    	})
+  export default (interaction) => {
+  	const userId = interaction.user.id
+  	const challengeId = 'daily-challenge'
 
-    	return `You've participated in '${challengeId}' ${newParticipationCount} times in this server.`
-    }
-    ```
-  </Tab>
+  	const userParticipation =
+  		getState(userId, {
+  			namespace: interaction.guildId
+  		}) ?? {}
+
+  	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
+  	userParticipation[challengeId] = newParticipationCount
+
+  	setState(userId, userParticipation, {
+  		namespace: interaction.guildId
+  	})
+
+  	return `You've participated in '${challengeId}' ${newParticipationCount} times in this server.`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Using the server ID as the namespace ensures that participation counts are tracked independently per server.

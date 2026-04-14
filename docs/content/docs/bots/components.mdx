@@ -18,38 +18,42 @@ For the complete reference including all 5 select menu types, collectors, `updat
 `ActionRowBuilder` is the container for components. Each message supports up to 5 action rows, and each row holds one type of component. The `<ButtonBuilder>` generic tells TypeScript this row contains buttons.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/confirm.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+<Tab value="TypeScript">
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    	new ButtonBuilder()
-    		.setCustomId('confirm')
-    		.setLabel('Confirm')
-    		.setStyle(ButtonStyle.Primary)
-    )
+  ```ts title="src/commands/confirm.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-    export default () => {
-    	return { content: 'Click a button:', components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/confirm.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  	new ButtonBuilder()
+  		.setCustomId('confirm')
+  		.setLabel('Confirm')
+  		.setStyle(ButtonStyle.Primary)
+  )
 
-    const row = new ActionRowBuilder().addComponents(
-    	new ButtonBuilder()
-    		.setCustomId('confirm')
-    		.setLabel('Confirm')
-    		.setStyle(ButtonStyle.Primary)
-    )
+  export default () => {
+  	return { content: 'Click a button:', components: [row] }
+  }
+  ```
 
-    export default () => {
-    	return { content: 'Click a button:', components: [row] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/confirm.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+  const row = new ActionRowBuilder().addComponents(
+  	new ButtonBuilder()
+  		.setCustomId('confirm')
+  		.setLabel('Confirm')
+  		.setStyle(ButtonStyle.Primary)
+  )
+
+  export default () => {
+  	return { content: 'Click a button:', components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Buttons
@@ -65,34 +69,38 @@ Buttons are the simplest interactive component. Each button needs a `customId` f
 | Link | `ButtonStyle.Link` | Grey (opens URL) |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/agree.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder().setCustomId('yes').setLabel('Yes').setStyle(ButtonStyle.Success),
-    		new ButtonBuilder().setCustomId('no').setLabel('No').setStyle(ButtonStyle.Danger)
-    	)
+  ```ts title="src/commands/agree.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-    	return { content: 'Do you agree?', components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/agree.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  export default () => {
+  	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder().setCustomId('yes').setLabel('Yes').setStyle(ButtonStyle.Success),
+  		new ButtonBuilder().setCustomId('no').setLabel('No').setStyle(ButtonStyle.Danger)
+  	)
 
-    export default () => {
-    	const row = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder().setCustomId('yes').setLabel('Yes').setStyle(ButtonStyle.Success),
-    		new ButtonBuilder().setCustomId('no').setLabel('No').setStyle(ButtonStyle.Danger)
-    	)
+  	return { content: 'Do you agree?', components: [row] }
+  }
+  ```
 
-    	return { content: 'Do you agree?', components: [row] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/agree.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+  export default () => {
+  	const row = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder().setCustomId('yes').setLabel('Yes').setStyle(ButtonStyle.Success),
+  		new ButtonBuilder().setCustomId('no').setLabel('No').setStyle(ButtonStyle.Danger)
+  	)
+
+  	return { content: 'Do you agree?', components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -118,34 +126,38 @@ Create an `interactionCreate` event handler to respond when a user clicks a butt
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/buttons.ts"
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isButton()) return
+  ```ts title="src/events/interactionCreate/buttons.ts"
+  import type { Interaction } from 'discord.js'
 
-    	if (interaction.customId === 'yes') {
-    		await interaction.reply({ content: 'You agreed!', ephemeral: true })
-    	} else if (interaction.customId === 'no') {
-    		await interaction.reply({ content: 'You disagreed!', ephemeral: true })
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/buttons.js"
-    export default async (interaction) => {
-    	if (!interaction.isButton()) return
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isButton()) return
 
-    	if (interaction.customId === 'yes') {
-    		await interaction.reply({ content: 'You agreed!', ephemeral: true })
-    	} else if (interaction.customId === 'no') {
-    		await interaction.reply({ content: 'You disagreed!', ephemeral: true })
-    	}
-    }
-    ```
-  </Tab>
+  	if (interaction.customId === 'yes') {
+  		await interaction.reply({ content: 'You agreed!', ephemeral: true })
+  	} else if (interaction.customId === 'no') {
+  		await interaction.reply({ content: 'You disagreed!', ephemeral: true })
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/interactionCreate/buttons.js"
+  export default async (interaction) => {
+  	if (!interaction.isButton()) return
+
+  	if (interaction.customId === 'yes') {
+  		await interaction.reply({ content: 'You agreed!', ephemeral: true })
+  	} else if (interaction.customId === 'no') {
+  		await interaction.reply({ content: 'You disagreed!', ephemeral: true })
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Select Menus
@@ -153,44 +165,48 @@ Create an `interactionCreate` event handler to respond when a user clicks a butt
 Select menus let users pick from a dropdown list. `StringSelectMenuBuilder` creates a menu with predefined string options.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/color-pick.ts"
-    import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const menu = new StringSelectMenuBuilder()
-    		.setCustomId('color-select')
-    		.setPlaceholder('Choose a color')
-    		.addOptions(
-    			{ label: 'Red', value: 'red' },
-    			{ label: 'Green', value: 'green' },
-    			{ label: 'Blue', value: 'blue' }
-    		)
+  ```ts title="src/commands/color-pick.ts"
+  import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 
-    	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)
-    	return { content: 'Pick a color:', components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/color-pick.js"
-    import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+  export default () => {
+  	const menu = new StringSelectMenuBuilder()
+  		.setCustomId('color-select')
+  		.setPlaceholder('Choose a color')
+  		.addOptions(
+  			{ label: 'Red', value: 'red' },
+  			{ label: 'Green', value: 'green' },
+  			{ label: 'Blue', value: 'blue' }
+  		)
 
-    export default () => {
-    	const menu = new StringSelectMenuBuilder()
-    		.setCustomId('color-select')
-    		.setPlaceholder('Choose a color')
-    		.addOptions(
-    			{ label: 'Red', value: 'red' },
-    			{ label: 'Green', value: 'green' },
-    			{ label: 'Blue', value: 'blue' }
-    		)
+  	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)
+  	return { content: 'Pick a color:', components: [row] }
+  }
+  ```
 
-    	const row = new ActionRowBuilder().addComponents(menu)
-    	return { content: 'Pick a color:', components: [row] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/color-pick.js"
+  import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+
+  export default () => {
+  	const menu = new StringSelectMenuBuilder()
+  		.setCustomId('color-select')
+  		.setPlaceholder('Choose a color')
+  		.addOptions(
+  			{ label: 'Red', value: 'red' },
+  			{ label: 'Green', value: 'green' },
+  			{ label: 'Blue', value: 'blue' }
+  		)
+
+  	const row = new ActionRowBuilder().addComponents(menu)
+  	return { content: 'Pick a color:', components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder
@@ -206,30 +222,34 @@ Discord.js also provides `UserSelectMenuBuilder`, `RoleSelectMenuBuilder`, and `
 ### Handling Selections
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/select-menus.ts"
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isStringSelectMenu()) return
-    	if (interaction.customId !== 'color-select') return
+  ```ts title="src/events/interactionCreate/select-menus.ts"
+  import type { Interaction } from 'discord.js'
 
-    	const selected = interaction.values[0]
-    	await interaction.reply({ content: `You selected: ${selected}`, ephemeral: true })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/select-menus.js"
-    export default async (interaction) => {
-    	if (!interaction.isStringSelectMenu()) return
-    	if (interaction.customId !== 'color-select') return
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isStringSelectMenu()) return
+  	if (interaction.customId !== 'color-select') return
 
-    	const selected = interaction.values[0]
-    	await interaction.reply({ content: `You selected: ${selected}`, ephemeral: true })
-    }
-    ```
-  </Tab>
+  	const selected = interaction.values[0]
+  	await interaction.reply({ content: `You selected: ${selected}`, ephemeral: true })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/interactionCreate/select-menus.js"
+  export default async (interaction) => {
+  	if (!interaction.isStringSelectMenu()) return
+  	if (interaction.customId !== 'color-select') return
+
+  	const selected = interaction.values[0]
+  	await interaction.reply({ content: `You selected: ${selected}`, ephemeral: true })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Disabling Components
@@ -237,37 +257,41 @@ Discord.js also provides `UserSelectMenuBuilder`, `RoleSelectMenuBuilder`, and `
 Call `setDisabled(true)` on a component builder to grey it out. This is useful after a user has interacted, preventing further clicks.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/disable-buttons.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isButton()) return
+  ```ts title="src/events/interactionCreate/disable-buttons.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  import type { Interaction } from 'discord.js'
 
-    	const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder().setCustomId('done').setLabel('Done').setStyle(ButtonStyle.Secondary).setDisabled(true)
-    	)
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isButton()) return
 
-    	await interaction.update({ components: [disabledRow] })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/disable-buttons.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  	const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder().setCustomId('done').setLabel('Done').setStyle(ButtonStyle.Secondary).setDisabled(true)
+  	)
 
-    export default async (interaction) => {
-    	if (!interaction.isButton()) return
+  	await interaction.update({ components: [disabledRow] })
+  }
+  ```
 
-    	const disabledRow = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder().setCustomId('done').setLabel('Done').setStyle(ButtonStyle.Secondary).setDisabled(true)
-    	)
+</Tab>
+<Tab value="JavaScript">
 
-    	await interaction.update({ components: [disabledRow] })
-    }
-    ```
-  </Tab>
+  ```js title="src/events/interactionCreate/disable-buttons.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+  export default async (interaction) => {
+  	if (!interaction.isButton()) return
+
+  	const disabledRow = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder().setCustomId('done').setLabel('Done').setStyle(ButtonStyle.Secondary).setDisabled(true)
+  	)
+
+  	await interaction.update({ components: [disabledRow] })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <ScreenshotPlaceholder

@@ -28,36 +28,40 @@ This creates a temporary Cloudflare Quick Tunnel with a random `*.trycloudflare.
 For a persistent URL at your own domain, configure Cloudflare credentials:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	tunnel: {
-    		enabled: true,
-    		cloudflare: {
-    			domain: 'example.com',
-    			apiKey: 'your-api-key',
-    			zoneId: 'your-zone-id',
-    			accountId: 'your-account-id'
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	tunnel: {
-    		enabled: true,
-    		cloudflare: {
-    			domain: 'example.com',
-    			apiKey: 'your-api-key',
-    			zoneId: 'your-zone-id',
-    			accountId: 'your-account-id'
-    		}
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	tunnel: {
+  		enabled: true,
+  		cloudflare: {
+  			domain: 'example.com',
+  			apiKey: 'your-api-key',
+  			zoneId: 'your-zone-id',
+  			accountId: 'your-account-id'
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	tunnel: {
+  		enabled: true,
+  		cloudflare: {
+  			domain: 'example.com',
+  			apiKey: 'your-api-key',
+  			zoneId: 'your-zone-id',
+  			accountId: 'your-account-id'
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Or use environment variables:
@@ -117,64 +121,72 @@ Options for `robo tunnel start`:
 Create your own tunnel provider by implementing the `TunnelProvider` interface:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { TunnelProvider, TunnelProviderConfig, TunnelInstance } from '@robojs/server'
+<Tab value="TypeScript">
 
-    const myProvider: TunnelProvider = {
-    	name: 'my-provider',
-    	isInstalled: () => true,
-    	install: async () => {},
-    	start: async (url: string, config?: TunnelProviderConfig): Promise<TunnelInstance> => {
-    		// Start your tunnel and return the instance
-    	},
-    	stop: async (instance: TunnelInstance) => {
-    		// Stop the tunnel
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+  ```ts
+  import type { TunnelProvider, TunnelProviderConfig, TunnelInstance } from '@robojs/server'
 
-    const myProvider = {
-    	name: 'my-provider',
-    	isInstalled: () => true,
-    	install: async () => {},
-    	start: async (url, config) => {
-    		// Start your tunnel and return the instance
-    	},
-    	stop: async (instance) => {
-    		// Stop the tunnel
-    	}
-    }
-    ```
-  </Tab>
+  const myProvider: TunnelProvider = {
+  	name: 'my-provider',
+  	isInstalled: () => true,
+  	install: async () => {},
+  	start: async (url: string, config?: TunnelProviderConfig): Promise<TunnelInstance> => {
+  		// Start your tunnel and return the instance
+  	},
+  	stop: async (instance: TunnelInstance) => {
+  		// Stop the tunnel
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  const myProvider = {
+  	name: 'my-provider',
+  	isInstalled: () => true,
+  	install: async () => {},
+  	start: async (url, config) => {
+  		// Start your tunnel and return the instance
+  	},
+  	stop: async (instance) => {
+  		// Stop the tunnel
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Use it in config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/server.mjs"
-    export default {
-    	tunnel: {
-    		enabled: true,
-    		provider: myProvider
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/server.mjs"
-    export default {
-    	tunnel: {
-    		enabled: true,
-    		provider: myProvider
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/server.mjs"
+  export default {
+  	tunnel: {
+  		enabled: true,
+  		provider: myProvider
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/server.mjs"
+  export default {
+  	tunnel: {
+  		enabled: true,
+  		provider: myProvider
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Environment variables

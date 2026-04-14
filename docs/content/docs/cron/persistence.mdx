@@ -10,37 +10,45 @@ By default, cron jobs only live in memory. When your Robo restarts, they're gone
 Call `.save()` on a file-based job to persist it. The plugin stores the cron expression and file path in Flashcore so the job can be restored on the next startup.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Cron } from '@robojs/cron'
+<Tab value="TypeScript">
 
-    const job = Cron('0 0 * * *', 'cron/daily-report.js')
-    const jobId = await job.save()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Cron } from '@robojs/cron'
+  ```ts
+  import { Cron } from '@robojs/cron'
 
-    const job = Cron('0 0 * * *', 'cron/daily-report.js')
-    const jobId = await job.save()
-    ```
-  </Tab>
+  const job = Cron('0 0 * * *', 'cron/daily-report.js')
+  const jobId = await job.save()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Cron } from '@robojs/cron'
+
+  const job = Cron('0 0 * * *', 'cron/daily-report.js')
+  const jobId = await job.save()
+  ```
+
+</Tab>
 </Tabs>
 
 The `save()` method returns the job ID — a UUID by default. Pass a custom ID to make retrieval easier and prevent duplicates.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const jobId = await job.save('daily-report')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const jobId = await job.save('daily-report')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const jobId = await job.save('daily-report')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const jobId = await job.save('daily-report')
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -52,22 +60,26 @@ Only file-based jobs can be persisted. Function-based jobs (inline callbacks) ar
 Use `Cron.get()` to retrieve a running job by its ID.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const job = Cron.get('daily-report')
-    if (job) {
-    	console.log('Next run:', job.nextRun())
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const job = Cron.get('daily-report')
-    if (job) {
-    	console.log('Next run:', job.nextRun())
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const job = Cron.get('daily-report')
+  if (job) {
+  	console.log('Next run:', job.nextRun())
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const job = Cron.get('daily-report')
+  if (job) {
+  	console.log('Next run:', job.nextRun())
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 `Cron.get()` returns the `CronJob` instance or `null` if not found. This is a synchronous call that reads from the in-memory state — it does not query Flashcore directly.
@@ -79,35 +91,43 @@ After a restart, jobs are available via `Cron.get()` only after the plugin's sta
 Use `Cron.remove()` to delete a job's persistence and clear it from memory.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await Cron.remove('daily-report')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await Cron.remove('daily-report')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  await Cron.remove('daily-report')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await Cron.remove('daily-report')
+  ```
+
+</Tab>
 </Tabs>
 
 This removes the job from Flashcore and the in-memory state. However, it does not stop a running job. For a complete cleanup, stop the job first.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const job = Cron.get('daily-report')
-    job?.stop()
-    await Cron.remove('daily-report')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const job = Cron.get('daily-report')
-    job?.stop()
-    await Cron.remove('daily-report')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const job = Cron.get('daily-report')
+  job?.stop()
+  await Cron.remove('daily-report')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const job = Cron.get('daily-report')
+  job?.stop()
+  await Cron.remove('daily-report')
+  ```
+
+</Tab>
 </Tabs>
 
 ## Startup restoration
@@ -151,81 +171,89 @@ Persistence is especially useful for jobs created at runtime — for example, fr
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/schedule.ts"
-    import { Cron, Patterns } from '@robojs/cron'
-    import type { CommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: CommandInteraction) => {
-    	const userId = interaction.user.id
-    	const jobId = `reminder-${userId}`
+  ```ts title="src/commands/schedule.ts"
+  import { Cron, Patterns } from '@robojs/cron'
+  import type { CommandInteraction } from 'discord.js'
 
-    	// Create and persist the job
-    	const job = Cron(Patterns.everyDayAt('09:00'), 'cron/reminder.js')
-    	await job.save(jobId)
+  export default async (interaction: CommandInteraction) => {
+  	const userId = interaction.user.id
+  	const jobId = `reminder-${userId}`
 
-    	return `Reminder set. Job ID: ${jobId}`
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/schedule.js"
-    import { Cron, Patterns } from '@robojs/cron'
+  	// Create and persist the job
+  	const job = Cron(Patterns.everyDayAt('09:00'), 'cron/reminder.js')
+  	await job.save(jobId)
 
-    export default async (interaction) => {
-    	const userId = interaction.user.id
-    	const jobId = `reminder-${userId}`
+  	return `Reminder set. Job ID: ${jobId}`
+  }
+  ```
 
-    	// Create and persist the job
-    	const job = Cron(Patterns.everyDayAt('09:00'), 'cron/reminder.js')
-    	await job.save(jobId)
+</Tab>
+<Tab value="JavaScript">
 
-    	return `Reminder set. Job ID: ${jobId}`
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/schedule.js"
+  import { Cron, Patterns } from '@robojs/cron'
+
+  export default async (interaction) => {
+  	const userId = interaction.user.id
+  	const jobId = `reminder-${userId}`
+
+  	// Create and persist the job
+  	const job = Cron(Patterns.everyDayAt('09:00'), 'cron/reminder.js')
+  	await job.save(jobId)
+
+  	return `Reminder set. Job ID: ${jobId}`
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/cancel.ts"
-    import { Cron } from '@robojs/cron'
-    import type { CommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: CommandInteraction) => {
-    	const userId = interaction.user.id
-    	const jobId = `reminder-${userId}`
+  ```ts title="src/commands/cancel.ts"
+  import { Cron } from '@robojs/cron'
+  import type { CommandInteraction } from 'discord.js'
 
-    	const job = Cron.get(jobId)
-    	if (!job) {
-    		return 'No active reminder found.'
-    	}
+  export default async (interaction: CommandInteraction) => {
+  	const userId = interaction.user.id
+  	const jobId = `reminder-${userId}`
 
-    	job.stop()
-    	await Cron.remove(jobId)
-    	return 'Reminder cancelled.'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/cancel.js"
-    import { Cron } from '@robojs/cron'
+  	const job = Cron.get(jobId)
+  	if (!job) {
+  		return 'No active reminder found.'
+  	}
 
-    export default async (interaction) => {
-    	const userId = interaction.user.id
-    	const jobId = `reminder-${userId}`
+  	job.stop()
+  	await Cron.remove(jobId)
+  	return 'Reminder cancelled.'
+  }
+  ```
 
-    	const job = Cron.get(jobId)
-    	if (!job) {
-    		return 'No active reminder found.'
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	job.stop()
-    	await Cron.remove(jobId)
-    	return 'Reminder cancelled.'
-    }
-    ```
-  </Tab>
+  ```js title="src/commands/cancel.js"
+  import { Cron } from '@robojs/cron'
+
+  export default async (interaction) => {
+  	const userId = interaction.user.id
+  	const jobId = `reminder-${userId}`
+
+  	const job = Cron.get(jobId)
+  	if (!job) {
+  		return 'No active reminder found.'
+  	}
+
+  	job.stop()
+  	await Cron.remove(jobId)
+  	return 'Reminder cancelled.'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Function-based vs file-based

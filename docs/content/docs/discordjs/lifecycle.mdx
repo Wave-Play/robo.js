@@ -40,37 +40,41 @@ The recommended way to hook into startup and shutdown is with Robo lifecycle fil
 Runs during Robo startup, after the plugin's prepare phase. Use it for initial data loading, connecting to external services, or any setup that should happen before the bot goes online.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { getClient } from '@robojs/discordjs'
-    import type { StartContext } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default async (context: StartContext) => {
-    	context.logger.info('Bot is starting up...')
+  ```ts title="src/robo/start.ts"
+  import { getClient } from '@robojs/discordjs'
+  import type { StartContext } from 'robo.js'
 
-    	// Access the Discord client (created during prepare)
-    	const client = getClient()
-    	client.user?.setPresence({ status: 'dnd' })
+  export default async (context: StartContext) => {
+  	context.logger.info('Bot is starting up...')
 
-    	// Load data, connect to databases, etc.
-    	await loadInitialData()
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { getClient } from '@robojs/discordjs'
+  	// Access the Discord client (created during prepare)
+  	const client = getClient()
+  	client.user?.setPresence({ status: 'dnd' })
 
-    export default async (context) => {
-    	context.logger.info('Bot is starting up...')
+  	// Load data, connect to databases, etc.
+  	await loadInitialData()
+  }
+  ```
 
-    	const client = getClient()
-    	client.user?.setPresence({ status: 'dnd' })
+</Tab>
+<Tab value="JavaScript">
 
-    	await loadInitialData()
-    }
-    ```
-  </Tab>
+  ```js title="src/robo/start.js"
+  import { getClient } from '@robojs/discordjs'
+
+  export default async (context) => {
+  	context.logger.info('Bot is starting up...')
+
+  	const client = getClient()
+  	client.user?.setPresence({ status: 'dnd' })
+
+  	await loadInitialData()
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### `src/robo/stop.ts`
@@ -78,26 +82,30 @@ Runs during Robo startup, after the plugin's prepare phase. Use it for initial d
 Runs during shutdown. Use it for cleanup, disconnecting external services, or saving state.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/stop.ts"
-    import type { StopContext } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default async (context: StopContext) => {
-    	context.logger.info(`Shutting down (reason: ${context.reason})...`)
-    	await saveState()
-    	await disconnectDatabase()
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/stop.js"
-    export default async (context) => {
-    	context.logger.info(`Shutting down (reason: ${context.reason})...`)
-    	await saveState()
-    	await disconnectDatabase()
-    }
-    ```
-  </Tab>
+  ```ts title="src/robo/stop.ts"
+  import type { StopContext } from 'robo.js'
+
+  export default async (context: StopContext) => {
+  	context.logger.info(`Shutting down (reason: ${context.reason})...`)
+  	await saveState()
+  	await disconnectDatabase()
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/robo/stop.js"
+  export default async (context) => {
+  	context.logger.info(`Shutting down (reason: ${context.reason})...`)
+  	await saveState()
+  	await disconnectDatabase()
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -109,33 +117,37 @@ These are just two of six lifecycle hooks. Robo.js also supports `init.ts`, `pre
 The `clientReady` event is a Discord.js gateway event that fires when the client's caches are populated and the bot is fully connected. This is different from `robo/start.ts` -- the `clientReady` event fires *after* the client has connected to Discord's gateway and populated its cache.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/clientReady.ts"
-    import type { EventConfig } from '@robojs/discordjs'
-    import type { Client } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: EventConfig = {
-    	frequency: 'once'
-    }
+  ```ts title="src/events/clientReady.ts"
+  import type { EventConfig } from '@robojs/discordjs'
+  import type { Client } from 'discord.js'
 
-    export default (client: Client) => {
-    	console.log(`Logged in as ${client.user?.tag}`)
-    	console.log(`Serving ${client.guilds.cache.size} servers`)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/clientReady.js"
-    export const config = {
-    	frequency: 'once'
-    }
+  export const config: EventConfig = {
+  	frequency: 'once'
+  }
 
-    export default (client) => {
-    	console.log(`Logged in as ${client.user?.tag}`)
-    	console.log(`Serving ${client.guilds.cache.size} servers`)
-    }
-    ```
-  </Tab>
+  export default (client: Client) => {
+  	console.log(`Logged in as ${client.user?.tag}`)
+  	console.log(`Serving ${client.guilds.cache.size} servers`)
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/clientReady.js"
+  export const config = {
+  	frequency: 'once'
+  }
+
+  export default (client) => {
+  	console.log(`Logged in as ${client.user?.tag}`)
+  	console.log(`Serving ${client.guilds.cache.size} servers`)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -170,27 +182,31 @@ This is automatic -- no user configuration is needed. The plugin determines the 
 Access the Discord client anywhere in your code using `getClient()` and `hasClient()`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { getClient, hasClient } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    // Check if client is available
-    if (hasClient()) {
-    	const client = getClient()
-    	client.user?.setPresence({ status: 'online' })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { getClient, hasClient } from '@robojs/discordjs'
+  ```ts
+  import { getClient, hasClient } from '@robojs/discordjs'
 
-    if (hasClient()) {
-    	const client = getClient()
-    	client.user?.setPresence({ status: 'online' })
-    }
-    ```
-  </Tab>
+  // Check if client is available
+  if (hasClient()) {
+  	const client = getClient()
+  	client.user?.setPresence({ status: 'online' })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { getClient, hasClient } from '@robojs/discordjs'
+
+  if (hasClient()) {
+  	const client = getClient()
+  	client.user?.setPresence({ status: 'online' })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

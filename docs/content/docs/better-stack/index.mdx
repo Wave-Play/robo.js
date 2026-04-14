@@ -48,24 +48,28 @@ npx create-robo my-project -p @robojs/better-stack
 Heartbeat monitoring sends periodic HTTP pings to Better Stack. If pings stop arriving, Better Stack marks your service as down and sends alerts through your configured channels.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	heartbeat: {
-    		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	heartbeat: {
+  		url: 'https://uptime.betterstack.com/api/v1/heartbeat/your-heartbeat-id'
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 See [Heartbeat](./heartbeat.mdx) for setup instructions and configuration options.
@@ -77,20 +81,24 @@ Log integration forwards your Robo's log output to Better Stack's Logtail servic
 The simplest approach uses a plugin config file:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
-    export default {
-    	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/roboplay/plugin-better-stack.mjs"
+  export default {
+  	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Or use environment variables for production:

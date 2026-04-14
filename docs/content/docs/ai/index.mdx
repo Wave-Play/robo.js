@@ -60,30 +60,34 @@ Users interact with your AI Robo in four ways:
 Control where the bot can operate with `whitelist` and `restrict`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	whitelist: {
-    		channelIds: ['123456789012345678']
-    	},
-    	restrict: {
-    		channelIds: ['345678901234567890']
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	whitelist: {
-    		channelIds: ['123456789012345678']
-    	},
-    	restrict: {
-    		channelIds: ['345678901234567890']
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	whitelist: {
+  		channelIds: ['123456789012345678']
+  	},
+  	restrict: {
+  		channelIds: ['345678901234567890']
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	whitelist: {
+  		channelIds: ['123456789012345678']
+  	},
+  	restrict: {
+  		channelIds: ['345678901234567890']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -95,38 +99,42 @@ Control where the bot can operate with `whitelist` and `restrict`:
 A minimal configuration with custom instructions and engine settings:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+<Tab value="TypeScript">
 
-    export default {
-    	instructions: 'You are Sage, a friendly community mentor who answers succinctly.',
-    	engine: new OpenAiEngine({
-    		chat: {
-    			model: 'gpt-4.1-mini',
-    			temperature: 0.6,
-    			maxOutputTokens: 800
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    import { OpenAiEngine } from '@robojs/ai/engines/openai'
+  ```ts title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
 
-    export default {
-    	instructions: 'You are Sage, a friendly community mentor who answers succinctly.',
-    	engine: new OpenAiEngine({
-    		chat: {
-    			model: 'gpt-4.1-mini',
-    			temperature: 0.6,
-    			maxOutputTokens: 800
-    		}
-    	})
-    }
-    ```
-  </Tab>
+  export default {
+  	instructions: 'You are Sage, a friendly community mentor who answers succinctly.',
+  	engine: new OpenAiEngine({
+  		chat: {
+  			model: 'gpt-4.1-mini',
+  			temperature: 0.6,
+  			maxOutputTokens: 800
+  		}
+  	})
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  import { OpenAiEngine } from '@robojs/ai/engines/openai'
+
+  export default {
+  	instructions: 'You are Sage, a friendly community mentor who answers succinctly.',
+  	engine: new OpenAiEngine({
+  		chat: {
+  			model: 'gpt-4.1-mini',
+  			temperature: 0.6,
+  			maxOutputTokens: 800
+  		}
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

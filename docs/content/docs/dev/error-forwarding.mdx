@@ -18,20 +18,24 @@ DISCORD_DEBUG_CHANNEL_ID=1234567890123456789
 Or through the plugin config:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/dev.mjs"
-    export default {
-    	debugChannelId: '1234567890123456789'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/dev.mjs"
-    export default {
-    	debugChannelId: '1234567890123456789'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/dev.mjs"
+  export default {
+  	debugChannelId: '1234567890123456789'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/dev.mjs"
+  export default {
+  	debugChannelId: '1234567890123456789'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The config option takes priority over the environment variable.
@@ -67,22 +71,26 @@ The restart behavior depends on how the Robo is running:
 Notify your team when errors occur by configuring a role to ping:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/dev.mjs"
-    export default {
-    	debugChannelId: '1234567890123456789',
-    	errorPingRoleId: '987654321098765432'
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/dev.mjs"
-    export default {
-    	debugChannelId: '1234567890123456789',
-    	errorPingRoleId: '987654321098765432'
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/dev.mjs"
+  export default {
+  	debugChannelId: '1234567890123456789',
+  	errorPingRoleId: '987654321098765432'
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/dev.mjs"
+  export default {
+  	debugChannelId: '1234567890123456789',
+  	errorPingRoleId: '987654321098765432'
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 When an error is forwarded, the message includes a role mention (`<@&roleId>`) that pings all users with that role.
@@ -92,65 +100,73 @@ When an error is forwarded, the message includes a role mention (`<@&roleId>`) t
 You can also send errors to the debug channel from your own code:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { sendDebugError } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    try {
-    	await riskyOperation()
-    } catch (error) {
-    	const sent = await sendDebugError(error)
-    	if (!sent) {
-    		console.error('Failed to forward error:', error)
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { sendDebugError } from '@robojs/dev'
+  ```ts
+  import { sendDebugError } from '@robojs/dev'
 
-    try {
-    	await riskyOperation()
-    } catch (error) {
-    	const sent = await sendDebugError(error)
-    	if (!sent) {
-    		console.error('Failed to forward error:', error)
-    	}
-    }
-    ```
-  </Tab>
+  try {
+  	await riskyOperation()
+  } catch (error) {
+  	const sent = await sendDebugError(error)
+  	if (!sent) {
+  		console.error('Failed to forward error:', error)
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { sendDebugError } from '@robojs/dev'
+
+  try {
+  	await riskyOperation()
+  } catch (error) {
+  	const sent = await sendDebugError(error)
+  	if (!sent) {
+  		console.error('Failed to forward error:', error)
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 For replying to interactions with error embeds, use `printErrorResponse`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { printErrorResponse } from '@robojs/dev'
+<Tab value="TypeScript">
 
-    export default async function (interaction) {
-    	try {
-    		await someCommand(interaction)
-    	} catch (error) {
-    		await printErrorResponse(error, interaction)
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { printErrorResponse } from '@robojs/dev'
+  ```ts
+  import { printErrorResponse } from '@robojs/dev'
 
-    export default async function (interaction) {
-    	try {
-    		await someCommand(interaction)
-    	} catch (error) {
-    		await printErrorResponse(error, interaction)
-    	}
-    }
-    ```
-  </Tab>
+  export default async function (interaction) {
+  	try {
+  		await someCommand(interaction)
+  	} catch (error) {
+  		await printErrorResponse(error, interaction)
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { printErrorResponse } from '@robojs/dev'
+
+  export default async function (interaction) {
+  	try {
+  		await someCommand(interaction)
+  	} catch (error) {
+  		await printErrorResponse(error, interaction)
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 This handles all interaction states — deferred, already replied, or fresh — and sends an ephemeral red embed with the error message.

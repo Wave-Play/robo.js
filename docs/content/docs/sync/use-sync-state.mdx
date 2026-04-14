@@ -8,23 +8,27 @@ The core hook for real-time state sync. Works like React's `useState` but shares
 ## Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function useSyncState<T, ClientData = unknown>(
-    	initialState: T,
-    	key: (string | null)[]
-    ): readonly [T, (newState: Partial<T> | ((prev: T) => T)) => void, SyncContext<ClientData>]
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function useSyncState(
-    	initialState,
-    	key
-    )
-    // Returns: [state, setState, context]
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function useSyncState<T, ClientData = unknown>(
+  	initialState: T,
+  	key: (string | null)[]
+  ): readonly [T, (newState: Partial<T> | ((prev: T) => T)) => void, SyncContext<ClientData>]
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function useSyncState(
+  	initialState,
+  	key
+  )
+  // Returns: [state, setState, context]
+  ```
+
+</Tab>
 </Tabs>
 
 ## Parameters
@@ -45,43 +49,51 @@ The core hook for real-time state sync. Works like React's `useState` but shares
 ## Basic usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useSyncState } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function Counter() {
-    	const [count, setCount] = useSyncState(0, ['counter'])
+  ```tsx
+  import { useSyncState } from '@robojs/sync'
 
-    	return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useSyncState } from '@robojs/sync'
+  function Counter() {
+  	const [count, setCount] = useSyncState(0, ['counter'])
 
-    function Counter() {
-    	const [count, setCount] = useSyncState(0, ['counter'])
+  	return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+  }
+  ```
 
-    	return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { useSyncState } from '@robojs/sync'
+
+  function Counter() {
+  	const [count, setCount] = useSyncState(0, ['counter'])
+
+  	return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Updater functions
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    setCount((prev) => prev + 1)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    setCount((prev) => prev + 1)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  setCount((prev) => prev + 1)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  setCount((prev) => prev + 1)
+  ```
+
+</Tab>
 </Tabs>
 
 When using an updater function, the previous value comes from the server cache rather than React state, so it's always the latest synced value.
@@ -89,22 +101,26 @@ When using an updater function, the previous value comes from the server cache r
 ## Object state
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const [player, setPlayer] = useSyncState({ x: 0, y: 0, score: 0 }, ['player', odId])
+<Tab value="TypeScript">
 
-    // Partial update — only sends changed fields
-    setPlayer({ x: 10, y: 20 })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const [player, setPlayer] = useSyncState({ x: 0, y: 0, score: 0 }, ['player', odId])
+  ```tsx
+  const [player, setPlayer] = useSyncState({ x: 0, y: 0, score: 0 }, ['player', odId])
 
-    // Partial update — only sends changed fields
-    setPlayer({ x: 10, y: 20 })
-    ```
-  </Tab>
+  // Partial update — only sends changed fields
+  setPlayer({ x: 10, y: 20 })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const [player, setPlayer] = useSyncState({ x: 0, y: 0, score: 0 }, ['player', odId])
+
+  // Partial update — only sends changed fields
+  setPlayer({ x: 10, y: 20 })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Context
@@ -112,28 +128,32 @@ When using an updater function, the previous value comes from the server cache r
 The third return value provides room context.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const [state, setState, context] = useSyncState(initialState, ['game', roomId])
+<Tab value="TypeScript">
 
-    console.log(context.clientId)       // Your unique client ID
-    console.log(context.isHost)         // true if you're the room host
-    console.log(context.clients)        // Array of all connected clients
-    context.broadcast({ type: 'ping' }) // Send to all clients
-    context.send(targetId, { text: 'hello' }) // Send to specific client
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const [state, setState, context] = useSyncState(initialState, ['game', roomId])
+  ```tsx
+  const [state, setState, context] = useSyncState(initialState, ['game', roomId])
 
-    console.log(context.clientId)       // Your unique client ID
-    console.log(context.isHost)         // true if you're the room host
-    console.log(context.clients)        // Array of all connected clients
-    context.broadcast({ type: 'ping' }) // Send to all clients
-    context.send(targetId, { text: 'hello' }) // Send to specific client
-    ```
-  </Tab>
+  console.log(context.clientId)       // Your unique client ID
+  console.log(context.isHost)         // true if you're the room host
+  console.log(context.clients)        // Array of all connected clients
+  context.broadcast({ type: 'ping' }) // Send to all clients
+  context.send(targetId, { text: 'hello' }) // Send to specific client
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const [state, setState, context] = useSyncState(initialState, ['game', roomId])
+
+  console.log(context.clientId)       // Your unique client ID
+  console.log(context.isHost)         // true if you're the room host
+  console.log(context.clients)        // Array of all connected clients
+  context.broadcast({ type: 'ping' }) // Send to all clients
+  context.send(targetId, { text: 'hello' }) // Send to specific client
+  ```
+
+</Tab>
 </Tabs>
 
 The `context.clients` array contains `Client<ClientData>` objects. Each client has an `id` string and an optional `data` field populated from the `clientData` prop on `SyncContextProvider`.
@@ -143,26 +163,30 @@ The `context.clients` array contains `Client<ClientData>` objects. Each client h
 Keys determine which components share state. Keys are normalized to dot-notation internally.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    // These two components share the same state
-    const [a] = useSyncState(0, ['room', '123', 'score'])
-    const [b] = useSyncState(0, ['room', '123', 'score'])
+<Tab value="TypeScript">
 
-    // This one has separate state
-    const [c] = useSyncState(0, ['room', '456', 'score'])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    // These two components share the same state
-    const [a] = useSyncState(0, ['room', '123', 'score'])
-    const [b] = useSyncState(0, ['room', '123', 'score'])
+  ```tsx
+  // These two components share the same state
+  const [a] = useSyncState(0, ['room', '123', 'score'])
+  const [b] = useSyncState(0, ['room', '123', 'score'])
 
-    // This one has separate state
-    const [c] = useSyncState(0, ['room', '456', 'score'])
-    ```
-  </Tab>
+  // This one has separate state
+  const [c] = useSyncState(0, ['room', '456', 'score'])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  // These two components share the same state
+  const [a] = useSyncState(0, ['room', '123', 'score'])
+  const [b] = useSyncState(0, ['room', '123', 'score'])
+
+  // This one has separate state
+  const [c] = useSyncState(0, ['room', '456', 'score'])
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

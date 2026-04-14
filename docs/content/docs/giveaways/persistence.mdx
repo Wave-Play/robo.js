@@ -12,18 +12,22 @@ The plugin stores all giveaway data in Flashcore, Robo's built-in key-value pers
 Each giveaway is stored as a `Giveaway` object. Import the type from the main entry point or the `./types` subpath:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { Giveaway } from '@robojs/giveaways'
-    // or
-    import type { Giveaway } from '@robojs/giveaways/types'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // or
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import type { Giveaway } from '@robojs/giveaways'
+  // or
+  import type { Giveaway } from '@robojs/giveaways/types'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // or
+  ```
+
+</Tab>
 </Tabs>
 
 **Fields:**
@@ -58,16 +62,20 @@ Per-guild configuration. See [Configuration](./configuration.mdx) for the full i
 The built-in fallback when no custom settings exist for a guild. Available from the `./types` subpath:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { DEFAULT_SETTINGS } from '@robojs/giveaways/types'
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { DEFAULT_SETTINGS } from '@robojs/giveaways/types'
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  import { DEFAULT_SETTINGS } from '@robojs/giveaways/types'
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { DEFAULT_SETTINGS } from '@robojs/giveaways/types'
+  ```
+
+</Tab>
 </Tabs>
 
 ## Storage layout
@@ -168,37 +176,41 @@ The entries map uses `Record<string, number>` where the value is a weight. Curre
 Since the storage layout is well-defined, it's possible to read giveaway data directly from Flashcore:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Flashcore } from 'robo.js'
-    import type { Giveaway } from '@robojs/giveaways'
+<Tab value="TypeScript">
 
-    // Read a specific giveaway
-    const giveaway = await Flashcore.get<Giveaway>('01HQRS5F1GZ9J3YF7WXT7H2K2B', {
-      namespace: ['giveaways', 'data']
-    })
+  ```ts
+  import { Flashcore } from 'robo.js'
+  import type { Giveaway } from '@robojs/giveaways'
 
-    // List active giveaway IDs for a guild
-    const activeIds = await Flashcore.get<string[]>('list', {
-      namespace: ['giveaways', 'guilds', '123456789012345678', 'active']
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Flashcore } from 'robo.js'
+  // Read a specific giveaway
+  const giveaway = await Flashcore.get<Giveaway>('01HQRS5F1GZ9J3YF7WXT7H2K2B', {
+    namespace: ['giveaways', 'data']
+  })
 
-    // Read a specific giveaway
-    const giveaway = await Flashcore.get('01HQRS5F1GZ9J3YF7WXT7H2K2B', {
-      namespace: ['giveaways', 'data']
-    })
+  // List active giveaway IDs for a guild
+  const activeIds = await Flashcore.get<string[]>('list', {
+    namespace: ['giveaways', 'guilds', '123456789012345678', 'active']
+  })
+  ```
 
-    // List active giveaway IDs for a guild
-    const activeIds = await Flashcore.get('list', {
-      namespace: ['giveaways', 'guilds', '123456789012345678', 'active']
-    })
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Flashcore } from 'robo.js'
+
+  // Read a specific giveaway
+  const giveaway = await Flashcore.get('01HQRS5F1GZ9J3YF7WXT7H2K2B', {
+    namespace: ['giveaways', 'data']
+  })
+
+  // List active giveaway IDs for a guild
+  const activeIds = await Flashcore.get('list', {
+    namespace: ['giveaways', 'guilds', '123456789012345678', 'active']
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">

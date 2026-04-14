@@ -10,34 +10,38 @@ Track and render cursor positions across clients in real-time. The `useSyncCurso
 Drop-in component that renders all participant cursors automatically.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { SyncCursors } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function Activity() {
-      return (
-        <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
-          <SyncCursors roomKey={['room', roomId]} />
-          {/* Your content */}
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { SyncCursors } from '@robojs/sync'
+  ```tsx
+  import { SyncCursors } from '@robojs/sync'
 
-    function Activity() {
-      return (
-        <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
-          <SyncCursors roomKey={['room', roomId]} />
-          {/* Your content */}
-        </div>
-      )
-    }
-    ```
-  </Tab>
+  function Activity() {
+    return (
+      <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+        <SyncCursors roomKey={['room', roomId]} />
+        {/* Your content */}
+      </div>
+    )
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { SyncCursors } from '@robojs/sync'
+
+  function Activity() {
+    return (
+      <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+        <SyncCursors roomKey={['room', roomId]} />
+        {/* Your content */}
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Props
@@ -56,32 +60,36 @@ Drop-in component that renders all participant cursors automatically.
 ### Custom cursor rendering
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    <SyncCursors
-      roomKey={['room', roomId]}
-      renderCursor={(cursor) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <CustomArrowIcon color={cursor.user.data?.color} />
-          <span>{cursor.user.data?.name}</span>
-        </div>
-      )}
-    />
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    <SyncCursors
-      roomKey={['room', roomId]}
-      renderCursor={(cursor) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <CustomArrowIcon color={cursor.user.data?.color} />
-          <span>{cursor.user.data?.name}</span>
-        </div>
-      )}
-    />
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```tsx
+  <SyncCursors
+    roomKey={['room', roomId]}
+    renderCursor={(cursor) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <CustomArrowIcon color={cursor.user.data?.color} />
+        <span>{cursor.user.data?.name}</span>
+      </div>
+    )}
+  />
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  <SyncCursors
+    roomKey={['room', roomId]}
+    renderCursor={(cursor) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <CustomArrowIcon color={cursor.user.data?.color} />
+        <span>{cursor.user.data?.name}</span>
+      </div>
+    )}
+  />
+  ```
+
+</Tab>
 </Tabs>
 
 ### Label resolution
@@ -95,22 +103,26 @@ For more control, use the hook directly. It gives you access to cursor data with
 ### Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function useSyncCursor<ClientData = unknown>(
-      key: (string | null)[],
-      options?: CursorOptions
-    ): CursorResult<ClientData>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function useSyncCursor(
-      key: (string | null)[],
-      options?: CursorOptions
-    ): CursorResult<ClientData>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function useSyncCursor<ClientData = unknown>(
+    key: (string | null)[],
+    options?: CursorOptions
+  ): CursorResult<ClientData>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function useSyncCursor(
+    key: (string | null)[],
+    options?: CursorOptions
+  ): CursorResult<ClientData>
+  ```
+
+</Tab>
 </Tabs>
 
 ### Options
@@ -135,87 +147,95 @@ For more control, use the hook directly. It gives you access to cursor data with
 ### Auto-tracking mode
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+<Tab value="TypeScript">
 
-    return (
-      <div>
-    {remoteCursors.map((cursor) => (
-      <div
-        key={cursor.clientId}
-        style={{
-          position: 'absolute',
-          left: `${cursor.position.x * 100}%`,
-          top: `${cursor.position.y * 100}%`
-        }}
-      >
-        {cursor.user.data?.name}
-      </div>
-    ))}
-      </div>
-    )
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+  ```tsx
+  const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
 
-    return (
-      <div>
-    {remoteCursors.map((cursor) => (
-      <div
-        key={cursor.clientId}
-        style={{
-          position: 'absolute',
-          left: `${cursor.position.x * 100}%`,
-          top: `${cursor.position.y * 100}%`
-        }}
-      >
-        {cursor.user.data?.name}
-      </div>
-    ))}
-      </div>
-    )
-    ```
-  </Tab>
+  return (
+    <div>
+  {remoteCursors.map((cursor) => (
+    <div
+      key={cursor.clientId}
+      style={{
+        position: 'absolute',
+        left: `${cursor.position.x * 100}%`,
+        top: `${cursor.position.y * 100}%`
+      }}
+    >
+      {cursor.user.data?.name}
+    </div>
+  ))}
+    </div>
+  )
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const { remoteCursors } = useSyncCursor(['room', roomId], { autoTrack: true })
+
+  return (
+    <div>
+  {remoteCursors.map((cursor) => (
+    <div
+      key={cursor.clientId}
+      style={{
+        position: 'absolute',
+        left: `${cursor.position.x * 100}%`,
+        top: `${cursor.position.y * 100}%`
+      }}
+    >
+      {cursor.user.data?.name}
+    </div>
+  ))}
+    </div>
+  )
+  ```
+
+</Tab>
 </Tabs>
 
 ### Manual tracking
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    const { remoteCursors, updatePosition } = useSyncCursor(['room', roomId])
+<Tab value="TypeScript">
 
-    useEffect(() => {
-      const handleMove = (e: MouseEvent) => {
-        updatePosition({
-          x: e.clientX / window.innerWidth,
-          y: e.clientY / window.innerHeight
-        })
-      }
-      window.addEventListener('mousemove', handleMove)
-      return () => window.removeEventListener('mousemove', handleMove)
-    }, [updatePosition])
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    const { remoteCursors, updatePosition } = useSyncCursor(['room', roomId])
+  ```tsx
+  const { remoteCursors, updatePosition } = useSyncCursor(['room', roomId])
 
-    useEffect(() => {
-      const handleMove = (e) => {
-        updatePosition({
-          x: e.clientX / window.innerWidth,
-          y: e.clientY / window.innerHeight
-        })
-      }
-      window.addEventListener('mousemove', handleMove)
-      return () => window.removeEventListener('mousemove', handleMove)
-    }, [updatePosition])
-    ```
-  </Tab>
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      updatePosition({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight
+      })
+    }
+    window.addEventListener('mousemove', handleMove)
+    return () => window.removeEventListener('mousemove', handleMove)
+  }, [updatePosition])
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  const { remoteCursors, updatePosition } = useSyncCursor(['room', roomId])
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      updatePosition({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight
+      })
+    }
+    window.addEventListener('mousemove', handleMove)
+    return () => window.removeEventListener('mousemove', handleMove)
+  }, [updatePosition])
+  ```
+
+</Tab>
 </Tabs>
 
 ## Performance
@@ -228,21 +248,25 @@ For more control, use the hook directly. It gives you access to cursor data with
 ## RemoteCursor type
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface RemoteCursor<ClientData> {
-      clientId: string
-      user: Client<ClientData>
-      position: { x: number; y: number; active: boolean }
-      isYou: boolean
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  interface RemoteCursor<ClientData> {
+    clientId: string
+    user: Client<ClientData>
+    position: { x: number; y: number; active: boolean }
+    isYou: boolean
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ## Next steps

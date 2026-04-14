@@ -26,30 +26,34 @@ This detection happens through the `isVisionCapableModel()` helper. Custom engin
 When vision is supported, the plugin transforms a standard text message into a multimodal content array:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Internal representation (simplified)
-    {
-      role: 'user',
-      content: [
-        { type: 'text', text: 'alice: What is this?' },
-        { type: 'image_url', image_url: 'https://cdn.discordapp.com/attachments/.../photo.png' }
-      ]
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Internal representation (simplified)
-    {
-      role: 'user',
-      content: [
-        { type: 'text', text: 'alice: What is this?' },
-        { type: 'image_url', image_url: 'https://cdn.discordapp.com/attachments/.../photo.png' }
-      ]
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  // Internal representation (simplified)
+  {
+    role: 'user',
+    content: [
+      { type: 'text', text: 'alice: What is this?' },
+      { type: 'image_url', image_url: 'https://cdn.discordapp.com/attachments/.../photo.png' }
+    ]
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Internal representation (simplified)
+  {
+    role: 'user',
+    content: [
+      { type: 'text', text: 'alice: What is this?' },
+      { type: 'image_url', image_url: 'https://cdn.discordapp.com/attachments/.../photo.png' }
+    ]
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Multiple attachments in a single message are all included. The user's display name is prefixed to the text for context.
@@ -70,50 +74,54 @@ No special syntax or commands required. It's the same mention or reply flow as a
 Use `AI.chat()` directly with image content for custom integrations:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/analyze.ts"
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    export default async () => {
-    	const reply = await AI.chatSync(
-    		[
-    			{
-    				role: 'user',
-    				content: [
-    					{ type: 'text', text: 'What do you see in this image?' },
-    					{ type: 'image_url', image_url: 'https://example.com/photo.jpg' }
-    				]
-    			}
-    		],
-    		{ showTyping: false }
-    	)
+  ```ts title="src/commands/analyze.ts"
+  import { AI } from '@robojs/ai'
 
-    	return reply.text
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/analyze.js"
-    import { AI } from '@robojs/ai'
+  export default async () => {
+  	const reply = await AI.chatSync(
+  		[
+  			{
+  				role: 'user',
+  				content: [
+  					{ type: 'text', text: 'What do you see in this image?' },
+  					{ type: 'image_url', image_url: 'https://example.com/photo.jpg' }
+  				]
+  			}
+  		],
+  		{ showTyping: false }
+  	)
 
-    export default async () => {
-    	const reply = await AI.chatSync(
-    		[
-    			{
-    				role: 'user',
-    				content: [
-    					{ type: 'text', text: 'What do you see in this image?' },
-    					{ type: 'image_url', image_url: 'https://example.com/photo.jpg' }
-    				]
-    			}
-    		],
-    		{ showTyping: false }
-    	)
+  	return reply.text
+  }
+  ```
 
-    	return reply.text
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/analyze.js"
+  import { AI } from '@robojs/ai'
+
+  export default async () => {
+  	const reply = await AI.chatSync(
+  		[
+  			{
+  				role: 'user',
+  				content: [
+  					{ type: 'text', text: 'What do you see in this image?' },
+  					{ type: 'image_url', image_url: 'https://example.com/photo.jpg' }
+  				]
+  			}
+  		],
+  		{ showTyping: false }
+  	)
+
+  	return reply.text
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The `content` field accepts either a plain string or an array of content objects. When using the array form, include at least one `text` entry alongside any `image_url` entries.

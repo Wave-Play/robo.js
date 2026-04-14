@@ -8,24 +8,28 @@ description: Complete API reference for @robojs/cron.
 Creates and immediately starts a cron job.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Cron } from '@robojs/cron'
+<Tab value="TypeScript">
 
-    const job = Cron('*/10 * * * * *', () => {
-    	console.log('Running...')
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Cron } from '@robojs/cron'
+  ```ts
+  import { Cron } from '@robojs/cron'
 
-    const job = Cron('*/10 * * * * *', () => {
-    	console.log('Running...')
-    })
-    ```
-  </Tab>
+  const job = Cron('*/10 * * * * *', () => {
+  	console.log('Running...')
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Cron } from '@robojs/cron'
+
+  const job = Cron('*/10 * * * * *', () => {
+  	console.log('Running...')
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 **Parameters:**
@@ -40,24 +44,28 @@ Creates and immediately starts a cron job.
 When `jobFunction` is a string, the plugin resolves it as a file path and dynamically imports the module on each execution. The module must export a default function that receives the job ID as its argument.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Function-based (not persistable)
-    Cron('*/5 * * * * *', () => console.log('tick'))
+<Tab value="TypeScript">
 
-    // File-based (persistable)
-    Cron('*/5 * * * * *', 'cron/task.js')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Function-based (not persistable)
-    Cron('*/5 * * * * *', () => console.log('tick'))
+  ```ts
+  // Function-based (not persistable)
+  Cron('*/5 * * * * *', () => console.log('tick'))
 
-    // File-based (persistable)
-    Cron('*/5 * * * * *', 'cron/task.js')
-    ```
-  </Tab>
+  // File-based (persistable)
+  Cron('*/5 * * * * *', 'cron/task.js')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Function-based (not persistable)
+  Cron('*/5 * * * * *', () => console.log('tick'))
+
+  // File-based (persistable)
+  Cron('*/5 * * * * *', 'cron/task.js')
+  ```
+
+</Tab>
 </Tabs>
 
 An invalid cron expression throws an error at creation time.
@@ -67,16 +75,20 @@ An invalid cron expression throws an error at creation time.
 Retrieves a job instance by ID from the runtime state.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const job = Cron.get('my-job')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const job = Cron.get('my-job')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const job = Cron.get('my-job')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const job = Cron.get('my-job')
+  ```
+
+</Tab>
 </Tabs>
 
 **Parameters:**
@@ -94,16 +106,20 @@ This is a synchronous call. It reads from in-memory state, not from Flashcore. A
 Removes a job from Flashcore persistence and in-memory state.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    await Cron.remove('my-job')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    await Cron.remove('my-job')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  await Cron.remove('my-job')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  await Cron.remove('my-job')
+  ```
+
+</Tab>
 </Tabs>
 
 **Parameters:**
@@ -117,20 +133,24 @@ Removes a job from Flashcore persistence and in-memory state.
 This does not stop a running job. Call `job.stop()` first for a complete cleanup.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const job = Cron.get('my-job')
-    job?.stop()
-    await Cron.remove('my-job')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const job = Cron.get('my-job')
-    job?.stop()
-    await Cron.remove('my-job')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const job = Cron.get('my-job')
+  job?.stop()
+  await Cron.remove('my-job')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const job = Cron.get('my-job')
+  job?.stop()
+  await Cron.remove('my-job')
+  ```
+
+</Tab>
 </Tabs>
 
 ## CronJob instance
@@ -142,18 +162,22 @@ The object returned by `Cron()` and `Cron.get()`. The `CronJob` class is not exp
 Persists a file-based job to Flashcore so it survives restarts.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const job = Cron('0 0 * * *', 'cron/daily.js')
-    const jobId = await job.save('daily-task')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const job = Cron('0 0 * * *', 'cron/daily.js')
-    const jobId = await job.save('daily-task')
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const job = Cron('0 0 * * *', 'cron/daily.js')
+  const jobId = await job.save('daily-task')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const job = Cron('0 0 * * *', 'cron/daily.js')
+  const jobId = await job.save('daily-task')
+  ```
+
+</Tab>
 </Tabs>
 
 **Parameters:**
@@ -171,16 +195,20 @@ Function-based jobs are stored in runtime state only. They will not be written t
 Temporarily halts the job. The job can be resumed later.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    job.pause()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    job.pause()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  job.pause()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  job.pause()
+  ```
+
+</Tab>
 </Tabs>
 
 **Returns:** `void`
@@ -190,16 +218,20 @@ Temporarily halts the job. The job can be resumed later.
 Resumes a paused job.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    job.resume()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    job.resume()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  job.resume()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  job.resume()
+  ```
+
+</Tab>
 </Tabs>
 
 **Returns:** `void`
@@ -209,16 +241,20 @@ Resumes a paused job.
 Permanently stops the job. A stopped job cannot be resumed — create a new one instead.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    job.stop()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    job.stop()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  job.stop()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  job.stop()
+  ```
+
+</Tab>
 </Tabs>
 
 **Returns:** `void`
@@ -230,18 +266,22 @@ This does not remove persistence. If the job was saved, it will be restored on t
 Returns the next scheduled execution time.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const next = job.nextRun()
-    console.log('Next run:', next)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const next = job.nextRun()
-    console.log('Next run:', next)
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const next = job.nextRun()
+  console.log('Next run:', next)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const next = job.nextRun()
+  console.log('Next run:', next)
+  ```
+
+</Tab>
 </Tabs>
 
 **Returns:** `Date | null` — The next run time, or `null` if the job is stopped.
@@ -251,34 +291,38 @@ Returns the next scheduled execution time.
 A merged object of constant presets, day constants, and builder functions for cron expressions. See the full [Patterns reference](./patterns.mdx).
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Cron, Patterns } from '@robojs/cron'
+<Tab value="TypeScript">
 
-    // Constant preset
-    Cron(Patterns.EVERY_HOUR, () => { /* ... */ })
+  ```ts
+  import { Cron, Patterns } from '@robojs/cron'
 
-    // Builder function
-    Cron(Patterns.everyWeekdayAt('09:00'), () => { /* ... */ })
+  // Constant preset
+  Cron(Patterns.EVERY_HOUR, () => { /* ... */ })
 
-    // Day constant with builder
-    Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => { /* ... */ })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Cron, Patterns } from '@robojs/cron'
+  // Builder function
+  Cron(Patterns.everyWeekdayAt('09:00'), () => { /* ... */ })
 
-    // Constant preset
-    Cron(Patterns.EVERY_HOUR, () => { /* ... */ })
+  // Day constant with builder
+  Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => { /* ... */ })
+  ```
 
-    // Builder function
-    Cron(Patterns.everyWeekdayAt('09:00'), () => { /* ... */ })
+</Tab>
+<Tab value="JavaScript">
 
-    // Day constant with builder
-    Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => { /* ... */ })
-    ```
-  </Tab>
+  ```js
+  import { Cron, Patterns } from '@robojs/cron'
+
+  // Constant preset
+  Cron(Patterns.EVERY_HOUR, () => { /* ... */ })
+
+  // Builder function
+  Cron(Patterns.everyWeekdayAt('09:00'), () => { /* ... */ })
+
+  // Day constant with builder
+  Cron(Patterns.everyWeekOn(Patterns.FRIDAY, '17:00'), () => { /* ... */ })
+  ```
+
+</Tab>
 </Tabs>
 
 ### Constant presets

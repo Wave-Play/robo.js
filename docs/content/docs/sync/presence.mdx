@@ -8,22 +8,26 @@ Track who's connected with custom presence data. `useSyncPresence` manages heart
 ## Signature
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    function useSyncPresence<T = unknown, ClientData = unknown>(
-      key: (string | null)[],
-      options?: PresenceOptions<T>
-    ): PresenceResult<T, ClientData>
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    function useSyncPresence(
-      key: (string | null)[],
-      options?: PresenceOptions<T>
-    ): PresenceResult<T, ClientData>
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  function useSyncPresence<T = unknown, ClientData = unknown>(
+    key: (string | null)[],
+    options?: PresenceOptions<T>
+  ): PresenceResult<T, ClientData>
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  function useSyncPresence(
+    key: (string | null)[],
+    options?: PresenceOptions<T>
+  ): PresenceResult<T, ClientData>
+  ```
+
+</Tab>
 </Tabs>
 
 ## Options
@@ -47,106 +51,118 @@ Track who's connected with custom presence data. `useSyncPresence` manages heart
 ## Participant type
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    interface Participant<T, ClientData> {
-      clientId: string
-      user: Client<ClientData>
-      presence: T
-      isStale: boolean    // No heartbeat received recently
-      isYou: boolean      // Is this the current client
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
+<Tab value="TypeScript">
 
-    ```
-  </Tab>
+  ```ts
+  interface Participant<T, ClientData> {
+    clientId: string
+    user: Client<ClientData>
+    presence: T
+    isStale: boolean    // No heartbeat received recently
+    isYou: boolean      // Is this the current client
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+
+  ```
+
+</Tab>
 </Tabs>
 
 ## Basic usage
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    import { useSyncPresence } from '@robojs/sync'
+<Tab value="TypeScript">
 
-    function Lobby() {
-      const { participants, updatePresence } = useSyncPresence(['room', roomId], {
-        initialPresence: { status: 'online', activity: 'idle' }
-      })
+  ```tsx
+  import { useSyncPresence } from '@robojs/sync'
 
-      return (
-        <div>
-          <h2>Players ({participants.length})</h2>
-          <ul>
-            {participants.map((p) => (
-              <li key={p.clientId} style={{ opacity: p.isStale ? 0.5 : 1 }}>
-                {p.user.data?.name ?? p.clientId.slice(0, 6)}
-                {' — '}{p.presence.status}
-                {p.isStale && ' (away)'}
-                {p.isYou && ' (you)'}
-              </li>
-            ))}
-          </ul>
-          <button onClick={() => updatePresence({ status: 'ready' })}>Ready up</button>
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    import { useSyncPresence } from '@robojs/sync'
+  function Lobby() {
+    const { participants, updatePresence } = useSyncPresence(['room', roomId], {
+      initialPresence: { status: 'online', activity: 'idle' }
+    })
 
-    function Lobby() {
-      const { participants, updatePresence } = useSyncPresence(['room', roomId], {
-        initialPresence: { status: 'online', activity: 'idle' }
-      })
+    return (
+      <div>
+        <h2>Players ({participants.length})</h2>
+        <ul>
+          {participants.map((p) => (
+            <li key={p.clientId} style={{ opacity: p.isStale ? 0.5 : 1 }}>
+              {p.user.data?.name ?? p.clientId.slice(0, 6)}
+              {' — '}{p.presence.status}
+              {p.isStale && ' (away)'}
+              {p.isYou && ' (you)'}
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => updatePresence({ status: 'ready' })}>Ready up</button>
+      </div>
+    )
+  }
+  ```
 
-      return (
-        <div>
-          <h2>Players ({participants.length})</h2>
-          <ul>
-            {participants.map((p) => (
-              <li key={p.clientId} style={{ opacity: p.isStale ? 0.5 : 1 }}>
-                {p.user.data?.name ?? p.clientId.slice(0, 6)}
-                {' — '}{p.presence.status}
-                {p.isStale && ' (away)'}
-                {p.isYou && ' (you)'}
-              </li>
-            ))}
-          </ul>
-          <button onClick={() => updatePresence({ status: 'ready' })}>Ready up</button>
-        </div>
-      )
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  import { useSyncPresence } from '@robojs/sync'
+
+  function Lobby() {
+    const { participants, updatePresence } = useSyncPresence(['room', roomId], {
+      initialPresence: { status: 'online', activity: 'idle' }
+    })
+
+    return (
+      <div>
+        <h2>Players ({participants.length})</h2>
+        <ul>
+          {participants.map((p) => (
+            <li key={p.clientId} style={{ opacity: p.isStale ? 0.5 : 1 }}>
+              {p.user.data?.name ?? p.clientId.slice(0, 6)}
+              {' — '}{p.presence.status}
+              {p.isStale && ' (away)'}
+              {p.isYou && ' (you)'}
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => updatePresence({ status: 'ready' })}>Ready up</button>
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Updating presence
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    // Partial update
-    updatePresence({ activity: 'typing' })
+<Tab value="TypeScript">
 
-    // Updater function
-    updatePresence((prev) => ({ ...prev, score: prev.score + 1 }))
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    // Partial update
-    updatePresence({ activity: 'typing' })
+  ```tsx
+  // Partial update
+  updatePresence({ activity: 'typing' })
 
-    // Updater function
-    updatePresence((prev) => ({ ...prev, score: prev.score + 1 }))
-    ```
-  </Tab>
+  // Updater function
+  updatePresence((prev) => ({ ...prev, score: prev.score + 1 }))
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  // Partial update
+  updatePresence({ activity: 'typing' })
+
+  // Updater function
+  updatePresence((prev) => ({ ...prev, score: prev.score + 1 }))
+  ```
+
+</Tab>
 </Tabs>
 
 ## Stale detection
@@ -161,56 +177,60 @@ Presence uses a heartbeat system to detect inactive users:
 ## Typing indicator example
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```tsx
-    function ChatInput() {
-      const { participants, updatePresence } = useSyncPresence(['chat', roomId], {
-        initialPresence: { typing: false },
-        staleTimeout: 3000,
-        heartbeatInterval: 1000
-      })
+<Tab value="TypeScript">
 
-      const typingUsers = participants.filter((p) => p.presence.typing && !p.isYou && !p.isStale)
+  ```tsx
+  function ChatInput() {
+    const { participants, updatePresence } = useSyncPresence(['chat', roomId], {
+      initialPresence: { typing: false },
+      staleTimeout: 3000,
+      heartbeatInterval: 1000
+    })
 
-      return (
-        <div>
-          <input
-            onFocus={() => updatePresence({ typing: true })}
-            onBlur={() => updatePresence({ typing: false })}
-          />
-          {typingUsers.length > 0 && (
-            <p>{typingUsers.map((p) => p.user.data?.name).join(', ')} typing...</p>
-          )}
-        </div>
-      )
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```jsx
-    function ChatInput() {
-      const { participants, updatePresence } = useSyncPresence(['chat', roomId], {
-        initialPresence: { typing: false },
-        staleTimeout: 3000,
-        heartbeatInterval: 1000
-      })
+    const typingUsers = participants.filter((p) => p.presence.typing && !p.isYou && !p.isStale)
 
-      const typingUsers = participants.filter((p) => p.presence.typing && !p.isYou && !p.isStale)
+    return (
+      <div>
+        <input
+          onFocus={() => updatePresence({ typing: true })}
+          onBlur={() => updatePresence({ typing: false })}
+        />
+        {typingUsers.length > 0 && (
+          <p>{typingUsers.map((p) => p.user.data?.name).join(', ')} typing...</p>
+        )}
+      </div>
+    )
+  }
+  ```
 
-      return (
-        <div>
-          <input
-            onFocus={() => updatePresence({ typing: true })}
-            onBlur={() => updatePresence({ typing: false })}
-          />
-          {typingUsers.length > 0 && (
-            <p>{typingUsers.map((p) => p.user.data?.name).join(', ')} typing...</p>
-          )}
-        </div>
-      )
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```jsx
+  function ChatInput() {
+    const { participants, updatePresence } = useSyncPresence(['chat', roomId], {
+      initialPresence: { typing: false },
+      staleTimeout: 3000,
+      heartbeatInterval: 1000
+    })
+
+    const typingUsers = participants.filter((p) => p.presence.typing && !p.isYou && !p.isStale)
+
+    return (
+      <div>
+        <input
+          onFocus={() => updatePresence({ typing: true })}
+          onBlur={() => updatePresence({ typing: false })}
+        />
+        {typingUsers.length > 0 && (
+          <p>{typingUsers.map((p) => p.user.data?.name).join(', ')} typing...</p>
+        )}
+      </div>
+    )
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## How it works

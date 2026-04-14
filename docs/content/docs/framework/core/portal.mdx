@@ -10,37 +10,45 @@ The Portal API provides runtime access to your Robo's registered commands, event
 Toggle modules at runtime. When disabled, the module's commands and events stop responding as if they do not exist.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { portal } from 'robo.js'
+<Tab value="TypeScript">
 
-    // Disable a module
-    portal.module('admin').setEnabled(false)
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { portal } from 'robo.js'
+  ```ts
+  import { portal } from 'robo.js'
 
-    // Disable a module
-    portal.module('admin').setEnabled(false)
-    ```
-  </Tab>
+  // Disable a module
+  portal.module('admin').setEnabled(false)
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { portal } from 'robo.js'
+
+  // Disable a module
+  portal.module('admin').setEnabled(false)
+  ```
+
+</Tab>
 </Tabs>
 
 Check whether a module is currently enabled:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    const isAdminEnabled = portal.module('admin').isEnabled()
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    const isAdminEnabled = portal.module('admin').isEnabled()
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts
+  const isAdminEnabled = portal.module('admin').isEnabled()
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  const isAdminEnabled = portal.module('admin').isEnabled()
+  ```
+
+</Tab>
 </Tabs>
 
 ## Inspecting Registered Handlers
@@ -48,26 +56,30 @@ Check whether a module is currently enabled:
 Access registered handlers through namespaces. For example, Discord handlers live under the `discord` namespace:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    // Access all handlers as a flat list
-    const allHandlers = portal.all()
+<Tab value="TypeScript">
 
-    // Access handlers by type string
-    const commands = portal.getByType('discord:commands')
-    const events = portal.getByType('discord:events')
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    // Access all handlers as a flat list
-    const allHandlers = portal.all()
+  ```ts
+  // Access all handlers as a flat list
+  const allHandlers = portal.all()
 
-    // Access handlers by type string
-    const commands = portal.getByType('discord:commands')
-    const events = portal.getByType('discord:events')
-    ```
-  </Tab>
+  // Access handlers by type string
+  const commands = portal.getByType('discord:commands')
+  const events = portal.getByType('discord:events')
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  // Access all handlers as a flat list
+  const allHandlers = portal.all()
+
+  // Access handlers by type string
+  const commands = portal.getByType('discord:commands')
+  const events = portal.getByType('discord:events')
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -79,52 +91,56 @@ Access registered handlers through namespaces. For example, Discord handlers liv
 To preserve module states across restarts, store them in a database and restore them at startup:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/robo/start.ts"
-    import { portal } from 'robo.js'
+<Tab value="TypeScript">
 
-    export default async function () {
-    	const database = ... // load your database
+  ```ts title="src/robo/start.ts"
+  import { portal } from 'robo.js'
 
-    	async function updateModuleStates() {
-    		const moduleStates = await database.getModuleStates()
+  export default async function () {
+  	const database = ... // load your database
 
-    		for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
-    			portal.module(moduleName).setEnabled(isEnabled)
-    		}
-    	}
+  	async function updateModuleStates() {
+  		const moduleStates = await database.getModuleStates()
 
-    	// Restore module states at startup
-    	await updateModuleStates()
+  		for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
+  			portal.module(moduleName).setEnabled(isEnabled)
+  		}
+  	}
 
-    	// Poll for changes periodically
-    	setInterval(updateModuleStates, 10 * 60 * 1000)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/robo/start.js"
-    import { portal } from 'robo.js'
+  	// Restore module states at startup
+  	await updateModuleStates()
 
-    export default async function () {
-    	const database = ... // load your database
+  	// Poll for changes periodically
+  	setInterval(updateModuleStates, 10 * 60 * 1000)
+  }
+  ```
 
-    	async function updateModuleStates() {
-    		const moduleStates = await database.getModuleStates()
+</Tab>
+<Tab value="JavaScript">
 
-    		for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
-    			portal.module(moduleName).setEnabled(isEnabled)
-    		}
-    	}
+  ```js title="src/robo/start.js"
+  import { portal } from 'robo.js'
 
-    	// Restore module states at startup
-    	await updateModuleStates()
+  export default async function () {
+  	const database = ... // load your database
 
-    	// Poll for changes periodically
-    	setInterval(updateModuleStates, 10 * 60 * 1000)
-    }
-    ```
-  </Tab>
+  	async function updateModuleStates() {
+  		const moduleStates = await database.getModuleStates()
+
+  		for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
+  			portal.module(moduleName).setEnabled(isEnabled)
+  		}
+  	}
+
+  	// Restore module states at startup
+  	await updateModuleStates()
+
+  	// Poll for changes periodically
+  	setInterval(updateModuleStates, 10 * 60 * 1000)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 This pattern enables building admin interfaces that toggle modules through a database, with changes taking effect at the next poll interval.

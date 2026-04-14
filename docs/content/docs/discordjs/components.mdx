@@ -22,54 +22,58 @@ Buttons are interactive elements that users can click. Discord supports 5 button
 | Link | `ButtonStyle.Link` | Grey | No (opens URL) |
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/confirm.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder()
-    			.setCustomId('confirm-yes')
-    			.setLabel('Confirm')
-    			.setStyle(ButtonStyle.Success),
-    		new ButtonBuilder()
-    			.setCustomId('confirm-no')
-    			.setLabel('Cancel')
-    			.setStyle(ButtonStyle.Danger),
-    		new ButtonBuilder()
-    			.setLabel('Documentation')
-    			.setURL('https://robojs.dev')
-    			.setStyle(ButtonStyle.Link)
-    	)
+  ```ts title="src/commands/confirm.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-    	return { content: 'Are you sure?', components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/confirm.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  export default () => {
+  	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder()
+  			.setCustomId('confirm-yes')
+  			.setLabel('Confirm')
+  			.setStyle(ButtonStyle.Success),
+  		new ButtonBuilder()
+  			.setCustomId('confirm-no')
+  			.setLabel('Cancel')
+  			.setStyle(ButtonStyle.Danger),
+  		new ButtonBuilder()
+  			.setLabel('Documentation')
+  			.setURL('https://robojs.dev')
+  			.setStyle(ButtonStyle.Link)
+  	)
 
-    export default () => {
-    	const row = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder()
-    			.setCustomId('confirm-yes')
-    			.setLabel('Confirm')
-    			.setStyle(ButtonStyle.Success),
-    		new ButtonBuilder()
-    			.setCustomId('confirm-no')
-    			.setLabel('Cancel')
-    			.setStyle(ButtonStyle.Danger),
-    		new ButtonBuilder()
-    			.setLabel('Documentation')
-    			.setURL('https://robojs.dev')
-    			.setStyle(ButtonStyle.Link)
-    	)
+  	return { content: 'Are you sure?', components: [row] }
+  }
+  ```
 
-    	return { content: 'Are you sure?', components: [row] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/confirm.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+  export default () => {
+  	const row = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder()
+  			.setCustomId('confirm-yes')
+  			.setLabel('Confirm')
+  			.setStyle(ButtonStyle.Success),
+  		new ButtonBuilder()
+  			.setCustomId('confirm-no')
+  			.setLabel('Cancel')
+  			.setStyle(ButtonStyle.Danger),
+  		new ButtonBuilder()
+  			.setLabel('Documentation')
+  			.setURL('https://robojs.dev')
+  			.setStyle(ButtonStyle.Link)
+  	)
+
+  	return { content: 'Are you sure?', components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Buttons also support `setEmoji()` for adding an emoji before the label and `setDisabled(true)` to grey them out.
@@ -93,34 +97,38 @@ Handle button interactions in an `interactionCreate` event handler using `isButt
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/confirm.ts"
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isButton()) return
+  ```ts title="src/events/interactionCreate/confirm.ts"
+  import type { Interaction } from 'discord.js'
 
-    	if (interaction.customId === 'confirm-yes') {
-    		await interaction.update({ content: 'Confirmed!', components: [] })
-    	} else if (interaction.customId === 'confirm-no') {
-    		await interaction.update({ content: 'Cancelled.', components: [] })
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/confirm.js"
-    export default async (interaction) => {
-    	if (!interaction.isButton()) return
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isButton()) return
 
-    	if (interaction.customId === 'confirm-yes') {
-    		await interaction.update({ content: 'Confirmed!', components: [] })
-    	} else if (interaction.customId === 'confirm-no') {
-    		await interaction.update({ content: 'Cancelled.', components: [] })
-    	}
-    }
-    ```
-  </Tab>
+  	if (interaction.customId === 'confirm-yes') {
+  		await interaction.update({ content: 'Confirmed!', components: [] })
+  	} else if (interaction.customId === 'confirm-no') {
+  		await interaction.update({ content: 'Cancelled.', components: [] })
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/interactionCreate/confirm.js"
+  export default async (interaction) => {
+  	if (!interaction.isButton()) return
+
+  	if (interaction.customId === 'confirm-yes') {
+  		await interaction.update({ content: 'Confirmed!', components: [] })
+  	} else if (interaction.customId === 'confirm-no') {
+  		await interaction.update({ content: 'Cancelled.', components: [] })
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Select menus
@@ -132,44 +140,48 @@ Discord provides 5 types of select menus, each for selecting different kinds of 
 Custom string options defined with `addOptions()`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/pick-color.ts"
-    import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const menu = new StringSelectMenuBuilder()
-    		.setCustomId('color-select')
-    		.setPlaceholder('Pick a color')
-    		.addOptions(
-    			{ label: 'Red', value: 'red', emoji: '🔴' },
-    			{ label: 'Blue', value: 'blue', emoji: '🔵' },
-    			{ label: 'Green', value: 'green', emoji: '🟢' }
-    		)
+  ```ts title="src/commands/pick-color.ts"
+  import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 
-    	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)
-    	return { content: 'Choose your favorite color:', components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/pick-color.js"
-    import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+  export default () => {
+  	const menu = new StringSelectMenuBuilder()
+  		.setCustomId('color-select')
+  		.setPlaceholder('Pick a color')
+  		.addOptions(
+  			{ label: 'Red', value: 'red', emoji: '🔴' },
+  			{ label: 'Blue', value: 'blue', emoji: '🔵' },
+  			{ label: 'Green', value: 'green', emoji: '🟢' }
+  		)
 
-    export default () => {
-    	const menu = new StringSelectMenuBuilder()
-    		.setCustomId('color-select')
-    		.setPlaceholder('Pick a color')
-    		.addOptions(
-    			{ label: 'Red', value: 'red', emoji: '🔴' },
-    			{ label: 'Blue', value: 'blue', emoji: '🔵' },
-    			{ label: 'Green', value: 'green', emoji: '🟢' }
-    		)
+  	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)
+  	return { content: 'Choose your favorite color:', components: [row] }
+  }
+  ```
 
-    	const row = new ActionRowBuilder().addComponents(menu)
-    	return { content: 'Choose your favorite color:', components: [row] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/pick-color.js"
+  import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+
+  export default () => {
+  	const menu = new StringSelectMenuBuilder()
+  		.setCustomId('color-select')
+  		.setPlaceholder('Pick a color')
+  		.addOptions(
+  			{ label: 'Red', value: 'red', emoji: '🔴' },
+  			{ label: 'Blue', value: 'blue', emoji: '🔵' },
+  			{ label: 'Green', value: 'green', emoji: '🟢' }
+  		)
+
+  	const row = new ActionRowBuilder().addComponents(menu)
+  	return { content: 'Choose your favorite color:', components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### User select menu
@@ -240,58 +252,62 @@ return { content: 'Who should be notified?', components: [row] }
 Use the appropriate type guard to check the select menu type:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/selections.ts"
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (interaction.isStringSelectMenu() && interaction.customId === 'color-select') {
-    		const selected = interaction.values[0]
-    		await interaction.update({ content: `You picked: ${selected}`, components: [] })
-    	}
+  ```ts title="src/events/interactionCreate/selections.ts"
+  import type { Interaction } from 'discord.js'
 
-    	if (interaction.isUserSelectMenu() && interaction.customId === 'user-select') {
-    		const users = interaction.users.map((u) => u.username).join(', ')
-    		await interaction.reply({ content: `Selected: ${users}`, ephemeral: true })
-    	}
+  export default async (interaction: Interaction) => {
+  	if (interaction.isStringSelectMenu() && interaction.customId === 'color-select') {
+  		const selected = interaction.values[0]
+  		await interaction.update({ content: `You picked: ${selected}`, components: [] })
+  	}
 
-    	if (interaction.isRoleSelectMenu() && interaction.customId === 'role-select') {
-    		const roles = interaction.roles.map((r) => r.name).join(', ')
-    		await interaction.reply({ content: `Roles: ${roles}`, ephemeral: true })
-    	}
+  	if (interaction.isUserSelectMenu() && interaction.customId === 'user-select') {
+  		const users = interaction.users.map((u) => u.username).join(', ')
+  		await interaction.reply({ content: `Selected: ${users}`, ephemeral: true })
+  	}
 
-    	if (interaction.isChannelSelectMenu() && interaction.customId === 'channel-select') {
-    		const channels = interaction.channels.map((c) => c.name).join(', ')
-    		await interaction.reply({ content: `Channels: ${channels}`, ephemeral: true })
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/selections.js"
-    export default async (interaction) => {
-    	if (interaction.isStringSelectMenu() && interaction.customId === 'color-select') {
-    		const selected = interaction.values[0]
-    		await interaction.update({ content: `You picked: ${selected}`, components: [] })
-    	}
+  	if (interaction.isRoleSelectMenu() && interaction.customId === 'role-select') {
+  		const roles = interaction.roles.map((r) => r.name).join(', ')
+  		await interaction.reply({ content: `Roles: ${roles}`, ephemeral: true })
+  	}
 
-    	if (interaction.isUserSelectMenu() && interaction.customId === 'user-select') {
-    		const users = interaction.users.map((u) => u.username).join(', ')
-    		await interaction.reply({ content: `Selected: ${users}`, ephemeral: true })
-    	}
+  	if (interaction.isChannelSelectMenu() && interaction.customId === 'channel-select') {
+  		const channels = interaction.channels.map((c) => c.name).join(', ')
+  		await interaction.reply({ content: `Channels: ${channels}`, ephemeral: true })
+  	}
+  }
+  ```
 
-    	if (interaction.isRoleSelectMenu() && interaction.customId === 'role-select') {
-    		const roles = interaction.roles.map((r) => r.name).join(', ')
-    		await interaction.reply({ content: `Roles: ${roles}`, ephemeral: true })
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	if (interaction.isChannelSelectMenu() && interaction.customId === 'channel-select') {
-    		const channels = interaction.channels.map((c) => c.name).join(', ')
-    		await interaction.reply({ content: `Channels: ${channels}`, ephemeral: true })
-    	}
-    }
-    ```
-  </Tab>
+  ```js title="src/events/interactionCreate/selections.js"
+  export default async (interaction) => {
+  	if (interaction.isStringSelectMenu() && interaction.customId === 'color-select') {
+  		const selected = interaction.values[0]
+  		await interaction.update({ content: `You picked: ${selected}`, components: [] })
+  	}
+
+  	if (interaction.isUserSelectMenu() && interaction.customId === 'user-select') {
+  		const users = interaction.users.map((u) => u.username).join(', ')
+  		await interaction.reply({ content: `Selected: ${users}`, ephemeral: true })
+  	}
+
+  	if (interaction.isRoleSelectMenu() && interaction.customId === 'role-select') {
+  		const roles = interaction.roles.map((r) => r.name).join(', ')
+  		await interaction.reply({ content: `Roles: ${roles}`, ephemeral: true })
+  	}
+
+  	if (interaction.isChannelSelectMenu() && interaction.customId === 'channel-select') {
+  		const channels = interaction.channels.map((c) => c.name).join(', ')
+  		await interaction.reply({ content: `Channels: ${channels}`, ephemeral: true })
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## `update()` vs `reply()`
@@ -310,45 +326,49 @@ Use `update()` when the component action changes the original message (e.g., rem
 Disable a component after interaction by rebuilding the action row with `setDisabled(true)`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/disable-after-click.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isButton() || interaction.customId !== 'one-time') return
+  ```ts title="src/events/interactionCreate/disable-after-click.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  import type { Interaction } from 'discord.js'
 
-    	const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder()
-    			.setCustomId('one-time')
-    			.setLabel('Claimed')
-    			.setStyle(ButtonStyle.Secondary)
-    			.setDisabled(true)
-    	)
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isButton() || interaction.customId !== 'one-time') return
 
-    	await interaction.update({ components: [disabledRow] })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/disable-after-click.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  	const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder()
+  			.setCustomId('one-time')
+  			.setLabel('Claimed')
+  			.setStyle(ButtonStyle.Secondary)
+  			.setDisabled(true)
+  	)
 
-    export default async (interaction) => {
-    	if (!interaction.isButton() || interaction.customId !== 'one-time') return
+  	await interaction.update({ components: [disabledRow] })
+  }
+  ```
 
-    	const disabledRow = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder()
-    			.setCustomId('one-time')
-    			.setLabel('Claimed')
-    			.setStyle(ButtonStyle.Secondary)
-    			.setDisabled(true)
-    	)
+</Tab>
+<Tab value="JavaScript">
 
-    	await interaction.update({ components: [disabledRow] })
-    }
-    ```
-  </Tab>
+  ```js title="src/events/interactionCreate/disable-after-click.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+  export default async (interaction) => {
+  	if (!interaction.isButton() || interaction.customId !== 'one-time') return
+
+  	const disabledRow = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder()
+  			.setCustomId('one-time')
+  			.setLabel('Claimed')
+  			.setStyle(ButtonStyle.Secondary)
+  			.setDisabled(true)
+  	)
+
+  	await interaction.update({ components: [disabledRow] })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Collectors
@@ -356,88 +376,92 @@ Disable a component after interaction by rebuilding the action row with `setDisa
 As an alternative to the two-file pattern, **collectors** let you handle component interactions in the same file that sent the component. Useful for one-off interactions with a timeout.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/quiz.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
-    import type { CommandConfig } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: CommandConfig = {
-    	description: 'Quick quiz question',
-    	sage: false
-    }
+  ```ts title="src/commands/quiz.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  import type { CommandConfig } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    export default async (interaction: ChatInputCommandInteraction) => {
-    	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder().setCustomId('answer-a').setLabel('A) Paris').setStyle(ButtonStyle.Primary),
-    		new ButtonBuilder().setCustomId('answer-b').setLabel('B) London').setStyle(ButtonStyle.Primary)
-    	)
+  export const config: CommandConfig = {
+  	description: 'Quick quiz question',
+  	sage: false
+  }
 
-    	const reply = await interaction.reply({
-    		content: 'What is the capital of France?',
-    		components: [row],
-    		fetchReply: true
-    	})
+  export default async (interaction: ChatInputCommandInteraction) => {
+  	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder().setCustomId('answer-a').setLabel('A) Paris').setStyle(ButtonStyle.Primary),
+  		new ButtonBuilder().setCustomId('answer-b').setLabel('B) London').setStyle(ButtonStyle.Primary)
+  	)
 
-    	const collector = reply.createMessageComponentCollector({ time: 15_000 })
+  	const reply = await interaction.reply({
+  		content: 'What is the capital of France?',
+  		components: [row],
+  		fetchReply: true
+  	})
 
-    	collector.on('collect', async (i) => {
-    		if (i.customId === 'answer-a') {
-    			await i.update({ content: 'Correct!', components: [] })
-    		} else {
-    			await i.update({ content: 'Wrong! The answer is Paris.', components: [] })
-    		}
-    		collector.stop()
-    	})
+  	const collector = reply.createMessageComponentCollector({ time: 15_000 })
 
-    	collector.on('end', (collected, reason) => {
-    		if (reason === 'time') {
-    			interaction.editReply({ content: 'Time\'s up!', components: [] })
-    		}
-    	})
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/quiz.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  	collector.on('collect', async (i) => {
+  		if (i.customId === 'answer-a') {
+  			await i.update({ content: 'Correct!', components: [] })
+  		} else {
+  			await i.update({ content: 'Wrong! The answer is Paris.', components: [] })
+  		}
+  		collector.stop()
+  	})
 
-    export const config = {
-    	description: 'Quick quiz question',
-    	sage: false
-    }
+  	collector.on('end', (collected, reason) => {
+  		if (reason === 'time') {
+  			interaction.editReply({ content: 'Time\'s up!', components: [] })
+  		}
+  	})
+  }
+  ```
 
-    export default async (interaction) => {
-    	const row = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder().setCustomId('answer-a').setLabel('A) Paris').setStyle(ButtonStyle.Primary),
-    		new ButtonBuilder().setCustomId('answer-b').setLabel('B) London').setStyle(ButtonStyle.Primary)
-    	)
+</Tab>
+<Tab value="JavaScript">
 
-    	const reply = await interaction.reply({
-    		content: 'What is the capital of France?',
-    		components: [row],
-    		fetchReply: true
-    	})
+  ```js title="src/commands/quiz.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-    	const collector = reply.createMessageComponentCollector({ time: 15_000 })
+  export const config = {
+  	description: 'Quick quiz question',
+  	sage: false
+  }
 
-    	collector.on('collect', async (i) => {
-    		if (i.customId === 'answer-a') {
-    			await i.update({ content: 'Correct!', components: [] })
-    		} else {
-    			await i.update({ content: 'Wrong! The answer is Paris.', components: [] })
-    		}
-    		collector.stop()
-    	})
+  export default async (interaction) => {
+  	const row = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder().setCustomId('answer-a').setLabel('A) Paris').setStyle(ButtonStyle.Primary),
+  		new ButtonBuilder().setCustomId('answer-b').setLabel('B) London').setStyle(ButtonStyle.Primary)
+  	)
 
-    	collector.on('end', (collected, reason) => {
-    		if (reason === 'time') {
-    			interaction.editReply({ content: 'Time\'s up!', components: [] })
-    		}
-    	})
-    }
-    ```
-  </Tab>
+  	const reply = await interaction.reply({
+  		content: 'What is the capital of France?',
+  		components: [row],
+  		fetchReply: true
+  	})
+
+  	const collector = reply.createMessageComponentCollector({ time: 15_000 })
+
+  	collector.on('collect', async (i) => {
+  		if (i.customId === 'answer-a') {
+  			await i.update({ content: 'Correct!', components: [] })
+  		} else {
+  			await i.update({ content: 'Wrong! The answer is Paris.', components: [] })
+  		}
+  		collector.stop()
+  	})
+
+  	collector.on('end', (collected, reason) => {
+  		if (reason === 'time') {
+  			interaction.editReply({ content: 'Time\'s up!', components: [] })
+  		}
+  	})
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">

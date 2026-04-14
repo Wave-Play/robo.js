@@ -12,24 +12,28 @@ Flashcore uses the local filesystem by default but supports pluggable adapters f
 Stores data as JSON files in `.robo/flashcore/`. This is the default adapter with no configuration needed.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { FileAdapter } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    const adapter = new FileAdapter({
-    	baseDir: '.robo/flashcore' // default
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { FileAdapter } from 'robo.js/flashcore'
+  ```ts
+  import { FileAdapter } from 'robo.js/flashcore'
 
-    const adapter = new FileAdapter({
-    	baseDir: '.robo/flashcore' // default
-    })
-    ```
-  </Tab>
+  const adapter = new FileAdapter({
+  	baseDir: '.robo/flashcore' // default
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { FileAdapter } from 'robo.js/flashcore'
+
+  const adapter = new FileAdapter({
+  	baseDir: '.robo/flashcore' // default
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 Supports: `scan`, `setIfNotExists`.
@@ -49,28 +53,32 @@ Wraps any [Keyv](https://github.com/jaredwray/keyv) instance, giving you access 
 Set the adapter in your Robo configuration:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    import { FileAdapter } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    export default {
-    	flashcore: {
-    		adapter: new FileAdapter({ baseDir: '.data/flashcore' })
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    import { FileAdapter } from 'robo.js/flashcore'
+  ```ts title="config/robo.mjs"
+  import { FileAdapter } from 'robo.js/flashcore'
 
-    export default {
-    	flashcore: {
-    		adapter: new FileAdapter({ baseDir: '.data/flashcore' })
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	flashcore: {
+  		adapter: new FileAdapter({ baseDir: '.data/flashcore' })
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  import { FileAdapter } from 'robo.js/flashcore'
+
+  export default {
+  	flashcore: {
+  		adapter: new FileAdapter({ baseDir: '.data/flashcore' })
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Keyv Adapters
@@ -78,32 +86,36 @@ Set the adapter in your Robo configuration:
 Use the `flashcore.keyv` config to connect to external databases:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/robo.mjs"
-    import KeyvRedis from '@keyv/redis'
+<Tab value="TypeScript">
 
-    export default {
-    	flashcore: {
-    		keyv: {
-    			store: new KeyvRedis('redis://localhost:6379')
-    		}
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/robo.mjs"
-    import KeyvRedis from '@keyv/redis'
+  ```ts title="config/robo.mjs"
+  import KeyvRedis from '@keyv/redis'
 
-    export default {
-    	flashcore: {
-    		keyv: {
-    			store: new KeyvRedis('redis://localhost:6379')
-    		}
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	flashcore: {
+  		keyv: {
+  			store: new KeyvRedis('redis://localhost:6379')
+  		}
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/robo.mjs"
+  import KeyvRedis from '@keyv/redis'
+
+  export default {
+  	flashcore: {
+  		keyv: {
+  			store: new KeyvRedis('redis://localhost:6379')
+  		}
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Other popular adapters:
@@ -131,24 +143,28 @@ See the [Keyv documentation](https://github.com/jaredwray/keyv/tree/main#storage
 Initialize Flashcore manually with a custom adapter:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import { Flashcore } from 'robo.js'
+<Tab value="TypeScript">
 
-    await Flashcore.$.init({
-    	adapter: myCustomAdapter
-    })
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    import { Flashcore } from 'robo.js'
+  ```ts
+  import { Flashcore } from 'robo.js'
 
-    await Flashcore.$.init({
-    	adapter: myCustomAdapter
-    })
-    ```
-  </Tab>
+  await Flashcore.$.init({
+  	adapter: myCustomAdapter
+  })
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js
+  import { Flashcore } from 'robo.js'
+
+  await Flashcore.$.init({
+  	adapter: myCustomAdapter
+  })
+  ```
+
+</Tab>
 </Tabs>
 
 ## Adapter Capabilities
@@ -174,77 +190,81 @@ If an adapter lacks a required capability, Flashcore throws a `FeatureNotSupport
 Implement the `FlashcoreAdapter` interface to create your own adapter:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts
-    import type { FlashcoreAdapter } from 'robo.js/flashcore'
+<Tab value="TypeScript">
 
-    export class MyAdapter implements FlashcoreAdapter {
-    	readonly name = 'MyAdapter'
+  ```ts
+  import type { FlashcoreAdapter } from 'robo.js/flashcore'
 
-    	async get(key: string): Promise<unknown> {
-    		// Read from your storage
-    	}
+  export class MyAdapter implements FlashcoreAdapter {
+  	readonly name = 'MyAdapter'
 
-    	async set(key: string, value: unknown): Promise<boolean> {
-    		// Write to your storage
-    		return true
-    	}
+  	async get(key: string): Promise<unknown> {
+  		// Read from your storage
+  	}
 
-    	async delete(key: string): Promise<boolean> {
-    		// Delete from your storage
-    		return true
-    	}
+  	async set(key: string, value: unknown): Promise<boolean> {
+  		// Write to your storage
+  		return true
+  	}
 
-    	async has(key: string): Promise<boolean> {
-    		// Check existence
-    		return false
-    	}
+  	async delete(key: string): Promise<boolean> {
+  		// Delete from your storage
+  		return true
+  	}
 
-    	async clear(): Promise<void> {
-    		// Clear all data
-    	}
+  	async has(key: string): Promise<boolean> {
+  		// Check existence
+  		return false
+  	}
 
-    	// Optional methods for advanced capabilities:
-    	// async scan(prefix: string): Promise<string[]> { ... }
-    	// async setIfNotExists(key: string, value: unknown): Promise<boolean> { ... }
-    	// async compareAndSwap(key: string, expected: unknown, value: unknown): Promise<boolean> { ... }
-    	// async atomicBatch(ops: BatchOperation[]): Promise<void> { ... }
+  	async clear(): Promise<void> {
+  		// Clear all data
+  	}
 
-    	// Optional: self-report capabilities
-    	// capabilities() { return { isolation: 'serializable' } }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js
-    export class MyAdapter {
-    	name = 'MyAdapter'
+  	// Optional methods for advanced capabilities:
+  	// async scan(prefix: string): Promise<string[]> { ... }
+  	// async setIfNotExists(key: string, value: unknown): Promise<boolean> { ... }
+  	// async compareAndSwap(key: string, expected: unknown, value: unknown): Promise<boolean> { ... }
+  	// async atomicBatch(ops: BatchOperation[]): Promise<void> { ... }
 
-    	async get(key) {
-    		// Read from your storage
-    	}
+  	// Optional: self-report capabilities
+  	// capabilities() { return { isolation: 'serializable' } }
+  }
+  ```
 
-    	async set(key, value) {
-    		// Write to your storage
-    		return true
-    	}
+</Tab>
+<Tab value="JavaScript">
 
-    	async delete(key) {
-    		// Delete from your storage
-    		return true
-    	}
+  ```js
+  export class MyAdapter {
+  	name = 'MyAdapter'
 
-    	async has(key) {
-    		// Check existence
-    		return false
-    	}
+  	async get(key) {
+  		// Read from your storage
+  	}
 
-    	async clear() {
-    		// Clear all data
-    	}
-    }
-    ```
-  </Tab>
+  	async set(key, value) {
+  		// Write to your storage
+  		return true
+  	}
+
+  	async delete(key) {
+  		// Delete from your storage
+  		return true
+  	}
+
+  	async has(key) {
+  		// Check existence
+  		return false
+  	}
+
+  	async clear() {
+  		// Clear all data
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Adapter Wrappers

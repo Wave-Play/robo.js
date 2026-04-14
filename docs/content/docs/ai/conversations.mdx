@@ -23,30 +23,34 @@ Use `restrict` and `whitelist` together to control where the bot operates.
 `restrict` limits the bot to an explicit list of channels. If set, the bot ignores messages from every other channel, even whitelisted ones. `whitelist` marks channels where the bot responds to all messages without requiring a mention.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	restrict: {
-    		channelIds: ['345678901234567890']
-    	},
-    	whitelist: {
-    		channelIds: ['123456789012345678']
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	restrict: {
-    		channelIds: ['345678901234567890']
-    	},
-    	whitelist: {
-    		channelIds: ['123456789012345678']
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	restrict: {
+  		channelIds: ['345678901234567890']
+  	},
+  	whitelist: {
+  		channelIds: ['123456789012345678']
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	restrict: {
+  		channelIds: ['345678901234567890']
+  	},
+  	whitelist: {
+  		channelIds: ['123456789012345678']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="warn">
@@ -58,40 +62,44 @@ Use `restrict` and `whitelist` together to control where the bot operates.
 Add or remove channels at runtime without restarting the bot.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/toggle-channel.ts"
-    import { AI } from '@robojs/ai'
+<Tab value="TypeScript">
 
-    // Whitelist management
-    AI.addWhitelistChannel('123456789012345678')
-    AI.removeWhitelistChannel('123456789012345678')
+  ```ts title="src/commands/toggle-channel.ts"
+  import { AI } from '@robojs/ai'
 
-    // Restrict management
-    AI.addRestrictChannel('345678901234567890')
-    AI.removeRestrictChannel('345678901234567890')
+  // Whitelist management
+  AI.addWhitelistChannel('123456789012345678')
+  AI.removeWhitelistChannel('123456789012345678')
 
-    // Query current lists
-    const whitelisted = AI.getWhitelistChannels() // string[]
-    const restricted = AI.getRestrictChannels()   // string[]
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/toggle-channel.js"
-    import { AI } from '@robojs/ai'
+  // Restrict management
+  AI.addRestrictChannel('345678901234567890')
+  AI.removeRestrictChannel('345678901234567890')
 
-    // Whitelist management
-    AI.addWhitelistChannel('123456789012345678')
-    AI.removeWhitelistChannel('123456789012345678')
+  // Query current lists
+  const whitelisted = AI.getWhitelistChannels() // string[]
+  const restricted = AI.getRestrictChannels()   // string[]
+  ```
 
-    // Restrict management
-    AI.addRestrictChannel('345678901234567890')
-    AI.removeRestrictChannel('345678901234567890')
+</Tab>
+<Tab value="JavaScript">
 
-    // Query current lists
-    const whitelisted = AI.getWhitelistChannels() // string[]
-    const restricted = AI.getRestrictChannels()   // string[]
-    ```
-  </Tab>
+  ```js title="src/commands/toggle-channel.js"
+  import { AI } from '@robojs/ai'
+
+  // Whitelist management
+  AI.addWhitelistChannel('123456789012345678')
+  AI.removeWhitelistChannel('123456789012345678')
+
+  // Restrict management
+  AI.addRestrictChannel('345678901234567890')
+  AI.removeRestrictChannel('345678901234567890')
+
+  // Query current lists
+  const whitelisted = AI.getWhitelistChannels() // string[]
+  const restricted = AI.getRestrictChannels()   // string[]
+  ```
+
+</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -107,26 +115,30 @@ Context is injected as a separate system message framed as: "Recent channel conv
 Configure this behavior in the plugin options:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	context: {
-    		enabled: true,
-    		depth: 8
-    	}
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	context: {
-    		enabled: true,
-    		depth: 8
-    	}
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	context: {
+  		enabled: true,
+  		depth: 8
+  	}
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	context: {
+  		enabled: true,
+  		depth: 8
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 <TypeTable
@@ -179,20 +191,24 @@ Drop files into the `/documents` directory at the root of your project. On start
 </Files>
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/ai.mjs"
-    export default {
-    	insight: true
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/ai.mjs"
-    export default {
-    	insight: true
-    }
-    ```
-  </Tab>
+<Tab value="TypeScript">
+
+  ```ts title="config/plugins/robojs/ai.mjs"
+  export default {
+  	insight: true
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/ai.mjs"
+  export default {
+  	insight: true
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Insights are enabled by default. Disable them with `insight: false`.

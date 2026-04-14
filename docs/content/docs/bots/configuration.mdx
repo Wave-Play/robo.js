@@ -20,38 +20,42 @@ For the complete reference including environment variables, client access helper
 ## Plugin Configuration
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages', 'GuildMembers']
-    	},
-    	sage: {
-    		defer: true,
-    		deferBuffer: 250,
-    		ephemeral: false
-    	},
-    	testServers: ['123456789012345678']
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	clientOptions: {
-    		intents: ['Guilds', 'GuildMessages', 'GuildMembers']
-    	},
-    	sage: {
-    		defer: true,
-    		deferBuffer: 250,
-    		ephemeral: false
-    	},
-    	testServers: ['123456789012345678']
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages', 'GuildMembers']
+  	},
+  	sage: {
+  		defer: true,
+  		deferBuffer: 250,
+  		ephemeral: false
+  	},
+  	testServers: ['123456789012345678']
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	clientOptions: {
+  		intents: ['Guilds', 'GuildMessages', 'GuildMembers']
+  	},
+  	sage: {
+  		defer: true,
+  		deferBuffer: 250,
+  		ephemeral: false
+  	},
+  	testServers: ['123456789012345678']
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 The `satisfies DiscordConfig` annotation gives you autocomplete and type checking without changing the inferred type of the export.
@@ -65,28 +69,32 @@ The `clientOptions` field passes directly through to the Discord.js `Client` con
 The `defaults` field sets default values for all commands. These can be overridden per command in individual command configs.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.ts"
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	defaults: {
-    		contexts: ['Guild', 'BotDM'],
-    		integrationTypes: ['GuildInstall']
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    export default {
-    	defaults: {
-    		contexts: ['Guild', 'BotDM'],
-    		integrationTypes: ['GuildInstall']
-    	}
-    }
-    ```
-  </Tab>
+  ```ts title="config/plugins/robojs/discordjs.ts"
+  import type { DiscordConfig } from '@robojs/discordjs'
+
+  export default {
+  	defaults: {
+  		contexts: ['Guild', 'BotDM'],
+  		integrationTypes: ['GuildInstall']
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  export default {
+  	defaults: {
+  		contexts: ['Guild', 'BotDM'],
+  		integrationTypes: ['GuildInstall']
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 | Field | Type | Description |

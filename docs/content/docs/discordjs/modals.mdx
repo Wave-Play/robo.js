@@ -10,60 +10,64 @@ Modals are popup forms that collect text input from users. They can be triggered
 Build a modal with `ModalBuilder` and add text fields using `TextInputBuilder`. Each text input must be wrapped in its own `ActionRowBuilder`.
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/feedback.ts"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
-    import type { CommandConfig } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: CommandConfig = {
-    	description: 'Submit feedback',
-    	sage: false
-    }
+  ```ts title="src/commands/feedback.ts"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  import type { CommandConfig } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    export default async (interaction: ChatInputCommandInteraction) => {
-    	const modal = new ModalBuilder()
-    		.setCustomId('feedback-modal')
-    		.setTitle('Submit Feedback')
+  export const config: CommandConfig = {
+  	description: 'Submit feedback',
+  	sage: false
+  }
 
-    	const input = new TextInputBuilder()
-    		.setCustomId('feedback-input')
-    		.setLabel('Your feedback')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setPlaceholder('Tell us what you think...')
-    		.setRequired(true)
+  export default async (interaction: ChatInputCommandInteraction) => {
+  	const modal = new ModalBuilder()
+  		.setCustomId('feedback-modal')
+  		.setTitle('Submit Feedback')
 
-    	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/feedback.js"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  	const input = new TextInputBuilder()
+  		.setCustomId('feedback-input')
+  		.setLabel('Your feedback')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setPlaceholder('Tell us what you think...')
+  		.setRequired(true)
 
-    export const config = {
-    	description: 'Submit feedback',
-    	sage: false
-    }
+  	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
+  	await interaction.showModal(modal)
+  }
+  ```
 
-    export default async (interaction) => {
-    	const modal = new ModalBuilder()
-    		.setCustomId('feedback-modal')
-    		.setTitle('Submit Feedback')
+</Tab>
+<Tab value="JavaScript">
 
-    	const input = new TextInputBuilder()
-    		.setCustomId('feedback-input')
-    		.setLabel('Your feedback')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setPlaceholder('Tell us what you think...')
-    		.setRequired(true)
+  ```js title="src/commands/feedback.js"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
 
-    	modal.addComponents(new ActionRowBuilder().addComponents(input))
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
+  export const config = {
+  	description: 'Submit feedback',
+  	sage: false
+  }
+
+  export default async (interaction) => {
+  	const modal = new ModalBuilder()
+  		.setCustomId('feedback-modal')
+  		.setTitle('Submit Feedback')
+
+  	const input = new TextInputBuilder()
+  		.setCustomId('feedback-input')
+  		.setLabel('Your feedback')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setPlaceholder('Tell us what you think...')
+  		.setRequired(true)
+
+  	modal.addComponents(new ActionRowBuilder().addComponents(input))
+  	await interaction.showModal(modal)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Sage mode and modals
@@ -113,30 +117,34 @@ export default (interaction) => {
 Listen for modal submissions with an `interactionCreate` event handler using `isModalSubmit()`. Retrieve field values with `fields.getTextInputValue()`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/feedback-submit.ts"
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isModalSubmit()) return
-    	if (interaction.customId !== 'feedback-modal') return
+  ```ts title="src/events/interactionCreate/feedback-submit.ts"
+  import type { Interaction } from 'discord.js'
 
-    	const feedback = interaction.fields.getTextInputValue('feedback-input')
-    	await interaction.reply({ content: `Thanks for your feedback: "${feedback}"`, ephemeral: true })
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/feedback-submit.js"
-    export default async (interaction) => {
-    	if (!interaction.isModalSubmit()) return
-    	if (interaction.customId !== 'feedback-modal') return
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isModalSubmit()) return
+  	if (interaction.customId !== 'feedback-modal') return
 
-    	const feedback = interaction.fields.getTextInputValue('feedback-input')
-    	await interaction.reply({ content: `Thanks for your feedback: "${feedback}"`, ephemeral: true })
-    }
-    ```
-  </Tab>
+  	const feedback = interaction.fields.getTextInputValue('feedback-input')
+  	await interaction.reply({ content: `Thanks for your feedback: "${feedback}"`, ephemeral: true })
+  }
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/events/interactionCreate/feedback-submit.js"
+  export default async (interaction) => {
+  	if (!interaction.isModalSubmit()) return
+  	if (interaction.customId !== 'feedback-modal') return
+
+  	const feedback = interaction.fields.getTextInputValue('feedback-input')
+  	await interaction.reply({ content: `Thanks for your feedback: "${feedback}"`, ephemeral: true })
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Multiple text inputs
@@ -144,96 +152,100 @@ Listen for modal submissions with an `interactionCreate` event handler using `is
 Modals can include up to 5 text inputs, each in its own action row:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/report.ts"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
-    import type { CommandConfig } from '@robojs/discordjs'
-    import type { ChatInputCommandInteraction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export const config: CommandConfig = {
-    	description: 'Submit a bug report',
-    	sage: false
-    }
+  ```ts title="src/commands/report.ts"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  import type { CommandConfig } from '@robojs/discordjs'
+  import type { ChatInputCommandInteraction } from 'discord.js'
 
-    export default async (interaction: ChatInputCommandInteraction) => {
-    	const modal = new ModalBuilder()
-    		.setCustomId('bug-report')
-    		.setTitle('Bug Report')
+  export const config: CommandConfig = {
+  	description: 'Submit a bug report',
+  	sage: false
+  }
 
-    	const titleInput = new TextInputBuilder()
-    		.setCustomId('bug-title')
-    		.setLabel('Title')
-    		.setStyle(TextInputStyle.Short)
-    		.setRequired(true)
-    		.setMaxLength(100)
+  export default async (interaction: ChatInputCommandInteraction) => {
+  	const modal = new ModalBuilder()
+  		.setCustomId('bug-report')
+  		.setTitle('Bug Report')
 
-    	const descriptionInput = new TextInputBuilder()
-    		.setCustomId('bug-description')
-    		.setLabel('Description')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(true)
-    		.setPlaceholder('Steps to reproduce...')
+  	const titleInput = new TextInputBuilder()
+  		.setCustomId('bug-title')
+  		.setLabel('Title')
+  		.setStyle(TextInputStyle.Short)
+  		.setRequired(true)
+  		.setMaxLength(100)
 
-    	const stepsInput = new TextInputBuilder()
-    		.setCustomId('bug-steps')
-    		.setLabel('Expected vs Actual')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(false)
+  	const descriptionInput = new TextInputBuilder()
+  		.setCustomId('bug-description')
+  		.setLabel('Description')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(true)
+  		.setPlaceholder('Steps to reproduce...')
 
-    	modal.addComponents(
-    		new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput),
-    		new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
-    		new ActionRowBuilder<TextInputBuilder>().addComponents(stepsInput)
-    	)
+  	const stepsInput = new TextInputBuilder()
+  		.setCustomId('bug-steps')
+  		.setLabel('Expected vs Actual')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(false)
 
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/report.js"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  	modal.addComponents(
+  		new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput),
+  		new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
+  		new ActionRowBuilder<TextInputBuilder>().addComponents(stepsInput)
+  	)
 
-    export const config = {
-    	description: 'Submit a bug report',
-    	sage: false
-    }
+  	await interaction.showModal(modal)
+  }
+  ```
 
-    export default async (interaction) => {
-    	const modal = new ModalBuilder()
-    		.setCustomId('bug-report')
-    		.setTitle('Bug Report')
+</Tab>
+<Tab value="JavaScript">
 
-    	const titleInput = new TextInputBuilder()
-    		.setCustomId('bug-title')
-    		.setLabel('Title')
-    		.setStyle(TextInputStyle.Short)
-    		.setRequired(true)
-    		.setMaxLength(100)
+  ```js title="src/commands/report.js"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
 
-    	const descriptionInput = new TextInputBuilder()
-    		.setCustomId('bug-description')
-    		.setLabel('Description')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(true)
-    		.setPlaceholder('Steps to reproduce...')
+  export const config = {
+  	description: 'Submit a bug report',
+  	sage: false
+  }
 
-    	const stepsInput = new TextInputBuilder()
-    		.setCustomId('bug-steps')
-    		.setLabel('Expected vs Actual')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(false)
+  export default async (interaction) => {
+  	const modal = new ModalBuilder()
+  		.setCustomId('bug-report')
+  		.setTitle('Bug Report')
 
-    	modal.addComponents(
-    		new ActionRowBuilder().addComponents(titleInput),
-    		new ActionRowBuilder().addComponents(descriptionInput),
-    		new ActionRowBuilder().addComponents(stepsInput)
-    	)
+  	const titleInput = new TextInputBuilder()
+  		.setCustomId('bug-title')
+  		.setLabel('Title')
+  		.setStyle(TextInputStyle.Short)
+  		.setRequired(true)
+  		.setMaxLength(100)
 
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
+  	const descriptionInput = new TextInputBuilder()
+  		.setCustomId('bug-description')
+  		.setLabel('Description')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(true)
+  		.setPlaceholder('Steps to reproduce...')
+
+  	const stepsInput = new TextInputBuilder()
+  		.setCustomId('bug-steps')
+  		.setLabel('Expected vs Actual')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(false)
+
+  	modal.addComponents(
+  		new ActionRowBuilder().addComponents(titleInput),
+  		new ActionRowBuilder().addComponents(descriptionInput),
+  		new ActionRowBuilder().addComponents(stepsInput)
+  	)
+
+  	await interaction.showModal(modal)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Modal from button
@@ -257,88 +269,96 @@ A common pattern: a command sends a button, and clicking the button opens a moda
 Command that sends the button:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/commands/feedback.ts"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default () => {
-    	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    		new ButtonBuilder()
-    			.setCustomId('open-feedback')
-    			.setLabel('Give Feedback')
-    			.setStyle(ButtonStyle.Primary)
-    	)
+  ```ts title="src/commands/feedback.ts"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
-    	return { content: 'We value your input!', components: [row] }
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/commands/feedback.js"
-    import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+  export default () => {
+  	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  		new ButtonBuilder()
+  			.setCustomId('open-feedback')
+  			.setLabel('Give Feedback')
+  			.setStyle(ButtonStyle.Primary)
+  	)
 
-    export default () => {
-    	const row = new ActionRowBuilder().addComponents(
-    		new ButtonBuilder()
-    			.setCustomId('open-feedback')
-    			.setLabel('Give Feedback')
-    			.setStyle(ButtonStyle.Primary)
-    	)
+  	return { content: 'We value your input!', components: [row] }
+  }
+  ```
 
-    	return { content: 'We value your input!', components: [row] }
-    }
-    ```
-  </Tab>
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="src/commands/feedback.js"
+  import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
+  export default () => {
+  	const row = new ActionRowBuilder().addComponents(
+  		new ButtonBuilder()
+  			.setCustomId('open-feedback')
+  			.setLabel('Give Feedback')
+  			.setStyle(ButtonStyle.Primary)
+  	)
+
+  	return { content: 'We value your input!', components: [row] }
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 Event handler that shows the modal on click:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/feedback-modal.ts"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isButton() || interaction.customId !== 'open-feedback') return
+  ```ts title="src/events/interactionCreate/feedback-modal.ts"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  import type { Interaction } from 'discord.js'
 
-    	const modal = new ModalBuilder()
-    		.setCustomId('feedback-modal')
-    		.setTitle('Submit Feedback')
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isButton() || interaction.customId !== 'open-feedback') return
 
-    	const input = new TextInputBuilder()
-    		.setCustomId('feedback-input')
-    		.setLabel('Your feedback')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(true)
+  	const modal = new ModalBuilder()
+  		.setCustomId('feedback-modal')
+  		.setTitle('Submit Feedback')
 
-    	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/feedback-modal.js"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  	const input = new TextInputBuilder()
+  		.setCustomId('feedback-input')
+  		.setLabel('Your feedback')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(true)
 
-    export default async (interaction) => {
-    	if (!interaction.isButton() || interaction.customId !== 'open-feedback') return
+  	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
+  	await interaction.showModal(modal)
+  }
+  ```
 
-    	const modal = new ModalBuilder()
-    		.setCustomId('feedback-modal')
-    		.setTitle('Submit Feedback')
+</Tab>
+<Tab value="JavaScript">
 
-    	const input = new TextInputBuilder()
-    		.setCustomId('feedback-input')
-    		.setLabel('Your feedback')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(true)
+  ```js title="src/events/interactionCreate/feedback-modal.js"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
 
-    	modal.addComponents(new ActionRowBuilder().addComponents(input))
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
+  export default async (interaction) => {
+  	if (!interaction.isButton() || interaction.customId !== 'open-feedback') return
+
+  	const modal = new ModalBuilder()
+  		.setCustomId('feedback-modal')
+  		.setTitle('Submit Feedback')
+
+  	const input = new TextInputBuilder()
+  		.setCustomId('feedback-input')
+  		.setLabel('Your feedback')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(true)
+
+  	modal.addComponents(new ActionRowBuilder().addComponents(input))
+  	await interaction.showModal(modal)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Modal from select menu
@@ -346,55 +366,59 @@ Event handler that shows the modal on click:
 The same pattern works with select menu triggers:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="src/events/interactionCreate/report-modal.ts"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
-    import type { Interaction } from 'discord.js'
+<Tab value="TypeScript">
 
-    export default async (interaction: Interaction) => {
-    	if (!interaction.isStringSelectMenu() || interaction.customId !== 'report-type') return
+  ```ts title="src/events/interactionCreate/report-modal.ts"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  import type { Interaction } from 'discord.js'
 
-    	const reportType = interaction.values[0]
+  export default async (interaction: Interaction) => {
+  	if (!interaction.isStringSelectMenu() || interaction.customId !== 'report-type') return
 
-    	const modal = new ModalBuilder()
-    		.setCustomId(`report-${reportType}`)
-    		.setTitle(`${reportType} Report`)
+  	const reportType = interaction.values[0]
 
-    	const input = new TextInputBuilder()
-    		.setCustomId('report-details')
-    		.setLabel('Details')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(true)
+  	const modal = new ModalBuilder()
+  		.setCustomId(`report-${reportType}`)
+  		.setTitle(`${reportType} Report`)
 
-    	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="src/events/interactionCreate/report-modal.js"
-    import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
+  	const input = new TextInputBuilder()
+  		.setCustomId('report-details')
+  		.setLabel('Details')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(true)
 
-    export default async (interaction) => {
-    	if (!interaction.isStringSelectMenu() || interaction.customId !== 'report-type') return
+  	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input))
+  	await interaction.showModal(modal)
+  }
+  ```
 
-    	const reportType = interaction.values[0]
+</Tab>
+<Tab value="JavaScript">
 
-    	const modal = new ModalBuilder()
-    		.setCustomId(`report-${reportType}`)
-    		.setTitle(`${reportType} Report`)
+  ```js title="src/events/interactionCreate/report-modal.js"
+  import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
 
-    	const input = new TextInputBuilder()
-    		.setCustomId('report-details')
-    		.setLabel('Details')
-    		.setStyle(TextInputStyle.Paragraph)
-    		.setRequired(true)
+  export default async (interaction) => {
+  	if (!interaction.isStringSelectMenu() || interaction.customId !== 'report-type') return
 
-    	modal.addComponents(new ActionRowBuilder().addComponents(input))
-    	await interaction.showModal(modal)
-    }
-    ```
-  </Tab>
+  	const reportType = interaction.values[0]
+
+  	const modal = new ModalBuilder()
+  		.setCustomId(`report-${reportType}`)
+  		.setTitle(`${reportType} Report`)
+
+  	const input = new TextInputBuilder()
+  		.setCustomId('report-details')
+  		.setLabel('Details')
+  		.setStyle(TextInputStyle.Paragraph)
+  		.setRequired(true)
+
+  	modal.addComponents(new ActionRowBuilder().addComponents(input))
+  	await interaction.showModal(modal)
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ## Limitations

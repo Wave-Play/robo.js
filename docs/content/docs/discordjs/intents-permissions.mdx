@@ -39,39 +39,43 @@ For events that accept multiple intents (like `messageCreate`), having at least 
 Set intents explicitly via `clientOptions.intents`:
 
 <Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
-  <Tab value="TypeScript">
-    ```ts title="config/plugins/robojs/discordjs.mjs"
-    import { GatewayIntentBits } from 'discord.js'
-    import type { DiscordConfig } from '@robojs/discordjs'
+<Tab value="TypeScript">
 
-    export default {
-    	clientOptions: {
-    		intents: [
-    			GatewayIntentBits.Guilds,
-    			GatewayIntentBits.GuildMessages,
-    			GatewayIntentBits.GuildMembers,
-    			GatewayIntentBits.MessageContent
-    		]
-    	}
-    } satisfies DiscordConfig
-    ```
-  </Tab>
-  <Tab value="JavaScript">
-    ```js title="config/plugins/robojs/discordjs.mjs"
-    import { GatewayIntentBits } from 'discord.js'
+  ```ts title="config/plugins/robojs/discordjs.mjs"
+  import { GatewayIntentBits } from 'discord.js'
+  import type { DiscordConfig } from '@robojs/discordjs'
 
-    export default {
-    	clientOptions: {
-    		intents: [
-    			GatewayIntentBits.Guilds,
-    			GatewayIntentBits.GuildMessages,
-    			GatewayIntentBits.GuildMembers,
-    			GatewayIntentBits.MessageContent
-    		]
-    	}
-    }
-    ```
-  </Tab>
+  export default {
+  	clientOptions: {
+  		intents: [
+  			GatewayIntentBits.Guilds,
+  			GatewayIntentBits.GuildMessages,
+  			GatewayIntentBits.GuildMembers,
+  			GatewayIntentBits.MessageContent
+  		]
+  	}
+  } satisfies DiscordConfig
+  ```
+
+</Tab>
+<Tab value="JavaScript">
+
+  ```js title="config/plugins/robojs/discordjs.mjs"
+  import { GatewayIntentBits } from 'discord.js'
+
+  export default {
+  	clientOptions: {
+  		intents: [
+  			GatewayIntentBits.Guilds,
+  			GatewayIntentBits.GuildMessages,
+  			GatewayIntentBits.GuildMembers,
+  			GatewayIntentBits.MessageContent
+  		]
+  	}
+  }
+  ```
+
+</Tab>
 </Tabs>
 
 ### Prefix command intents
