@@ -1,0 +1,39 @@
+{
+	"name": "showcase-ts",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"test": "robo mock test",
+		"test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest --selectProjects unit",
+		"test:integration": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest --selectProjects integration --runInBand",
+		"test:hmr": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest --selectProjects hmr --runInBand",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@robojs/discordjs": "workspace:*",
+		"@robojs/flashcore-extras": "workspace:*",
+		"@robojs/mock": "workspace:*",
+		"@robojs/server": "workspace:*",
+		"discord.js": "^14.25.1",
+		"robo.js": "workspace:*",
+		"zod": "^3.24.2"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.15.4",
+		"@types/jest": "^29.5.14",
+		"@types/node": "^25.0.2",
+		"jest": "^29.7.0",
+		"prettier": "^3.7.4",
+		"ts-jest": "^29.2.5",
+		"typescript": "^5.9.3",
+		"vite": "^7.2.7"
+	}
+}
