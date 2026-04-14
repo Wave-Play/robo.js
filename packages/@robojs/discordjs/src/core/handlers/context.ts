@@ -5,18 +5,22 @@
  */
 import { portal, color, Mode } from 'robo.js'
 import { discordLogger } from '../logger.js'
+import { getPluginState } from '../client.js'
 import { executeMiddleware, getHandlerPath } from '../middleware.js'
-import { BUFFER, TIMEOUT, getSage, timeout, withEphemeralReply } from '../utils.js'
+import { BUFFER, TIMEOUT, getSage, patchDeferReply, timeout, withEphemeralDefer, withEphemeralReply } from '../utils.js'
 import type { ContextMenuCommandInteraction, Message, User } from 'discord.js'
+import type { HandlerModule } from '../handler-types.js'
 import type { ContextConfig } from '../../types/index.js'
 
 /**
- * Handler module with callable default
+ * Check if a response looks like a Discord Message object (already sent).
+ * Uses Message-specific properties instead of just `id` to avoid false positives
+ * with user objects that happen to have an `id` field.
  */
-type HandlerWithDefault<T> = {
-	default?: T
-	config?: ContextConfig
-	[key: string]: unknown
+function isMessageObject(reply: unknown): boolean {
+	if (!reply || typeof reply !== 'object') return false
+	const obj = reply as Record<string, unknown>
+	return 'author' in obj && 'channelId' in obj
 }
 
 /**
@@ -29,6 +33,8 @@ export async function executeContextHandler(
 	interaction: ContextMenuCommandInteraction,
 	commandKey: string
 ): Promise<void> {
+	await portal.ensureRoute('discordjs', 'context')
+
 	// Find command handler
 	const command = portal.getRecord('discordjs', 'context', commandKey)
 	if (!command) {
@@ -42,9 +48,22 @@ export async function executeContextHandler(
 		return
 	}
 
-	if (!command.enabled) {
+	if (!command.enabled || command.metadata?.disabled === true) {
 		discordLogger.debug(`Tried to execute disabled context menu command: ${color.bold(commandKey)}`)
 		return
+	}
+
+	// Check server restrictions
+	const serverOnly =
+		(command.metadata?.serverOnly as string[] | string | undefined) ??
+		getPluginState()?.serverRestrictions.get(`context:${commandKey}`)
+	if (serverOnly) {
+		const allowedServers = Array.isArray(serverOnly) ? serverOnly : [serverOnly]
+		const guildId = interaction.guildId
+		if (!guildId || !allowedServers.includes(guildId)) {
+			discordLogger.debug(`Context menu "${commandKey}" is restricted to specific servers`)
+			return
+		}
 	}
 
 	// Execute middleware
@@ -60,8 +79,9 @@ export async function executeContextHandler(
 	}
 
 	// Prepare options and config
-	const ctxHandler = command.handler as HandlerWithDefault<
-		(interaction: ContextMenuCommandInteraction, target: User | Message) => unknown
+	const ctxHandler = command.handler as HandlerModule<
+		(interaction: ContextMenuCommandInteraction, target: User | Message) => unknown,
+		ContextConfig
 	> | null
 	const commandConfig: ContextConfig = ctxHandler?.config as ContextConfig
 	const sage = getSage(commandConfig)
@@ -70,7 +90,7 @@ export async function executeContextHandler(
 	try {
 		discordLogger.debug(`Executing context menu handler: ${color.bold(getHandlerPath(command))}`)
 		if (!ctxHandler?.default) {
-			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
+			throw new Error(`Missing default export function for command: ${color.bold('/' + commandKey)}`)
 		}
 
 		// Determine target
@@ -81,8 +101,16 @@ export async function executeContextHandler(
 			target = interaction.targetUser
 		}
 
+		if (!target) {
+			discordLogger.warn(`Context menu "${commandKey}" has no target (neither user nor message context)`)
+			return
+		}
+
+		// Patch deferReply to prevent failures due to multiple deferrals
+		patchDeferReply(interaction)
+
 		// Delegate to context menu handler
-		const result = ctxHandler.default(interaction, target!)
+		const result = ctxHandler.default(interaction, target)
 		const promises: Promise<unknown>[] = []
 		let response
 
@@ -94,11 +122,25 @@ export async function executeContextHandler(
 				discordLogger.debug(`Sage is deferring async command...`)
 				promises.push(result)
 				if (!interaction.deferred) {
-					await interaction.deferReply(withEphemeralReply({}, sage.ephemeral))
+					try {
+						await interaction.deferReply(withEphemeralDefer({}, sage.ephemeral))
+					} catch (error) {
+						const message = error instanceof Error ? error.message : (error as string)
+						if (
+							!message.includes('Unknown interaction') &&
+							!message.includes('Interaction has already been acknowledged')
+						) {
+							throw error
+						} else {
+							discordLogger.debug(`Interaction was already handled, skipping Sage deferral`)
+						}
+					}
 				}
 			} else {
 				response = raceResult
 			}
+		} else if (result instanceof Promise) {
+			promises.push(result)
 		}
 
 		// Enforce timeout only if custom timeout is configured
@@ -125,10 +167,14 @@ export async function executeContextHandler(
 
 		discordLogger.debug(`Sage is handling reply:`, response)
 		const reply = typeof response === 'string' ? { content: response } : response
-		if (interaction.deferred) {
+		const isValid = !isMessageObject(reply)
+		if (isValid && interaction.deferred) {
 			await interaction.editReply(reply)
+		} else if (isValid) {
+			await interaction.reply(withEphemeralReply(reply, sage.ephemeral))
 		} else {
-			await interaction.reply(reply)
+			const command = color.bold('/' + commandKey)
+			discordLogger.warn(`Invalid return value for context menu ${command}. Did you accidentally return a message object?`)
 		}
 	} catch (error) {
 		discordLogger.error(error)

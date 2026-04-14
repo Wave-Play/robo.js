@@ -418,4 +418,283 @@ describe('Context Handler', () => {
 			expect(mockHandler).toHaveBeenCalledWith(interaction, targetMessage)
 		})
 	})
+
+	describe('patchDeferReply and defer handling', () => {
+		it('should handle deferReply errors from already-acknowledged interactions', async () => {
+			const mockHandler = fn(
+				() => new Promise((resolve) => setTimeout(() => resolve('Done!'), 100))
+			)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: {
+					default: mockHandler,
+					config: { sage: { defer: true, deferBuffer: 10 } }
+				}
+			}
+
+			setupContextMock('Get User Info', record)
+
+			let wasDeferred = false
+			const interaction = createMockUserContextInteraction()
+			;(interaction as any).deferReply = fn(async () => {
+				wasDeferred = true
+				;(interaction as any).deferred = true
+			})
+
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(mockHandler).toHaveBeenCalled()
+			expect(wasDeferred).toBe(true)
+			expect(interaction.editReply).toHaveBeenCalledWith({ content: 'Done!' })
+		})
+
+		it('should gracefully handle "Unknown interaction" during defer', async () => {
+			const mockHandler = fn(
+				() => new Promise((resolve) => setTimeout(() => resolve('Done!'), 100))
+			)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: {
+					default: mockHandler,
+					config: { sage: { defer: true, deferBuffer: 10 } }
+				}
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			;(interaction as any).deferReply = fn(async () => {
+				throw new Error('Unknown interaction')
+			})
+
+			// Should not throw
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(discordLogger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('already handled')
+			)
+		})
+
+		it('should gracefully handle "Interaction has already been acknowledged" during defer', async () => {
+			const mockHandler = fn(
+				() => new Promise((resolve) => setTimeout(() => resolve('Done!'), 100))
+			)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: {
+					default: mockHandler,
+					config: { sage: { defer: true, deferBuffer: 10 } }
+				}
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			;(interaction as any).deferReply = fn(async () => {
+				throw new Error('Interaction has already been acknowledged')
+			})
+
+			// Should not throw
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(discordLogger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('already handled')
+			)
+		})
+	})
+
+	describe('async handler with sage.defer disabled', () => {
+		it('should await async handler and send reply when sage.defer is false', async () => {
+			const mockHandler = fn(() => new Promise((resolve) => setTimeout(() => resolve('Async done!'), 50)))
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: { default: mockHandler, config: { sage: { defer: false } } }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(mockHandler).toHaveBeenCalled()
+		})
+	})
+
+	describe('undefined target guard', () => {
+		it('should warn and return early when neither user nor message context', async () => {
+			const mockHandler = fn().mockReturnValue('Result')
+			const record = {
+				key: 'Mystery Menu',
+				path: 'context/user/Mystery Menu.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Mystery Menu', record)
+
+			const interaction = {
+				...createMockUserContextInteraction(),
+				isMessageContextMenuCommand: () => false,
+				isUserContextMenuCommand: () => false
+			}
+
+			await executeContextHandler(interaction as any, 'Mystery Menu')
+
+			expect(discordLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining('no target')
+			)
+			expect(mockHandler).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('isValidReply check', () => {
+		it('should warn when handler returns a Message-like object', async () => {
+			const messageObj = { id: '123', content: 'Hello', author: { id: '456' }, channelId: '789' }
+			const mockHandler = fn().mockReturnValue(messageObj)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(discordLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid return value')
+			)
+			expect(interaction.reply).not.toHaveBeenCalled()
+			expect(interaction.editReply).not.toHaveBeenCalled()
+		})
+
+		it('should send reply for plain object with id field that is not a Message', async () => {
+			const plainObj = { id: '123', content: 'Hello' }
+			const mockHandler = fn().mockReturnValue(plainObj)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			// Should still send as reply because it's not a Message object
+			expect(interaction.reply).toHaveBeenCalled()
+		})
+
+		it('should send reply for object with author but no channelId', async () => {
+			// Boundary case: old code checked only `id`. New code requires both author AND channelId.
+			const obj = { id: '123', author: { id: '456' } }
+			const mockHandler = fn().mockReturnValue(obj)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(interaction.reply).toHaveBeenCalled()
+			expect(discordLogger.warn).not.toHaveBeenCalled()
+		})
+
+		it('should send reply for object with channelId but no author', async () => {
+			const obj = { id: '123', channelId: '789' }
+			const mockHandler = fn().mockReturnValue(obj)
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction()
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(interaction.reply).toHaveBeenCalled()
+			expect(discordLogger.warn).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('server restrictions', () => {
+		it('should skip context menu when server is not in serverOnly list', async () => {
+			const mockHandler = fn()
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				metadata: { serverOnly: ['allowed-guild-id'] },
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction({ guildId: 'other-guild' })
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(mockHandler).not.toHaveBeenCalled()
+			expect(discordLogger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('restricted to specific servers')
+			)
+		})
+
+		it('should execute context menu when server is in serverOnly list', async () => {
+			const mockHandler = fn().mockReturnValue('Allowed!')
+			const record = {
+				key: 'Get User Info',
+				path: 'context/user/Get User Info.js',
+				enabled: true,
+				metadata: { serverOnly: ['allowed-guild-id'] },
+				handler: { default: mockHandler }
+			}
+
+			setupContextMock('Get User Info', record)
+
+			const interaction = createMockUserContextInteraction({ guildId: 'allowed-guild-id' })
+			await executeContextHandler(interaction as any, 'Get User Info')
+
+			expect(mockHandler).toHaveBeenCalled()
+		})
+	})
+
+	describe('Error objects', () => {
+		it('should throw Error objects instead of strings for missing exports', async () => {
+			const record = {
+				key: 'Broken Menu',
+				path: 'context/user/Broken Menu.js',
+				enabled: true,
+				handler: {} // No default export
+			}
+
+			setupContextMock('Broken Menu', record)
+
+			const interaction = createMockUserContextInteraction()
+			await executeContextHandler(interaction as any, 'Broken Menu')
+
+			// Should log an Error object (not a string)
+			const errorArg = (discordLogger.error as jest.Mock).mock.calls[0]?.[0]
+			expect(errorArg).toBeInstanceOf(Error)
+		})
+	})
 })
