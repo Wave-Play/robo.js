@@ -20,6 +20,13 @@ const roboMock = (await import('robo.js')) as unknown as {
 		registerPluginState: jest.Mock
 		importHandler: jest.Mock
 	}
+	Robo: {
+		status: {
+			set: jest.Mock
+		}
+	}
+	setRouteSummaries: (namespace: string, route: string, summaries: Array<{ key: string; metadata?: Record<string, unknown>; auto?: boolean }>) => void
+	clearRouteSummaries: () => void
 	getForkedLogger: (key: string) => {
 		debug: jest.Mock
 		info: jest.Mock
@@ -33,7 +40,7 @@ const roboMock = (await import('robo.js')) as unknown as {
 	Mode: { isDev: jest.Mock }
 }
 
-const { portal, getForkedLogger, Mode } = roboMock
+const { portal, Robo, getForkedLogger, Mode, setRouteSummaries, clearRouteSummaries } = roboMock
 
 // Pre-initialize the forked logger BEFORE importing any hooks
 // This ensures the logger is cached and all code uses the same instance
@@ -89,6 +96,7 @@ describe('Lifecycle Hooks', () => {
 		if (clientModule.hasClient()) {
 			clientModule.clearClient()
 		}
+		clearRouteSummaries()
 	})
 
 	afterEach(() => {
@@ -161,11 +169,10 @@ describe('Lifecycle Hooks', () => {
 		})
 
 		it('should register event listeners for gateway events', async () => {
-			// Set up portal mock to return events
-			;(portal.getByType as jest.Mock).mockReturnValue({
-				guildCreate: [{ auto: false }],
-				messageCreate: [{ auto: false }]
-			})
+			setRouteSummaries('discordjs', 'events', [
+				{ key: 'guildCreate', auto: false },
+				{ key: 'messageCreate', auto: false }
+			])
 
 			const { default: prepareHook } = await import('../../src/robo/prepare.js')
 
@@ -186,11 +193,10 @@ describe('Lifecycle Hooks', () => {
 		})
 
 		it('should skip lifecycle events (starting with _)', async () => {
-			// Set up portal mock with lifecycle event
-			;(portal.getByType as jest.Mock).mockReturnValue({
-				_start: [{ auto: false }],
-				guildCreate: [{ auto: false }]
-			})
+			setRouteSummaries('discordjs', 'events', [
+				{ key: '_start', auto: false },
+				{ key: 'guildCreate', auto: false }
+			])
 
 			const { default: prepareHook } = await import('../../src/robo/prepare.js')
 
@@ -346,8 +352,12 @@ describe('Lifecycle Hooks', () => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			;(client as any).emit('clientReady', client)
 
-			// Should log "On standby as TestBot#1234"
-			expect(discordLogger.ready).toHaveBeenCalledWith(expect.stringContaining('On standby as'))
+			// Should set status with "On standby as TestBot#1234"
+			expect(Robo.status.set).toHaveBeenCalledWith(
+				'bot',
+				expect.stringContaining('On standby as'),
+				expect.any(Object)
+			)
 		})
 
 		it('should check intents after clientReady', async () => {
@@ -355,11 +365,7 @@ describe('Lifecycle Hooks', () => {
 			delete process.env.__ROBO_MOCK_STANDALONE
 			delete process.env.ROBO_MOCK_MODE
 
-			// Set up portal to return events
-			;(portal.getByType as jest.Mock).mockReturnValue({
-				guildCreate: [{}],
-				guildMemberAdd: [{}] // Requires GuildMembers intent
-			})
+			setRouteSummaries('discordjs', 'events', [{ key: 'guildCreate' }, { key: 'guildMemberAdd' }])
 
 			const client = clientModule.getClient()
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -373,8 +379,7 @@ describe('Lifecycle Hooks', () => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			;(client as any).emit('clientReady', client)
 
-			// Should have called portal.getByType to check intents
-			expect(portal.getByType).toHaveBeenCalledWith('discordjs:events')
+			expect(discordLogger.warn).toHaveBeenCalledWith(expect.stringContaining('GuildMembers'))
 		})
 
 		it('should handle missing user tag gracefully', async () => {
@@ -394,8 +399,12 @@ describe('Lifecycle Hooks', () => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			;(client as any).emit('clientReady', client)
 
-			// Should log with "Unknown" fallback
-			expect(discordLogger.ready).toHaveBeenCalledWith(expect.stringContaining('Unknown'))
+			// Should set status with "Unknown" fallback
+			expect(Robo.status.set).toHaveBeenCalledWith(
+				'bot',
+				expect.stringContaining('Unknown'),
+				expect.any(Object)
+			)
 		})
 	})
 

@@ -26,6 +26,8 @@ const roboMock = (await import('robo.js')) as unknown as {
 		module: jest.Mock
 	}
 	getPluginOptions: jest.Mock
+	getConfig: jest.Mock
+	setConfigData: (config: Record<string, unknown> | null) => void
 	getForkedLogger: (key: string) => {
 		debug: jest.Mock
 		info: jest.Mock
@@ -36,7 +38,7 @@ const roboMock = (await import('robo.js')) as unknown as {
 	clearForkedLoggers: () => void
 }
 
-const { portal, getPluginOptions, getForkedLogger, Mode } = roboMock
+const { portal, getPluginOptions, getConfig, setConfigData, getForkedLogger, Mode } = roboMock
 
 // Pre-initialize the forked logger
 const discordLogger = getForkedLogger('discordjs')
@@ -73,6 +75,7 @@ describe('Event Handler', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 		clearLoggerMocks()
+		setConfigData(null)
 		Mode.isDev.mockReturnValue(true)
 
 		// Default mock for module check
@@ -370,6 +373,131 @@ describe('Event Handler', () => {
 
 			// Should have logged error for plugin failure
 			expect(discordLogger.error).toHaveBeenCalledWith(expect.stringContaining('optional-plugin'), error)
+		})
+	})
+
+	describe('failSafe support', () => {
+		it('should warn instead of error when _start plugin has failSafe: true', async () => {
+			const error = new Error('Plugin failed to start')
+			const mockHandler = fn().mockRejectedValue(error)
+
+			setupEventMock('_start', [{
+				key: '_start',
+				path: 'events/_start.js',
+				enabled: true,
+				plugin: { name: 'optional-plugin' },
+				handler: { default: mockHandler }
+			}])
+
+			// Configure plugin with failSafe in config
+			setConfigData({
+				plugins: [['optional-plugin', {}, { failSafe: true }]]
+			})
+
+			await executeEventHandler('_start', {})
+
+			// Should warn (not error) when failSafe is true
+			expect(discordLogger.warn).toHaveBeenCalledWith(
+				expect.stringContaining('optional-plugin'),
+				error
+			)
+		})
+
+		it('should error when _start plugin does NOT have failSafe', async () => {
+			const error = new Error('Plugin failed to start')
+			const mockHandler = fn().mockRejectedValue(error)
+
+			setupEventMock('_start', [{
+				key: '_start',
+				path: 'events/_start.js',
+				enabled: true,
+				plugin: { name: 'critical-plugin' },
+				handler: { default: mockHandler }
+			}])
+
+			// Configure plugin without failSafe
+			setConfigData({
+				plugins: [['critical-plugin', {}]]
+			})
+
+			await executeEventHandler('_start', {})
+
+			// Should error (not warn)
+			expect(discordLogger.error).toHaveBeenCalledWith(
+				expect.stringContaining('critical-plugin'),
+				error
+			)
+		})
+	})
+
+	describe('server restrictions', () => {
+		it('should skip event handler when server is not in serverOnly list', async () => {
+			const mockHandler = fn()
+
+			setupEventMock('messageCreate', [{
+				key: 'messageCreate',
+				path: 'events/messageCreate.js',
+				enabled: true,
+				metadata: { serverOnly: ['allowed-guild'] },
+				handler: { default: mockHandler }
+			}])
+
+			await executeEventHandler('messageCreate', { guildId: 'other-guild', content: 'hello' })
+
+			expect(mockHandler).not.toHaveBeenCalled()
+			expect(discordLogger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('restricted to specific servers')
+			)
+		})
+
+		it('should execute event handler when server is in serverOnly list', async () => {
+			const mockHandler = fn()
+
+			setupEventMock('messageCreate', [{
+				key: 'messageCreate',
+				path: 'events/messageCreate.js',
+				enabled: true,
+				metadata: { serverOnly: ['allowed-guild'] },
+				handler: { default: mockHandler }
+			}])
+
+			await executeEventHandler('messageCreate', { guildId: 'allowed-guild', content: 'hello' })
+
+			expect(mockHandler).toHaveBeenCalled()
+		})
+
+		it('should extract guildId from guild object in event data', async () => {
+			const mockHandler = fn()
+
+			setupEventMock('guildCreate', [{
+				key: 'guildCreate',
+				path: 'events/guildCreate.js',
+				enabled: true,
+				metadata: { serverOnly: ['guild-123'] },
+				handler: { default: mockHandler }
+			}])
+
+			// guildCreate event passes the guild object directly (has id + name)
+			await executeEventHandler('guildCreate', { id: 'guild-123', name: 'Test Guild' })
+
+			expect(mockHandler).toHaveBeenCalled()
+		})
+	})
+
+	describe('Error objects', () => {
+		it('should throw Error objects instead of strings for missing exports', async () => {
+			setupEventMock('guildCreate', [
+				{ key: 'guildCreate', path: 'events/guildCreate.js', enabled: true, handler: {} }
+			])
+
+			await executeEventHandler('guildCreate', {})
+
+			// The error logged should be an Error instance
+			const errorCall = (discordLogger.error as jest.Mock).mock.calls[0]
+			expect(errorCall).toBeDefined()
+			// The error should come from the catch block as "Error executing..." message + the Error object
+			expect(errorCall[0]).toContain('Error executing')
+			expect(errorCall[1]).toBeInstanceOf(Error)
 		})
 	})
 })

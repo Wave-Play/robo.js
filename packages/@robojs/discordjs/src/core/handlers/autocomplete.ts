@@ -36,6 +36,8 @@ export async function executeAutocompleteHandler(
 	interaction: AutocompleteInteraction,
 	commandKey: string
 ): Promise<void> {
+	await portal.ensureRoute('discordjs', 'commands')
+
 	const command = portal.getRecord('discordjs', 'commands', commandKey)
 	if (!command) {
 		discordLogger.error(`No command matching ${commandKey} was found.`)
@@ -49,7 +51,7 @@ export async function executeAutocompleteHandler(
 	}
 
 	// Check if the command itself is enabled
-	if (!command.enabled) {
+	if (!command.enabled || command.metadata?.disabled === true) {
 		discordLogger.debug(`Tried to execute disabled command: ${color.bold(commandKey)}`)
 		return
 	}

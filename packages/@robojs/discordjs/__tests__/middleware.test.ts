@@ -378,5 +378,160 @@ describe('Middleware', () => {
 
 			expect(result).toBe(true)
 		})
+
+		describe('order metadata sorting', () => {
+			it('should execute middleware in order based on metadata.order', async () => {
+				const executionOrder: string[] = []
+
+				const mw1 = {
+					key: 'second',
+					path: 'middleware/second.js',
+					enabled: true,
+					metadata: { order: 2 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('second')
+							return {}
+						})
+					}
+				}
+				const mw2 = {
+					key: 'first',
+					path: 'middleware/first.js',
+					enabled: true,
+					metadata: { order: 1 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('first')
+							return {}
+						})
+					}
+				}
+
+				portal.getByType.mockReturnValue({
+					default: [mw1, mw2]
+				})
+
+				const record = { key: 'ping', path: 'commands/ping.js', enabled: true }
+				await executeMiddleware([], record as any)
+
+				expect(executionOrder).toEqual(['first', 'second'])
+			})
+
+			it('should preserve insertion order for equal-order middleware', async () => {
+				const executionOrder: string[] = []
+
+				const mw1 = {
+					key: 'alpha',
+					path: 'middleware/alpha.js',
+					enabled: true,
+					metadata: { order: 0 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('alpha')
+							return {}
+						})
+					}
+				}
+				const mw2 = {
+					key: 'beta',
+					path: 'middleware/beta.js',
+					enabled: true,
+					metadata: { order: 0 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('beta')
+							return {}
+						})
+					}
+				}
+
+				portal.getByType.mockReturnValue({
+					default: [mw1, mw2]
+				})
+
+				const record = { key: 'ping', path: 'commands/ping.js', enabled: true }
+				await executeMiddleware([], record as any)
+
+				expect(executionOrder).toEqual(['alpha', 'beta'])
+			})
+
+			it('should treat missing order as 0', async () => {
+				const executionOrder: string[] = []
+
+				const mw1 = {
+					key: 'explicit',
+					path: 'middleware/explicit.js',
+					enabled: true,
+					metadata: { order: 1 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('explicit-1')
+							return {}
+						})
+					}
+				}
+				const mw2 = {
+					key: 'default',
+					path: 'middleware/default.js',
+					enabled: true,
+					// No metadata.order — should default to 0
+					handler: {
+						default: fn(() => {
+							executionOrder.push('default-0')
+							return {}
+						})
+					}
+				}
+
+				portal.getByType.mockReturnValue({
+					default: [mw1, mw2]
+				})
+
+				const record = { key: 'ping', path: 'commands/ping.js', enabled: true }
+				await executeMiddleware([], record as any)
+
+				// Default (0) should run before explicit (1)
+				expect(executionOrder).toEqual(['default-0', 'explicit-1'])
+			})
+
+			it('should handle negative order values', async () => {
+				const executionOrder: string[] = []
+
+				const mw1 = {
+					key: 'normal',
+					path: 'middleware/normal.js',
+					enabled: true,
+					metadata: { order: 0 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('normal')
+							return {}
+						})
+					}
+				}
+				const mw2 = {
+					key: 'priority',
+					path: 'middleware/priority.js',
+					enabled: true,
+					metadata: { order: -10 },
+					handler: {
+						default: fn(() => {
+							executionOrder.push('priority')
+							return {}
+						})
+					}
+				}
+
+				portal.getByType.mockReturnValue({
+					default: [mw1, mw2]
+				})
+
+				const record = { key: 'ping', path: 'commands/ping.js', enabled: true }
+				await executeMiddleware([], record as any)
+
+				expect(executionOrder).toEqual(['priority', 'normal'])
+			})
+		})
 	})
 })

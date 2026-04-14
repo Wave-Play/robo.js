@@ -7,16 +7,8 @@
 import { portal, color } from 'robo.js'
 import { discordLogger } from './logger.js'
 import type { HandlerRecord } from 'robo.js'
+import type { HandlerModule } from './handler-types.js'
 import type { MiddlewareData, MiddlewareHandler, MiddlewareResult } from '../types/index.js'
-
-/**
- * Handler module with callable default
- */
-type HandlerWithDefault<T> = {
-	default?: T
-	config?: unknown
-	[key: string]: unknown
-}
 
 /**
  * Get all middleware records from the portal
@@ -52,11 +44,20 @@ export function getHandlerPath(record: HandlerRecord): string {
  * @returns true if execution should continue, false if middleware aborted
  */
 export async function executeMiddleware(payload: unknown[], record: HandlerRecord): Promise<boolean> {
+	await portal.ensureRoute('discordjs', 'middleware')
+
 	const middleware = getMiddleware()
+
+	// Sort by order metadata (stable sort preserves insertion order for equal values)
+	middleware.sort((a, b) => {
+		const orderA = (a.metadata?.order as number) ?? 0
+		const orderB = (b.metadata?.order as number) ?? 0
+		return orderA - orderB
+	})
 
 	try {
 		for (const mw of middleware) {
-			if (!mw.enabled) {
+			if (!mw.enabled || mw.metadata?.enabled === false || mw.metadata?.disabled === true) {
 				continue
 			}
 
@@ -67,7 +68,7 @@ export async function executeMiddleware(payload: unknown[], record: HandlerRecor
 				await portal.importHandler('discordjs', 'middleware', mw.key)
 			}
 
-			const handler = mw.handler as HandlerWithDefault<MiddlewareHandler> | null
+			const handler = mw.handler as HandlerModule<MiddlewareHandler> | null
 			const data: MiddlewareData = {
 				payload,
 				record

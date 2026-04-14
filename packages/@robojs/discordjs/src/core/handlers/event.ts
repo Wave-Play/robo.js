@@ -4,26 +4,19 @@
  * Executes Discord gateway event handlers.
  * Supports multiple handlers per event and middleware chain.
  */
-import { portal, color, Mode, getPluginOptions } from 'robo.js'
+import { portal, color, Mode, getPluginOptions, getConfig } from 'robo.js'
 import { discordLogger } from '../logger.js'
+import { getPluginState } from '../client.js'
 import { executeMiddleware, getHandlerPath } from '../middleware.js'
 import { timeout, TIMEOUT } from '../utils.js'
-import type { HandlerRecord, Event } from 'robo.js'
+import type { HandlerRecord } from 'robo.js'
+import type { HandlerModule } from '../handler-types.js'
 import type { EventConfig } from '../../types/index.js'
 
 /**
  * Default timeout for lifecycle events (5 seconds)
  */
 const DEFAULT_LIFECYCLE_TIMEOUT = 5 * 1000
-
-/**
- * Handler module with callable default
- */
-type HandlerWithDefault<T> = {
-	default?: T
-	config?: EventConfig
-	[key: string]: unknown
-}
 
 /**
  * Plugin data stored in config
@@ -43,6 +36,8 @@ interface PluginData {
  * @param eventData - The event arguments
  */
 export async function executeEventHandler(eventName: string, ...eventData: unknown[]): Promise<void> {
+	await portal.ensureRoute('discordjs', 'events')
+
 	const eventsData = portal.getByType('discordjs:events')
 	const callbacks = eventsData[eventName] as HandlerRecord<Event>[] | undefined
 	if (!callbacks?.length) {
@@ -69,7 +64,7 @@ export async function executeEventHandler(eventName: string, ...eventData: unkno
 				}
 
 				if (!callback.handler?.default) {
-					throw `Missing default export function for event: ${color.bold(eventName)}`
+					throw new Error(`Missing default export function for event: ${color.bold(eventName)}`)
 				}
 
 				// Check if the event's module is enabled
@@ -78,9 +73,22 @@ export async function executeEventHandler(eventName: string, ...eventData: unkno
 					return
 				}
 
-				if (!callback.enabled) {
+				if (!callback.enabled || callback.metadata?.disabled === true) {
 					discordLogger.debug(`Tried to execute disabled event: ${color.bold(eventName)}:${index}`)
 					return
+				}
+
+				// Check server restrictions
+				const serverOnly =
+					(callback.metadata?.serverOnly as string[] | string | undefined) ??
+					getPluginState()?.serverRestrictions.get(`event:${eventName}`)
+				if (serverOnly) {
+					const allowedServers = Array.isArray(serverOnly) ? serverOnly : [serverOnly]
+					const guildId = extractGuildId(eventData)
+					if (!guildId || !allowedServers.includes(guildId)) {
+						discordLogger.debug(`Event "${eventName}" handler restricted to specific servers`)
+						return
+					}
 				}
 
 				// Execute middleware
@@ -97,7 +105,7 @@ export async function executeEventHandler(eventName: string, ...eventData: unkno
 				}
 
 				// Check if 'once' - disable after this run
-				const eventModule = callback.handler as unknown as HandlerWithDefault<(...args: unknown[]) => unknown> | null
+				const eventModule = callback.handler as unknown as HandlerModule<(...args: unknown[]) => unknown, EventConfig> | null
 				const eventConfig = eventModule?.config
 				if (eventConfig?.frequency === 'once') {
 					callback.enabled = false
@@ -147,12 +155,57 @@ export async function executeEventHandler(eventName: string, ...eventData: unkno
 }
 
 /**
- * Get plugin data from configuration
+ * Extract guild ID from event data arguments.
+ * Checks common Discord.js event argument shapes.
+ */
+function extractGuildId(eventData: unknown[]): string | undefined {
+	const firstArg = eventData[0]
+	if (!firstArg || typeof firstArg !== 'object') return undefined
+
+	const obj = firstArg as Record<string, unknown>
+
+	// Direct guildId property (interactions, messages, etc.)
+	if (typeof obj.guildId === 'string') return obj.guildId
+
+	// Guild object with id (guild events)
+	if (obj.guild && typeof obj.guild === 'object') {
+		const guild = obj.guild as Record<string, unknown>
+		if (typeof guild.id === 'string') return guild.id
+	}
+
+	// The event arg itself might be a guild object (guildCreate, guildDelete)
+	if (typeof obj.id === 'string' && typeof obj.name === 'string') return obj.id
+
+	return undefined
+}
+
+/**
+ * Get plugin data from configuration, including metaOptions for failSafe support.
  */
 function getPluginData(pluginName: string): PluginData | undefined {
-	// This would need to be implemented based on how plugin data is stored
-	// For now, return basic data from getPluginOptions
 	const options = getPluginOptions(pluginName)
+
+	// Look up metaOptions from the config's plugin tuples
+	try {
+		const config = getConfig()
+		if (config?.plugins) {
+			for (const plugin of config.plugins) {
+				if (Array.isArray(plugin) && plugin[0] === pluginName) {
+					return {
+						name: pluginName,
+						options,
+						metaOptions: plugin[2] as { failSafe?: boolean } | undefined
+					}
+				}
+				if (plugin === pluginName) {
+					return { name: pluginName, options }
+				}
+			}
+		}
+	} catch {
+		// getConfig not available, fall through
+	}
+
 	if (options) {
 		return { name: pluginName, options }
 	}
