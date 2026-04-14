@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.7.4-next.0
+
+### Patch Changes
+
+- refactor: migrate imports to @robojs/discordjs and update build config
+
 ## 0.7.3
 
 ### Patch Changes

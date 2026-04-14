@@ -1,5 +1,13 @@
 # @roboplay/plugin-ai
 
+## 0.7.0-next.0
+
+### Minor Changes
+
+- feat: support for v0.11
+
+  Migrated to v0.11 lifecycle hooks and updated engine architecture for compatibility with the new framework version.
+
 ## 0.6.0
 
 ### Minor Changes

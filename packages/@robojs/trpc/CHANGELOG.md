@@ -1,5 +1,15 @@
 # @robojs/trpc
 
+## 0.4.0-next.0
+
+### Minor Changes
+
+- feat: support for v0.11
+
+### Patch Changes
+
+- refactor: use Robo.status API for initialization reporting
+
 ## 0.3.0
 
 ### Minor Changes
