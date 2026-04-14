@@ -17,7 +17,7 @@ Note: This file is for AI agents and maintainers, not end users.
   - `src/core/patterns.ts` – Patterns helper with predefined cron expressions and builders
   - `src/core/loggers.ts` – Forked logger instance
   - `src/core/utils.ts` – Utilities (Bun/runtime, package manager detection)
-  - `src/events/_start.ts` – Startup restoration of persisted jobs
+  - `src/robo/start.ts` – Startup restoration of persisted jobs
   - `config/robo.mjs` – Plugin configuration
 
 ### High-level flow (Mermaid)
@@ -30,7 +30,7 @@ sequenceDiagram
     participant Croner as Croner Library
     participant State as State API
     participant Flash as Flashcore
-    participant Start as _start Event
+    participant Start as Start Hook
     participant File as Job File
 
     Note over User,File: Job Creation Flow (Function-Based)
@@ -222,7 +222,7 @@ await Cron.remove(id)
 
 ## Integration with Robo.js Lifecycle
 
-- `_start` event (`src/events/_start.ts`) restores jobs at startup:
+- Start hook (`src/robo/start.ts`) restores jobs at startup:
   1) Load `jobs` index
   2) For each id: load `{ cron, path }`
   3) If data exists: `Cron(cron, path)` then `setState(id, job)`
@@ -252,7 +252,7 @@ await Cron.remove(id)
 5) `stop()` doesn’t remove persistence – call `Cron.remove(id)` as well.
 6) Bun fallback only for `.js`→`.ts` – always use `.js` suffix in paths when targeting Bun.
 7) Restore failures don’t stop startup – check logs for missing jobs.
-8) `Cron.get()` is runtime-only – relies on `_start` restoration after restart.
+8) `Cron.get()` is runtime-only – relies on start hook restoration after restart.
 9) Invalid cron expressions throw – validate with Patterns or external tools.
 10) Time zone differences – Croner uses system TZ; consider UTC.
 
@@ -271,7 +271,7 @@ await Cron.remove(id)
 
 ## Maintenance & Updates
 
-- Keep this doc updated when changing: CronJob, Patterns, `_start` restoration, utils, logging, or dependencies.
+- Keep this doc updated when changing: CronJob, Patterns, start hook restoration, utils, logging, or dependencies.
 - Add new features/engines/patterns and document quirks and examples.
 
 ## Quick Reference
@@ -286,8 +286,8 @@ packages/@robojs/cron/
 │   │   ├── patterns.ts           # Patterns helper
 │   │   ├── loggers.ts            # Forked logger
 │   │   └── utils.ts              # Utility functions
-│   └── events/
-│       └── _start.ts             # Job restoration
+│   └── robo/
+│       └── start.ts              # Job restoration
 ├── config/
 │   └── robo.mjs                  # Plugin configuration
 ├── package.json                  # Dependencies, metadata

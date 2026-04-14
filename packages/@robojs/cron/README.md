@@ -30,7 +30,7 @@ Cron('*/10 * * * * *', () => {
 })
 ```
 
-You can schedule jobs to run when your **Robo** starts using the `/src/events/_start.js` file.
+You can schedule jobs to run when your **Robo** starts using the `/src/robo/start.js` file.
 
 ```javascript
 import { Cron } from '@robojs/cron'
@@ -70,7 +70,7 @@ You can also point to a file to run as a job.
 ```javascript
 import { Cron } from '@robojs/cron'
 
-// File: /src/events/_start.js
+// File: /src/robo/start.js
 export default () => {
 	// Runs `/src/cron/job.js` every 5 seconds
 	// IMPORTANT: pass a relative path (no leading slash)
