@@ -43,6 +43,7 @@ import type {
 	TerminalContext
 } from '../../types/cli.js'
 import type { Config } from '../../types/config.js'
+import type { SpiritMessage, TerminalExecResult } from '../../types/common.js'
 import type { RuntimeProvider } from './cli-runtime-provider.js'
 
 const logger = createLogger().fork('cli')
@@ -515,7 +516,7 @@ export function getExtensions(manifest: CliManifest, commandPath: string): CliEx
  * Automatically adds default --help option unless already defined.
  */
 export function mergeOptions(
-	coreOptions: CliOptionConfig[] = [],
+	coreOptions: readonly CliOptionConfig[] = [],
 	extensions: CliExtensionEntry[]
 ): CliOptionConfig[] {
 	const merged = [...coreOptions]
@@ -870,12 +871,22 @@ export async function loadTerminalManifest(): Promise<Record<string, TerminalCom
 	return manifest.terminal && Object.keys(manifest.terminal).length > 0 ? manifest.terminal : null
 }
 
+interface InteractiveCli {
+	isActive: () => boolean
+	showDrawer: (lines: string[]) => void
+	hideDrawer: () => void
+	isDrawerOpen: () => boolean
+}
+
 /**
  * Context needed for terminal command registration.
  */
 export interface TerminalRegistrationContext {
 	config: Config
 	runtime?: RuntimeProvider
+	getSpirits?: () => import('./spirits.js').Spirits | undefined
+	getSpiritId?: () => string | null | undefined
+	interactiveCli?: InteractiveCli
 }
 
 /**
@@ -902,6 +913,7 @@ export function buildTerminalCommands(
 		result.push({
 			name,
 			description: entry.description,
+			subcommands: entry.subcommands,
 			load: async () => ({
 				handler: createTerminalHandler(commandPath, entry, terminal, ctx)
 			})
@@ -912,8 +924,121 @@ export function buildTerminalCommands(
 }
 
 /**
+ * Try to execute a terminal command in the spirit worker via IPC.
+ * Returns true if spirit execution was attempted, false if CLI fallback should be used.
+ */
+async function tryExecuteInSpirit(
+	commandPath: string,
+	handlerPath: string,
+	args: string[],
+	options: Record<string, unknown>,
+	ctx: TerminalRegistrationContext,
+	interactiveCli: InteractiveCli
+): Promise<boolean> {
+	const spirits = ctx.getSpirits?.()
+	const spiritId = ctx.getSpiritId?.()
+
+	if (!spirits || !spiritId) {
+		return false
+	}
+
+	const drawerAvailable = interactiveCli.isActive()
+
+	// Listen for unsolicited messages (write, drawer) from the spirit during execution
+	const writeCallback = (message: SpiritMessage) => {
+		if (message.event === 'terminal-write') {
+			const { text } = message.payload as { text: string }
+			process.stdout.write(text)
+		} else if (message.event === 'terminal-drawer') {
+			const { action, lines } = message.payload as { action: string; lines?: string[] }
+			if (action === 'show' && lines) {
+				interactiveCli.showDrawer(lines)
+			} else if (action === 'hide') {
+				interactiveCli.hideDrawer()
+			}
+		}
+	}
+
+	try {
+		spirits.on(spiritId, writeCallback)
+
+		const result = await spirits.exec<TerminalExecResult | null>(spiritId, {
+			event: 'terminal-exec',
+			payload: { handlerPath, args, options, drawerAvailable }
+		})
+
+		// null means the spirit was terminated (e.g., during rebuild) — fall back to CLI
+		if (!result) {
+			return false
+		}
+
+		if (result.returnValue) {
+			process.stdout.write(result.returnValue + '\n')
+		}
+
+		if (!result.success) {
+			process.stdout.write(`Error executing /${commandPath}: ${result.error}\n`)
+		}
+
+		return true
+	} catch {
+		// Spirit crashed or is unavailable — fall back to CLI-side execution
+		return false
+	} finally {
+		spirits.off(spiritId, writeCallback)
+	}
+}
+
+/**
+ * Execute a terminal command in the CLI parent process (fallback path).
+ */
+async function executeInCli(
+	commandPath: string,
+	handlerPath: string,
+	args: string[],
+	options: Record<string, unknown>,
+	ctx: TerminalRegistrationContext,
+	interactiveCli: InteractiveCli
+): Promise<void> {
+	const terminalCtx: TerminalContext = {
+		args,
+		options,
+		config: ctx.config,
+		runtime: ctx.runtime,
+		write: (text: string) => process.stdout.write(text),
+		drawer: interactiveCli.isActive()
+			? {
+					show: (lines: string[]) => interactiveCli.showDrawer(lines),
+					hide: () => interactiveCli.hideDrawer(),
+					isOpen: () => interactiveCli.isDrawerOpen()
+				}
+			: undefined
+	}
+
+	try {
+		const module = await import(pathToFileURL(handlerPath).href)
+
+		if (typeof module.default !== 'function') {
+			process.stdout.write(`Terminal command at ${handlerPath} is missing default handler\n`)
+			return
+		}
+
+		const result = await module.default(terminalCtx)
+
+		if (typeof result === 'string') {
+			process.stdout.write(result + '\n')
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error)
+		process.stdout.write(`Error executing /${commandPath}: ${message}\n`)
+		logger.debug('Terminal command error:', error)
+	}
+}
+
+/**
  * Create a handler function for a terminal command entry.
  * Handles both direct commands and parent commands with subcommands.
+ * Routes execution through spirit IPC when available, falls back to CLI-side.
  */
 function createTerminalHandler(
 	commandPath: string,
@@ -951,8 +1076,8 @@ function createTerminalHandler(
 		}
 
 		// Parse options
-		const options = entry.options ?? []
-		const { parsedOptions, positionalArgs, errors } = parseCliOptions(args, options)
+		const optionConfigs = entry.options ?? []
+		const { parsedOptions, positionalArgs, errors } = parseCliOptions(args, optionConfigs)
 
 		if (errors.length > 0) {
 			for (const error of errors) {
@@ -961,29 +1086,13 @@ function createTerminalHandler(
 			return
 		}
 
-		// Build terminal context
-		const terminalCtx: TerminalContext = {
-			args: positionalArgs,
-			options: parsedOptions,
-			config: ctx.config,
-			runtime: ctx.runtime,
-			write: (text: string) => process.stdout.write(text)
-		}
+		// Use injected interactiveCli or lazy-import it
+		const interactiveCli = ctx.interactiveCli ?? await import('./interactive-cli.js')
 
-		// Dynamically import and execute the handler
-		try {
-			const module = await import(pathToFileURL(entry.path).href)
-
-			if (typeof module.default !== 'function') {
-				process.stdout.write(`Terminal command at ${entry.path} is missing default handler\n`)
-				return
-			}
-
-			await module.default(terminalCtx)
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error)
-			process.stdout.write(`Error executing /${commandPath}: ${message}\n`)
-			logger.debug('Terminal command error:', error)
+		// Try spirit-side execution first, fall back to CLI-side
+		const spiritHandled = await tryExecuteInSpirit(commandPath, entry.path, positionalArgs, parsedOptions, ctx, interactiveCli)
+		if (!spiritHandled) {
+			await executeInCli(commandPath, entry.path, positionalArgs, parsedOptions, ctx, interactiveCli)
 		}
 	}
 }

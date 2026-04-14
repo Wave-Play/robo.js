@@ -9,7 +9,8 @@ const command = new Command('sage')
 	.description('Codemod for Robo.js')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.positionalArgs(true)
-	.handler(async (_args, options) => {
+	.handler(async (context) => {
+		const options = context.options as Record<string, unknown>
 		// Create a logger
 		logger({
 			enabled: !options.silent,

@@ -5,6 +5,7 @@
  * Reduces code duplication between cli-discovery.ts and cli-loader.ts.
  */
 
+import type { Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -149,7 +150,7 @@ async function scanCommandsRecursive(
 ): Promise<void> {
 	const { requireConfig = false, priorityBoost = 0, cacheBust = false } = options
 
-	let entries: Awaited<ReturnType<typeof fs.readdir>>
+	let entries: Dirent[]
 	try {
 		entries = await fs.readdir(dir, { withFileTypes: true })
 	} catch (error) {
@@ -265,7 +266,7 @@ async function scanExtensionsRecursive(
 ): Promise<void> {
 	const { requireConfig = false, priorityBoost = 0, cacheBust = false } = options
 
-	let entries: Awaited<ReturnType<typeof fs.readdir>>
+	let entries: Dirent[]
 	try {
 		entries = await fs.readdir(dir, { withFileTypes: true })
 	} catch (error) {
@@ -668,7 +669,7 @@ async function scanTerminalCommandsRecursive(
 ): Promise<void> {
 	const { requireConfig = false, priorityBoost = 0, cacheBust = false } = options
 
-	let entries: Awaited<ReturnType<typeof fs.readdir>>
+	let entries: Dirent[]
 	try {
 		entries = await fs.readdir(dir, { withFileTypes: true })
 	} catch (error) {

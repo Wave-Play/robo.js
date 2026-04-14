@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { logger } from '../../core/logger.js'
 import { packageJson } from './utils.js'
-import { color, composeColors } from '../../core/color.js'
+import { color, composeColors, type Wrapper } from '../../core/color.js'
 import type { RouteEntries, ProcessedEntry } from '../../types/routes.js'
 
 export async function getProjectSize(directory: string): Promise<number> {
@@ -96,7 +96,7 @@ export function printBuildSummary(routeEntries: RouteEntries, totalSize: number,
 		sizeText = `${(totalSize / (1024 * 1024 * 1024)).toFixed(2)} GB`
 	}
 
-	let sizeColor = color.green
+	let sizeColor: Wrapper = color.green
 	if (totalSize >= 1024 * 1024 * 1024) {
 		sizeColor = composeColors(color.red, color.bgBlack, color.underline)
 	} else if (totalSize >= 500 * 1024 * 1024) {
@@ -106,7 +106,7 @@ export function printBuildSummary(routeEntries: RouteEntries, totalSize: number,
 	}
 
 	const buildTime = Date.now() - startTime
-	let buildColor = color.green
+	let buildColor: Wrapper = color.green
 	if (buildTime < 5000) {
 		buildColor = color.green
 	} else {

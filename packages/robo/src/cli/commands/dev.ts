@@ -3,12 +3,12 @@ import { startPhase, endPhase, PERF_ENABLED, finalize } from '../utils/perf-metr
 import { spawn } from 'child_process'
 import { logger, LogLevel } from '../../core/logger.js'
 import { DEFAULT_CONFIG, FLASHCORE_KEYS, HighlightGreen, Indent } from '../../core/constants.js'
-import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
+import { getConfigPaths, getMainConfigPath, loadConfig } from '../../core/config.js'
 import { IS_WINDOWS, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
 import { color, composeColors } from '../../core/color.js'
-import { Spirits } from '../utils/spirits.js'
+import { createDisposableSpiritTask, Spirits } from '../utils/spirits.js'
 import * as interactiveCli from '../utils/interactive-cli.js'
 import { Highlight } from '../../core/constants.js'
 import { Flashcore } from '../../core/flashcore.js'
@@ -17,30 +17,18 @@ import { Mode, resolveCliMode, setMode } from '../../core/mode.js'
 import { Env } from '../../core/env.js'
 import { Boot } from '../../internal/boot.js'
 import { Nanocore } from '../../internal/nanocore.js'
-import {
-	detectRouteChanges,
-	getNonHandlerChanges,
-	getRestartRequiredChanges,
-	getUniqueRoutes,
-	mapFileToRoute,
-	type HmrMapping
-} from '../utils/hmr-mapper.js'
-import { toBuildPath, reindexEntries, type ManifestEntry } from '../utils/hmr-manifest.js'
-import {
-	buildInitialGraph,
-	updateGraphForFiles,
-	getImpactedHandlers,
-	hasAffectedDynamicImports,
-	getGraphStats,
-	getTraversalMetrics,
-	removeModule,
-	MAX_TRAVERSAL_NODES,
-	type DependencyGraph
-} from '../utils/hmr-graph.js'
-import { linkModules } from '../utils/hmr-linker.js'
+import type { HmrMapping } from '../utils/hmr-mapper.js'
+import type { ManifestEntry } from '../utils/hmr-manifest.js'
+import type { DependencyGraph } from '../utils/hmr-graph.js'
 import type { CliContext } from '../../types/cli.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 import type { RouteDefinitions } from '../../types/manifest-v1.js'
+
+// Cached HMR module imports (lazy-loaded once on first HMR cycle)
+let _hmrMapper: typeof import('../utils/hmr-mapper.js') | undefined
+let _hmrManifest: typeof import('../utils/hmr-manifest.js') | undefined
+let _hmrGraph: typeof import('../utils/hmr-graph.js') | undefined
+let _hmrLinker: typeof import('../utils/hmr-linker.js') | undefined
 
 /**
  * Enable verbose HMR debug output with timing metrics.
@@ -114,17 +102,19 @@ async function devAction(context: CliContext) {
 		return shardModes()
 	}
 
-	// Welcomeee
+	// Load the configuration and boot message in parallel
 	const projectName = path.basename(process.cwd()).toLowerCase()
-	const bootMessage = await Boot.getRandom('dev')
+	const [bootMessage, config] = await Promise.all([
+		Boot.getRandom('dev'),
+		loadConfig('robo', true)
+	])
+
 	logger.log('')
 	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
 	logger.log(Indent, '  ', bootMessage.content)
 	logger.log('')
 
-	// Load the configuration before anything else
-	const config = await loadConfig('robo', true)
-	const configPath = await loadConfigPath()
+	const configPath = getMainConfigPath()
 	let configRelative: string
 
 	if (configPath) {
@@ -147,14 +137,28 @@ async function devAction(context: CliContext) {
 	// Declare variables early to avoid TDZ issues in closures registered before these lines execute
 	let buildSuccess = false
 	let isUpdating = false
+	let pendingChanges: Change[] | null = null
 
 	// Define shutdown callback before interactive CLI needs it
 	let isStopping = false
+	let initialBuildTask:
+		| {
+				workerId: string
+				promise: Promise<unknown>
+				terminate: () => Promise<void>
+		  }
+		| undefined
 	const callback = async (_signal: NodeJS.Signals) => {
 		if (isStopping) {
 			return
 		}
 		isStopping = true
+
+		try {
+			await initialBuildTask?.terminate()
+		} catch (err) {
+			logger.debug('Disposable build cleanup error:', err)
+		}
 
 		try {
 			await spirits?.stopAll()
@@ -182,6 +186,10 @@ async function devAction(context: CliContext) {
 
 		process.exit(0)
 	}
+
+	// Stop workers on process exit, including during the initial disposable build.
+	process.on('SIGINT', () => callback('SIGINT'))
+	process.on('SIGTERM', () => callback('SIGTERM'))
 
 	// Create the dev runtime provider — wraps Spirit IPC for state, direct import for Flashcore.
 	// Uses getters since both `spirits` and `roboSpirit` are set after provider creation.
@@ -219,13 +227,16 @@ async function devAction(context: CliContext) {
 			}
 			isUpdating = true
 			interactiveCli.setStatus('restarting')
+			interactiveCli.resetStatus()
 			try {
 				logger.wait('Restarting Robo...')
-				spirits.off(roboSpirit, restartCallback)
+				deregisterSpiritCallbacks()
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, [])
-				spirits.on(roboSpirit, restartCallback)
+				registerSpiritCallbacks()
 			} finally {
-				interactiveCli.setStatus(roboSpirit ? 'ready' : 'error')
+				if (!roboSpirit) {
+					interactiveCli.setStatus('error')
+				}
 				isUpdating = false
 			}
 		}
@@ -238,7 +249,12 @@ async function devAction(context: CliContext) {
 			const { registerTerminal } = await import('../utils/cli-commands.js')
 			const terminal = await loadTerminalManifest()
 			if (terminal) {
-				const cmds = buildTerminalCommands(terminal, { config, runtime: runtimeProvider })
+				const cmds = buildTerminalCommands(terminal, {
+					config,
+					runtime: runtimeProvider,
+					getSpirits: () => spirits,
+					getSpiritId: () => roboSpirit
+				})
 				for (const cmd of cmds) {
 					registerTerminal(cmd)
 				}
@@ -248,42 +264,85 @@ async function devAction(context: CliContext) {
 		}
 	}
 
-	// Ensure worker spirits are ready
-	spirits = new Spirits(3, interactiveCli.getOutputCallback())
-
-	// Stop spirits on process exit
-	process.on('SIGINT', () => callback('SIGINT'))
-	process.on('SIGTERM', () => callback('SIGTERM'))
-
 	// Run first build
 	startPhase('Initial Build')
 	buildSuccess = false
 	try {
 		const start = Date.now()
-		// Lazy import buildAction to avoid loading build module at CLI startup
-		const { buildAction } = await import('./build/index.js')
-		await buildAction({
-			args: [],
-			options: {
-				dev: true,
+		initialBuildTask = createDisposableSpiritTask(
+			{
+				event: 'build',
+				payload: {
+					files: [],
+					mode: Mode.get()
+				},
 				verbose: options.verbose
-			}
-		} as unknown as CliContext)
+			},
+			interactiveCli.getOutputCallback()
+		)
+		await initialBuildTask.promise
 		logger.debug(`Build completed in ${Date.now() - start}ms`)
 		buildSuccess = true
 	} catch (error) {
 		logger.error(error)
+	} finally {
+		initialBuildTask = undefined
 	}
 	endPhase('Initial Build')
+
+	// Ensure worker spirits are ready after the initial build completes
+	spirits = new Spirits(3, interactiveCli.getOutputCallback())
 
 	// These callbacks are necessary to ensure "/dev restart" works
 	const restartCallback = async (message: SpiritMessage) => {
 		if (message.event === 'restart' && message.payload === 'trigger') {
-			logger.wait(`Restarting Robo...`)
-			spirits.off(roboSpirit, restartCallback)
-			roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, [])
-			spirits.on(roboSpirit, restartCallback)
+			if (isUpdating) {
+				logger.debug('Restart triggered during rebuild, deferring...')
+				return
+			}
+			isUpdating = true
+			try {
+				logger.wait(`Restarting Robo...`)
+				deregisterSpiritCallbacks()
+				interactiveCli.resetStatus()
+				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, [])
+				registerSpiritCallbacks()
+			} finally {
+				isUpdating = false
+			}
 		}
+	}
+
+	// Listen for status events from the spirit (plugin progress, status items, flash notifications)
+	const statusCallback = (message: SpiritMessage) => {
+		if (message.event === 'status-set') {
+			const { key, value, priority } = message.payload as { key: string; value: string; priority?: number }
+			interactiveCli.setStatusItem(key, value, priority)
+		} else if (message.event === 'status-remove') {
+			const { key } = message.payload as { key: string }
+			interactiveCli.removeStatusItem(key)
+		} else if (message.event === 'status-flash') {
+			const { message: msg, duration } = message.payload as { message: string; duration: number }
+			interactiveCli.flashNotification(msg, duration)
+		} else if (message.event === 'status-progress') {
+			const { plugin, status: pluginStatus, total } = message.payload as {
+				plugin: string; status: 'starting' | 'ready' | 'error'; total?: number
+			}
+			interactiveCli.setPluginProgress(plugin, pluginStatus, total)
+		}
+	}
+
+	// Helpers to register/deregister spirit callbacks (handles null roboSpirit)
+	function registerSpiritCallbacks() {
+		if (roboSpirit) {
+			spirits.on(roboSpirit, restartCallback)
+			spirits.on(roboSpirit, statusCallback)
+		}
+	}
+
+	function deregisterSpiritCallbacks() {
+		spirits.off(roboSpirit, restartCallback)
+		spirits.off(roboSpirit, statusCallback)
 	}
 
 	// Get state saved to disk as the default
@@ -314,12 +373,13 @@ async function devAction(context: CliContext) {
 				}
 			},
 			onRetry: (value: string) => {
+				deregisterSpiritCallbacks()
 				roboSpirit = value
-				spirits.on(roboSpirit, restartCallback)
+				registerSpiritCallbacks()
 				spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
 			}
 		})
-		spirits.on(roboSpirit, restartCallback)
+		registerSpiritCallbacks()
 		spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
 	} else {
 		const id = String(process.env.ROBO_INSTANCE_ID ?? process.pid)
@@ -327,7 +387,11 @@ async function devAction(context: CliContext) {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
 	endPhase('Spirit Startup')
-	interactiveCli.setStatus(buildSuccess ? 'ready' : 'error')
+	// Only set error here — 'ready' is set by status-progress events when all plugin hooks complete
+	// (the spirit returns 'ok' before Robo.start() finishes, so hooks run after this point)
+	if (!buildSuccess) {
+		interactiveCli.setStatus('error')
+	}
 
 	// Load terminal commands from manifest (file-based convention system)
 	if (buildSuccess) {
@@ -368,6 +432,7 @@ async function devAction(context: CliContext) {
 	}
 
 	if (hmrEnabled) {
+		const { buildInitialGraph, getGraphStats } = await import('../utils/hmr-graph.js')
 		logger.debug(color.cyan('[HMR]'), 'Hot module replacement enabled for handlers')
 
 		// Load route definitions for HMR mapping
@@ -394,14 +459,16 @@ async function devAction(context: CliContext) {
 		await finalize()
 	}
 
-	watcher.start(async (changes) => {
+	const processChanges = async (changes: Change[]) => {
 		logger.debug('Watcher events:', changes)
 		if (isUpdating) {
-			return logger.debug(`Already updating, skipping...`)
+			pendingChanges = pendingChanges ? [...pendingChanges, ...changes] : [...changes]
+			return logger.debug(`Already updating, queuing ${changes.length} change(s)...`)
 		}
 		isUpdating = true
 		rebuildCount++
 		interactiveCli.setStatus('building')
+		interactiveCli.resetStatus()
 
 		// Track rebuild cycle for performance metrics
 		const rebuildPhaseName = `Rebuild #${rebuildCount}`
@@ -415,19 +482,22 @@ async function devAction(context: CliContext) {
 			if (configChange) {
 				const fileName = configChange.filePath.split('/').pop()
 				logger.wait(`${color.bold(fileName)} file was updated. Restarting to apply configuration...`)
+				deregisterSpiritCallbacks()
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-				spirits.on(roboSpirit, restartCallback)
+				registerSpiritCallbacks()
 			} else if (pluginChange) {
 				const plugin = watchedPlugins[pluginChange.filePath]
 				logger.wait(`${color.bold(plugin.name)} plugin was updated. Restarting to apply changes...`)
+				deregisterSpiritCallbacks()
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-				spirits.on(roboSpirit, restartCallback)
+				registerSpiritCallbacks()
 			} else if (hmrEnabled && roboSpirit) {
 				// If route definitions weren't available at startup, try to load them now.
 				// Without route definitions, HMR mapping can't safely identify handlers.
 				if (!routeDefinitions) {
 					routeDefinitions = await tryLoadRouteDefinitions()
 					if (routeDefinitions) {
+						const { buildInitialGraph, getGraphStats } = await import('../utils/hmr-graph.js')
 						dependencyGraph = buildInitialGraph(Mode.get(), routeDefinitions)
 						const stats = getGraphStats(dependencyGraph)
 						if (HMR_DEBUG) {
@@ -443,8 +513,9 @@ async function devAction(context: CliContext) {
 
 				if (!routeDefinitions) {
 					logger.wait(`[HMR] Route definitions unavailable. Falling back to full restart...`)
+					deregisterSpiritCallbacks()
 					roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-					spirits.on(roboSpirit, restartCallback)
+					registerSpiritCallbacks()
 					return
 				}
 
@@ -461,18 +532,23 @@ async function devAction(context: CliContext) {
 				if (!hmrResult.success) {
 					// Fall back to full restart
 					logger.wait(`[HMR] Falling back to full restart...`)
+					deregisterSpiritCallbacks()
 					roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-					spirits.on(roboSpirit, restartCallback)
+					registerSpiritCallbacks()
 				}
 			} else {
 				// Non-HMR mode or no spirit - do full restart
 				logger.wait(`Change detected. Restarting Robo...`)
+				deregisterSpiritCallbacks()
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-				spirits.on(roboSpirit, restartCallback)
+				registerSpiritCallbacks()
 			}
 		} finally {
 			endPhase(rebuildPhaseName)
-			interactiveCli.setStatus(roboSpirit ? 'ready' : 'error')
+			// Only set error — 'ready' comes from status-progress events after hooks complete
+			if (!roboSpirit) {
+				interactiveCli.setStatus('error')
+			}
 
 			// Re-register terminal commands (manifest may have changed)
 			if (roboSpirit) {
@@ -489,8 +565,20 @@ async function devAction(context: CliContext) {
 			}
 
 			isUpdating = false
+
+			// Re-trigger with any changes that arrived while we were updating
+			if (pendingChanges) {
+				const queued = pendingChanges
+				pendingChanges = null
+				logger.debug(`Processing ${queued.length} queued change(s)...`)
+				processChanges(queued).catch((err) => {
+					logger.error('Error processing queued changes:', err)
+					interactiveCli.setStatus('error')
+				})
+			}
 		}
-	})
+	}
+	watcher.start(processChanges)
 
 	// Check for updates
 	try {
@@ -713,6 +801,14 @@ interface HmrResult {
 	reloadedRoutes: number
 }
 
+interface HmrStatusPayload {
+	ready?: boolean
+	capabilities?: {
+		serverApiTopology?: boolean
+		serverApiMutableRoutes?: boolean
+	}
+}
+
 /**
  * Handle file changes using HMR instead of full restart.
  * Compiles only changed files and hot-reloads handlers in the running Robo.
@@ -726,6 +822,29 @@ async function handleHmrChanges(
 	routeDefinitions?: RouteDefinitions,
 	dependencyGraph?: DependencyGraph
 ): Promise<HmrResult> {
+	_hmrMapper ??= await import('../utils/hmr-mapper.js')
+	_hmrManifest ??= await import('../utils/hmr-manifest.js')
+	_hmrGraph ??= await import('../utils/hmr-graph.js')
+	_hmrLinker ??= await import('../utils/hmr-linker.js')
+
+	const {
+		detectRouteChanges,
+		getNonHandlerChanges,
+		getRestartRequiredChanges,
+		getUniqueRoutes,
+		mapFileToRoute
+	} = _hmrMapper
+	const { toBuildPath } = _hmrManifest
+	const {
+		updateGraphForFiles,
+		getImpactedHandlers,
+		hasAffectedDynamicImports,
+		getTraversalMetrics,
+		removeModule,
+		MAX_TRAVERSAL_NODES
+	} = _hmrGraph
+	const { linkModules } = _hmrLinker
+
 	const start = Date.now()
 	const result: HmrResult = {
 		success: true,
@@ -744,6 +863,20 @@ async function handleHmrChanges(
 
 	// Detect handler changes
 	const { added, removed, modified } = detectRouteChanges(changes, routeDefinitions)
+
+	const hasServerApiTopologyChange = [...added, ...removed].some(
+		(mapping) => mapping.namespace === 'server' && mapping.route === 'api'
+	)
+	if (hasServerApiTopologyChange) {
+		const hmrStatus = (await spirits.exec<HmrStatusPayload>(spiritId, {
+			event: 'hmr-status'
+		})) ?? { capabilities: {} }
+
+		if (!hmrStatus.capabilities?.serverApiTopology) {
+			logger.warn('[HMR] API route add/remove detected - using full restart')
+			return { ...result, success: false }
+		}
+	}
 
 	// Check for non-handler changes (utilities) and find impacted handlers via dependency graph
 	const nonHandlerChanges = getNonHandlerChanges(changes, routeDefinitions)
@@ -923,11 +1056,13 @@ async function handleHmrChanges(
 		}
 	}
 
-	// Update manifest for added/removed handlers
+	// Keep summary/manifest topology structurally accurate for add/remove changes without rescanning routes.
 	if (added.length > 0 || removed.length > 0) {
-		logger.debug(`[HMR] Updating manifest for ${added.length} added, ${removed.length} removed handlers`)
+		logger.debug(
+			`[HMR] Updating manifest for ${added.length} added and ${removed.length} removed handlers`
+		)
 		try {
-			await updateManifestIncremental(added, removed, modified)
+			await updateManifestIncremental(added, removed, routeDefinitions)
 		} catch (error) {
 			logger.error(`[HMR] Manifest update failed:`, error)
 			return { ...result, success: false }
@@ -991,16 +1126,24 @@ async function handleHmrChanges(
 		}
 	}
 
-	// Determine reload strategy
-	// Use route-level reload for: added/removed handlers, or when dynamic imports are at risk
-	const needsRouteReload = added.length > 0 || removed.length > 0 || hasDynamicImportRisk
+	const affectedRoutesForRuntime = getUniqueRoutes([...added, ...removed, ...modified, ...impactedFromUtilities])
+	const routeReloadMappings = [...added, ...removed]
+	const routeReloadRoutes = hasDynamicImportRisk
+		? affectedRoutesForRuntime
+		: getUniqueRoutes(routeReloadMappings)
+	const routeReloadRouteKeys = new Set(routeReloadRoutes.map(([namespace, route]) => `${namespace}.${route}`))
+	const handlerReloadMappings = allModified.filter(
+		(mapping) => !routeReloadRouteKeys.has(`${mapping.namespace}.${mapping.route}`)
+	)
+	const successfulRouteReloads = new Set<string>()
+	const successfulHandlerReloads = new Set<string>()
+	let failedRouteReloads = 0
+	let failedHandlerReloads = 0
 
-	if (needsRouteReload) {
-		// Route-level reload for added/removed handlers or dynamic import safety
-		const uniqueRoutes = getUniqueRoutes([...added, ...removed, ...allModified])
-		let failedRoutes = 0
+	if (routeReloadRoutes.length > 0) {
+		// Route-level reload is reserved for structural changes and dynamic import safety.
 
-		for (const [namespace, route] of uniqueRoutes) {
+		for (const [namespace, route] of routeReloadRoutes) {
 			logger.debug(`[HMR] Reloading route: ${namespace}.${route}`)
 
 			try {
@@ -1010,12 +1153,13 @@ async function handleHmrChanges(
 				})
 
 				if (!response?.success) {
-					failedRoutes++
+					failedRouteReloads++
 					logger.error(`[HMR] Route reload failed (keeping previous code): ${response?.error}`)
 					continue
 				}
 
 				result.reloadedRoutes++
+				successfulRouteReloads.add(`${namespace}.${route}`)
 			} catch (error) {
 				// IPC/worker failures are fatal for HMR - fall back to full restart
 				logger.error(`[HMR] Route reload failed:`, error)
@@ -1026,15 +1170,16 @@ async function handleHmrChanges(
 		logger.log(
 			Indent,
 			color.cyan('[HMR]'),
-			failedRoutes > 0
-				? `Reloaded ${result.reloadedRoutes} route(s) (${failedRoutes} failed)`
+			failedRouteReloads > 0
+				? `Reloaded ${result.reloadedRoutes} route(s) (${failedRouteReloads} failed)`
 				: `Reloaded ${result.reloadedRoutes} route(s)`,
 			color.dim(`(${Date.now() - start}ms)`)
 		)
-	} else {
-		// Handler-level reload for modifications only (including those impacted by utility changes)
-		let failedHandlers = 0
-		for (const mapping of allModified) {
+	}
+
+	if (handlerReloadMappings.length > 0) {
+		// Handler-level reload for modifications that do not require route-level runtime refresh.
+		for (const mapping of handlerReloadMappings) {
 			// Convert source path to build path (e.g., src/events/messageCreate/example.ts -> events/messageCreate/example.js)
 			const handlerPath = mapping.filePath
 				.replace(/^src\//, '')
@@ -1054,12 +1199,13 @@ async function handleHmrChanges(
 				})
 
 				if (!response?.success) {
-					failedHandlers++
+					failedHandlerReloads++
 					logger.error(`[HMR] Handler reload failed (keeping previous code): ${response?.error}`)
 					continue
 				}
 
 				result.reloadedHandlers++
+				successfulHandlerReloads.add(`${mapping.namespace}.${mapping.route}:${handlerPath}`)
 			} catch (error) {
 				// IPC/worker failures are fatal for HMR - fall back to full restart
 				logger.error(`[HMR] Handler reload failed:`, error)
@@ -1070,26 +1216,33 @@ async function handleHmrChanges(
 		logger.log(
 			Indent,
 			color.cyan('[HMR]'),
-			failedHandlers > 0
-				? `Reloaded ${result.reloadedHandlers} handler(s) (${failedHandlers} failed)`
+			failedHandlerReloads > 0
+				? `Reloaded ${result.reloadedHandlers} handler(s) (${failedHandlerReloads} failed)`
 				: `Reloaded ${result.reloadedHandlers} handler(s)`,
 			color.dim(`(${Date.now() - start}ms)`)
 		)
 	}
 
 	// Send HMR notification to execute hooks and subscribers
+	// Include all mappings so hooks are notified of all changes, including failures
 	const affectedMappings = [...added, ...removed, ...allModified]
 	if (affectedMappings.length > 0) {
 		try {
 			// Determine primary change type
 			const changeType: 'change' | 'add' | 'remove' =
-				added.length > 0 ? 'add' : removed.length > 0 ? 'remove' : 'change'
+				added.length > 0 && removed.length > 0
+					? 'change'
+					: added.length > 0
+						? 'add'
+						: removed.length > 0
+							? 'remove'
+							: 'change'
 
 			// Collect source files
 			const files = affectedMappings.map((m) => m.filePath)
 
 			// Group handlers by namespace:route
-			const routeMap = new Map<string, Array<{ key: string; path: string }>>()
+			const routeMap = new Map<string, Array<{ key: string; path: string; changeType: 'add' | 'remove' | 'change' }>>()
 			for (const m of affectedMappings) {
 				const routeKey = `${m.namespace}:${m.route}`
 				if (!routeMap.has(routeKey)) {
@@ -1097,7 +1250,8 @@ async function handleHmrChanges(
 				}
 				routeMap.get(routeKey)!.push({
 					key: m.key,
-					path: m.filePath.replace(/^src\//, '').replace(/\.(ts|tsx|mts)$/, '.js')
+					path: m.filePath.replace(/^src\//, '').replace(/\.(ts|tsx|mts)$/, '.js'),
+					changeType: added.includes(m) ? 'add' : removed.includes(m) ? 'remove' : 'change'
 				})
 			}
 
@@ -1107,10 +1261,18 @@ async function handleHmrChanges(
 				return { namespace, route, handlers }
 			})
 
-			await spirits.exec(spiritId, {
+			const notifyResponse = await spirits.exec<{ success?: boolean; error?: string }>(spiritId, {
 				event: 'hmr-notify',
 				payload: { changeType, files, routes }
 			})
+			if (notifyResponse?.success === false) {
+				logger.warn(`[HMR] Hook notification requested restart: ${notifyResponse.error ?? 'unknown error'}`)
+				return { ...result, success: false }
+			}
+
+			logger.debug(
+				`[HMR] Notified hooks for ${routes.length} route(s); skipped ${failedRouteReloads} failed route(s) and ${failedHandlerReloads} failed handler(s)`
+			)
 		} catch (error) {
 			// HMR notification failure is non-fatal
 			logger.debug(`[HMR] Hook notification failed:`, error)
@@ -1121,101 +1283,57 @@ async function handleHmrChanges(
 }
 
 /**
- * Update manifest incrementally for HMR changes.
- * Handles added, removed, and modified handler entries.
+ * Update route manifests incrementally for HMR structural changes.
  *
- * This function properly supports multiple: true routes (like events)
- * where multiple handlers can share the same key. It:
- * - Matches entries by build path (not key) for removal/modification
- * - Allows multiple entries with the same key
- * - Reindexes entries to assign proper id/index values
+ * This keeps add/remove topology correct without rescanning compiled routes or importing user modules
+ * into the long-lived parent dev process.
  */
 async function updateManifestIncremental(
 	added: HmrMapping[],
 	removed: HmrMapping[],
-	modified: HmrMapping[]
+	routeDefinitions?: RouteDefinitions
 ): Promise<void> {
 	const fs = await import('node:fs/promises')
+	const { applyManifestUpdates } = await import('../utils/hmr-manifest.js')
 	const mode = Mode.get()
 	const manifestBase = path.join(process.cwd(), '.robo', 'manifest', mode)
+	const routeKeys = new Set([...added, ...removed].map((mapping) => `${mapping.namespace}.${mapping.route}`))
 
-	// Group by route
-	const routeChanges = new Map<string, {
-		added: HmrMapping[]
-		removed: HmrMapping[]
-		modified: HmrMapping[]
-	}>()
-
-	const addToRoute = (mapping: HmrMapping, type: 'added' | 'removed' | 'modified') => {
-		const key = `${mapping.namespace}.${mapping.route}`
-		if (!routeChanges.has(key)) {
-			routeChanges.set(key, { added: [], removed: [], modified: [] })
-		}
-		routeChanges.get(key)![type].push(mapping)
-	}
-
-	for (const m of added) addToRoute(m, 'added')
-	for (const m of removed) addToRoute(m, 'removed')
-	for (const m of modified) addToRoute(m, 'modified')
-
-	// Update each affected route's manifest file
-	for (const [routeKey, changes] of routeChanges) {
-		const [namespace, route] = routeKey.split('.')
+	for (const routeKey of routeKeys) {
+		const dotIndex = routeKey.indexOf('.')
+		const namespace = routeKey.substring(0, dotIndex)
+		const route = routeKey.substring(dotIndex + 1)
 		const routeManifestPath = path.join(manifestBase, 'routes', `${namespace}.${route}.json`)
+		const summaryManifestPath = path.join(manifestBase, 'summaries', `${namespace}.${route}.json`)
+		const existingEntries = await readManifestEntries(routeManifestPath)
+		const { entries, summaries } = applyManifestUpdates(existingEntries, {
+			added: added.filter((mapping) => mapping.namespace === namespace && mapping.route === route),
+			removed: removed.filter((mapping) => mapping.namespace === namespace && mapping.route === route),
+			routeDefinitions
+		})
 
-		let entries: ManifestEntry[] = []
-
-		// Load existing entries
-		try {
-			const content = await fs.readFile(routeManifestPath, 'utf-8')
-			entries = JSON.parse(content)
-		} catch {
-			// File doesn't exist yet
-		}
-
-		// Remove entries for deleted handlers - match by path, not key
-		// This correctly handles multiple: true routes where multiple handlers share a key
-		for (const rem of changes.removed) {
-			const buildPath = toBuildPath(rem)
-			entries = entries.filter((e) => e.path !== buildPath)
-		}
-
-		// Add entries for new handlers - check duplicate by path, not key
-		// This allows multiple handlers with the same key (for events)
-		for (const add of changes.added) {
-			const buildPath = toBuildPath(add)
-
-			// Only skip if exact same path already exists (true duplicate)
-			if (!entries.some((e) => e.path === buildPath)) {
-				entries.push({
-					id: '', // Will be set during reindex
-					key: add.key,
-					path: buildPath,
-					source: 'project',
-					plugin: null,
-					exports: { default: true }
-				})
-			}
-		}
-
-		// Update paths for modified handlers - match by path
-		// This correctly identifies the specific handler when multiple share a key
-		for (const mod of changes.modified) {
-			const buildPath = toBuildPath(mod)
-			const entry = entries.find((e) => e.path === buildPath)
-			if (entry) {
-				// Path hasn't changed for modifications, but key might need update
-				entry.key = mod.key
-			}
-		}
-
-		// Reindex all entries to assign proper id and index values
-		reindexEntries(entries)
-
-		// Write updated manifest
 		await fs.mkdir(path.dirname(routeManifestPath), { recursive: true })
-		await fs.writeFile(routeManifestPath, JSON.stringify(entries, null, 2))
+		await fs.mkdir(path.dirname(summaryManifestPath), { recursive: true })
+		await Promise.all([
+			fs.writeFile(routeManifestPath, JSON.stringify(entries, null, 2)),
+			fs.writeFile(summaryManifestPath, JSON.stringify(summaries, null, 2))
+		])
 
 		logger.debug(`[HMR] Updated manifest: ${routeKey}`)
+	}
+}
+
+async function readManifestEntries(routeManifestPath: string): Promise<ManifestEntry[]> {
+	const fs = await import('node:fs/promises')
+
+	try {
+		const contents = await fs.readFile(routeManifestPath, 'utf8')
+		return JSON.parse(contents) as ManifestEntry[]
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+			return []
+		}
+
+		throw error
 	}
 }

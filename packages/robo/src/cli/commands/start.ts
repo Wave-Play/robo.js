@@ -116,13 +116,8 @@ async function startAction(context: CliContext) {
 		process.exit(1)
 	}
 
-	// Handle graceful shutdown on Ctrl+C
-	process.on('SIGINT', async () => {
-		const { Robo } = await import('../../core/robo.js')
-		await Robo.stop()
-	})
-
 	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
+	// Note: SIGINT/SIGTERM handlers are registered by registerProcessEvents() inside Robo.start()
 	startPhase('Robo Start')
 	const { Robo } = await import('../../core/robo.js')
 	await Robo.start({

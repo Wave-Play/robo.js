@@ -8,6 +8,7 @@ import type { RuntimeProvider } from './cli-runtime-provider.js'
 export interface CliCommand {
 	name: string
 	description: string
+	subcommands?: string[]
 	handler: (args: string[], ctx: CliCommandContext) => void | Promise<void>
 }
 
@@ -21,6 +22,7 @@ export interface CliCommandContext {
 export interface LazyCliCommand {
 	name: string
 	description: string
+	subcommands?: string[]
 	load: () => Promise<{ handler: CliCommand['handler'] }>
 }
 
@@ -39,6 +41,7 @@ export function registerLazy(cmd: LazyCliCommand) {
 	commands.set(cmd.name, {
 		name: cmd.name,
 		description: cmd.description,
+		subcommands: cmd.subcommands,
 		handler: async (args, ctx) => {
 			const mod = await cmd.load()
 			return mod.handler(args, ctx)

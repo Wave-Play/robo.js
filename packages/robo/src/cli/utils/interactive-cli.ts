@@ -9,9 +9,12 @@
 import * as regions from './terminal-regions.js'
 import * as interceptor from './stdout-interceptor.js'
 import * as commandRegistry from './cli-commands.js'
+import { spawn } from 'node:child_process'
+import type { ChildProcess } from 'node:child_process'
 import type { CliCommand, CliCommandContext } from './cli-commands.js'
 import type { RuntimeProvider } from './cli-runtime-provider.js'
 import type { Config } from '../../types/index.js'
+import { getShellName, IS_WINDOWS } from './utils.js'
 
 export interface InteractiveCliOptions {
 	config: Config
@@ -31,6 +34,43 @@ let escapeTimeout: ReturnType<typeof setTimeout> | null = null
 let cleanedUp = false
 let isExiting = false
 let isExecutingCommand = false
+
+// Plugin startup progress
+let pluginStatuses = new Map<string, 'starting' | 'ready' | 'error'>()
+let totalPlugins = 0
+let startupComplete = false
+
+// Status items from plugins (persistent hint line content)
+let statusItems = new Map<string, { value: string; priority: number }>()
+
+// Transient notifications
+let transientMessage: string | null = null
+let transientTimeout: ReturnType<typeof setTimeout> | null = null
+
+// Tips
+let tipTimeout: ReturnType<typeof setTimeout> | null = null
+let lastInputTime = Date.now()
+
+// Drawer
+let drawerContent: string[] | null = null
+
+// Shell delegation
+let shellProcess: ChildProcess | null = null
+let shellOutputBuffer: string[] = []
+let shellOutputDrawerOpen = false
+let shellOutputFlushTimer: ReturnType<typeof setTimeout> | null = null
+let shellOutputPendingLines: string[] = []
+const SHELL_BUFFER_MAX = 1000
+const SHELL_FLUSH_INTERVAL = 100
+
+const TIPS = [
+	'Type /help to see available commands',
+	'Type /status to see system info',
+	'Type /restart for a full rebuild',
+	'Type /clear to clear the log',
+	'Run shell commands directly \u2014 e.g., ls, npm test',
+]
+const TIP_IDLE_DELAY = 30_000 // 30 seconds
 
 function shouldSkip(): boolean {
 	if (!process.stdout.isTTY || !process.stdin.isTTY) {
@@ -68,6 +108,24 @@ export function start(opts: InteractiveCliOptions) {
 	active = true
 	cleanedUp = false
 
+	// Reset status tracking
+	pluginStatuses = new Map()
+	totalPlugins = 0
+	startupComplete = false
+	statusItems = new Map()
+	transientMessage = null
+	transientTimeout = null
+	drawerContent = null
+	lastInputTime = Date.now()
+	shellProcess = null
+	shellOutputBuffer = []
+	shellOutputDrawerOpen = false
+	shellOutputPendingLines = []
+	if (shellOutputFlushTimer) {
+		clearTimeout(shellOutputFlushTimer)
+		shellOutputFlushTimer = null
+	}
+
 	// Set up stdout interception first
 	interceptor.install((data: string, _stream: 'stdout' | 'stderr') => {
 		regions.writeToLogRegion(data)
@@ -100,6 +158,23 @@ export function start(opts: InteractiveCliOptions) {
 		}
 	})
 
+	commandRegistry.register({
+		name: 'output',
+		description: 'Toggle shell output drawer',
+		handler: () => {
+			if (shellOutputDrawerOpen) {
+				hideDrawer()
+				return
+			}
+			if (shellOutputBuffer.length === 0) {
+				process.stdout.write('No shell output to display.\n')
+				return
+			}
+			shellOutputDrawerOpen = true
+			updateOutputDrawer()
+		}
+	})
+
 	// Register additional commands
 	if (opts.commands) {
 		for (const cmd of opts.commands) {
@@ -128,6 +203,9 @@ export function start(opts: InteractiveCliOptions) {
 	process.on('exit', cleanup)
 	process.on('SIGTERM', onTermSignal)
 	process.on('SIGHUP', onTermSignal)
+
+	// Start idle tip timer
+	resetIdleTimer()
 }
 
 export async function stop() {
@@ -155,8 +233,161 @@ export function setStatus(newStatus: string) {
 	}
 }
 
+// ─── Status tracking (called from dev.ts) ────────────────────────
+
+/** Called by dev.ts when a status-progress event arrives from the spirit */
+export function setPluginProgress(plugin: string, pluginStatus: 'starting' | 'ready' | 'error', total?: number) {
+	if (total !== undefined) totalPlugins = total
+
+	// Handle zero-plugin case: no start hooks to track, go straight to ready
+	if (totalPlugins === 0 && total !== undefined) {
+		setStatus('ready')
+		startupComplete = true
+		if (active) renderInput()
+		return
+	}
+
+	pluginStatuses.set(plugin, pluginStatus)
+
+	// Count ready/error plugins
+	const completed = Array.from(pluginStatuses.values()).filter((s) => s !== 'starting').length
+
+	// Update the status badge with progress
+	if (completed < totalPlugins) {
+		setStatus(`starting ${completed}/${totalPlugins}`)
+	} else if (totalPlugins > 0) {
+		setStatus('ready')
+	}
+
+	// Update startup display completion (bidirectional — resets if totalPlugins increases)
+	startupComplete = completed >= totalPlugins && totalPlugins > 0
+
+	if (active) renderInput()
+}
+
+/** Called by dev.ts when a status-set event arrives from the spirit */
+export function setStatusItem(key: string, value: string, priority = 100) {
+	statusItems.set(key, { value, priority })
+	if (active) renderInput()
+}
+
+/** Called by dev.ts when a status-remove event arrives */
+export function removeStatusItem(key: string) {
+	statusItems.delete(key)
+	if (active) renderInput()
+}
+
+/** Called by dev.ts when a status-flash event arrives */
+export function flashNotification(message: string, duration = 3000) {
+	if (transientTimeout) clearTimeout(transientTimeout)
+	transientMessage = message
+	if (active) renderInput()
+	transientTimeout = setTimeout(() => {
+		transientMessage = null
+		transientTimeout = null
+		if (active) renderInput()
+	}, duration)
+}
+
+/** Reset status state on rebuild */
+export function resetStatus() {
+	pluginStatuses = new Map()
+	totalPlugins = 0
+	startupComplete = false
+	statusItems = new Map()
+	if (transientTimeout) {
+		clearTimeout(transientTimeout)
+		transientTimeout = null
+	}
+	transientMessage = null
+}
+
+/** Expand the input region to show drawer content */
+export function showDrawer(lines: string[]) {
+	drawerContent = lines
+	regions.expandRegion(lines)
+	regions.renderDrawerContent(lines)
+	renderInput()
+}
+
+/** Check if the drawer is currently open */
+export function isDrawerOpen(): boolean {
+	return drawerContent !== null
+}
+
+/** Collapse the drawer back to normal */
+export function hideDrawer() {
+	if (!drawerContent) return
+	drawerContent = null
+	shellOutputDrawerOpen = false
+	cancelDrawerFlush()
+	regions.collapseRegion()
+	renderInput()
+}
+
+/** Get all status items (for /status command) */
+export function getStatusItems(): Map<string, { value: string; priority: number }> {
+	return statusItems
+}
+
+/** Get plugin startup progress (for /status command) */
+export function getPluginStatuses(): Map<string, 'starting' | 'ready' | 'error'> {
+	return pluginStatuses
+}
+
+// ─── Rendering ───────────────────────────────────────────────────
+
 function renderInput() {
-	regions.renderInputRegion(inputBuffer, status, getCommandHint(inputBuffer))
+	const badgeColor = getBadgeColor(status)
+	// Suppress hint when drawer is open — the drawer already shows status info
+	const hint = drawerContent ? '' : getHintContent(inputBuffer)
+	regions.renderInputRegion(inputBuffer, status, hint, badgeColor)
+}
+
+const SHELL_NAMES = new Set(['zsh', 'bash', 'sh', 'fish', 'dash', 'ksh', 'csh', 'tcsh', 'cmd', 'powershell', 'pwsh'])
+
+function getBadgeColor(s: string): string {
+	if (s === 'ready') return 'green'
+	if (s === 'error') return 'red'
+	if (s.startsWith('starting') || s === 'building' || s === 'restarting') return 'yellow'
+	if (s === 'stopping' || s === 'stopped') return 'dim'
+	if (SHELL_NAMES.has(s)) return 'cyan'
+	return 'dim'
+}
+
+function getHintContent(input: string): string {
+	// Layer 0: Shell command hint (non-slash input)
+	if (input.length > 0 && !input.startsWith('/')) {
+		return '  \x1b[2mpress Enter to run as shell command\x1b[0m'
+	}
+
+	// Layer 1: Command hints (user is actively typing a slash command)
+	if (input.startsWith('/')) {
+		return getCommandHint(input)
+	}
+
+	// Layer 2: Transient notifications (auto-dismissing)
+	if (transientMessage) {
+		return '  ' + transientMessage
+	}
+
+	// Layer 3: During startup — show plugin progress inline
+	if (!startupComplete && pluginStatuses.size > 0) {
+		return formatStartupProgress()
+	}
+
+	// Layer 4: Persistent status items (URLs, bot tag)
+	if (statusItems.size > 0) {
+		const formatted = formatStatusItems()
+		if (formatted) return formatted
+	}
+
+	// Layer 5: Tips (when idle for 30s+)
+	if (shouldShowTip()) {
+		return formatTip()
+	}
+
+	return ''
 }
 
 function getCommandHint(input: string): string {
@@ -166,6 +397,25 @@ function getCommandHint(input: string): string {
 
 	const partial = input.slice(1).toLowerCase()
 	const commands = commandRegistry.getCommands()
+
+	// Check if user typed a full command name + space — show subcommands
+	const spaceIdx = partial.indexOf(' ')
+	if (spaceIdx > 0) {
+		const parentName = partial.slice(0, spaceIdx)
+		const subPartial = partial.slice(spaceIdx + 1)
+		const parent = commands.find((c) => c.name.toLowerCase() === parentName)
+
+		if (parent?.subcommands?.length) {
+			const subMatches = subPartial
+				? parent.subcommands.filter((s) => s.toLowerCase().startsWith(subPartial))
+				: parent.subcommands
+
+			if (subMatches.length === 0) return ''
+			return '  ' + subMatches.map((s) => `/${parent.name} ${s}`).join(' \u00b7 ')
+		}
+		return ''
+	}
+
 	const matches = partial
 		? commands.filter((c) => c.name.toLowerCase().startsWith(partial))
 		: commands
@@ -181,6 +431,81 @@ function getCommandHint(input: string): string {
 	return '  ' + matches.map((c) => `/${c.name}`).join(' \u00b7 ')
 }
 
+function formatStartupProgress(): string {
+	const parts: string[] = []
+	for (const [name, s] of pluginStatuses) {
+		const short = inferShortName(name)
+		if (s === 'ready') parts.push(`\x1b[32m\u2713\x1b[0m \x1b[2m${short}\x1b[0m`)
+		else if (s === 'error') parts.push(`\x1b[31m\u2717\x1b[0m \x1b[2m${short}\x1b[0m`)
+		else parts.push(`\x1b[33m\u23F3\x1b[0m \x1b[2m${short}\x1b[0m`)
+	}
+	return '  ' + parts.join('  ')
+}
+
+function formatStatusItems(): string {
+	// Only show items with priority <= 10 (hint-line items)
+	// Sort by priority (lowest first) and take top 3
+	const hintItems = Array.from(statusItems.entries())
+		.filter(([, item]) => item.priority <= 10)
+		.sort((a, b) => a[1].priority - b[1].priority)
+		.slice(0, 3)
+		.map(([, item]) => dimForHintLine(item.value))
+
+	if (hintItems.length === 0) return ''
+	return '  ' + hintItems.join('  \u00b7  ')
+}
+
+/**
+ * Dim only the colored parts of status text for the hint line.
+ * Foreground color codes get \x1b[2m (dim) prepended so colors appear muted.
+ * Foreground resets (\x1b[39m) become \x1b[22;90m to clear dim and restore
+ * the hint line's gray baseline.
+ */
+function dimForHintLine(s: string): string {
+	return s
+		.replace(/\x1b\[(3[0-8](?:;[0-9;]+)?|9[0-7])m/g, '\x1b[2m\x1b[$1m')
+		.replace(/\x1b\[39m/g, '\x1b[22;90m')
+}
+
+/** Convert plugin package name to short display name */
+export function inferShortName(packageName: string): string {
+	// @robojs/server → server
+	if (packageName.startsWith('@')) {
+		const parts = packageName.split('/')
+		return parts[parts.length - 1]
+	}
+	// plugin-api → api
+	if (packageName.startsWith('plugin-')) {
+		return packageName.replace('plugin-', '')
+	}
+	return packageName
+}
+
+// ─── Tips ────────────────────────────────────────────────────────
+
+function resetIdleTimer() {
+	lastInputTime = Date.now()
+	if (tipTimeout) {
+		clearTimeout(tipTimeout)
+		tipTimeout = null
+	}
+	// Schedule a re-render after idle delay to show tip
+	tipTimeout = setTimeout(() => {
+		if (active) renderInput()
+	}, TIP_IDLE_DELAY)
+}
+
+function shouldShowTip(): boolean {
+	return status === 'ready' && Date.now() - lastInputTime >= TIP_IDLE_DELAY
+}
+
+function formatTip(): string {
+	const index = Math.floor(Date.now() / TIP_IDLE_DELAY) % TIPS.length
+	return '  \x1b[2m\u{1F4A1} ' + TIPS[index] + '\x1b[0m'
+}
+
+// ─── Output callback ────────────────────────────────────────────
+
 export function getOutputCallback(): ((data: string, stream: 'stdout' | 'stderr') => void) | undefined {
 	if (!active) {
 		return undefined
@@ -192,11 +517,34 @@ export function getOutputCallback(): ((data: string, stream: 'stdout' | 'stderr'
 	}
 }
 
+// ─── Lifecycle ───────────────────────────────────────────────────
+
 function cleanup() {
 	if (cleanedUp) {
 		return
 	}
 	cleanedUp = true
+
+	// Kill any running shell process
+	if (shellProcess) {
+		try {
+			shellProcess.kill('SIGTERM')
+		} catch {
+			// Already exited
+		}
+		shellProcess = null
+	}
+	cancelDrawerFlush()
+
+	// Clear timers
+	if (transientTimeout) {
+		clearTimeout(transientTimeout)
+		transientTimeout = null
+	}
+	if (tipTimeout) {
+		clearTimeout(tipTimeout)
+		tipTimeout = null
+	}
 
 	// Restore stdin
 	if (process.stdin.isTTY) {
@@ -237,12 +585,24 @@ function onTermSignal() {
 
 function onResize() {
 	if (active) {
+		if (drawerContent) {
+			regions.expandRegion(drawerContent)
+			regions.renderDrawerContent(drawerContent)
+		}
 		renderInput()
 	}
 }
 
+// ─── Input handling ──────────────────────────────────────────────
+
 function onStdinData(data: string) {
 	if (!active) return
+
+	// Any input resets the idle timer and dismisses non-pinned drawers
+	resetIdleTimer()
+	if (drawerContent && !shellOutputDrawerOpen) {
+		hideDrawer()
+	}
 
 	for (let i = 0; i < data.length; i++) {
 		if (!active) return
@@ -298,6 +658,20 @@ function onStdinData(data: string) {
 
 		// Ctrl+C
 		if (char === '\x03') {
+			if (shellProcess) {
+				// Kill the running shell command instead of exiting Robo
+				try {
+					if (IS_WINDOWS) {
+						spawn('taskkill', ['/pid', String(shellProcess.pid), '/T', '/F'], { stdio: 'ignore' })
+					} else {
+						shellProcess.kill('SIGINT')
+					}
+				} catch {
+					// Already exited
+				}
+				process.stdout.write('\x1b[2m(command interrupted)\x1b[0m\n')
+				continue
+			}
 			handleExit().catch(() => process.exit(1))
 			return
 		}
@@ -354,6 +728,7 @@ function handleEscapeSequence(seq: string) {
 
 async function handleEnter() {
 	if (isExecutingCommand) {
+		flashNotification('Command running \u2014 Ctrl+C to interrupt', 2000)
 		return
 	}
 
@@ -366,8 +741,20 @@ async function handleEnter() {
 		return
 	}
 
-	// Only add slash commands to history
+	isExecutingCommand = true
+
+	// Shell command delegation for non-slash input
 	if (!input.startsWith('/')) {
+		commandHistory.push(input)
+		if (commandHistory.length > 100) {
+			commandHistory.shift()
+		}
+		try {
+			await executeShellCommand(input)
+		} finally {
+			isExecutingCommand = false
+			renderInput()
+		}
 		return
 	}
 
@@ -383,7 +770,6 @@ async function handleEnter() {
 		runtime: options?.runtime
 	}
 
-	isExecutingCommand = true
 	try {
 		const found = await commandRegistry.execute(input, ctx)
 		if (!found) {
@@ -395,6 +781,155 @@ async function handleEnter() {
 		isExecutingCommand = false
 		renderInput()
 	}
+}
+
+// ─── Shell delegation ────────────────────────────────────────────
+
+async function executeShellCommand(input: string) {
+	shellOutputBuffer = []
+
+	// Show shell name badge while command runs
+	const shellName = getShellName()
+	setStatus(shellName)
+
+	// Log the command being run
+	process.stdout.write(`\x1b[2m$ ${input}\x1b[0m\n`)
+
+	return new Promise<void>((resolve) => {
+		let child: ChildProcess
+		try {
+			child = spawn(input, {
+				shell: true,
+				stdio: 'pipe',
+				env: { ...process.env, FORCE_COLOR: '1' }
+			})
+		} catch (err) {
+			process.stdout.write(`\x1b[31mFailed to run command: ${err}\x1b[0m\n`)
+			setStatus('error')
+			setTimeout(() => {
+				if (status === 'error') setStatus('ready')
+			}, 2000)
+			resolve()
+			return
+		}
+		shellProcess = child
+		let settled = false
+
+		const handleOutput = (data: Buffer) => {
+			const text = data.toString()
+
+			// Always write to log region (visible immediately)
+			process.stdout.write(text)
+
+			// Buffer for later /output review
+			const lines = text.split(/\r?\n/)
+			for (let j = 0; j < lines.length; j++) {
+				// Skip trailing empty string from split
+				if (j === lines.length - 1 && lines[j].length === 0) break
+				shellOutputBuffer.push(lines[j])
+			}
+			// Cap buffer size
+			if (shellOutputBuffer.length > SHELL_BUFFER_MAX) {
+				shellOutputBuffer = shellOutputBuffer.slice(-SHELL_BUFFER_MAX)
+			}
+
+			// Queue drawer update if open
+			if (shellOutputDrawerOpen) {
+				shellOutputPendingLines.push(...lines.filter((l) => l.length > 0))
+				scheduleDrawerFlush()
+			}
+		}
+
+		if (child.stdout) child.stdout.on('data', handleOutput)
+		if (child.stderr) child.stderr.on('data', handleOutput)
+
+		child.on('close', (code) => {
+			if (settled) return
+			settled = true
+			shellProcess = null
+
+			if (code !== 0 && code !== null) {
+				setStatus('error')
+				// Flash error for 2 seconds then restore ready
+				setTimeout(() => {
+					if (status === 'error') {
+						setStatus('ready')
+					}
+				}, 2000)
+			} else {
+				setStatus('ready')
+			}
+
+			// Final drawer update if open
+			if (shellOutputDrawerOpen) {
+				cancelDrawerFlush()
+				updateOutputDrawer()
+			}
+
+			resolve()
+		})
+
+		child.on('error', (err) => {
+			if (settled) return
+			settled = true
+			shellProcess = null
+			process.stdout.write(`\x1b[31mFailed to run command: ${err.message}\x1b[0m\n`)
+			setStatus('error')
+			setTimeout(() => {
+				if (status === 'error') {
+					setStatus('ready')
+				}
+			}, 2000)
+			resolve()
+		})
+	})
+}
+
+function scheduleDrawerFlush() {
+	if (shellOutputFlushTimer) return
+	shellOutputFlushTimer = setTimeout(flushDrawerOutput, SHELL_FLUSH_INTERVAL)
+}
+
+function cancelDrawerFlush() {
+	if (shellOutputFlushTimer) {
+		clearTimeout(shellOutputFlushTimer)
+		shellOutputFlushTimer = null
+	}
+	shellOutputPendingLines = []
+}
+
+function flushDrawerOutput() {
+	shellOutputFlushTimer = null
+	shellOutputPendingLines = []
+	if (shellOutputDrawerOpen) {
+		updateOutputDrawer()
+	}
+}
+
+function updateOutputDrawer() {
+	const termRows = process.stdout.rows || 24
+	const maxDrawerLines = Math.max(1, termRows - regions.BASE_INPUT_HEIGHT - regions.MIN_SCROLL_HEIGHT)
+	const visibleLines = shellOutputBuffer.slice(-maxDrawerLines)
+
+	// Format lines with dim styling and truncate to terminal width (ANSI-aware)
+	const cols = process.stdout.columns || 80
+	const formatted = visibleLines.map((line) => {
+		const truncated = regions.truncateAnsi(line, cols - 4)
+		return `\x1b[2m${truncated}\x1b[0m`
+	})
+
+	const oldLineCount = drawerContent?.length ?? 0
+	drawerContent = formatted
+
+	if (oldLineCount === 0) {
+		// First time opening — need full expand
+		regions.expandRegion(formatted)
+		regions.renderDrawerContent(formatted)
+	} else {
+		regions.updateDrawerInPlace(oldLineCount, formatted)
+	}
+
+	renderInput()
 }
 
 async function handleExit() {

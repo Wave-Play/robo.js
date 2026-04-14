@@ -162,11 +162,39 @@ export const COMMANDS: CommandMetadata[] = [
 		modulePath: '../commands/cli.js'
 	},
 	{
-		name: 'db',
-		description: 'Manage Flashcore database schemas and migrations.',
+		name: 'logs',
+		description: 'View and search local log files.',
+		options: [
+			{ alias: '-j', name: '--json', description: 'output logs as NDJSON (one JSON object per line)' },
+			{ alias: '-l', name: '--level', description: 'filter by minimum log level (trace, debug, info, warn, error)' },
+			{ alias: '-p', name: '--source', description: 'filter by source/plugin name (e.g., discordjs, api)' },
+			{ alias: '-g', name: '--grep', description: 'filter log messages by text or regex pattern' },
+			{ alias: '-m', name: '--mode', description: 'which mode logs to read (development, production, etc.)' },
+			{ alias: '-n', name: '--limit', description: 'maximum number of lines to output' },
+			{ alias: '-t', name: '--tail', description: 'watch for new log entries (stream mode)' },
+			{ alias: '-s', name: '--session', description: 'view specific session (current, previous, or index number)' },
+			{ alias: '-S', name: '--sessions', description: 'list all available log sessions', type: 'boolean' },
+			{ alias: '-T', name: '--since', description: 'show logs since time (e.g., "1h", "30m", ISO timestamp)' },
+			{ alias: '-h', name: '--help', description: 'Shows the available command options' }
+		],
+		modulePath: '../commands/logs.js'
+	},
+	{
+		name: 'inspect',
+		description: 'Display project structure, plugins, routes, and configuration.',
+		options: [
+			{ alias: '-j', name: '--json', description: 'output as structured JSON' },
+			{ alias: '-m', name: '--mode', description: 'which mode manifest to inspect (development, production, etc.)' },
+			{ alias: '-h', name: '--help', description: 'Shows the available command options' }
+		],
+		modulePath: '../commands/inspect.js'
+	},
+	{
+		name: 'skills',
+		description: 'Manage AI coding skills from plugins.',
 		options: [],
 		hasSubcommands: true,
-		modulePath: '../commands/db/index.js'
+		modulePath: '../commands/skills/index.js'
 	}
 ]
 
@@ -214,10 +242,10 @@ export function createLazyCommand(meta: CommandMetadata): Command {
 			if (subCommand) {
 				// Route to the subcommand with remaining args
 				const remainingArgs = argsToReparse.slice(1)
-				await loadedCommand.parse(['', '', firstArg, ...remainingArgs])
-			} else if (loadedCommand._handler) {
+				await loadedCommand.parse([firstArg, ...remainingArgs])
+			} else if (loadedCommand.getHandler()) {
 				// No subcommand match, call the parent handler
-				return loadedCommand._handler(context)
+				return loadedCommand.getHandler()!(context)
 			}
 		})
 	} else {
@@ -277,7 +305,7 @@ export function createLazyCommand(meta: CommandMetadata): Command {
 			// Load and execute the actual command handler
 			const module = await import(meta.modulePath)
 			const loadedCommand = module.default as Command
-			const handlerResult = await loadedCommand._handler(context)
+			const handlerResult = await loadedCommand.getHandler()!(context)
 			context.result = handlerResult
 
 			// Run after hooks (lowest priority first, reverse order)

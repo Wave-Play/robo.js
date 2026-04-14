@@ -3,7 +3,7 @@ import fs, { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import type { Config } from '../../types/index.js'
 import { createRequire } from 'node:module'
-import { ChildProcess, SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
+import { ChildProcess, SpawnOptions, execSync, execFile, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
@@ -15,7 +15,7 @@ import type { Pod } from '../../roboplay/types.js'
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 export const PackageDir = path.resolve(__DIRNAME, '..', '..', '..')
 
-const execAsync = promisify(nodeExec)
+const execFileAsync = promisify(execFile)
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
@@ -228,7 +228,7 @@ export async function findPackagePath(packageName: string, currentPath: string):
 	if (isPnpmModules && !IS_BUN_PM) {
 		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
 		try {
-			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })
+			const { stdout } = await execFileAsync('pnpm', ['list', packageName, '--json'], { cwd: currentPath })
 			const packages = JSON.parse(stdout)
 			const packageInfo = Array.isArray(packages) ? packages[0] : packages
 			packagePath = packageInfo?.dependencies?.[packageName]?.path
@@ -269,24 +269,100 @@ interface WatchedPlugin {
 export async function getWatchedPlugins(config: Config) {
 	// Get a list of all plugin names
 	const pluginNames = config.plugins?.map((plugin) => (typeof plugin === 'string' ? plugin : plugin[0])) ?? []
-	const watchedPlugins: Record<string, WatchedPlugin> = {}
+	if (pluginNames.length === 0) return {}
 
-	for (const name of pluginNames) {
-		try {
-			const packagePath = await findPackagePath(name, process.cwd())
-			const watchFilePath = path.join(packagePath, '.robo', 'watch.json')
+	const nodeModulesPath = await findNodeModules(process.cwd())
+	if (!nodeModulesPath) return {}
 
-			// Watched plugins must have a watch.json file
-			if (existsSync(watchFilePath)) {
-				const data = JSON.parse(await readFile(watchFilePath, 'utf-8'))
-				watchedPlugins[watchFilePath] = { data, name }
-			}
-		} catch (error) {
-			// Do nothing
-		}
+	// Detect pnpm once
+	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
+	const isPnpmModules = await fs.stat(pnpmNodeModulesPath).then(() => true, () => false)
+
+	// Resolve all plugin paths
+	let packagePaths: Map<string, string | null>
+
+	if (isPnpmModules && !IS_BUN_PM) {
+		// Single pnpm list call for all plugins
+		packagePaths = await resolvePackagePathsPnpm(pluginNames, nodeModulesPath, process.cwd())
+	} else {
+		// Parallel resolution for non-pnpm (falls back to findPackagePath for missing plugins)
+		const entries = await Promise.all(
+			pluginNames.map(async (name) => {
+				const normalized = name.replaceAll(path.sep, '/')
+				const candidatePath = path.join(nodeModulesPath, normalized)
+				const exists = await fs.stat(candidatePath).then(() => true, () => false)
+				if (exists) {
+					return [name, path.relative(process.cwd(), candidatePath)] as const
+				}
+				// Fall back to full search (walks up parent directories for monorepos)
+				const resolvedPath = await findPackagePath(name, process.cwd())
+				return [name, resolvedPath] as const
+			})
+		)
+		packagePaths = new Map(entries)
 	}
 
+	// Parallel watch.json reads
+	const watchedPlugins: Record<string, WatchedPlugin> = {}
+	await Promise.all(
+		pluginNames.map(async (name) => {
+			const packagePath = packagePaths.get(name)
+			if (!packagePath) return
+			const watchFilePath = path.join(packagePath, '.robo', 'watch.json')
+			try {
+				if (existsSync(watchFilePath)) {
+					const data = JSON.parse(await readFile(watchFilePath, 'utf-8'))
+					watchedPlugins[watchFilePath] = { data, name }
+				}
+			} catch { /* skip */ }
+		})
+	)
+
 	return watchedPlugins
+}
+
+async function resolvePackagePathsPnpm(
+	packageNames: string[],
+	nodeModulesPath: string,
+	cwd: string
+): Promise<Map<string, string | null>> {
+	const result = new Map<string, string | null>()
+	try {
+		const { stdout } = await execFileAsync(
+			'pnpm', ['list', ...packageNames, '--json'],
+			{ cwd }
+		)
+		const packages = JSON.parse(stdout)
+		const packageInfo = Array.isArray(packages) ? packages[0] : packages
+		const deps = packageInfo?.dependencies ?? {}
+		for (const name of packageNames) {
+			const depPath = deps[name]?.path ?? null
+			result.set(name, depPath ? path.relative(cwd, depPath) : null)
+		}
+
+		// Fallback for plugins missing from pnpm list output (e.g. workspace-linked)
+		const missing = packageNames.filter((name) => !result.get(name))
+		if (missing.length > 0) {
+			await Promise.all(
+				missing.map(async (name) => {
+					const resolved = await findPackagePath(name, cwd)
+					result.set(name, resolved)
+				})
+			)
+		}
+	} catch {
+		// pnpm list failed entirely — skip subprocess calls and resolve via filesystem only
+		await Promise.all(
+			packageNames.map(async (name) => {
+				const fallbackPath = await resolvePackagePathFallback(
+					nodeModulesPath,
+					name.replaceAll(path.sep, '/')
+				)
+				result.set(name, fallbackPath ? path.relative(cwd, fallbackPath) : null)
+			})
+		)
+	}
+	return result
 }
 
 export function hasProjectPackage(name: string): boolean {
@@ -365,6 +441,20 @@ export function sleep(ms: number) {
 }
 
 export const IS_WINDOWS = /^win/.test(process.platform)
+
+/**
+ * Returns the name of the user's shell for display purposes.
+ * e.g. "zsh", "bash", "sh", "cmd", "powershell"
+ */
+export function getShellName(): string {
+	if (IS_WINDOWS) {
+		const comspec = process.env.ComSpec || ''
+		const base = path.basename(comspec).toLowerCase()
+		if (base === 'powershell.exe' || base === 'pwsh.exe') return 'powershell'
+		return 'cmd'
+	}
+	return path.basename(process.env.SHELL || '/bin/sh')
+}
 
 export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
 	return new Promise<T>((resolve) =>

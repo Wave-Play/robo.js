@@ -182,10 +182,21 @@ export class Command {
 	}
 
 	/**
-	 * Parse the command line arguments and process the command.
+	 * Returns the handler function of the current command.
+	 *
+	 * @returns The handler function, or undefined if not set.
 	 */
-	public parse(): void {
-		this.processSubCommand(this, process.argv.slice(2))
+	public getHandler(): ((context: CliContext) => Promise<void> | void) | undefined {
+		return this._handler
+	}
+
+	/**
+	 * Parse the command line arguments and process the command.
+	 *
+	 * @param {string[]} [argv] - Optional arguments to parse. Defaults to process.argv.slice(2).
+	 */
+	public parse(argv?: string[]): void {
+		this.processSubCommand(this, argv ?? process.argv.slice(2))
 	}
 
 	/**

@@ -2,7 +2,6 @@ import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
 import { compressDirectory } from '../utils/compress.js'
-import { loadConfig } from '../../core/config.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
 import { Spinner } from '../utils/spinner.js'
 import { cleanTempDir, getPodStatusColor, getRoboPackageJson, openBrowser } from '../utils/utils.js'
@@ -55,9 +54,15 @@ async function deployAction(context: CliContext) {
 	let pod = session?.pods?.[0]
 
 	if (!session || !pod) {
-		await loginAction([], {
-			silent: options.silent,
-			verbose: options.verbose
+		await loginAction({
+			args: [],
+			options: {
+				silent: options.silent,
+				verbose: options.verbose
+			},
+			logger: logger(),
+			cwd: process.cwd(),
+			argv: []
 		})
 
 		session = await RoboPlaySession.get()
@@ -70,7 +75,6 @@ async function deployAction(context: CliContext) {
 	}
 
 	// Prepare fancy formatting
-	const config = await loadConfig('robo', true)
 	const spinner = new Spinner()
 	const roboPackageJson = await getRoboPackageJson()
 	const roboName = roboPackageJson?.name ?? 'unknown'
