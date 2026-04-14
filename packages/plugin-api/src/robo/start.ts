@@ -9,125 +9,17 @@
  * Note: The server engine, router, and Vite are initialized in the prepare hook
  * (prepare.ts) so they're available to other plugins during their start hooks.
  */
+import { createMethodDispatcher, createRegisteredApiRoutes, normalizeServerPrefix } from '../core/api-routing.js'
+import { getApiRuntime } from '../core/api-runtime.js'
 import { logger } from '../core/logger.js'
-import { getPluginRouteRegistry } from '../core/plugin-routes.js'
 import { findAvailablePort, DEFAULT_MAX_PORT_ATTEMPTS } from '../core/port-utils.js'
-import { Mode, portal } from 'robo.js'
+import { Mode, portal, Robo } from 'robo.js'
 import { emit, isCapable } from 'robo.js/ipc'
 import { Nanocore } from 'robo.js/unstable.js'
 import type { StartContext, HandlerRecord } from 'robo.js'
 import type { TunnelConfig, TunnelInstance, TunnelProvider } from '../core/tunnel/types.js'
-import type { ApiHandler, ApiHandlerModule, HttpMethodExport } from './routes/api.js'
-import { HTTP_METHODS } from './routes/api.js'
-import type { RoboReply, RouteHandler } from '../core/types.js'
-import type { RoboRequest } from '../core/robo-request.js'
+import type { ApiHandler, ApiHandlerModule } from './routes/api.js'
 import { pluginOptions, type PluginConfig } from './prepare.js'
-
-const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
-
-/**
- * Creates a method dispatcher that routes requests to the appropriate handler
- * based on HTTP method. Supports both named method exports and default fallback.
- */
-function createMethodDispatcher(record: HandlerRecord<ApiHandler>): RouteHandler | null {
-	const handler = record.handler as ApiHandlerModule | null
-	if (!handler) return null
-
-	const hasDefault = typeof handler.default === 'function'
-	const methodExports = HTTP_METHODS.filter((m) => typeof handler[m] === 'function')
-
-	// Optimization: if only default export, return it directly (current behavior)
-	if (hasDefault && methodExports.length === 0) {
-		return handler.default as RouteHandler
-	}
-
-	// Compute allowed methods for OPTIONS/405 responses
-	const getAllowedMethods = () => {
-		const allowed = [...methodExports]
-		if (hasDefault) {
-			// Default handles all methods not explicitly exported
-			for (const m of HTTP_METHODS) {
-				if (!allowed.includes(m)) {
-					allowed.push(m)
-				}
-			}
-		}
-		return allowed
-	}
-
-	// Create dispatcher for method-based routing
-	return async (req: RoboRequest, reply: RoboReply): Promise<unknown> => {
-		const method = req.method.toUpperCase() as HttpMethodExport
-
-		// Auto-handle OPTIONS if no explicit handler
-		if (method === 'OPTIONS' && !handler.OPTIONS && !hasDefault) {
-			const allowed = getAllowedMethods()
-			reply.header('Allow', allowed.join(', '))
-			return reply.code(204).send('')
-		}
-
-		// Try named method handler first
-		const methodHandler = handler[method] as RouteHandler | undefined
-		if (methodHandler) {
-			return methodHandler(req, reply)
-		}
-
-		// HEAD auto-handling: use GET if no HEAD handler
-		if (method === 'HEAD' && handler.GET) {
-			return (handler.GET as RouteHandler)(req, reply)
-		}
-
-		// Fall back to default handler
-		if (hasDefault) {
-			return (handler.default as RouteHandler)(req, reply)
-		}
-
-		// No handler for this method - return 405
-		reply.header('Allow', methodExports.join(', '))
-		return reply.code(405).json({
-			error: 'Method Not Allowed',
-			message: `${method} is not supported for this endpoint`,
-			allowedMethods: methodExports
-		})
-	}
-}
-
-/**
- * Creates a lazy handler for dev mode that reads from portal on each request.
- * The handler is cached after first import, and HMR invalidates the cache
- * when the portal reloads the handler.
- *
- * This enables instant HMR updates without needing explicit HMR hooks.
- */
-function createLazyHandler(routeKey: string): RouteHandler {
-	// Cache the dispatcher after first creation
-	let cachedDispatcher: RouteHandler | null = null
-	// Track the handler reference to detect HMR invalidation
-	let cachedHandlerRef: unknown = null
-
-	return async (req: RoboRequest, reply: RoboReply): Promise<unknown> => {
-		// Get current record from portal
-		const record = portal.getRecord('server', 'api', routeKey) as HandlerRecord<ApiHandler>
-		if (!record) {
-			return reply.code(404).json({ error: 'Not Found' })
-		}
-
-		// Import handler if not already imported
-		await portal.importHandler('server', 'api', routeKey)
-
-		// Check if handler changed (HMR invalidation)
-		if (record.handler !== cachedHandlerRef) {
-			cachedDispatcher = createMethodDispatcher(record)
-			cachedHandlerRef = record.handler
-		}
-
-		if (!cachedDispatcher) {
-			return reply.code(500).json({ error: 'Handler not available' })
-		}
-
-		return cachedDispatcher(req, reply)
-	}
-}
 
 /**
  * Start hook - Registers API routes, starts the HTTP server, and optionally starts a tunnel
@@ -135,9 +27,6 @@ function createLazyHandler(routeKey: string): RouteHandler {
  * Note: Engine, router, and Vite are initialized in prepare.ts
  */
 export default async (_context: StartContext<PluginConfig>) => {
-	// Get registry initialized in prepare hook
-	const registry = getPluginRouteRegistry()
-
 	// Get engine and options from prepare hook
 	const {
 		engine,
@@ -157,66 +46,59 @@ export default async (_context: StartContext<PluginConfig>) => {
 		port = result.port
 	}
 
-	// Load API routes from the portal
-	await portal.ensureRoute('server', 'api')
-	const apiRoutes = portal.getByType('server:api') as Record<string, HandlerRecord<ApiHandler>>
-	const apiRouteCount = Object.keys(apiRoutes).length
-
-	logger.debug(`Registering ${apiRouteCount} API routes...`)
-
-	// Add loaded API modules onto router
-	const prefix = pluginOptions.prefix ?? ''
-	const paths: string[] = []
-
 	// Use lazy loading in dev mode for instant HMR updates
 	const isDev = Mode.isDev()
+	const paths: string[] = []
+	const prefix = normalizeServerPrefix(pluginOptions.prefix)
 
-	// Import all API handlers and register with the engine
-	for (const [routeKey, record] of Object.entries(apiRoutes)) {
-		// In production, import handler eagerly for best performance
-		// In dev mode, skip eager import - lazy handler will import on first request
-		if (!isDev) {
-			await portal.importHandler('server', 'api', routeKey)
+	if (isDev) {
+		const apiRuntime = getApiRuntime()
+		await apiRuntime.initialize(engine, prefix)
+		paths.push(...apiRuntime.getRegisteredPaths())
+		logger.debug(`Registering ${paths.length} API routes...`)
+		globalThis.roboServer.hmrCapabilities = apiRuntime.getCapabilities()
+	} else {
+		const apiRoutes = Object.values(await loadApiRecords())
+		logger.debug(`Registering ${apiRoutes.length} API routes...`)
+
+		for (const route of apiRoutes) {
+			await portal.importHandler('server', 'api', route.key)
+
+			const wrappedHandler = createMethodDispatcher(route.handler as ApiHandlerModule | null)
+			if (!wrappedHandler) {
+				continue
+			}
+
+			for (const registeredRoute of createRegisteredApiRoutes(
+				{
+					key: route.key,
+					path: route.path,
+					exports: route.exports,
+					metadata: route.metadata,
+					plugin: route.plugin?.name ?? null,
+					pluginVersion: route.plugin?.version,
+					module: route.module,
+					auto: route.auto
+				},
+				prefix
+			)) {
+				engine.registerRoute(registeredRoute.path, wrappedHandler)
+				paths.push(registeredRoute.path)
+			}
 		}
 
-		// Check if this route belongs to a plugin with exclusive prefix
-		const pluginName = record.plugin?.name
-		const pluginConfig = pluginName ? registry.getPlugin(pluginName) : null
-		const pluginPrefix = pluginConfig?.apiPrefix ?? ''
-		const isExclusive = pluginConfig?.exclusive ?? true
-
-		// Base route key (standard API prefix + route)
-		const baseKey = prefix + '/' + routeKey.replace(PATH_REGEX, ':$1')
-
-		// In dev mode, use lazy handler for instant HMR updates
-		// In production, use eager method dispatcher for best performance
-		const wrappedHandler = isDev ? createLazyHandler(routeKey) : createMethodDispatcher(record)
-
-		if (wrappedHandler) {
-			if (isExclusive && pluginPrefix) {
-				// Exclusive: register ONLY with plugin prefix
-				const exclusiveKey = pluginPrefix + baseKey
-				engine.registerRoute(exclusiveKey, wrappedHandler)
-				paths.push(exclusiveKey)
-				logger.debug(`Registered exclusive route: ${exclusiveKey} (plugin: ${pluginName})`)
-			} else if (!isExclusive && pluginPrefix) {
-				// Additive: register BOTH with and without plugin prefix
-				engine.registerRoute(baseKey, wrappedHandler)
-				paths.push(baseKey)
-				const prefixedKey = pluginPrefix + baseKey
-				engine.registerRoute(prefixedKey, wrappedHandler)
-				paths.push(prefixedKey)
-				logger.debug(`Registered additive routes: ${baseKey} and ${prefixedKey} (plugin: ${pluginName})`)
-			} else {
-				// No plugin prefix: register normally
-				engine.registerRoute(baseKey, wrappedHandler)
-				paths.push(baseKey)
-			}
+		globalThis.roboServer.hmrCapabilities = {
+			serverApiTopology: false,
+			serverApiMutableRoutes: false
 		}
 	}
 
 	logger.debug(`Starting server...`)
 	await engine.start({ hostname, port })
+	globalThis.roboServer.port = port
+	globalThis.roboServer.hostname = hostname ?? 'localhost'
+	globalThis.roboServer.startedAt = Date.now()
+	globalThis.roboServer.registeredPaths = paths
 
 	// Let the rest of the app know that the server is ready
 	globalThis.roboServer.ready = true
@@ -234,6 +116,11 @@ export default async (_context: StartContext<PluginConfig>) => {
 	if (tunnelEnabled) {
 		await startTunnel(port, pluginOptions.tunnel)
 	}
+}
+
+async function loadApiRecords(): Promise<Record<string, HandlerRecord<ApiHandler>>> {
+	await portal.ensureRoute('server', 'api')
+	return portal.getByType('server:api') as Record<string, HandlerRecord<ApiHandler>>
 }
 
 /**
@@ -266,8 +153,8 @@ async function startTunnel(port: number, config?: TunnelConfig): Promise<void> {
 		// Store for cleanup in stop hook
 		globalThis.roboServer.tunnelInstance = instance
 		globalThis.roboServer.tunnelProvider = provider
+		Robo.status.set('server', `Tunnel live at ${instance.url}`, { priority: 2 })
 	} catch (error) {
 		logger.error('Failed to start tunnel:', error)
 	}
 }
-
