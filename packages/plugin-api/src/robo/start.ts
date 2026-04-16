@@ -138,14 +138,42 @@ async function startTunnel(port: number, config?: TunnelConfig): Promise<void> {
 			provider = new CloudflareProvider()
 		}
 
+		// Install cloudflared if not already present
+		if (!provider.isInstalled()) {
+			logger.event('Installing cloudflared...')
+			await provider.install()
+		}
+
+		// Resolve credentials from plugin config or environment
+		const credentials = {
+			domain: config?.cloudflare?.domain ?? process.env.CLOUDFLARE_DOMAIN,
+			apiKey: config?.cloudflare?.apiKey ?? process.env.CLOUDFLARE_API_KEY,
+			zoneId: config?.cloudflare?.zoneId ?? process.env.CLOUDFLARE_ZONE_ID,
+			accountId: config?.cloudflare?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+		}
+
+		// Initialize persistent tunnel (creates/fetches credentials, sets DNS) when full creds are available.
+		// If the user provided full creds but init failed (e.g. bad API token), abort instead of
+		// silently falling back to a dynamic *.trycloudflare.com tunnel.
+		const hasFullCreds = !!(credentials.domain && credentials.apiKey && credentials.zoneId && credentials.accountId)
+		if (provider.initialize) {
+			logger.event('Initializing tunnel...')
+			const initialized = await provider.initialize(credentials)
+			if (initialized) {
+				logger.debug('Persistent tunnel initialized')
+			} else if (hasFullCreds) {
+				logger.error('Persistent tunnel setup failed — aborting tunnel start. See errors above.')
+				return
+			} else {
+				logger.debug('Using dynamic tunnel (no static tunnel configured)')
+			}
+		}
+
 		const tunnelUrl = `http://localhost:${port}`
 
 		logger.event('Starting tunnel...')
 		const instance: TunnelInstance = await provider.start(tunnelUrl, {
-			domain: config?.cloudflare?.domain ?? process.env.CLOUDFLARE_DOMAIN,
-			apiKey: config?.cloudflare?.apiKey ?? process.env.CLOUDFLARE_API_KEY,
-			zoneId: config?.cloudflare?.zoneId ?? process.env.CLOUDFLARE_ZONE_ID,
-			accountId: config?.cloudflare?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID,
+			...credentials,
 			tunnelId: process.env.CLOUDFLARE_TUNNEL_ID,
 			tunnelToken: process.env.CLOUDFLARE_TUNNEL_TOKEN
 		})
