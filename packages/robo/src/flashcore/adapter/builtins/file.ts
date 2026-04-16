@@ -49,6 +49,37 @@ export interface FileAdapterOptions {
 const SAFE_FILENAME_CHARS = /^[A-Za-z0-9_.-]+$/
 const ENCODED_PREFIX = '_e_'
 
+// Windows transient errors during rename — file is briefly held by another
+// process (AV scan, file watcher, search indexer, concurrent writer).
+const RENAME_RETRY_CODES = new Set(['EPERM', 'EACCES', 'EBUSY', 'EEXIST'])
+const RENAME_MAX_ATTEMPTS = 10
+
+/**
+ * Rename with retry/backoff for transient Windows EPERM errors.
+ *
+ * On Windows, rename can fail with EPERM/EBUSY when the destination is
+ * momentarily held open by AV, file watchers, or another process. Retrying
+ * with a short backoff resolves the vast majority of these.
+ */
+async function renameWithRetry(from: string, to: string): Promise<void> {
+	let attempt = 0
+	while (true) {
+		try {
+			await rename(from, to)
+			return
+		} catch (err) {
+			const code = (err as NodeJS.ErrnoException).code
+			attempt++
+			if (attempt >= RENAME_MAX_ATTEMPTS || !code || !RENAME_RETRY_CODES.has(code)) {
+				throw err
+			}
+			// Exponential backoff: 10ms, 20ms, 40ms, ... capped at 200ms
+			const delay = Math.min(10 * 2 ** (attempt - 1), 200)
+			await new Promise((resolve) => setTimeout(resolve, delay))
+		}
+	}
+}
+
 /**
  * Encode a key to be safe for use as a filename.
  *
@@ -177,7 +208,7 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 				await handle.close()
 			}
 
-			await rename(tempPath, filepath)
+			await renameWithRetry(tempPath, filepath)
 			await this.fsyncDirectory(dirname(filepath))
 			return true
 		} catch (err) {
@@ -345,7 +376,7 @@ export class FileAdapter<K extends string = string, V = unknown> implements Flas
 		} finally {
 			await handle.close()
 		}
-		await rename(tempJournalPath, journalPath)
+		await renameWithRetry(tempJournalPath, journalPath)
 		await this.fsyncDirectory(this.baseDir)
 
 		// Phase 3: Apply mutations (each set/delete is already individually crash-safe)
