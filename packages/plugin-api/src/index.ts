@@ -20,3 +20,6 @@ export type { HttpMethodExport, ApiHandler, ApiHandlerModule } from './robo/rout
 // Port utilities for checking availability and finding available ports
 export { isPortAvailable, findAvailablePort, DEFAULT_MAX_PORT_ATTEMPTS } from './core/port-utils.js'
 export type { FindAvailablePortOptions, FindAvailablePortResult } from './core/port-utils.js'
+
+// Re-export zod so consumers can build schemas without installing zod separately
+export { z } from 'zod'
