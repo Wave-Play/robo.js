@@ -1,7 +1,10 @@
 /**
  * CLI Extension for `robo dev` command
  *
- * Adds the -t/--tunnel flag to expose local server to the internet.
+ * Adds the -t/--tunnel flag to expose the local server to the internet.
+ * Sets __ROBO_TUNNEL_ENABLED so the start hook knows to activate the tunnel.
+ * All tunnel setup logic (install, initialize, start) lives in the start hook
+ * behind a Mode.isDev() guard via setupDevTunnel().
  */
 import type { CliExtendConfig, CliBeforeHook } from 'robo.js'
 
@@ -24,13 +27,8 @@ export const before: CliBeforeHook = async (ctx) => {
 		return // Continue normally
 	}
 
-	// Validate PORT is set
-	if (!process.env.PORT) {
-		ctx.logger.error('Cannot start tunnel without a PORT environment variable.')
-		process.exit(1)
-	}
-
-	// Signal to start.ts lifecycle hook that tunnel should start.
-	// Install/initialize/start are handled there so config-enabled tunnels work too.
+	// Signal to the start hook that the tunnel should be activated.
+	// Setup (install, initialize, start) is handled there via setupDevTunnel(),
+	// where pluginOptions and Mode.isDev() are both available.
 	process.env.__ROBO_TUNNEL_ENABLED = 'true'
 }
