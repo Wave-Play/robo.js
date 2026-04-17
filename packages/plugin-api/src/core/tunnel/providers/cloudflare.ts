@@ -342,7 +342,7 @@ export class CloudflareProvider implements TunnelProvider {
 				apiKey
 			)
 
-			let oldRoboTunnelExists
+			let oldRoboTunnelExists: CloudflareTunnelResponse
 			if (oldRoboTunnels.success && oldRoboTunnels.result.length > 0) {
 				oldRoboTunnelExists = oldRoboTunnels.result.filter((tunnel) => tunnel.deleted_at === null)[0]
 			}
@@ -399,20 +399,13 @@ export class CloudflareProvider implements TunnelProvider {
 				domain,
 				apiKey
 			)
-			logger.debug(
-				`Updated tunnel config for ${process.env.CLOUDFLARE_TUNNEL_ID} with account ${accountId}`
-			)
+			logger.debug(`Updated tunnel config for ${process.env.CLOUDFLARE_TUNNEL_ID} with account ${accountId}`)
 
 			if (!handeledTunnelConfig) {
 				return false
 			}
 
-			const handeledDNSRecord = await this.handleDNSRecord(
-				process.env.CLOUDFLARE_TUNNEL_ID!,
-				domain,
-				zoneId,
-				apiKey
-			)
+			const handeledDNSRecord = await this.handleDNSRecord(process.env.CLOUDFLARE_TUNNEL_ID!, domain, zoneId, apiKey)
 			logger.debug(`Updated DNS records for ${domain} with account ${accountId}`)
 
 			if (!handeledDNSRecord) {
@@ -750,12 +743,7 @@ export class CloudflareProvider implements TunnelProvider {
 		return data as CloudflareResponse<T>
 	}
 
-	private async handleTunnelConfig(
-		id: string,
-		accountId: string,
-		domain: string,
-		apiKey: string
-	): Promise<boolean> {
+	private async handleTunnelConfig(id: string, accountId: string, domain: string, apiKey: string): Promise<boolean> {
 		const tunnelConfig: CloudflareTunnelConfirationRequest = {
 			config: {
 				ingress: [
@@ -786,12 +774,7 @@ export class CloudflareProvider implements TunnelProvider {
 		}
 	}
 
-	private async handleDNSRecord(
-		tunnelID: string,
-		domain: string,
-		zoneId: string,
-		apiKey: string
-	): Promise<boolean> {
+	private async handleDNSRecord(tunnelID: string, domain: string, zoneId: string, apiKey: string): Promise<boolean> {
 		const existingDNSRecordFilter: CloudflareDNSRecordListRequest = {
 			match: 'any',
 			comment: {
@@ -816,7 +799,7 @@ export class CloudflareProvider implements TunnelProvider {
 			type: 'CNAME'
 		}
 
-		let recordExists
+		let recordExists: CloudflareDNSRecordResponse
 		const existingRecords = await this.cloudflareRequest<Array<CloudflareDNSRecordResponse>>(
 			`/zones/${zoneId}/dns_records?${existingDNSRecordFilterParams}`,
 			'GET',
