@@ -535,6 +535,10 @@ async function devAction(context: CliContext) {
 					deregisterSpiritCallbacks()
 					roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
 					registerSpiritCallbacks()
+				} else {
+					// HMR succeeded — set status back to ready. No status-progress events
+					// will arrive because start hooks don't re-run during HMR.
+					interactiveCli.setStatus('ready')
 				}
 			} else {
 				// Non-HMR mode or no spirit - do full restart
