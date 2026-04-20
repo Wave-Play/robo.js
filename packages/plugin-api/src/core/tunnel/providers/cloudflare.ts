@@ -342,26 +342,47 @@ export class CloudflareProvider implements TunnelProvider {
 				apiKey
 			)
 
-			let oldRoboTunnelExists: CloudflareTunnelResponse
-			if (oldRoboTunnels.success && oldRoboTunnels.result.length > 0) {
-				oldRoboTunnelExists = oldRoboTunnels.result.filter((tunnel) => tunnel.deleted_at === null)[0]
+			// If the very first call fails, abort early — no point cascading further calls
+			// with the same bad credentials. Most common cause: wrong API token type or
+			// missing permissions (needs Account: Cloudflare Tunnel + Zone: DNS edit).
+			if (!oldRoboTunnels.success) {
+				const reason = oldRoboTunnels.errors?.[0]?.message ?? 'Unknown error'
+				logger.error(
+					`Cloudflare authentication failed: ${reason}. ` +
+					`Verify CLOUDFLARE_API_KEY is a scoped API Token (not the Global API Key) ` +
+					`with "Account: Cloudflare Tunnel:Edit" and "Zone: DNS:Edit" permissions.`
+				)
+				return false
 			}
 
-			if (oldRoboTunnelExists) {
+			const oldRoboTunnelExists =
+				oldRoboTunnels.result.length > 0
+					? oldRoboTunnels.result.filter((tunnel) => tunnel.deleted_at === null)[0]
+					: undefined
+
+			// Resolve the tunnel id locally — never depend on process.env being updated
+			// mid-run, since dotenv-style loaders won't re-import freshly written values.
+			let tunnelId: string | undefined
+
+			if (oldRoboTunnelExists?.id) {
 				const oldRoboTunnel = oldRoboTunnelExists
 
-				if (oldRoboTunnel.id) {
-					const oldRoboTunnelToken = await this.cloudflareRequest<string>(
-						`/accounts/${accountId}/cfd_tunnel/${oldRoboTunnel.id}/token`,
-						'GET',
-						null,
-						apiKey
-					)
+				const oldRoboTunnelToken = await this.cloudflareRequest<string>(
+					`/accounts/${accountId}/cfd_tunnel/${oldRoboTunnel.id}/token`,
+					'GET',
+					null,
+					apiKey
+				)
 
-					logger.info('Using existing tunnel from Cloudflare account: ' + oldRoboTunnel.id)
-					await this.updateEnvFile('CLOUDFLARE_TUNNEL_ID', oldRoboTunnel.id)
-					await this.updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', oldRoboTunnelToken.result)
+				if (!oldRoboTunnelToken.success) {
+					logger.error(`Failed to fetch token for tunnel ${oldRoboTunnel.id}: ${oldRoboTunnelToken.errors?.[0]?.message ?? 'Unknown error'}`)
+					return false
 				}
+
+				logger.info('Using existing tunnel from Cloudflare account: ' + oldRoboTunnel.id)
+				await this.updateEnvFile('CLOUDFLARE_TUNNEL_ID', oldRoboTunnel.id!)
+				await this.updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', oldRoboTunnelToken.result)
+				tunnelId = oldRoboTunnel.id
 			} else {
 				logger.debug('Creating new tunnel for Cloudflare account')
 				const newCloudflareTunnel: CloudflareTunnelRequest = {
@@ -374,38 +395,51 @@ export class CloudflareProvider implements TunnelProvider {
 					newCloudflareTunnel,
 					apiKey
 				)
+
+				if (!newTunnel.success || !newTunnel.result) {
+					logger.error(`Failed to create tunnel: ${newTunnel.errors?.[0]?.message ?? 'Unknown error'}`)
+					return false
+				}
+
 				const { id } = newTunnel.result
 				logger.debug(`Created new tunnel: robo (${id})`)
 
-				if (id) {
-					const newRoboTunnelToken = await this.cloudflareRequest<string>(
-						`/accounts/${accountId}/cfd_tunnel/${id}/token`,
-						'GET',
-						null,
-						apiKey
-					)
-
-					logger.info('Using newly created tunnel from Cloudflare account: ' + id)
-					await this.updateEnvFile('CLOUDFLARE_TUNNEL_ID', id)
-					await this.updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', newRoboTunnelToken.result)
+				if (!id) {
+					logger.error('Tunnel was created but no id was returned by Cloudflare.')
+					return false
 				}
+
+				const newRoboTunnelToken = await this.cloudflareRequest<string>(
+					`/accounts/${accountId}/cfd_tunnel/${id}/token`,
+					'GET',
+					null,
+					apiKey
+				)
+
+				if (!newRoboTunnelToken.success) {
+					logger.error(`Failed to fetch token for new tunnel ${id}: ${newRoboTunnelToken.errors?.[0]?.message ?? 'Unknown error'}`)
+					return false
+				}
+
+				logger.info('Using newly created tunnel from Cloudflare account: ' + id)
+				await this.updateEnvFile('CLOUDFLARE_TUNNEL_ID', id)
+				await this.updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', newRoboTunnelToken.result)
+				tunnelId = id
 			}
 
-			await this.reloadEnv()
+			if (!tunnelId) {
+				logger.error('Could not resolve a tunnel id — aborting.')
+				return false
+			}
 
-			const handeledTunnelConfig = await this.handleTunnelConfig(
-				process.env.CLOUDFLARE_TUNNEL_ID!,
-				accountId,
-				domain,
-				apiKey
-			)
-			logger.debug(`Updated tunnel config for ${process.env.CLOUDFLARE_TUNNEL_ID} with account ${accountId}`)
+			const handeledTunnelConfig = await this.handleTunnelConfig(tunnelId, accountId, domain, apiKey)
+			logger.debug(`Updated tunnel config for ${tunnelId} with account ${accountId}`)
 
 			if (!handeledTunnelConfig) {
 				return false
 			}
 
-			const handeledDNSRecord = await this.handleDNSRecord(process.env.CLOUDFLARE_TUNNEL_ID!, domain, zoneId, apiKey)
+			const handeledDNSRecord = await this.handleDNSRecord(tunnelId, domain, zoneId, apiKey)
 			logger.debug(`Updated DNS records for ${domain} with account ${accountId}`)
 
 			if (!handeledDNSRecord) {
@@ -721,7 +755,7 @@ export class CloudflareProvider implements TunnelProvider {
 		body: CloudflareRequestBody = null,
 		apiKey: string
 	): Promise<CloudflareResponse<T>> {
-		logger.debug(`Cloudflare API request: ${endpoint}`)
+		logger.debug(`Cloudflare API request: ${method} ${endpoint}`)
 
 		const response = await fetch(`${CLOUDFLARE_API}${endpoint}`, {
 			method,
@@ -735,7 +769,14 @@ export class CloudflareProvider implements TunnelProvider {
 		const data: CloudflareResponse = await response.json()
 
 		if (!response.ok || !data.success) {
-			logger.error(`Cloudflare API request failed: ${data.errors[0]?.message || 'Unknown error'}`)
+			// Surface full diagnostic info: HTTP status, every Cloudflare error code+message,
+			// and the endpoint. The first-message-only summary used to hide the real cause.
+			const formatted = (data.errors ?? [])
+				.map((e) => `[${e.code}] ${e.message}`)
+				.join('; ') || 'Unknown error'
+			logger.error(`Cloudflare API request failed (${method} ${endpoint}, HTTP ${response.status}): ${formatted}`)
+			const hint = this.diagnoseAuthError(data.errors ?? [])
+			if (hint) logger.error(hint)
 		} else {
 			logger.debug(`Cloudflare API request succeeded: ${endpoint}`)
 		}
@@ -743,7 +784,33 @@ export class CloudflareProvider implements TunnelProvider {
 		return data as CloudflareResponse<T>
 	}
 
-	private async handleTunnelConfig(id: string, accountId: string, domain: string, apiKey: string): Promise<boolean> {
+	/**
+	 * Map common Cloudflare API error codes to actionable hints.
+	 * "Authentication error" (10000) is overloaded — it covers both bad tokens
+	 * and valid tokens with insufficient permissions.
+	 */
+	private diagnoseAuthError(errors: Array<ResponseInfo>): string | null {
+		for (const err of errors) {
+			switch (err.code) {
+				case 10000: // Authentication error (generic)
+				case 10001: // Unauthorized
+					return 'Hint: Cloudflare returned an auth error. Verify (1) CLOUDFLARE_API_KEY is a scoped API Token (not the Global API Key), (2) the token has both "Account: Cloudflare Tunnel:Edit" and "Zone: DNS:Edit" permissions, and (3) it is scoped to the same Account/Zone as CLOUDFLARE_ACCOUNT_ID/CLOUDFLARE_ZONE_ID.'
+				case 7003: // Could not route to /...
+				case 7000: // No route for that URI
+					return 'Hint: The endpoint was rejected. Double-check that CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_ZONE_ID are correct (no extra spaces or quotes).'
+				case 9109: // Unauthorized to access requested resource
+					return 'Hint: Token is valid but lacks permission for this account/zone. Re-create the token scoped to the correct account/zone.'
+			}
+		}
+		return null
+	}
+
+	private async handleTunnelConfig(
+		id: string,
+		accountId: string,
+		domain: string,
+		apiKey: string
+	): Promise<boolean> {
 		const tunnelConfig: CloudflareTunnelConfirationRequest = {
 			config: {
 				ingress: [
@@ -774,7 +841,12 @@ export class CloudflareProvider implements TunnelProvider {
 		}
 	}
 
-	private async handleDNSRecord(tunnelID: string, domain: string, zoneId: string, apiKey: string): Promise<boolean> {
+	private async handleDNSRecord(
+		tunnelID: string,
+		domain: string,
+		zoneId: string,
+		apiKey: string
+	): Promise<boolean> {
 		const existingDNSRecordFilter: CloudflareDNSRecordListRequest = {
 			match: 'any',
 			comment: {
@@ -799,7 +871,7 @@ export class CloudflareProvider implements TunnelProvider {
 			type: 'CNAME'
 		}
 
-		let recordExists: CloudflareDNSRecordResponse
+		let recordExists
 		const existingRecords = await this.cloudflareRequest<Array<CloudflareDNSRecordResponse>>(
 			`/zones/${zoneId}/dns_records?${existingDNSRecordFilterParams}`,
 			'GET',
@@ -845,6 +917,11 @@ export class CloudflareProvider implements TunnelProvider {
 	}
 
 	private async updateEnvFile(key: string, value: string): Promise<void> {
+		// Always update process.env immediately so the rest of this run sees the value.
+		// File persistence is for subsequent runs; reloadEnv() can't be relied on to
+		// re-import freshly written values into an already-running process.
+		process.env[key] = value
+
 		try {
 			const envFilePath = await this.getEnvFilePath()
 
@@ -860,12 +937,9 @@ export class CloudflareProvider implements TunnelProvider {
 
 				await fs.promises.writeFile(envFilePath, envContent, 'utf8')
 				logger.debug(`Updated ${envFilePath} file with ${key}=${value}`)
-			} else {
-				process.env[key] = value
 			}
 		} catch (error) {
 			logger.error(`Failed to update env file: ${error}`)
-			process.env[key] = value
 		}
 	}
 
