@@ -192,10 +192,7 @@ export async function findNodeModules(basePath: string): Promise<string | null> 
 	}
 }
 
-async function resolvePackagePathFallback(
-	nodeModulesPath: string,
-	packageName: string
-): Promise<string | null> {
+async function resolvePackagePathFallback(nodeModulesPath: string, packageName: string): Promise<string | null> {
 	const candidatePath = path.join(nodeModulesPath, packageName)
 	logger.debug(`Falling back to ${packageName} in ${candidatePath}`)
 	try {
@@ -228,7 +225,10 @@ export async function findPackagePath(packageName: string, currentPath: string):
 	if (isPnpmModules && !IS_BUN_PM) {
 		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
 		try {
-			const { stdout } = await execFileAsync('pnpm', ['list', packageName, '--json'], { cwd: currentPath })
+			const { stdout } = await execFileAsync('pnpm', ['list', packageName, '--json'], {
+				cwd: currentPath,
+				shell: IS_WINDOWS
+			})
 			const packages = JSON.parse(stdout)
 			const packageInfo = Array.isArray(packages) ? packages[0] : packages
 			packagePath = packageInfo?.dependencies?.[packageName]?.path
@@ -276,7 +276,10 @@ export async function getWatchedPlugins(config: Config) {
 
 	// Detect pnpm once
 	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
-	const isPnpmModules = await fs.stat(pnpmNodeModulesPath).then(() => true, () => false)
+	const isPnpmModules = await fs.stat(pnpmNodeModulesPath).then(
+		() => true,
+		() => false
+	)
 
 	// Resolve all plugin paths
 	let packagePaths: Map<string, string | null>
@@ -290,7 +293,10 @@ export async function getWatchedPlugins(config: Config) {
 			pluginNames.map(async (name) => {
 				const normalized = name.replaceAll(path.sep, '/')
 				const candidatePath = path.join(nodeModulesPath, normalized)
-				const exists = await fs.stat(candidatePath).then(() => true, () => false)
+				const exists = await fs.stat(candidatePath).then(
+					() => true,
+					() => false
+				)
 				if (exists) {
 					return [name, path.relative(process.cwd(), candidatePath)] as const
 				}
@@ -314,7 +320,9 @@ export async function getWatchedPlugins(config: Config) {
 					const data = JSON.parse(await readFile(watchFilePath, 'utf-8'))
 					watchedPlugins[watchFilePath] = { data, name }
 				}
-			} catch { /* skip */ }
+			} catch {
+				/* skip */
+			}
 		})
 	)
 
@@ -328,10 +336,7 @@ async function resolvePackagePathsPnpm(
 ): Promise<Map<string, string | null>> {
 	const result = new Map<string, string | null>()
 	try {
-		const { stdout } = await execFileAsync(
-			'pnpm', ['list', ...packageNames, '--json'],
-			{ cwd }
-		)
+		const { stdout } = await execFileAsync('pnpm', ['list', ...packageNames, '--json'], { cwd })
 		const packages = JSON.parse(stdout)
 		const packageInfo = Array.isArray(packages) ? packages[0] : packages
 		const deps = packageInfo?.dependencies ?? {}
@@ -354,10 +359,7 @@ async function resolvePackagePathsPnpm(
 		// pnpm list failed entirely — skip subprocess calls and resolve via filesystem only
 		await Promise.all(
 			packageNames.map(async (name) => {
-				const fallbackPath = await resolvePackagePathFallback(
-					nodeModulesPath,
-					name.replaceAll(path.sep, '/')
-				)
+				const fallbackPath = await resolvePackagePathFallback(nodeModulesPath, name.replaceAll(path.sep, '/'))
 				result.set(name, fallbackPath ? path.relative(cwd, fallbackPath) : null)
 			})
 		)
