@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, afterEach } from '@jest/globals'
 import { join } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { createFileDrain } from '../../src/core/file-drain.js'
-import { Logger, createMultiDrain } from '../../src/core/logger.js'
+import { Logger, createLevelFilteredDrain, createMultiDrain } from '../../src/core/logger.js'
 import {
 	cleanupTempDir,
 	createTempLogDir,
@@ -393,6 +393,33 @@ describe('Auto File Logging Integration', () => {
 			expect(lines.some((l) => l.includes('Debug only in file'))).toBe(true)
 			expect(lines.some((l) => l.includes('Info in both'))).toBe(true)
 			expect(lines.some((l) => l.includes('Error in both'))).toBe(true)
+		})
+
+		test('auto file drain respects explicit logger level', async () => {
+			const logPath = join(tempDir, '.robo/logs/warn-level.log')
+			const { drain: mockConsoleDrain, calls: consoleCalls } = createMockDrain()
+			const effectiveLevel = 'warn'
+			const fileDrain = createFileDrain({
+				path: logPath,
+				level: effectiveLevel,
+				timestamp: 'short',
+				blocking: true
+			})
+
+			const testLogger = new Logger({
+				level: effectiveLevel,
+				drain: createMultiDrain([createLevelFilteredDrain(mockConsoleDrain, effectiveLevel), fileDrain])
+			})
+
+			testLogger.event('Event should be filtered')
+			testLogger.warn('Warn should pass')
+
+			await testLogger.flush()
+
+			expect(consoleCalls.map((call) => call.level)).toEqual(['warn'])
+			const content = readFileSync(logPath, 'utf-8')
+			expect(content).not.toContain('Event should be filtered')
+			expect(content).toContain('Warn should pass')
 		})
 	})
 

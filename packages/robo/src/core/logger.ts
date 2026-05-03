@@ -44,7 +44,6 @@ export interface LoggerOptions {
 
 export const DEBUG_MODE = env?.ROBO_DEV === 'true'
 
- 
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
 const pendingDrains = new Set<Promise<void>>()
@@ -326,7 +325,7 @@ function ansiToBrowserFormat(text: string): { fmt: string; css: string[] } {
 	let currentStyle: Record<string, string> = {}
 
 	// Match one or more codes at a time (e.g. "\x1b[1;36m")
-	 
+
 	const pattern = /\x1b\[([0-9;]+)m/g
 	let match: RegExpExecArray | null
 
@@ -375,11 +374,7 @@ function objectToCssString(style: Record<string, string>): string {
  * Writes log data synchronously. Do not call this in browser environments.
  * Requires the inspect function to be cached (via getInspectSync).
  */
-function writeLogSync(
-	stream: LogStream,
-	inspectFn: typeof import('node:util').inspect,
-	...data: unknown[]
-): void {
+function writeLogSync(stream: LogStream, inspectFn: typeof import('node:util').inspect, ...data: unknown[]): void {
 	const parts = data.map((item) => {
 		if (typeof item === 'object' || item instanceof Error || Array.isArray(item)) {
 			return inspectFn(item, { colors: true, depth: null })
@@ -664,14 +659,14 @@ export class Logger {
 	}
 
 	public setup(options?: LoggerOptions) {
-		const { customLevels, drain = consoleDrain, enabled = true, level, parent, prefix } = options ?? {}
+		const { customLevels, drain, enabled, level, parent, prefix } = options ?? {}
 
 		// Preserve existing customLevels if new ones aren't provided
 		this._customLevels = customLevels ?? this._customLevels
-		this._primaryDrain = drain
-		this._enabled = enabled
-		this._parent = parent
-		this._prefix = prefix
+		this._primaryDrain = drain ?? this._primaryDrain ?? consoleDrain
+		this._enabled = enabled ?? this._enabled ?? true
+		this._parent = parent ?? this._parent
+		this._prefix = prefix ?? this._prefix
 
 		// Update combined drain if we have additional drains
 		this._updateCombinedDrain()
@@ -680,7 +675,7 @@ export class Logger {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {
-			this._level = level ?? 'info'
+			this._level = level ?? this._level ?? 'info'
 		}
 
 		// Combine the default log levels with the custom ones
@@ -955,18 +950,28 @@ const colorizedLogLevels: Record<string, string> = {
 	error: color.red('error'.padEnd(5))
 }
 
-let _logger: Logger | null = null
+const GLOBAL_LOGGER_KEY = '__robojs_logger__'
+
+type GlobalLoggerStore = typeof globalThis & {
+	[GLOBAL_LOGGER_KEY]?: Logger | null
+}
+
+function getGlobalLoggerStore(): GlobalLoggerStore {
+	return globalThis as GlobalLoggerStore
+}
 
 export function logger(options?: LoggerOptions): Logger {
-	if (!_logger && options) {
-		_logger = new Logger(options)
-	} else if (!_logger) {
-		_logger = new Logger()
+	const store = getGlobalLoggerStore()
+
+	if (!store[GLOBAL_LOGGER_KEY] && options) {
+		store[GLOBAL_LOGGER_KEY] = new Logger(options)
+	} else if (!store[GLOBAL_LOGGER_KEY]) {
+		store[GLOBAL_LOGGER_KEY] = new Logger()
 	} else if (options) {
-		_logger.setup(options)
+		store[GLOBAL_LOGGER_KEY].setup(options)
 	}
 
-	return _logger
+	return store[GLOBAL_LOGGER_KEY]
 }
 
 logger.flush = async function (): Promise<void> {

@@ -225,6 +225,18 @@ describe('Logger.setup()', () => {
 		expect(testLogger.getLevel()).toBe('trace')
 	})
 
+	test('preserves level when omitted', () => {
+		const testLogger = new Logger({ level: 'warn' })
+
+		testLogger.setup({
+			customLevels: {
+				typeerror: { label: 'typeerror', priority: 7 }
+			}
+		})
+
+		expect(testLogger.getLevel()).toBe('warn')
+	})
+
 	test('updates drain when provided', async () => {
 		const { drain: drain1, calls: calls1 } = createMockDrain()
 		const { drain: drain2, calls: calls2 } = createMockDrain()
@@ -240,6 +252,22 @@ describe('Logger.setup()', () => {
 		testLogger.info('to drain 2')
 		await testLogger.flush()
 		expect(calls2.length).toBe(1)
+	})
+
+	test('preserves drain when omitted', async () => {
+		const { drain, calls } = createMockDrain()
+		const testLogger = new Logger({ level: 'trace', drain })
+
+		testLogger.setup({
+			customLevels: {
+				typeerror: { label: 'typeerror', priority: 7 }
+			}
+		})
+		testLogger.info('still uses existing drain')
+		await testLogger.flush()
+
+		expect(calls.length).toBe(1)
+		expect(calls[0].data).toEqual(['still uses existing drain'])
 	})
 
 	test('updates enabled flag', async () => {
@@ -1064,7 +1092,9 @@ describe('consoleDrain - Browser environment', () => {
 
 		const args = capture.logs[0]
 		const cssArgs = args.slice(1).filter((a) => typeof a === 'string')
-		const hasUnderline = cssArgs.some((css) => (css as string).includes('text-decoration') && (css as string).includes('underline'))
+		const hasUnderline = cssArgs.some(
+			(css) => (css as string).includes('text-decoration') && (css as string).includes('underline')
+		)
 		expect(hasUnderline).toBe(true)
 	})
 
@@ -1833,7 +1863,8 @@ describe('Browser ANSI - Additional styles', () => {
 		const testLogger = new Logger({ level: 'trace' })
 
 		// All 8 standard colors: 30-37
-		const ansiString = '\x1b[30mblack\x1b[31mred\x1b[32mgreen\x1b[33myellow\x1b[34mblue\x1b[35mmagenta\x1b[36mcyan\x1b[37mwhite\x1b[0m'
+		const ansiString =
+			'\x1b[30mblack\x1b[31mred\x1b[32mgreen\x1b[33myellow\x1b[34mblue\x1b[35mmagenta\x1b[36mcyan\x1b[37mwhite\x1b[0m'
 		await consoleDrain(testLogger, 'info', createTestMeta(), ansiString)
 
 		capture.restore()

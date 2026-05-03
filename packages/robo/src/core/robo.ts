@@ -7,7 +7,13 @@ import { Env } from './env.js'
 import { executeEventHandler } from './handlers.js'
 import { Nanocore } from '../internal/nanocore.js'
 import { Flashcore } from './flashcore.js'
-import { executeErrorHooks, executeInitHooks, executePrepareHooks, executeStartHooks, executeStopHooks } from './hooks.js'
+import {
+	executeErrorHooks,
+	executeInitHooks,
+	executePrepareHooks,
+	executeStartHooks,
+	executeStopHooks
+} from './hooks.js'
 import { Manifest } from './manifest-api.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
@@ -117,6 +123,7 @@ async function start(options?: StartOptions) {
 
 		// 2. Get mode early (needed for logger setup and init hooks)
 		const mode = Mode.get()
+		const effectiveLogLevel = logLevel ?? config?.logger?.level
 
 		// Set up file drains based on config
 		const fileDrains: ReturnType<typeof createFileDrain>[] = []
@@ -127,7 +134,7 @@ async function start(options?: StartOptions) {
 				fileDrains.push(
 					createFileDrain({
 						path: fileConfig.path,
-						level: fileConfig.level,
+						level: fileConfig.level ?? effectiveLogLevel ?? 'info',
 						timestamp: fileConfig.timestamp ?? config.logger.timestamp,
 						maxSize: fileConfig.maxSize,
 						maxFiles: fileConfig.maxFiles,
@@ -143,7 +150,7 @@ async function start(options?: StartOptions) {
 			fileDrains.push(
 				createFileDrain({
 					path: `.robo/logs/${logMode}.log`,
-					level: 'debug',
+					level: effectiveLogLevel ?? 'debug',
 					timestamp: 'iso',
 					colorMap: config?.logger?.colorMap
 				})
@@ -152,20 +159,19 @@ async function start(options?: StartOptions) {
 
 		// Combine console + file drains
 		// In mock test mode (without verbose), use no-op drain - tests set up their own file drain
-		const baseDrain = isMockTestMode && !isMockVerbose ? noOpDrain : (config?.logger?.drain ?? consoleDrain)
+		const baseDrain = isMockTestMode && !isMockVerbose ? noOpDrain : config?.logger?.drain ?? consoleDrain
 
 		// When combining with file drains, filter console output to info+ level
 		// This allows file drains to capture debug messages while console stays at info level
-		const consoleLevel = config?.logger?.level ?? 'info'
-		const filteredBaseDrain = fileDrains.length > 0 && baseDrain !== noOpDrain
-			? createLevelFilteredDrain(baseDrain, consoleLevel)
-			: baseDrain
+		const consoleLevel = effectiveLogLevel ?? 'info'
+		const filteredBaseDrain =
+			fileDrains.length > 0 && baseDrain !== noOpDrain ? createLevelFilteredDrain(baseDrain, consoleLevel) : baseDrain
 		const combinedDrain = fileDrains.length > 0 ? createMultiDrain([filteredBaseDrain, ...fileDrains]) : baseDrain
 
 		logger({
 			drain: combinedDrain,
 			enabled: config?.logger?.enabled,
-			level: logLevel ?? config?.logger?.level
+			level: effectiveLogLevel
 		}).debug('Starting Robo...')
 
 		// Load environment (needed for init hooks)
@@ -185,7 +191,10 @@ async function start(options?: StartOptions) {
 		await Promise.all([
 			Manifest.initialize(mode),
 			(async () => {
-				await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
+				await Flashcore.$init({
+					keyvOptions: config.flashcore?.keyv,
+					namespaceSeparator: config.flashcore?.namespaceSeparator
+				})
 				if (stateLoad) {
 					logger.debug('Waiting for state...')
 					await stateLoad
