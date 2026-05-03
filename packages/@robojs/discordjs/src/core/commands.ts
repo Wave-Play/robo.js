@@ -788,7 +788,10 @@ export function recordsToCommands(
 
 		if (keyParts.length === 1) {
 			// Top-level command
-			commands[rootName] = record.metadata as CommandEntry
+			commands[rootName] = {
+				...(commands[rootName] ?? {}),
+				...(record.metadata as CommandEntry)
+			}
 		} else if (keyParts.length === 2) {
 			// Subcommand
 			if (!commands[rootName]) {
@@ -908,6 +911,11 @@ export function bubbleSubcommandMetadata(commands: Record<string, CommandEntry>)
 			if (leaves.length > 0 && leaves.every((l) => l.dmPermission === false)) {
 				entry.dmPermission = false
 			}
+		}
+
+		// nsfw — Discord only accepts this at the top-level command, so lift true from any leaf
+		if (entry.nsfw === undefined && leaves.some((l) => l.nsfw === true)) {
+			entry.nsfw = true
 		}
 	}
 }

@@ -96,7 +96,7 @@ export default function (entry: ScannedEntry): ProcessedEntry {
 			contexts: handlerConfig?.contexts,
 			integrationTypes: handlerConfig?.integrationTypes,
 			nameLocalizations: handlerConfig?.nameLocalizations,
-			nsfw: handlerConfig?.nsfw ?? false,
+			nsfw: handlerConfig?.nsfw,
 			sage: handlerConfig?.sage,
 			serverOnly: handlerConfig?.serverOnly
 		},

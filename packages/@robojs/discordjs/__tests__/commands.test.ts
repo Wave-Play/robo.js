@@ -826,6 +826,16 @@ describe('Command Building', () => {
 			expect(commands.rp.defaultMemberPermissions).toBe('8')
 		})
 
+		it('should preserve subcommands when root metadata is processed after children', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1' } },
+				rp: { metadata: { description: 'Root' } }
+			})
+
+			expect(commands.rp.description).toBe('Root')
+			expect(commands.rp.subcommands?.cmd1.description).toBe('Cmd 1')
+		})
+
 		it('should NOT bubble defaultMemberPermissions when subcommands conflict', () => {
 			const commands = recordsToCommands({
 				'rp cmd1': { metadata: { description: 'Cmd 1', defaultMemberPermissions: '8' } },
@@ -842,6 +852,15 @@ describe('Command Building', () => {
 			})
 
 			expect(commands.rp.dmPermission).toBe(false)
+		})
+
+		it('should bubble nsfw true when any subcommand requires it', () => {
+			const commands = recordsToCommands({
+				'rp cmd1': { metadata: { description: 'Cmd 1' } },
+				'rp cmd2': { metadata: { description: 'Cmd 2', nsfw: true } }
+			})
+
+			expect(commands.rp.nsfw).toBe(true)
 		})
 
 		it('should NOT bubble dmPermission when subcommands have mixed values', () => {

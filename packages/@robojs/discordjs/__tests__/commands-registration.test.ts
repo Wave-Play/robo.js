@@ -370,6 +370,16 @@ describe('recordsToCommands', () => {
 		expect(result.admin.subcommands).toBeDefined()
 	})
 
+	it('preserves synthesized children when a root entry is encountered later', () => {
+		const result = recordsToCommands({
+			'admin ban': { metadata: { description: 'Ban' } },
+			admin: { metadata: { description: 'Admin' } }
+		})
+
+		expect(result.admin.description).toBe('Admin')
+		expect(result.admin.subcommands?.ban.description).toBe('Ban')
+	})
+
 	it('calls bubbleSubcommandMetadata on result', () => {
 		const result = recordsToCommands({
 			'rp cmd1': { metadata: { description: 'Cmd 1', integrationTypes: ['UserInstall'] } },
@@ -463,6 +473,15 @@ describe('bubbleSubcommandMetadata', () => {
 		}
 		bubbleSubcommandMetadata(commands)
 		expect(commands.root.dmPermission).toBe(false)
+	})
+
+	it('bubbles nsfw true when ANY subcommand sets true', () => {
+		const commands = {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			root: { subcommands: { a: { nsfw: false }, b: { nsfw: true } } } as any
+		}
+		bubbleSubcommandMetadata(commands)
+		expect(commands.root.nsfw).toBe(true)
 	})
 
 	it('does NOT override explicit root metadata', () => {
