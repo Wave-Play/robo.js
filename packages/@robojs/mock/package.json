@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/mock",
 	"description": "Discord Gateway mock server for automated testing of Discord.js bots",
-	"version": "0.1.1-next.0",
+	"version": "0.1.1-next.1",
 	"private": false,
 	"type": "module",
 	"main": ".robo/build/index.js",
