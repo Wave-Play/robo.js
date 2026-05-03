@@ -417,6 +417,7 @@ function entriesToCommands(entries: ProcessedEntry[]) {
 		if (keyParts.length === 1) {
 			// Top-level command
 			commands[rootName] = {
+				...(commands[rootName] ?? {}),
 				...entry.metadata
 			}
 		} else if (keyParts.length === 2) {

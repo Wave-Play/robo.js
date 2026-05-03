@@ -110,6 +110,22 @@ describe('Route Definitions', () => {
 				expect(result.key).toBe('ping')
 				expect(result.path).toBe('src/commands/ping.js')
 				expect(result.metadata.description).toBe('Ping pong!')
+				expect(result.metadata.nsfw).toBeUndefined()
+			})
+
+			it('should preserve nsfw when configured', () => {
+				const entry = {
+					key: 'adult',
+					filePath: 'src/commands/adult.ts',
+					exports: {
+						default: fn(),
+						config: { description: 'Adult command', nsfw: true }
+					}
+				}
+
+				const result = commandsRoute(entry as any)
+
+				expect(result.metadata.nsfw).toBe(true)
 			})
 
 			it('should use default description when not provided', () => {
