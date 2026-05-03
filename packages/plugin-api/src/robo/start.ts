@@ -114,7 +114,11 @@ export default async (_context: StartContext<PluginConfig>) => {
 	const tunnelEnabled = process.env.__ROBO_TUNNEL_ENABLED === 'true' || pluginOptions.tunnel?.enabled
 
 	if (tunnelEnabled) {
-		await startTunnel(port, pluginOptions.tunnel)
+		if (isDev) {
+			await setupDevTunnel(port, pluginOptions.tunnel)
+		} else {
+			await startTunnel(port, pluginOptions.tunnel)
+		}
 	}
 }
 
@@ -124,7 +128,58 @@ async function loadApiRecords(): Promise<Record<string, HandlerRecord<ApiHandler
 }
 
 /**
- * Start the tunnel using the configured provider
+ * Dev-only tunnel setup: installs cloudflared if missing, initializes the persistent
+ * tunnel on Cloudflare (API calls, DNS records, credential management), then starts it.
+ * Never runs in production.
+ */
+async function setupDevTunnel(port: number, config?: TunnelConfig): Promise<void> {
+	let provider: TunnelProvider
+
+	if (config?.provider && typeof config.provider !== 'string') {
+		provider = config.provider
+	} else {
+		const { CloudflareProvider } = await import('../core/tunnel/index.js')
+		provider = new CloudflareProvider()
+	}
+
+	// Install cloudflared if not already present
+	if (!provider.isInstalled()) {
+		logger.event('Installing cloudflared...')
+		await provider.install()
+	}
+
+	// Resolve credentials from plugin config or environment
+	const credentials = {
+		domain: config?.cloudflare?.domain ?? process.env.CLOUDFLARE_DOMAIN,
+		apiKey: config?.cloudflare?.apiKey ?? process.env.CLOUDFLARE_API_KEY,
+		zoneId: config?.cloudflare?.zoneId ?? process.env.CLOUDFLARE_ZONE_ID,
+		accountId: config?.cloudflare?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+	}
+
+	// Initialize persistent tunnel (creates/fetches tunnel on Cloudflare, sets DNS, writes env vars).
+	// If full credentials are provided but init fails, abort instead of silently falling back
+	// to a dynamic *.trycloudflare.com tunnel.
+	const hasFullCreds = !!(credentials.domain && credentials.apiKey && credentials.zoneId && credentials.accountId)
+	if (provider.initialize) {
+		logger.event('Initializing tunnel...')
+		const initialized = await provider.initialize(credentials)
+		if (initialized) {
+			logger.debug('Persistent tunnel initialized')
+		} else if (hasFullCreds) {
+			logger.error('Persistent tunnel setup failed — aborting tunnel start. See errors above.')
+			return
+		} else {
+			logger.debug('Using dynamic tunnel (no static tunnel configured)')
+		}
+	}
+
+	await startTunnel(port, config)
+}
+
+/**
+ * Starts the tunnel process using credentials already present in the environment.
+ * In dev, called by setupDevTunnel after install and initialize. In production,
+ * called directly — cloudflared and credentials are expected to already be in place.
  */
 async function startTunnel(port: number, config?: TunnelConfig): Promise<void> {
 	try {
