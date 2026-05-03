@@ -1,5 +1,7 @@
 # @roboplay/sage
 
+## 0.7.4-next.1
+
 ## 0.7.4-next.0
 
 ### Patch Changes

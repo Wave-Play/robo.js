@@ -1,5 +1,7 @@
 # @robojs/mock
 
+## 0.1.1-next.1
+
 ## 0.1.1-next.0
 
 ### Patch Changes

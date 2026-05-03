@@ -1,6 +1,6 @@
 {
 	"name": "robo.js",
-	"version": "0.11.0-next.0",
+	"version": "0.11.0-next.1",
 	"private": false,
 	"description": "The Universal App Framework - bots, web servers, and more!",
 	"keywords": [

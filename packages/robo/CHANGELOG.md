@@ -1,5 +1,15 @@
 # robo.js
 
+## 0.11.0-next.1
+
+### Patch Changes
+
+- fix(dev): reset terminal status to ready after successful HMR reload
+
+  Previously the interactive CLI status stayed stuck at "[building]" after HMR because no `status-progress` events fire from the spirit (start hooks don't re-run during HMR). Now the dev command sets status to "ready" directly after any successful HMR cycle.
+
+- fix(logger): preserve configured logger levels across repeated setup calls
+
 ## 0.11.0-next.0
 
 ### Minor Changes
