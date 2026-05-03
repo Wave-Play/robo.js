@@ -23,8 +23,9 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
+		"@robojs/discordjs": "next",
 		"discord.js": "14.22.1",
-		"robo.js": "^0.10.25"
+		"robo.js": "next"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.9.2",

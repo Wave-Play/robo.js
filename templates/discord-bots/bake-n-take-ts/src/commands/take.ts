@@ -1,7 +1,8 @@
 import { Treat, Treats } from '../core/treats.js'
+import { createCommandConfig } from '@robojs/discordjs'
 import { ChatInputCommandInteraction } from 'discord.js'
-import { createCommandConfig, Flashcore } from 'robo.js'
-import type { CommandOptions } from 'robo.js'
+import { Flashcore } from 'robo.js'
+import type { CommandOptions } from '@robojs/discordjs'
 
 export const config = createCommandConfig({
 	description: 'Take a treat and sell it',
