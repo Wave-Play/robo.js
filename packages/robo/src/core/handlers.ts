@@ -21,6 +21,14 @@ import type {
 	SmartCommandConfig
 } from '../types/index.js'
 
+/**
+ * Handle an autocomplete interaction for a registered command, enforcing enablement checks, running middleware, and invoking the command's autocomplete handler.
+ *
+ * If the command or its module is disabled, or the command is not enabled for the interaction's server, the handler exits without responding. Middleware may abort processing. If configured, a timeout fallback of an empty name/value list is applied. Any resulting autocomplete choices are sent via the interaction response; errors are logged.
+ *
+ * @param interaction - The autocomplete interaction received from Discord
+ * @param commandKey - The portal key identifying the command to run autocomplete for
+ */
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
 	if (!command) {
@@ -28,15 +36,34 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 		return
 	}
 
-	// Check if the autocomplete command's module is enabled
-	if (!portal.module(command.module).isEnabled) {
+	// Check if the command's module is enabled
+	if (command.module && !portal.module(command.module).isEnabled) {
 		discordLogger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
+		return
+	}
+
+	// Check if the command itself is enabled
+	if (!portal.command(commandKey).isEnabled) {
+		discordLogger.debug(`Tried to execute disabled command: ${color.bold(commandKey)}`)
+		return
+	}
+
+	if (interaction.guildId && !portal.isEnabledForServer(commandKey, interaction.guildId)) {
+		discordLogger.debug(`Command ${color.bold(commandKey)} is not enabled for server ${interaction.guildId}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
+			if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+				continue
+			}
+
+			if (interaction.guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), interaction.guildId)) {
+				continue
+			}
+			
 			discordLogger.debug(
 				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
 			)
@@ -66,8 +93,15 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 		// Enforce timeout only if custom timeout is configured
 		if (timeoutDuration) {
-			// @ts-expect-error - Timeout callback can return anything
-			promises.push(timeout((): unknown[] => [], timeoutDuration))
+			promises.push(
+				timeout(
+					() => [] as Array<{
+						name: string;
+						value: string | number;
+					}>,
+					timeoutDuration
+				)
+			)
 		}
 
 		// Wait for response or timeout
@@ -82,6 +116,13 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 	}
 }
 
+/**
+ * Executes a slash (chat input) command: runs middleware, invokes the command handler with extracted options, handles deferral/timeouts, and sends or edits the interaction reply.
+ *
+ * Runs portal and server enablement checks for the command and middleware, applies Sage deferral semantics and configured timeouts, and formats the handler's return value into an interaction response. Errors are logged and converted into an error response sent to the interaction.
+ *
+ * @param commandKey - The portal key identifying which command to execute (e.g., 'module/command')
+ */
 export async function executeCommandHandler(interaction: ChatInputCommandInteraction, commandKey: string) {
 	// Find command handler
 	const command = portal.commands.get(commandKey)
@@ -91,14 +132,32 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 	}
 
 	// Check if the command's module is enabled
-	if (!portal.module(command.module).isEnabled) {
+	if (command.module && !portal.module(command.module).isEnabled) {
 		discordLogger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
+		return
+	}
+
+	if (!portal.command(commandKey).isEnabled) {
+		discordLogger.debug(`Tried to execute disabled command: ${color.bold(commandKey)}`)
+		return
+	}
+
+	if (interaction.guildId && !portal.isEnabledForServer(commandKey, interaction.guildId)) {
+		discordLogger.debug(`Command ${color.bold(commandKey)} is not enabled for server ${interaction.guildId}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
+			if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+				continue
+			}
+
+			if (interaction.guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), interaction.guildId)) {
+				continue
+			}
+			
 			discordLogger.debug(
 				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
 			)
@@ -209,6 +268,14 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 	}
 }
 
+/**
+ * Handles execution of a context menu command: verifies enablement, runs middleware, invokes the command handler, and sends or edits the interaction reply.
+ *
+ * Performs module-, command-, and server-level enablement checks and skips execution if disabled. Runs enabled middleware in sequence and aborts if any middleware signals abort. Calls the command's default export with the interaction and the resolved target (message or user). Honors configured "sage" defer and deferral timeouts: may defer the reply, wait for the handler result, or error on timeout. If the handler returns a reply value, sends it via interaction.reply or interaction.editReply depending on deferred state. Logs errors and emits an error response to the interaction on failure.
+ *
+ * @param interaction - The context menu interaction to handle
+ * @param commandKey - The key identifying the context menu command in the portal
+ */
 export async function executeContextHandler(interaction: ContextMenuCommandInteraction, commandKey: string) {
 	// Find command handler
 	const command = portal.context.get(commandKey)
@@ -218,14 +285,32 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	}
 
 	// Check if the context menu's module is enabled
-	if (!portal.module(command.module).isEnabled) {
+	if (command.module && !portal.module(command.module).isEnabled) {
 		discordLogger.debug(`Tried to execute disabled context menu command from module: ${color.bold(command.module)}`)
+		return
+	}
+
+	if (!portal.contextController(commandKey).isEnabled) {
+		discordLogger.debug(`Tried to execute disabled context menu command: ${color.bold(commandKey)}`)
+		return
+	}
+
+	if (interaction.guildId && !portal.isEnabledForServer(commandKey, interaction.guildId)) {
+		discordLogger.debug(`Context menu command ${color.bold(commandKey)} is not enabled for server ${interaction.guildId}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
+			if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+				continue
+			}
+
+			if (interaction.guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), interaction.guildId)) {
+				continue
+			}
+			
 			discordLogger.debug(
 				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
 			)
@@ -320,6 +405,20 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	}
 }
 
+/**
+ * Dispatches an event to all registered handlers, applying module/handler/server enablement checks, middleware, lifecycle timeouts, and per-handler error reporting.
+ *
+ * For each handler registered for `eventName`, this will:
+ * - skip handlers whose module or handler record is disabled or not enabled for the event's guild (if present),
+ * - run enabled middleware in sequence and abort the handler if any middleware returns `{ abort: true }`,
+ * - invoke the handler with `...eventData` plus plugin options (if provided),
+ * - for lifecycle events (names starting with `_`), race the handler against the configured lifecycle timeout,
+ * - catch and report handler errors (including timeout), and call `printErrorResponse` to emit error details.
+ *
+ * @param plugins - Map of plugin name to PluginData containing runtime options and metadata (may be `null` if not provided).
+ * @param eventName - The name of the event to dispatch.
+ * @param eventData - Arbitrary event payload forwarded to middleware and handlers.
+ */
 export async function executeEventHandler(
 	plugins: Map<string, PluginData> | null,
 	eventName: string,
@@ -333,7 +432,7 @@ export async function executeEventHandler(
 	const config = getConfig()
 	const isLifecycleEvent = eventName.startsWith('_')
 	await Promise.all(
-		callbacks.map(async (callback: HandlerRecord<Event>) => {
+		callbacks.map(async (callback: HandlerRecord<Event>, index: number) => {
 			try {
 				discordLogger.debug(
 					`Executing event handler: ${color.bold(path.join(callback.plugin?.path ?? '.', callback.path))}`
@@ -342,15 +441,36 @@ export async function executeEventHandler(
 					throw `Missing default export function for event: ${color.bold(eventName)}`
 				}
 
-				// Check if the command's module is enabled
-				if (!portal.module(callback.module).isEnabled) {
+				// Check if the event's module is enabled
+				if (callback.module && !portal.module(callback.module).isEnabled) {
 					discordLogger.debug(`Tried to execute disabled event from module: ${color.bold(callback.module)}`)
+					return
+				}
+
+				const eventKey = `${eventName}:${index}`
+				if (!portal.event(eventKey).isEnabled) {
+					discordLogger.debug(`Tried to execute disabled event: ${color.bold(eventKey)}`)
+					return
+				}
+
+				const interaction = eventData[0] as any
+				const guildId = interaction?.guildId || interaction?.guild?.id
+				if (guildId && !portal.isEnabledForServer(eventKey, guildId)) {
+					discordLogger.debug(`Event ${color.bold(eventKey)} is not enabled for server ${guildId}`)
 					return
 				}
 
 				// Execute middleware
 				try {
 					for (const middleware of portal.middleware) {
+						if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+							continue
+						}
+
+						if (guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), guildId)) {
+							continue
+						}
+
 						discordLogger.debug(
 							`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
 						)
