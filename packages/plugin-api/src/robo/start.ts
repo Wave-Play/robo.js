@@ -116,9 +116,8 @@ export default async (_context: StartContext<PluginConfig>) => {
 	if (tunnelEnabled) {
 		if (isDev) {
 			await setupDevTunnel(port, pluginOptions.tunnel)
-		} else {
-			await startTunnel(port, pluginOptions.tunnel)
 		}
+		await startTunnel(port, pluginOptions.tunnel)
 	}
 }
 
@@ -173,8 +172,6 @@ async function setupDevTunnel(port: number, config?: TunnelConfig): Promise<void
 			logger.debug('Using dynamic tunnel (no static tunnel configured)')
 		}
 	}
-
-	await startTunnel(port, config)
 }
 
 /**
