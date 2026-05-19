@@ -116,9 +116,8 @@ export default async (_context: StartContext<PluginConfig>) => {
 	if (tunnelEnabled) {
 		if (isDev) {
 			await setupDevTunnel(port, pluginOptions.tunnel)
-		} else {
-			await startTunnel(port, pluginOptions.tunnel)
 		}
+		await startTunnel(port, pluginOptions.tunnel)
 	}
 }
 
@@ -153,7 +152,8 @@ async function setupDevTunnel(port: number, config?: TunnelConfig): Promise<void
 		domain: config?.cloudflare?.domain ?? process.env.CLOUDFLARE_DOMAIN,
 		apiKey: config?.cloudflare?.apiKey ?? process.env.CLOUDFLARE_API_KEY,
 		zoneId: config?.cloudflare?.zoneId ?? process.env.CLOUDFLARE_ZONE_ID,
-		accountId: config?.cloudflare?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+		accountId: config?.cloudflare?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID,
+		originUrl: `http://localhost:${port}`
 	}
 
 	// Initialize persistent tunnel (creates/fetches tunnel on Cloudflare, sets DNS, writes env vars).
@@ -172,8 +172,6 @@ async function setupDevTunnel(port: number, config?: TunnelConfig): Promise<void
 			logger.debug('Using dynamic tunnel (no static tunnel configured)')
 		}
 	}
-
-	await startTunnel(port, config)
 }
 
 /**

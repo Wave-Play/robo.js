@@ -54,6 +54,8 @@ export interface TunnelProviderConfig {
 	accountId?: string
 	tunnelId?: string
 	tunnelToken?: string
+	/** Origin URL the persistent tunnel should forward to */
+	originUrl?: string
 	/** Run tunnel process in detached mode (for background operation) */
 	detached?: boolean
 	/** Timeout in ms for waiting for tunnel URL (default: 30000) */
