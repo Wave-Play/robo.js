@@ -45,7 +45,6 @@ type CloudflareRequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH'
 type CloudflareRequestBody =
 	| CloudflareTunnelRequest
 	| CloudflareTunnelConfirationRequest
-	| CloudflareDNSRecordListRequest
 	| CloudflareDNSRecordCreateRequest
 	| null
 
@@ -74,46 +73,6 @@ interface CloudflareTunnelRequest {
 
 interface CloudflareTunnelConfirationRequest {
 	config: CloudflareTunnelConfiguration
-}
-
-interface CloudflareDNSRecordListRequest {
-	comment?: {
-		absent?: string
-		contains?: string
-		endswith?: string
-		exact?: string
-		present?: string
-		startswith?: string
-	}
-	content?: {
-		contains?: string
-		endswith?: string
-		exact?: string
-		startswith?: string
-	}
-	direction?: 'asc' | 'desc'
-	match?: 'any' | 'all'
-	name?: {
-		contains?: string
-		endswith?: string
-		exact?: string
-		startswith?: string
-	}
-	order?: 'type' | 'name' | 'content' | 'ttl' | 'proxied'
-	page?: number
-	per_page?: number
-	proxied?: boolean
-	search?: string
-	tag?: {
-		absent?: string
-		contains?: string
-		endswith?: string
-		exact?: string
-		present?: string
-		startswith?: string
-	}
-	tag_match?: 'any' | 'all'
-	type?: RecordType
 }
 
 interface CloudflareDNSRecordCreateRequest {
@@ -320,19 +279,19 @@ export class CloudflareProvider implements TunnelProvider {
 		const apiKey = config.apiKey ?? process.env.CLOUDFLARE_API_KEY
 		const zoneId = config.zoneId ?? process.env.CLOUDFLARE_ZONE_ID
 		const accountId = config.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+		const originUrl = config.originUrl ?? `http://localhost:${process.env.PORT || 3000}`
 
 		if (!domain || !apiKey || !zoneId || !accountId) {
 			return false
 		}
 
-		logger.debug('Looking for existing Cloudflare tunnels from .env file')
-		if (process.env.CLOUDFLARE_TUNNEL_ID && process.env.CLOUDFLARE_TUNNEL_TOKEN) {
-			logger.info('Using existing tunnel from .env file: ' + process.env.CLOUDFLARE_TUNNEL_ID)
-			return true
-		}
-		logger.debug('No existing tunnel found in .env file')
-
 		try {
+			// Resolve the tunnel id locally — never depend on process.env being updated
+			// mid-run, since dotenv-style loaders won't re-import freshly written values.
+			let tunnelId = config.tunnelId ?? process.env.CLOUDFLARE_TUNNEL_ID
+			let tunnelToken = config.tunnelToken ?? process.env.CLOUDFLARE_TUNNEL_TOKEN
+
+
 			logger.debug('Looking for existing tunnels from Cloudflare account')
 
 			const oldRoboTunnels = await this.cloudflareRequest<Array<CloudflareTunnelResponse>>(
@@ -360,10 +319,6 @@ export class CloudflareProvider implements TunnelProvider {
 					? oldRoboTunnels.result.filter((tunnel) => tunnel.deleted_at === null)[0]
 					: undefined
 
-			// Resolve the tunnel id locally — never depend on process.env being updated
-			// mid-run, since dotenv-style loaders won't re-import freshly written values.
-			let tunnelId: string | undefined
-
 			if (oldRoboTunnelExists?.id) {
 				const oldRoboTunnel = oldRoboTunnelExists
 
@@ -380,9 +335,9 @@ export class CloudflareProvider implements TunnelProvider {
 				}
 
 				logger.info('Using existing tunnel from Cloudflare account: ' + oldRoboTunnel.id)
-				await this.updateEnvFile('CLOUDFLARE_TUNNEL_ID', oldRoboTunnel.id!)
-				await this.updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', oldRoboTunnelToken.result)
 				tunnelId = oldRoboTunnel.id
+				tunnelToken = oldRoboTunnelToken.result
+				
 			} else {
 				logger.debug('Creating new tunnel for Cloudflare account')
 				const newCloudflareTunnel: CloudflareTunnelRequest = {
@@ -425,14 +380,16 @@ export class CloudflareProvider implements TunnelProvider {
 				await this.updateEnvFile('CLOUDFLARE_TUNNEL_ID', id)
 				await this.updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', newRoboTunnelToken.result)
 				tunnelId = id
+				tunnelToken = newRoboTunnelToken.result
 			}
+			
 
-			if (!tunnelId) {
-				logger.error('Could not resolve a tunnel id — aborting.')
+			if (!tunnelId || !tunnelToken) {
+				logger.error('Could not resolve tunnel credentials — aborting.')
 				return false
 			}
 
-			const handeledTunnelConfig = await this.handleTunnelConfig(tunnelId, accountId, domain, apiKey)
+			const handeledTunnelConfig = await this.handleTunnelConfig(tunnelId, accountId, domain, originUrl, apiKey)
 			logger.debug(`Updated tunnel config for ${tunnelId} with account ${accountId}`)
 
 			if (!handeledTunnelConfig) {
@@ -806,9 +763,10 @@ export class CloudflareProvider implements TunnelProvider {
 	}
 
 	private async handleTunnelConfig(
-		id: string,
+		tunnelId: string,
 		accountId: string,
 		domain: string,
+		originUrl: string,
 		apiKey: string
 	): Promise<boolean> {
 		const tunnelConfig: CloudflareTunnelConfirationRequest = {
@@ -816,7 +774,8 @@ export class CloudflareProvider implements TunnelProvider {
 				ingress: [
 					{
 						hostname: `robo.${domain}`,
-						service: `http://localhost:${process.env.PORT || 3000}`
+						originRequest: {},
+						service: originUrl
 					},
 					{
 						service: 'http_status:404'
@@ -826,7 +785,7 @@ export class CloudflareProvider implements TunnelProvider {
 		}
 
 		const tunnelConfigResponse = await this.cloudflareRequest<CloudflareTunnelConfigurationResponse>(
-			`/accounts/${accountId}/cfd_tunnel/${id}/configurations/`,
+			`/accounts/${accountId}/cfd_tunnel/${tunnelId}/configurations`,
 			'PUT',
 			tunnelConfig,
 			apiKey
@@ -847,25 +806,15 @@ export class CloudflareProvider implements TunnelProvider {
 		zoneId: string,
 		apiKey: string
 	): Promise<boolean> {
-		const existingDNSRecordFilter: CloudflareDNSRecordListRequest = {
-			match: 'any',
-			comment: {
-				contains: 'robo'
-			},
-			content: {
-				contains: 'cfargotunnel.com'
-			},
-			name: {
-				contains: 'robo'
-			},
+		const recordName = `robo.${domain}`
+		const existingDNSRecordFilterParams = new URLSearchParams({
+			name: recordName,
 			type: 'CNAME'
-		}
-
-		const existingDNSRecordFilterParams = new URLSearchParams(existingDNSRecordFilter as Record<string, string>)
+		})
 
 		const dnsRecord: CloudflareDNSRecordCreateRequest = {
 			comment: 'Robo.js Cloudflare Tunnel Proxy',
-			name: 'robo',
+			name: recordName,
 			proxied: true,
 			content: `${tunnelID}.cfargotunnel.com`,
 			type: 'CNAME'
@@ -879,7 +828,7 @@ export class CloudflareProvider implements TunnelProvider {
 			apiKey
 		)
 		if (existingRecords.success && existingRecords.result.length > 0) {
-			recordExists = existingRecords.result.find((record) => record.name === `robo.${domain}`)
+			recordExists = existingRecords.result.find((record) => record.name === recordName)
 		}
 
 		if (recordExists) {
