@@ -25,6 +25,7 @@
 		"clsx": "^1.2.1",
 		"copy-to-clipboard": "^3.3.3",
 		"docusaurus-plugin-remote-content": "^4.0.0",
+		"dotenv": "^16.5.0",
 		"jotai": "^2.8.3",
 		"meilisearch-docsearch": "^0.6.0",
 		"prism-react-renderer": "^2.1.0",

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import clsx from 'clsx'
 import ErrorBoundary from '@docusaurus/ErrorBoundary'
 import { PageMetadata, SkipToContentFallbackId, ThemeClassNames } from '@docusaurus/theme-common'
@@ -19,6 +19,63 @@ export default function Layout(props) {
 		title,
 		description
 	} = props
+
+	useEffect(() => {
+		
+				//console.log(process.env)
+		if(window){
+
+			const parsedUrl = new URL(window.location.href);
+			const platform = parsedUrl.searchParams.get("parent");
+
+			if (platform === 'robokit') {
+				localStorage.setItem('platform', 'robokit');
+			}
+		
+			const localStoredPlatform = localStorage.getItem('platform');
+			if (localStoredPlatform && localStoredPlatform === 'robokit') {
+				const navbar = document.querySelector('.navbar')
+				if (navbar) {
+					navbar.style.height = 0;
+					navbar.style.padding = 0;
+					navbar.style.margin = 0;
+
+					const firstChild = navbar.firstChild;
+					if (firstChild) {
+						firstChild.style.display = "none";
+						firstChild.style.pointerEvents = "none";
+					}
+				}
+			}
+
+			window.addEventListener("message", (event) => {
+
+				// Access the data sent
+				const data = event.data;
+
+				if (data.action) {
+					const action = data.action;
+					const navbarToggle = document.querySelector('.navbar__toggle');
+
+					if (action === 'open_menu') {
+						if (navbarToggle) {
+							navbarToggle.classList.add('navbar-sidebar--show')
+						}
+					}
+
+					if(action === 'close_menu') {
+						if (navbarToggle) {
+							navbarToggle.classList.remove('navbar-sidebar--show')
+						}
+					}
+				}
+			});
+
+		}
+
+	}, [])
+
+
 	useKeyboardNavigation()
 	return (
 		<LayoutProvider>

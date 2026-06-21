@@ -4,6 +4,7 @@
 // import React from 'react'
 // import Footer from './src/components/Footer';
 const { themes } = require('prism-react-renderer')
+const webpack = require('webpack');
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
 
@@ -22,6 +23,23 @@ const typedocConfig = {
 	expandParameters: false,
 	typeDeclarationFormat: 'list',
 	propertyMembersFormat: 'table'
+}
+
+
+function customDotenvPlugin() {
+  return {
+    name: 'custom-dotenv-plugin',
+    configureWebpack() {
+      const envKeys = Object.keys(process.env).reduce((prev, next) => {
+        prev[`process.env.${next}`] = JSON.stringify(process.env[next]);
+        return prev;
+      }, {});
+
+      return {
+        plugins: [new webpack.DefinePlugin(envKeys)],
+      };
+    },
+  };
 }
 
 /** @type {import('@docusaurus/types').Config} */
@@ -53,6 +71,7 @@ const config = {
 	},
 
 	plugins: [
+		require.resolve('./front-end-env.js'),
 		[
 			'@docusaurus/plugin-client-redirects',
 			{
