@@ -62,7 +62,7 @@
 	},
 	"peerDependencies": {
 		"discord.js": "^14.0.0",
-		"robo.js": "^0.11.0"
+		"robo.js": ">=0.11.0-0 <0.12.0"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {

@@ -58,7 +58,7 @@ new Command('create-robo <projectName>')
 	.option('-rv', '--robo-version', 'specify a Robo.js version to use')
 	.option('-k', '--kit', 'choose a kit to start off with your Robo')
 	.option('-nc', '--no-creds', 'Skips asking for the credentials')
-	.handler(async (args: string[], options: CommandOptions) => {
+	.handler(async ({ args, options }: { args: string[]; options: CommandOptions }) => {
 		const { env } = options
 		logger({
 			level: options.verbose ? 'debug' : 'info'
