@@ -798,8 +798,8 @@ export default class Robo {
 		const ext = this._useTypeScript ? 'ts' : 'mjs'
 
 		if (features.includes('eslint')) {
-			devDependencies.push('eslint@9')
-			devDependencies.push('@eslint/js')
+			devDependencies.push('eslint@10')
+			devDependencies.push('@eslint/js@10')
 			devDependencies.push('globals')
 			this._packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
 			this._packageJson.scripts['lint:eslint'] = `eslint -c config/eslint.${ext} .`
@@ -807,6 +807,7 @@ export default class Robo {
 
 			if (this._useTypeScript) {
 				eslintConfig = EslintConfigTypescript
+				devDependencies.push('jiti')
 				devDependencies.push('typescript-eslint')
 			}
 			await fs.writeFile(path.join(this._workingDir, 'config', `eslint.${ext}`), eslintConfig, 'utf-8')
